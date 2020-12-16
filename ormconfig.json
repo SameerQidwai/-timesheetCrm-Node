@@ -1,0 +1,19 @@
+{
+    "type": "mysql",
+    "host": "localhost",
+    "port": 3306,
+    "username": "root",
+    "password": "",
+    "database": "one-lm-dev",
+    "entities": [
+        "src/entities/*.ts"
+    ],
+    "synchronize": true,
+    "logging": false,
+    "migrations": [
+        "src/migrations/*.ts"
+    ],
+    "cli": {
+        "entitiesDir": "src/entities", "migrationsDir": "src/migrations"
+    }
+}

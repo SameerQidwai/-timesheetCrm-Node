@@ -1,0 +1,28 @@
+async (req: Request, res: Response) => {
+
+    const sampleRepository = getCustomRepository(SampleRepository);
+    let records = await sampleRepository.getAllActive();
+    console.log("records: ", records);
+
+    res.status(200).json({
+        success: true,
+        message: "Get ALL",
+        data: records
+    });
+}
+
+
+async (req: Request, res: Response) => {
+
+    const sampleRepository = getCustomRepository(SampleRepository);
+    let { title } = req.body;
+    let record = await sampleRepository.createAndSave({
+        title
+    });
+    console.log("record: ", record);
+    res.status(200).json({
+        success: true,
+        message: "Create",
+        data: record
+    });
+}
