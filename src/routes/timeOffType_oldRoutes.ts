@@ -1,10 +1,9 @@
 import { Router } from "express";
-import { SharedController } from "./../controllers/sharedController";
-import { TimeOffType } from "./../entities/timeOffType";
 import { TimeOffTypeRepository } from "./../repositories/timeOffTypeRepository";
+import { TimeOffTypeController } from "./../controllers/timeOffTypeController";
 
 const router = Router();
-let timeOffContr = new SharedController<TimeOffType, TimeOffTypeRepository>(TimeOffTypeRepository);
+let timeOffContr = new TimeOffTypeController(TimeOffTypeRepository);
 router.route("/")
 .get(timeOffContr.index.bind(timeOffContr))
 .post(timeOffContr.create.bind(timeOffContr));

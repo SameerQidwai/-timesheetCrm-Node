@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { TimeOffTypeDTO } from "src/dto";
+import { TimeOffPolicyDTO } from "src/dto";
 import { SharedController } from "../controllers/sharedController";
-import { TimeOffTypeRepository } from "../repositories/timeOffTypeRepository";
+import { TimeOffPolicyRepository } from "../repositories/timeOffPolicyRepository";
 
 const router = Router();
-let timeOffContr = new SharedController<TimeOffTypeDTO, TimeOffTypeRepository>(TimeOffTypeRepository);
+let timeOffContr = new SharedController<TimeOffPolicyDTO, TimeOffPolicyRepository>(TimeOffPolicyRepository);
 router.route("/")
 .get(timeOffContr.index.bind(timeOffContr))
 .post(timeOffContr.create.bind(timeOffContr));

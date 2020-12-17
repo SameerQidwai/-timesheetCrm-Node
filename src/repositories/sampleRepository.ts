@@ -1,8 +1,9 @@
+import { IRepository } from "src/controllers/baseController";
 import { EntityRepository, Repository } from "typeorm";
 import { Sample } from "../entities/sample";
 
 @EntityRepository(Sample)
-export class SampleRepository extends Repository<Sample> {
+export class SampleRepository extends Repository<Sample> implements IRepository<Sample> {
 
     async createAndSave(sample: any): Promise<Sample> {
         let obj = new Sample();
@@ -21,5 +22,10 @@ export class SampleRepository extends Repository<Sample> {
 
     async findOneCustom(id: number): Promise<Sample|undefined> {
         return this.findOne(id);
+    }
+
+    async deleteCustom(id: number): Promise<any|undefined> {
+        return this.softDelete(id);
+        // this.createQueryBuilder().where("id = :id", { id: 1 }).withDeleted()
     }
 }

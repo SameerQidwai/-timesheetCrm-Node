@@ -1,26 +1,25 @@
 import { Request, Response } from "express";
 import { getCustomRepository, ObjectType, Repository } from "typeorm";
 
-export interface IRepository<D> {
-    getAllActive(): Promise<D[]>;
-    createAndSave(entity: D): Promise<D>;
-    updateAndReturn(id: number, entity: D): Promise<D|undefined>;
-    findOneCustom(id: number): Promise<D|undefined>;
-    deleteCustom(id: number): Promise<any|undefined>;
+export interface IRepository<E> extends Repository<E> {
+    getAllActive(): Promise<E[]>;
+    createAndSave(entity: any): Promise<E>;
+    updateAndReturn(id: number, entity: any): Promise<E|undefined>;
+    findOneCustom(id: number): Promise<E|undefined>;
 }
-export class BaseController<D,R extends IRepository<D>> {
+export class BaseController<E,R extends IRepository<E>> {
 
-    repositoryClass: ObjectType<R>;
+    repository: ObjectType<R>;
 
-    constructor(repositoryClass: ObjectType<R>) {
+    constructor(repository: ObjectType<R>) {
         console.log("BaseController-constructor");
-        this.repositoryClass = repositoryClass; 
+        this.repository = repository; 
     }
     
     async index(req: Request, res: Response) {
         console.log("controller - index: ", this);
-        const repository: IRepository<D> = getCustomRepository(this.repositoryClass);
-        let records = await repository.getAllActive();
+        const sampleRepository: IRepository<E> = getCustomRepository(this.repository);
+        let records = await sampleRepository.getAllActive();
         console.log("records: ", records);
         res.status(200).json({
             success: true,
@@ -31,8 +30,8 @@ export class BaseController<D,R extends IRepository<D>> {
 
     async create(req: Request, res: Response) {
 
-        const repository: IRepository<D> = getCustomRepository(this.repositoryClass);
-        let record = await repository.createAndSave(req.body);
+        const sampleRepository: IRepository<E> = getCustomRepository(this.repository);
+        let record = await sampleRepository.createAndSave(req.body);
         console.log("record: ", record);
         res.status(200).json({
             success: true,
@@ -42,9 +41,9 @@ export class BaseController<D,R extends IRepository<D>> {
     }
 
     async update(req: Request, res: Response) {
-        const repository: IRepository<D> = getCustomRepository(this.repositoryClass);
+        const sampleRepository: IRepository<E> = getCustomRepository(this.repository);
         let id = req.params.id;
-        let record = await repository.updateAndReturn(parseInt(id), req.body);
+        let record = await sampleRepository.updateAndReturn(parseInt(id), req.body);
         res.status(200).json({
             success: true,
             message: `Update ${req.params.id}`,
@@ -54,9 +53,9 @@ export class BaseController<D,R extends IRepository<D>> {
 
     async get(req: Request, res: Response) {
 
-        const repository: IRepository<D> = getCustomRepository(this.repositoryClass);
+        const sampleRepository = getCustomRepository(this.repository);
         let id = req.params.id;
-        let record = await repository.findOneCustom(parseInt(id));
+        let record = await sampleRepository.findOneCustom(parseInt(id));
         if(!record) throw new Error("not found");
         res.status(200).json({
             success: true,
@@ -66,9 +65,9 @@ export class BaseController<D,R extends IRepository<D>> {
     }
 
     async delete(req: Request, res: Response) {
-        const repository: IRepository<D> = getCustomRepository(this.repositoryClass);
+        const sampleRepository = getCustomRepository(this.repository);
         let id = req.params.id;
-        let record = await repository.deleteCustom(parseInt(id));
+        let record = await sampleRepository.softDelete(parseInt(id));
         res.status(200).json({
             success: true,
             message: `Delete ${req.params.id}`,

@@ -1,12 +1,8 @@
+import { IncreaseEvery } from '../constants/constants';
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm'; 
 import { Base } from './common/base';
 import { TimeOffPolicy } from './timeOffPolicy';
 import { TimeOffType } from './timeOffType';
-
-export enum IncreaseEvery {
-   MONTHLY = 'M',
-   YEARLY = 'Y'
-} 
 
 @Entity("time_off_policy_time_off_types") 
 export class TimeOffPolicyTimeOffType extends Base { 
