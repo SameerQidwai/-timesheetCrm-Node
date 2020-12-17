@@ -1,5 +1,5 @@
 import { TimeOffPolicyDTO } from "../dto";
-import { EntityManager, EntityRepository, Repository, Transaction, TransactionManager } from "typeorm";
+import { EntityManager, EntityRepository, getManager, Repository, Transaction, TransactionManager } from "typeorm";
 import { TimeOffPolicy } from "./../entities/timeOffPolicy";
 import { TimeOffPolicyTimeOffType } from "./../entities/timeOffPolicyTimeOffType";
 import { TimeOffType } from "./../entities/timeOffType";
@@ -50,20 +50,39 @@ export class TimeOffPolicyRepository extends Repository<TimeOffPolicy> {
             // timeOffPolicyObj = await transactionalEntityManager.save(timeOffPolicyObj);
             let timeOffTypeList = await transactionalEntityManager.findByIds(TimeOffType, timeOffPolicy.timeOffPolicyTimeOffTypes.map(x => x.timeOffTypeId));
             
-            let timeOffPolicyTimeOffTypes = timeOffPolicy.timeOffPolicyTimeOffTypes.map(timeOffPolicyTimeOffType => {
-                let timeOffPolicyTimeOffTypeObj = new TimeOffPolicyTimeOffType();
-                let timeOffType = timeOffTypeList.filter(x => x.id == timeOffPolicyTimeOffType.timeOffTypeId);
-                if (!timeOffType.length) {
-                    throw new Error("timeOffType not found!");
+            let timeOffPolicyTimeOffTypesPromise = timeOffPolicy.timeOffPolicyTimeOffTypes.map(async timeOffPolicyTimeOffType => {
+                let timeOffPolicyTimeOffTypeObj: TimeOffPolicyTimeOffType | undefined;
+                timeOffPolicyTimeOffTypeObj = await transactionalEntityManager
+                    .findOne(TimeOffPolicyTimeOffType, {
+                        relations: ["timeOffType", "timeOffPolicy"],
+                        where: {
+                            timeOffType: {
+                                id: timeOffPolicyTimeOffType.timeOffTypeId
+                            },
+                            timeOffPolicy: {
+                                id: timeOffPolicyObj.id
+                            }
+                        }
+                    });
+                if (!timeOffPolicyTimeOffTypeObj) {
+                    timeOffPolicyTimeOffTypeObj = new TimeOffPolicyTimeOffType();
+                    timeOffPolicyTimeOffTypeObj.timeOffPolicy = timeOffPolicyObj;
+                    let timeOffType = timeOffTypeList.filter(x => x.id == timeOffPolicyTimeOffType.timeOffTypeId);
+                    if (!timeOffType.length) {
+                        throw new Error("timeOffType not found!");
+                    }
+                    timeOffPolicyTimeOffTypeObj.timeOffType = timeOffType[0];
                 }
-                timeOffPolicyTimeOffTypeObj.timeOffPolicy = timeOffPolicyObj;
-                timeOffPolicyTimeOffTypeObj.timeOffType = timeOffType[0];
+                console.log("timeOffPolicyTimeOffTypeObj - found or not: ", timeOffPolicyTimeOffTypeObj);
+                
                 timeOffPolicyTimeOffTypeObj.hours = timeOffPolicyTimeOffType.hours;
                 timeOffPolicyTimeOffTypeObj.increaseEvery = timeOffPolicyTimeOffType.increaseEvery;
                 timeOffPolicyTimeOffTypeObj.threshold = timeOffPolicyTimeOffType.threshold;
                 return timeOffPolicyTimeOffTypeObj;
             });
+            let timeOffPolicyTimeOffTypes = await Promise.all(timeOffPolicyTimeOffTypesPromise);
             timeOffPolicyObj["timeOffPolicyTimeOffTypes"] = timeOffPolicyTimeOffTypes;
+            // await transactionalEntityManager.save(timeOffPolicyTimeOffTypes);
             await transactionalEntityManager.save(timeOffPolicyObj);
         });
         return await this.findOneCustom(id);
@@ -76,4 +95,5 @@ export class TimeOffPolicyRepository extends Repository<TimeOffPolicy> {
     async deleteCustom(id: number): Promise<any|undefined> {
         return this.softDelete(id);
     }
+
 }
