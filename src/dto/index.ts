@@ -27,3 +27,18 @@ export interface TimeOffPolicyDTO extends Base {
     label: string;
     timeOffPolicyTimeOffTypes: TimeOffPolicyTimeOffType[];
 }
+
+export interface StandardLevelDTO extends Base {
+    label: string;
+}
+
+export interface StandardSkillStandardLevel extends Base {
+    standardSkillId?: number;
+    standardLevelId: number;
+    priority: number;
+}
+
+export interface StandardSkillDTO extends Base {
+    label: string;
+    standardSkillStandardLevels: StandardSkillStandardLevel[];
+}
