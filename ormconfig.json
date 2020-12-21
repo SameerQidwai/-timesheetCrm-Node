@@ -4,7 +4,7 @@
     "port": 3306,
     "username": "root",
     "password": "",
-    "database": "one-lm-dev",
+    "database": "oneLmDev",
     "entities": [
         "src/entities/*.ts"
     ],
@@ -17,3 +17,5 @@
         "entitiesDir": "src/entities", "migrationsDir": "src/migrations"
     }
 }
+
+
