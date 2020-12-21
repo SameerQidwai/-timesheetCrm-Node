@@ -42,3 +42,19 @@ export interface StandardSkillDTO extends Base {
     label: string;
     standardSkillStandardLevels: StandardSkillStandardLevel[];
 }
+
+
+export interface CalendarDTO extends Base {
+    label: string;
+    isActive: boolean;
+}
+
+export interface HolidayTypeDTO extends Base {
+    label: string;
+}
+
+export interface CalendarHolidayDTO extends Base {
+    calendarId?: number;
+    holidayTypeId: number;
+    date: Date;
+}
