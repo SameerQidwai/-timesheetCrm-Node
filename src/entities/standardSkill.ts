@@ -1,5 +1,6 @@
 import { Entity, Column, OneToMany } from 'typeorm'; 
 import { Base } from './common/base';
+import { PanelSkill } from './panelSkill';
 import { StandardSkillStandardLevel } from './standardSkillStandardLevel';
 
 @Entity("standard_skills")
@@ -12,5 +13,10 @@ export class StandardSkill extends Base {
     cascade: true 
   })
   standardSkillStandardLevels: StandardSkillStandardLevel[];
+
+  @OneToMany(() => PanelSkill, panelSkill => panelSkill.standardSkill, { 
+    cascade: true 
+  })
+  panelSkills: PanelSkill[];
 
 }

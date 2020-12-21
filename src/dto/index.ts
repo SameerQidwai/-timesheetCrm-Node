@@ -58,3 +58,22 @@ export interface CalendarHolidayDTO extends Base {
     holidayTypeId: number;
     date: Date;
 }
+
+export interface PanelDTO extends Base {
+    label: string;
+}
+
+export interface panelSkillStandardLevelDTO extends Base {
+    panelSkillId?: number;
+    standardLevelId: number;
+    levelLabel: string;
+    shortTermCeil: number;
+    longTermCeil: number;
+}
+
+export interface PanelSkillDTO extends Base {
+    label: string;
+    standardSkillId: number;
+    panelId?: number;
+    panelSkillStandardLevels: panelSkillStandardLevelDTO[];
+}
