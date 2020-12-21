@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { getCustomRepository, ObjectType, Repository } from "typeorm";
 
 export interface IRepository<D> {
-    getAllActive(): Promise<D[]>;
+    getAllActive(options?: any): Promise<D[]>;
     createAndSave(entity: D): Promise<D>;
     updateAndReturn(id: number, entity: D): Promise<D|undefined>;
     findOneCustom(id: number): Promise<D|undefined>;
@@ -20,7 +20,14 @@ export class BaseController<D,R extends IRepository<D>> {
     async index(req: Request, res: Response) {
         console.log("controller - index: ", this);
         const repository: IRepository<D> = getCustomRepository(this.repositoryClass);
-        let records = await repository.getAllActive();
+        let queryParams = req.query;
+        let options: any = {};
+        console.log("queryParams: ", queryParams);
+        
+        // if(queryParams) {
+        //     queryParams.
+        // }
+        let records = await repository.getAllActive(queryParams);
         console.log("records: ", records);
         res.status(200).json({
             success: true,

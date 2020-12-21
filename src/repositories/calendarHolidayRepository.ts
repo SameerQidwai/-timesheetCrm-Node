@@ -29,7 +29,11 @@ export class CalendarHolidayRepository extends Repository<CalendarHoliday> {
         if (options) {
             params = {
                 ...params,
-                where: options
+                where: {
+                    calendar: {
+                        id: options.calendarId
+                    }
+                }
             }
         }
         return this.find(params);
