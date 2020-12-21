@@ -72,7 +72,7 @@ export class StandardSkillRepository extends Repository<StandardSkill> {
                 }
                 console.log("standardSkillStandardLevelObj - found or not: ", standardSkillStandardLevelObj);
                 
-                standardSkillStandardLevelObj.priority = standardSkillStandardLevelObj.priority;
+                standardSkillStandardLevelObj.priority = standardSkillStandardLevel.priority;
                 return standardSkillStandardLevelObj;
             });
             let standardSkillStandardLevels = await Promise.all(standardSkillStandardLevelsPromise);
