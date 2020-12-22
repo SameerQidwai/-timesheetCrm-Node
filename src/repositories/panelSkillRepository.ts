@@ -4,6 +4,7 @@ import { StandardSkill } from "./../entities/standardSkill";
 import { StandardSkillStandardLevel } from "./../entities/standardSkillStandardLevel";
 import { StandardLevel } from "./../entities/standardLevel";
 import { PanelSkill } from "../entities/panelSkill";
+import { Panel } from "../entities/panel"
 import { PanelSkillStandardLevel } from "../entities/panelSkillStandardLevel";
 
 @EntityRepository(PanelSkill)
@@ -15,10 +16,15 @@ export class PanelSkillRepository extends Repository<PanelSkill> {
             let panelSkillObj = new PanelSkill();
             panelSkillObj.label = panelSkill.label;
             let standardSkill = await transactionalEntityManager.findOne(StandardSkill,panelSkill.standardSkillId);
+            let panel = await transactionalEntityManager.findOne(Panel,panelSkill.panelId);
             if(!standardSkill) {
                 throw new Error("Standard Skill not found");
             }
+            if(!panel) {
+                throw new Error("Panel not found");
+            }
             panelSkillObj.standardSkill = standardSkill;
+            panelSkillObj.panel = panel;
             panelSkillObj = await transactionalEntityManager.save(panelSkillObj);
             id = panelSkillObj.id;
             let standardLevelList = await transactionalEntityManager.findByIds(StandardLevel, panelSkill.panelSkillStandardLevels.map(x => x.standardLevelId));
@@ -45,8 +51,19 @@ export class PanelSkillRepository extends Repository<PanelSkill> {
         return await this.findOneCustom(id);
     }
 
-    async getAllActive(): Promise<any[]> {
-        return this.find({ relations: ["standardSkill", "panelSkillStandardLevels", "panelSkillStandardLevels.standardLevel"] });
+    async getAllActive(options?: any): Promise<any[]> {
+        let params: any = { relations: ["standardSkill", "panelSkillStandardLevels", "panelSkillStandardLevels.standardLevel"] };
+        if (options) {
+            params = {
+                ...params,
+                where: {
+                    panel: {
+                        id: options.panelId
+                    }
+                }
+            }
+        }
+        return this.find(params);
     }
 
     async updateAndReturn(id: number, panelSkill: PanelSkillDTO): Promise<any|undefined> {

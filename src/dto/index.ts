@@ -74,6 +74,6 @@ export interface panelSkillStandardLevelDTO extends Base {
 export interface PanelSkillDTO extends Base {
     label: string;
     standardSkillId: number;
-    panelId?: number;
+    panelId: number;
     panelSkillStandardLevels: panelSkillStandardLevelDTO[];
 }
