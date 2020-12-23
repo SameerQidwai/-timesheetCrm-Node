@@ -79,28 +79,23 @@ export class PanelSkillRepository extends Repository<PanelSkill> {
                     .findOne(PanelSkillStandardLevel, {
                         relations: ["standardLevel", "panelSkill"],
                         where: {
-                            standardLevel: {
-                                id: panelSkillStandardLevel.standardLevelId
-                            },
-                            panelSkill: {
-                                id: panelSkillObj.id
-                            }
+                            id: panelSkillStandardLevel.id
                         }
                     });
                 if (!panelSkillStandardLevelObj) {
                     panelSkillStandardLevelObj = new PanelSkillStandardLevel();
                     panelSkillStandardLevelObj.panelSkill = panelSkillObj;
-                    let standardLevel = standardLevelList.filter(x => x.id == panelSkillStandardLevel.standardLevelId);
-                    if (!standardLevel.length) {
-                        throw new Error("standardLevel not found!");
-                    }
-                    panelSkillStandardLevelObj.standardLevel = standardLevel[0];
                 }
                 console.log("panelSkillStandardLevelObj - found or not: ", panelSkillStandardLevelObj);
                 
-                panelSkillStandardLevelObj.levelLabel = panelSkillStandardLevelObj.levelLabel;
-                panelSkillStandardLevelObj.shortTermCeil = panelSkillStandardLevelObj.shortTermCeil;
-                panelSkillStandardLevelObj.longTermCeil = panelSkillStandardLevelObj.longTermCeil;
+                panelSkillStandardLevelObj.levelLabel = panelSkillStandardLevel.levelLabel;
+                panelSkillStandardLevelObj.shortTermCeil = panelSkillStandardLevel.shortTermCeil;
+                panelSkillStandardLevelObj.longTermCeil = panelSkillStandardLevel.longTermCeil;
+                let standardLevel = standardLevelList.filter(x => x.id == panelSkillStandardLevel.standardLevelId);
+                if (!standardLevel.length) {
+                    throw new Error("standardLevel not found!");
+                }
+                panelSkillStandardLevelObj.standardLevel = standardLevel[0];
                 return panelSkillStandardLevelObj;
             });
             let panelSkillStandardLevels = await Promise.all(panelSkillStandardLevelsPromise);
