@@ -4,12 +4,12 @@ import { Base } from './common/base';
 @Entity("global_settings") 
 export class GlobalSetting extends Base { 
 
-   @Column({ name: "time_zone"}) 
-   timeZone: number;
+   @Column({ name: "key_label"}) 
+   keyLabel: string;
    
-   @Column({ name: "records_per_page"}) 
-   recordsPerPage: number;
+   @Column({ name: "key_value"}) 
+   keyValue: string;
    
-   @Column({ name: "from_email"}) 
-   fromEmail: string;
+   @Column({ name: "data_type"}) 
+   dataType: string;
 }

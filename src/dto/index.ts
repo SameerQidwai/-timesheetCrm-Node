@@ -77,3 +77,9 @@ export interface PanelSkillDTO extends Base {
     panelId: number;
     panelSkillStandardLevels: panelSkillStandardLevelDTO[];
 }
+
+export interface GlobalSettingDTO {
+    fromEmail: string;
+    recordsPerPage: string;
+    timeZone: string;
+}
