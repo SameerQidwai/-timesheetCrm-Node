@@ -31,7 +31,7 @@ router.post("/global-setting", async (req,res) => {
     });
     res.status(200).json({
         success: true,
-        message: `POST`,
+        message: `POST test`,
         data: data
     });
 });

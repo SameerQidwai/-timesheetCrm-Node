@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "tsc": "tsc",
     "start": "ts-node src/server.ts",
+    "start:watch": "nodemon src/server.ts",
     "typeorm": "ts-node ./node_modules/typeorm/cli.js"
   },
   "author": "",
@@ -24,6 +25,7 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "mysql": "^2.18.1",
+    "nodemon": "^2.0.6",
     "reflect-metadata": "^0.1.13",
     "typeorm": "^0.2.28"
   }
