@@ -10,6 +10,9 @@ import calendarHolidayRoutes from "./calendarHolidayRoutes";
 import panelRoutes from "./panelRoutes";
 import panelSkillRoutes from "./panelSkillRoutes";
 import {GlobalSettingRepository} from "../repositories/globalSettingRepository";
+import organizationRoutes from "./organizationRoutes";
+import stateRoutes from "./stateRoutes";
+import contactPersonRoutes from "./contactPersonRoutes";
 import { getCustomRepository } from "typeorm";
 
 const router: Router = Router();
@@ -23,6 +26,9 @@ router.use("/calendars", calendarRoutes);
 router.use("/calendar-holidays", calendarHolidayRoutes);
 router.use("/panels", panelRoutes);
 router.use("/panel-skills", panelSkillRoutes);
+router.use("/organizations", organizationRoutes);
+router.use("/contactpersons", contactPersonRoutes);
+router.use("/states", stateRoutes);
 router.post("/global-setting", async (req,res) => {
     let data =await getCustomRepository(GlobalSettingRepository).createAndSave({
         fromEmail: "tst",

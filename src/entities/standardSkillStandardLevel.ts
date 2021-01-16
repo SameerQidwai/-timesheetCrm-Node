@@ -1,7 +1,8 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm'; 
+import { Entity, Column, ManyToOne, JoinColumn, ManyToMany } from 'typeorm'; 
 import { Base } from './common/base';
 import { StandardSkill } from './standardSkill';
 import { StandardLevel } from './standardLevel';
+import { ContactPerson } from './contactPerson';
 
 @Entity("standard_skill_standard_levels") 
 export class StandardSkillStandardLevel extends Base { 
@@ -17,4 +18,6 @@ export class StandardSkillStandardLevel extends Base {
    @Column({ type: "int", name: "priority" }) 
    priority: number;
 
+   @ManyToMany(() => ContactPerson, contactPerson => contactPerson.standardSkillStandardLevels)
+   contactPersons: ContactPerson[];
 }
