@@ -20,6 +20,9 @@ export class OrganizationRepository extends Repository<Organization> {
         obj.piInsurer = organization.piInsurer;
         obj.plInsurer = organization.plInsurer;
         obj.wcInsurer = organization.wcInsurer;
+        obj.piSumInsured = organization.piSumInsured;
+        obj.plSumInsured = organization.plSumInsured;
+        obj.wcSumInsured = organization.wcSumInsured;
         obj.piPolicyNumber = organization.piPolicyNumber;
         obj.plPolicyNumber = organization.plPolicyNumber;
         obj.wcPolicyNumber = organization.wcPolicyNumber;
@@ -56,6 +59,9 @@ export class OrganizationRepository extends Repository<Organization> {
         obj.piInsurer = organization.piInsurer;
         obj.plInsurer = organization.plInsurer;
         obj.wcInsurer = organization.wcInsurer;
+        obj.piSumInsured = organization.piSumInsured;
+        obj.plSumInsured = organization.plSumInsured;
+        obj.wcSumInsured = organization.wcSumInsured;
         obj.piPolicyNumber = organization.piPolicyNumber;
         obj.plPolicyNumber = organization.plPolicyNumber;
         obj.wcPolicyNumber = organization.wcPolicyNumber;
