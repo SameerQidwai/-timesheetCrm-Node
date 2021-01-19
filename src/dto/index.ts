@@ -90,7 +90,7 @@ export interface OrganizationDTO extends Base {
     address: string;
     website: string;
     abn: string;
-    textCode: string;
+    taxCode: string;
     expectedBusinessAmount: number;
     invoiceEmail: string;
     piInsurer: string;

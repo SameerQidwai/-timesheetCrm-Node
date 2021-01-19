@@ -23,8 +23,8 @@ export class Organization extends Base {
    @Column({ name: "australian_business_number", nullable: true }) 
    abn: string;
 
-   @Column({ name: "text_code", nullable: true }) 
-   textCode: string;
+   @Column({ name: "tax_code", nullable: true }) 
+   taxCode: string;
 
    @Column({ type: 'decimal', precision: 10, scale: 3, default: 0, name: "expected_business_amount", nullable: true }) 
    expectedBusinessAmount: number;

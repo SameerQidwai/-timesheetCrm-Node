@@ -14,7 +14,7 @@ export class OrganizationRepository extends Repository<Organization> {
         obj.address = organization.address;
         obj.website = organization.website;
         obj.abn = organization.abn;
-        obj.textCode = organization.textCode;
+        obj.taxCode = organization.taxCode;
         obj.expectedBusinessAmount = organization.expectedBusinessAmount;
         obj.invoiceEmail = organization.invoiceEmail;
         obj.piInsurer = organization.piInsurer;
@@ -50,7 +50,7 @@ export class OrganizationRepository extends Repository<Organization> {
         obj.address = organization.address;
         obj.website = organization.website;
         obj.abn = organization.abn;
-        obj.textCode = organization.textCode;
+        obj.taxCode = organization.taxCode;
         obj.expectedBusinessAmount = organization.expectedBusinessAmount;
         obj.invoiceEmail = organization.invoiceEmail;
         obj.piInsurer = organization.piInsurer;
