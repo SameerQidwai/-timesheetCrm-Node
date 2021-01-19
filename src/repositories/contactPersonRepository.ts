@@ -23,12 +23,13 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
                 contactPersonObj.dateOfBirth = new Date(contactPerson.dateOfBirth);
 
             let state: State | undefined;
-            if (contactPerson.stateId)
+            if (contactPerson.stateId) {
                 state = await this.manager.findOne(State, contactPerson.stateId);
-            if(!state) {
-                throw new Error("State not found");
+                if (!state) {
+                    throw new Error("State not found");
+                }
+                contactPersonObj.state = state;
             }
-            contactPersonObj.state = state;
             
             let standardSkillStandardLevelList = await transactionalEntityManager.findByIds(StandardSkillStandardLevel, contactPerson.standardSkillStandardLevelIds);
             console.log("standardSkillStandardLevelList.length: ", standardSkillStandardLevelList.length);
