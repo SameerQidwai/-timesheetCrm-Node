@@ -4,12 +4,12 @@ module.exports = {
     "port": 3306,
     "username": "root",
     "password": "",
-    "database": "oneLmDev",
+    "database": process.env.DATABASE_NAME,
     "entities": [
         "src/entities/*.ts"
     ],
     "synchronize": true,
-    "logging": false,
+    "logging": true,
     "migrations": [
         "src/migrations/*.ts"
     ],

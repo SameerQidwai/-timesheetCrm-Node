@@ -1,6 +1,7 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm'; 
+import { Entity, Column, ManyToOne, JoinColumn, OneToOne } from 'typeorm'; 
 import { Base } from './common/base';
 import { ContactPerson } from './contactPerson';
+import { Employee } from './employee';
 import { Organization } from './organization';
 
 @Entity("contact_person_organizations") 
@@ -23,4 +24,6 @@ export class ContactPersonOrganization extends Base {
    @JoinColumn({ name: "contact_person_id" })
    contactPerson: ContactPerson;
 
+   @OneToOne(() => Employee, employee => employee.contactPersonOrganization)
+   employee: Employee;
 }

@@ -1,4 +1,5 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm'; 
+import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm'; 
+import { BankAccount } from './bankAccount';
 import { Base } from './common/base';
 import { ContactPersonOrganization } from './contactPersonOrganization';
 
@@ -76,4 +77,8 @@ export class Organization extends Base {
    @JoinColumn({ name: "delegate_contact_person_organization_id" })
    delegateContactPersonOrganization?: ContactPersonOrganization;
 
+   @OneToMany(() => BankAccount, bankAccount => bankAccount.organization, { 
+      cascade: true 
+    })
+    bankAccounts: BankAccount[];
 }

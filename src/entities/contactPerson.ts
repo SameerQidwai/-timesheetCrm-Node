@@ -24,11 +24,11 @@ export class ContactPerson extends Base {
    @Column({ name: "date_of_birth", nullable: true })
    dateOfBirth: Date;
 
-   @Column({ name: "phone_number", nullable: true }) 
+   @Column({ name: "phone_number", nullable: true })
    phoneNumber: string;
-   
-   @Column() 
-   email: string; 
+
+   @Column()
+   email: string;
 
    @Column({ name: "address", nullable: true })
    address: String;
@@ -43,9 +43,9 @@ export class ContactPerson extends Base {
    @JoinTable({ name: "contact_person_standard_skill_standard_level" })
    standardSkillStandardLevels: StandardSkillStandardLevel[];
 
-   @OneToMany(() => ContactPersonOrganization, contactPersonOrganization => contactPersonOrganization.contactPerson, { 
-      cascade: true 
-    })
-    contactPersonOrganizations: ContactPersonOrganization[];
+   @OneToMany(() => ContactPersonOrganization, contactPersonOrganization => contactPersonOrganization.contactPerson, {
+      cascade: true
+   })
+   contactPersonOrganizations: ContactPersonOrganization[];
 
 }

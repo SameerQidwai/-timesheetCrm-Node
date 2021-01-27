@@ -1,4 +1,4 @@
-import { Gender, IncreaseEvery } from "./../constants/constants";
+import { EmploymentType, Gender, IncreaseEvery, Frequency } from "./../constants/constants";
 
 export interface Base {
     id?: number;
@@ -132,4 +132,53 @@ export interface ContactPersonDTO extends Base {
 
 export interface StateDTO extends Base {
     label: string;
+}
+
+export interface EmployeeDTO extends Base {
+    contactPersonOrganizationId: number | null;
+    firstName: string;
+    lastName: string;
+    gender: Gender;
+    dateOfBirth: Date | null;
+    phoneNumber: string;
+    email: string;
+    address: string;
+    stateId: number | null;
+    nextOfKinName: string;
+    nextOfKinPhoneNumber: string;
+    nextOfKinEmail: string;
+    nextOfKinDateOfBirth: Date;
+    nextOfKinRelation: string;
+    nextOfKinGender: Gender;
+    tfn: string;
+    superAnnuationId: string;
+    superAnnuationName: string;
+    memberNumber: string;
+    smsfBankAccountId: string; // need to confirm this with Mustafa Bhai
+    training: string;
+    latestEmploymentContract: EmploymentContractDTO;
+    bankName: string;
+    bankAccountNo: string;
+    bankBsb: string;
+}
+
+export interface EmploymentContractDTO extends Base {
+    payslipEmail: string;
+    membershipAccountNo: string;
+    payFrequency: Frequency;
+    startDate: Date;
+    endDate: Date | null;
+    type: EmploymentType;
+    noOfHours: number;
+    noOfHoursPer: Frequency;
+    remunerationAmount: number;
+    remunerationAmountPer: Frequency; 
+}
+
+export interface BankAccountDTO extends Base {
+    name: string;
+    accountNo: string;
+    bsb: string;
+    employeeId: number | null;
+    organizationId: number | null;
 }
