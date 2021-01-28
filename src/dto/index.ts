@@ -163,6 +163,7 @@ export interface EmployeeDTO extends Base {
 }
 
 export interface EmploymentContractDTO extends Base {
+    employeeId?: number;
     payslipEmail: string;
     membershipAccountNo: string;
     payFrequency: Frequency;
