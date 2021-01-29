@@ -13,7 +13,8 @@ export enum Frequency {
     DAILY = 2,
     WEEKLY = 3,
     FORTNIGHTLY = 4,
-    MONTHLY = 5
+    MONTHLY = 5,
+    YEARLY = 6
 }
 
 export enum EmploymentType {
