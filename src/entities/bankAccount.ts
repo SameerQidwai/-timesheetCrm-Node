@@ -15,6 +15,12 @@ export class BankAccount extends Base {
    @Column({ name: "bsb" }) 
    bsb: string;
 
+   @Column({ name: "organization_id", nullable: true }) 
+   organizationId: number;
+
+   @Column({ name: "employee_id", nullable: true }) 
+   employeeId: number;
+
    @ManyToOne(() => Organization, organization => organization.bankAccounts)
    @JoinColumn({ name: "organization_id" })
    organization: Organization;

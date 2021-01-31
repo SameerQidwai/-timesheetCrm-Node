@@ -6,6 +6,15 @@ import { HolidayType } from './holidayType';
 @Entity("calendar_holidays") 
 export class CalendarHoliday extends Base { 
 
+   @Column({ name: "calendar_id", nullable: true }) 
+   calendarId: number;
+
+   @Column({ name: "holiday_type_id", nullable: true }) 
+   holidayTypeId: number;
+
+   @Column({ name: "date" }) 
+   date: Date;
+
    @ManyToOne(() => Calendar)
    @JoinColumn({ name: "calendar_id" })
    calendar: Calendar;
@@ -13,8 +22,5 @@ export class CalendarHoliday extends Base {
    @ManyToOne(() => HolidayType)
    @JoinColumn({ name: "holiday_type_id" })
    holidayType: HolidayType;
-
-   @Column({ name: "date" }) 
-   date: Date;
 
 }

@@ -15,16 +15,30 @@ export class PanelSkillRepository extends Repository<PanelSkill> {
         id = await this.manager.transaction(async transactionalEntityManager => {
             let panelSkillObj = new PanelSkill();
             panelSkillObj.label = panelSkill.label;
-            let standardSkill = await transactionalEntityManager.findOne(StandardSkill,panelSkill.standardSkillId);
-            let panel = await transactionalEntityManager.findOne(Panel,panelSkill.panelId);
-            if(!standardSkill) {
+            let standardSkill = await transactionalEntityManager.find(StandardSkill,{
+                where: {
+                    id: panelSkill.standardSkillId
+                }
+            });
+            let panel = await transactionalEntityManager.find(Panel,{
+                where: {
+                    id: panelSkill.panelId
+                }
+            });
+            if(!standardSkill.length) {
                 throw new Error("Standard Skill not found");
             }
-            if(!panel) {
+            if(!panel.length) {
                 throw new Error("Panel not found");
             }
-            panelSkillObj.standardSkill = standardSkill;
-            panelSkillObj.panel = panel;
+            console.log("lengths: ", panel.length, standardSkill.length);
+            
+            // panelSkillObj.standardSkill = standardSkill[0];
+            // panelSkillObj.panel = panel[0];
+
+            panelSkillObj.standardSkillId = standardSkill[0].id;
+            panelSkillObj.panelId = panel[0].id;
+
             panelSkillObj = await transactionalEntityManager.save(panelSkillObj);
             id = panelSkillObj.id;
             let standardLevelList = await transactionalEntityManager.findByIds(StandardLevel, panelSkill.panelSkillStandardLevels.map(x => x.standardLevelId));
@@ -36,11 +50,11 @@ export class PanelSkillRepository extends Repository<PanelSkill> {
                 if (!standardLevel.length) {
                     throw new Error("standardLevel not found!");
                 }
-                panelSkillStandardLevelObj.standardLevel = standardLevel[0];
+                panelSkillStandardLevelObj.standardLevelId = standardLevel[0].id;
                 panelSkillStandardLevelObj.levelLabel = panelSkillStandardLevel.levelLabel;
                 panelSkillStandardLevelObj.shortTermCeil = panelSkillStandardLevel.shortTermCeil;
                 panelSkillStandardLevelObj.longTermCeil = panelSkillStandardLevel.longTermCeil;
-                panelSkillStandardLevelObj.panelSkill = panelSkillObj;
+                panelSkillStandardLevelObj.panelSkillId = panelSkillObj.id;
                 return panelSkillStandardLevelObj;
             });
             
@@ -71,20 +85,43 @@ export class PanelSkillRepository extends Repository<PanelSkill> {
         await this.manager.transaction(async transactionalEntityManager => {
             let panelSkillObj = await this.findOneCustom(id);
             panelSkillObj.label = panelSkill.label;
+            let standardSkill = await transactionalEntityManager.find(StandardSkill,{
+                where: {
+                    id: panelSkill.standardSkillId
+                }
+            });
+            let panel = await transactionalEntityManager.find(Panel,{
+                where: {
+                    id: panelSkill.panelId
+                }
+            });
+            if(!standardSkill.length) {
+                throw new Error("Standard Skill not found");
+            }
+            if(!panel.length) {
+                throw new Error("Panel not found");
+            }
+            console.log("lengths: ", panel.length, standardSkill.length);
+        
+            panelSkillObj.standardSkillId = standardSkill[0].id;
+            panelSkillObj.panelId = panel[0].id;
             let standardLevelList = await transactionalEntityManager.findByIds(StandardLevel, panelSkill.panelSkillStandardLevels.map(x => x.standardLevelId));
             
             let panelSkillStandardLevelsPromise = panelSkill.panelSkillStandardLevels.map(async panelSkillStandardLevel => {
                 let panelSkillStandardLevelObj: PanelSkillStandardLevel | undefined;
-                panelSkillStandardLevelObj = await transactionalEntityManager
-                    .findOne(PanelSkillStandardLevel, {
+                let panelSkillStandardLevelObjFound = await transactionalEntityManager
+                    .find(PanelSkillStandardLevel, {
                         relations: ["standardLevel", "panelSkill"],
                         where: {
                             id: panelSkillStandardLevel.id
                         }
                     });
-                if (!panelSkillStandardLevelObj) {
+                if (!panelSkillStandardLevelObjFound.length) {
                     panelSkillStandardLevelObj = new PanelSkillStandardLevel();
-                    panelSkillStandardLevelObj.panelSkill = panelSkillObj;
+                    // panelSkillStandardLevelObj.panelSkill = panelSkillObj;
+                    panelSkillStandardLevelObj.panelSkillId = panelSkillObj.id;
+                } else {
+                    panelSkillStandardLevelObj = panelSkillStandardLevelObjFound[0];
                 }
                 console.log("panelSkillStandardLevelObj - found or not: ", panelSkillStandardLevelObj);
                 
@@ -95,7 +132,8 @@ export class PanelSkillRepository extends Repository<PanelSkill> {
                 if (!standardLevel.length) {
                     throw new Error("standardLevel not found!");
                 }
-                panelSkillStandardLevelObj.standardLevel = standardLevel[0];
+                panelSkillStandardLevelObj.standardLevelId = standardLevel[0].id;
+                // panelSkillStandardLevelObj.standardLevel = standardLevel[0];
                 return panelSkillStandardLevelObj;
             });
             let panelSkillStandardLevels = await Promise.all(panelSkillStandardLevelsPromise);

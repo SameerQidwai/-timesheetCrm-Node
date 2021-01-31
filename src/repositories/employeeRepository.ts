@@ -15,20 +15,19 @@ export class EmployeeRepository extends Repository<Employee> {
     async createAndSave(employee: EmployeeDTO): Promise<any> {
         let id: number;
         id = await this.manager.transaction(async transactionalEntityManager => {            
-            if(!employee.contactPersonOrganizationId) {
+            if(!employee.contactPersonId) {
                 throw Error("Must provide contact person");
             }
-            let contactPersonOrganizationObj = await transactionalEntityManager.findOne(ContactPersonOrganization, employee.contactPersonOrganizationId, {
-                relations: ["contactPerson"]
-            });
-            if(!contactPersonOrganizationObj) {
-                throw Error("Must provide contact person");
-            }
-            let contactPersonObj = await transactionalEntityManager.findOne(ContactPerson, contactPersonOrganizationObj.contactPerson.id);
+            let contactPersonObj = await transactionalEntityManager.findOne(ContactPerson, employee.contactPersonId, { relations: ["contactPersonOrganizations"]});
             if(!contactPersonObj) {
                 throw Error("Must provide contact person");
             }
             
+            // find contactpersonorganization id for oneLM
+            let contactPersonOrganization = contactPersonObj.contactPersonOrganizations.filter(x => x.organizationId == 1)[0];
+            if(!contactPersonOrganization) {
+                throw Error("Not associated with oneLM");
+            }
             contactPersonObj.firstName = employee.firstName;
             contactPersonObj.lastName = employee.lastName;
             contactPersonObj.email = employee.email;
@@ -36,7 +35,7 @@ export class EmployeeRepository extends Repository<Employee> {
             contactPersonObj.gender = employee.gender;
             contactPersonObj.phoneNumber = employee.phoneNumber;
             if (employee.dateOfBirth)
-            contactPersonObj.dateOfBirth = new Date(employee.dateOfBirth);
+                contactPersonObj.dateOfBirth = new Date(employee.dateOfBirth);
 
             let state: State | undefined;
             if (employee.stateId) {
@@ -48,7 +47,7 @@ export class EmployeeRepository extends Repository<Employee> {
             }
             await transactionalEntityManager.save(contactPersonObj);
             let employeeObj = new Employee();
-            employeeObj.contactPersonOrganization = contactPersonOrganizationObj;
+            employeeObj.contactPersonOrganizationId = contactPersonOrganization.id;
             employeeObj.nextOfKinName = employee.nextOfKinName;
             employeeObj.nextOfKinPhoneNumber = employee.nextOfKinPhoneNumber;
             employeeObj.nextOfKinEmail = employee.nextOfKinEmail;
@@ -87,14 +86,14 @@ export class EmployeeRepository extends Repository<Employee> {
             employmentContract.noOfHoursPer = noOfHoursPer;
             employmentContract.remunerationAmount = remunerationAmount;
             employmentContract.remunerationAmountPer = remunerationAmountPer;
-            employmentContract.employee = employeeObj;
+            employmentContract.employeeId = employeeObj.id;
             await transactionalEntityManager.save(employmentContract);
             let { bankName, bankAccountNo, bankBsb } = employee;
             let bankAccount = new BankAccount();
             bankAccount.accountNo = bankAccountNo;
             bankAccount.bsb = bankBsb;
             bankAccount.name = bankName;
-            bankAccount.employee = employeeObj;
+            bankAccount.employeeId = employeeObj.id;
             await transactionalEntityManager.save(bankAccount);
             return employeeObj.id;
         });
@@ -197,7 +196,7 @@ export class EmployeeRepository extends Repository<Employee> {
             employmentContract.noOfHoursPer = noOfHoursPer;
             employmentContract.remunerationAmount = remunerationAmount;
             employmentContract.remunerationAmountPer = remunerationAmountPer;
-            employmentContract.employee = employeeObj;
+            employmentContract.employeeId = employeeObj.id;
             await transactionalEntityManager.save(employmentContract);
             let { bankName, bankAccountNo, bankBsb } = employee;
             let bankAccount = await transactionalEntityManager.getRepository(BankAccount).findOne({
@@ -214,7 +213,7 @@ export class EmployeeRepository extends Repository<Employee> {
             bankAccount.accountNo = bankAccountNo;
             bankAccount.bsb = bankBsb;
             bankAccount.name = bankName;
-            bankAccount.employee = employeeObj;
+            bankAccount.employeeId = employeeObj.id;
             await transactionalEntityManager.save(bankAccount);
             return employeeObj.id;
         });

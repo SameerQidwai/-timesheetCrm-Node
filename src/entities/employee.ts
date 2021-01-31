@@ -8,6 +8,9 @@ import { BankAccount } from './bankAccount';
 @Entity("employees")
 export class Employee extends Base {
 
+   @Column({ name: "contact_person_organization_id" })
+   contactPersonOrganizationId: number;
+
    @OneToOne(() => ContactPersonOrganization, contactPersonOrganization => contactPersonOrganization.employee)
    @JoinColumn({ name: "contact_person_organization_id" })
    contactPersonOrganization: ContactPersonOrganization;

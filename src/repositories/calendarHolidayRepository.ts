@@ -48,7 +48,7 @@ export class CalendarHolidayRepository extends Repository<CalendarHoliday> {
         if(!holidayType) {
             throw new Error("Holiday Type not found");
         }
-        calendarHolidayObj.holidayType = holidayType;
+        calendarHolidayObj.holidayTypeId = holidayType.id;
         calendarHolidayObj.date = new Date(calendarHoliday.date);
         await this.update(id, calendarHolidayObj);
         return this.findOne(id, { relations: ["holidayType"] });

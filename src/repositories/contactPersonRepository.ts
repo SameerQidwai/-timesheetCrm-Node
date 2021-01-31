@@ -28,7 +28,7 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
                 if (!state) {
                     throw new Error("State not found");
                 }
-                contactPersonObj.state = state;
+                contactPersonObj.stateId = state.id;
             }
             
             let standardSkillStandardLevelList = await transactionalEntityManager.findByIds(StandardSkillStandardLevel, contactPerson.standardSkillStandardLevelIds);
@@ -46,8 +46,8 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
                 if(!organization) {
                     throw new Error("Organization not found!");
                 }
-                contactPersonOrganizationObj.organization = organization;
-                contactPersonOrganizationObj.contactPerson = contactPersonObj;
+                contactPersonOrganizationObj.organizationId = organization.id;
+                contactPersonOrganizationObj.contactPersonId = contactPersonObj.id;
                 return contactPersonOrganizationObj;
             });
             let contactPersonOrganizations = await Promise.all(contactPersonOrganizationPromises);
@@ -90,16 +90,18 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
 
             let contactPersonOrganizationPromises = contactPerson.contactPersonOrganizations.map(async contactPersonOrganization => {
                 let contactPersonOrganizationObj: ContactPersonOrganization | undefined;
-                contactPersonOrganizationObj = await transactionalEntityManager
-                .findOne(ContactPersonOrganization, {
+                let contactPersonOrganizationObjFound = await transactionalEntityManager
+                .find(ContactPersonOrganization, {
                     relations: ["organization", "contactPerson"],
                     where: {
                         id: contactPersonOrganization.id
                     }
                 });
-                if (!contactPersonOrganizationObj) {
+                if (!contactPersonOrganizationObjFound.length) {
                     contactPersonOrganizationObj = new ContactPersonOrganization();
-                    contactPersonOrganizationObj.contactPerson = contactPersonObj;
+                    // contactPersonOrganizationObj.contactPerson = contactPersonObj;
+                } else {
+                    contactPersonOrganizationObj = contactPersonOrganizationObjFound[0];
                 }
                 contactPersonOrganizationObj.startDate = new Date(contactPersonOrganization.startDate);
                 if(contactPersonOrganization.endDate)
@@ -109,8 +111,8 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
                 if(!organization) {
                     throw new Error("Organization not found!");
                 }
-                contactPersonOrganizationObj.organization = organization;
-                contactPersonOrganizationObj.contactPerson = contactPersonObj;
+                contactPersonOrganizationObj.organizationId = organization.id;
+                contactPersonOrganizationObj.contactPersonId = contactPersonObj.id;
                 return contactPersonOrganizationObj;
             });
             

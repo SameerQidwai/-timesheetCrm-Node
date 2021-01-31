@@ -7,13 +7,11 @@ import { TimeOffType } from './timeOffType';
 @Entity("time_off_policy_time_off_types") 
 export class TimeOffPolicyTimeOffType extends Base { 
 
-   @ManyToOne(() => TimeOffPolicy)
-   @JoinColumn({ name: "time_off_policy_id" })
-    timeOffPolicy: TimeOffPolicy;
+   @Column({ name: "time_off_policy_id", nullable: true }) 
+   timeOffPolicyId: number;
 
-   @ManyToOne(() => TimeOffType)
-   @JoinColumn({ name: "time_off_type_id" })
-   timeOffType: TimeOffType;
+   @Column({ name: "time_off_type_id", nullable: true }) 
+   timeOffTypeId: number;
 
    @Column({ type: "int", name: "hours" }) 
    hours: number;
@@ -25,7 +23,14 @@ export class TimeOffPolicyTimeOffType extends Base {
    }) 
    increaseEvery: IncreaseEvery;
 
-   @Column("int") 
+   @Column("int")
    threshold: number;
-   
+
+   @ManyToOne(() => TimeOffPolicy)
+   @JoinColumn({ name: "time_off_policy_id" })
+   timeOffPolicy: TimeOffPolicy;
+
+   @ManyToOne(() => TimeOffType)
+   @JoinColumn({ name: "time_off_type_id" })
+   timeOffType: TimeOffType;
 }

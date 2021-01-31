@@ -16,6 +16,12 @@ export class PanelSkillStandardLevel extends Base {
    @Column({ type: 'decimal', precision: 10, scale: 3, default: 0, name: "long_term_ceil" })
    longTermCeil: number;
 
+   @Column({ name: "panel_skill_id", nullable: true })
+   panelSkillId: number;
+
+   @Column({ name: "standard_level_id", nullable: true })
+   standardLevelId: number;
+
    @ManyToOne(() => PanelSkill)
    @JoinColumn({ name: "panel_skill_id" })
     panelSkill: PanelSkill;

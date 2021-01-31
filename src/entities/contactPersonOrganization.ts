@@ -16,6 +16,12 @@ export class ContactPersonOrganization extends Base {
    @Column({ name: "designation" }) 
    designation: string;
 
+   @Column({ name: "organization_id", nullable: true })
+   organizationId: number;
+
+   @Column({ name: "contact_person_id", nullable: true })
+   contactPersonId: number;
+   
    @ManyToOne(() => Organization)
    @JoinColumn({ name: "organization_id" })
    organization: Organization;

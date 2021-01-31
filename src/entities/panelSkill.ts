@@ -10,6 +10,12 @@ export class PanelSkill extends Base {
   @Column({ name: "label" })
   label: string;
 
+  @Column({ name: "standard_skill_id", nullable: true })
+  standardSkillId: number;
+
+  @Column({ name: "panel_id", nullable: true })
+  panelId: number;
+
   @ManyToOne(() => StandardSkill, standardSkill => standardSkill.panelSkills)
   @JoinColumn({ name: "standard_skill_id" })
   standardSkill: StandardSkill;
@@ -22,6 +28,5 @@ export class PanelSkill extends Base {
     cascade: true 
   })
   panelSkillStandardLevels: PanelSkillStandardLevel[];
-
-
+  
 }

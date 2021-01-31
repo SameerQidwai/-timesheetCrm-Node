@@ -33,6 +33,9 @@ export class ContactPerson extends Base {
    @Column({ name: "address", nullable: true })
    address: String;
 
+   @Column({ name: "state_id", nullable: true})
+   stateId: number;
+   
    @ManyToOne(() => State)
    @JoinColumn({ name: "state_id" })
    state: State;

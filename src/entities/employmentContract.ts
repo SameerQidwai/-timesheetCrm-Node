@@ -52,6 +52,10 @@ export class EmploymentContract extends Base {
    })
    remunerationAmountPer: Frequency;
 
+   
+   @Column({ name: "employee_id", nullable: true }) 
+   employeeId: number;
+
    @ManyToOne(() => Employee, employee => employee.employmentContracts)
    @JoinColumn({ name: "employee_id" })
    employee: Employee;

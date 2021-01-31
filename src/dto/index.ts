@@ -135,7 +135,7 @@ export interface StateDTO extends Base {
 }
 
 export interface EmployeeDTO extends Base {
-    contactPersonOrganizationId: number | null;
+    contactPersonId: number | null;
     firstName: string;
     lastName: string;
     gender: Gender;

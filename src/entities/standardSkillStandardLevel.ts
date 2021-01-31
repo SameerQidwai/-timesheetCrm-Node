@@ -7,6 +7,12 @@ import { ContactPerson } from './contactPerson';
 @Entity("standard_skill_standard_levels") 
 export class StandardSkillStandardLevel extends Base { 
 
+   @Column({ name: "standard_skill_id", nullable: true})
+   standardSkillId: number;
+
+   @Column({ name: "standard_level_id", nullable: true})
+   standardLevelId: number;
+
    @ManyToOne(() => StandardSkill)
    @JoinColumn({ name: "standard_skill_id" })
     standardSkill: StandardSkill;

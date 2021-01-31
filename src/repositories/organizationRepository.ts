@@ -72,10 +72,17 @@ export class OrganizationRepository extends Repository<Organization> {
             obj.plInsuranceExpiry = new Date(organization.plInsuranceExpiry);
         if (organization.wcInsuranceExpiry)
             obj.wcInsuranceExpiry = new Date(organization.wcInsuranceExpiry);
-        if (organization.parentOrganizationId)
-            obj.parentOrganization = await this.findOne(organization.parentOrganizationId);
-        if (organization.delegateContactPersonOrganizationId)
-            obj.delegateContactPersonOrganization = await this.manager.findOne(ContactPersonOrganization, organization.delegateContactPersonOrganizationId);
+        if (organization.parentOrganizationId) {
+            let parentOrganization = await this.findOne(organization.parentOrganizationId);
+            if(parentOrganization)
+                obj.parentOrganizationId = parentOrganization.id;
+        }
+        if (organization.delegateContactPersonOrganizationId) {
+            let delegateContactPersonOrganization = await this.manager.findOne(ContactPersonOrganization, organization.delegateContactPersonOrganizationId);
+            if(delegateContactPersonOrganization)
+                obj.delegateContactPersonOrganizationId = delegateContactPersonOrganization.id;
+                // obj.delegateContactPersonOrganization = delegateContactPersonOrganization;
+        }
 
         await this.update(id, obj);
         return this.findOneCustom(id);
