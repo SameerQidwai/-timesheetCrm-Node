@@ -53,11 +53,11 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
     }
 
     async updateAndReturn(id: number, employmentContract: EmploymentContractDTO): Promise<any|undefined> {
-        let employmentContractObj = await this.findOne(id, { relations: ["employee"]});
-        let employee = await this.manager.findOne(Employee, employmentContractObj?.employee.id);
+        let employmentContractObj = await this.findOne(id);
         if(!employmentContractObj) {
             throw new Error("Contract not found");
         }
+        let employee = await this.manager.findOne(Employee, employmentContractObj?.employeeId);
         if(!employee) {
             throw new Error("Employee not found");
         }
@@ -72,7 +72,7 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
             throw Error("overlapping contract found");
         }
 
-        employmentContractObj.employee = employee;
+        employmentContractObj.employeeId = employee.id;
         employmentContractObj.membershipAccountNo = employmentContract.membershipAccountNo; 
         employmentContractObj.payslipEmail = employmentContract.payslipEmail; 
         employmentContractObj.payFrequency = employmentContract.payFrequency; 
