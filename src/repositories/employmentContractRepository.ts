@@ -14,7 +14,9 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
 
         // check any overlapping contract
         let { count } = await this.createQueryBuilder("employmentContract")
-        .select("Count(*)", "count").where("employee_id = " + employmentContract.employeeId).andWhere("(end_date is NULL OR FROM_UNIXTIME(" + employmentContract.startDate + "/1000) <= end_date) AND (" + (employmentContract.endDate || "NULL" ) + " is NULL OR start_date <= FROM_UNIXTIME(" + employmentContract.endDate+"/1000))" ).getRawOne();
+        .select("Count(*)", "count")
+        .where("employee_id = " + employmentContract.employeeId)
+        .andWhere("(end_date is NULL OR FROM_UNIXTIME(" + employmentContract.startDate + "/1000) <= end_date) AND (" + (employmentContract.endDate || "NULL" ) + " is NULL OR start_date <= FROM_UNIXTIME(" + employmentContract.endDate+"/1000))" ).getRawOne();
         
         console.log("count: ", count);
         

@@ -51,7 +51,6 @@ export class EmployeeRepository extends Repository<Employee> {
             employeeObj.nextOfKinName = employee.nextOfKinName;
             employeeObj.nextOfKinPhoneNumber = employee.nextOfKinPhoneNumber;
             employeeObj.nextOfKinEmail = employee.nextOfKinEmail;
-            employeeObj.nextOfKinDateOfBirth = new Date(employee.nextOfKinDateOfBirth);
             employeeObj.nextOfKinRelation = employee.nextOfKinRelation;
             employeeObj.nextOfKinGender = employee.nextOfKinGender;
             employeeObj.tfn = employee.tfn;
@@ -101,7 +100,11 @@ export class EmployeeRepository extends Repository<Employee> {
     }
 
     async getAllActive(): Promise<any[]> {
-        return this.find({ relations: ["contactPersonOrganization", "contactPersonOrganization.contactPerson", "contactPersonOrganization.organization", "bankAccounts", "employmentContracts"] });
+        let result = await this.find({
+            relations: ["contactPersonOrganization", "contactPersonOrganization.contactPerson", "contactPersonOrganization.organization", "bankAccounts", "employmentContracts"]
+        });
+
+        return result.filter(x => x.contactPersonOrganization.organizationId == 1);
     }
 
     async getAllContactPersons(): Promise<any[]> {
@@ -153,7 +156,6 @@ export class EmployeeRepository extends Repository<Employee> {
             employeeObj.nextOfKinName = employee.nextOfKinName;
             employeeObj.nextOfKinPhoneNumber = employee.nextOfKinPhoneNumber;
             employeeObj.nextOfKinEmail = employee.nextOfKinEmail;
-            employeeObj.nextOfKinDateOfBirth = new Date(employee.nextOfKinDateOfBirth);
             employeeObj.nextOfKinRelation = employee.nextOfKinRelation;
             employeeObj.nextOfKinGender = employee.nextOfKinGender;
             employeeObj.tfn = employee.tfn;
@@ -178,7 +180,7 @@ export class EmployeeRepository extends Repository<Employee> {
             let employmentContract = await transactionalEntityManager.getRepository(EmploymentContract)
             .createQueryBuilder("employmentContract").where(qb => {
                 return "start_date = " + qb.subQuery().select("Max(start_date)").from("employment_contracts", 'e').where("employee_id = " + employeeObj.id).getSql();
-            }).getOne();
+            }).andWhere("employee_id = " + employeeObj.id).getOne();
             console.log("employmentContract: ", employmentContract);
             
             if(!employmentContract) {

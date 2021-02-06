@@ -147,7 +147,6 @@ export interface EmployeeDTO extends Base {
     nextOfKinName: string;
     nextOfKinPhoneNumber: string;
     nextOfKinEmail: string;
-    nextOfKinDateOfBirth: Date;
     nextOfKinRelation: string;
     nextOfKinGender: Gender;
     tfn: string;
@@ -182,4 +181,26 @@ export interface BankAccountDTO extends Base {
     bsb: string;
     employeeId: number | null;
     organizationId: number | null;
+}
+
+export interface SubContractorDTO extends Base {
+    organizationId: number | null;
+    contactPersonId: number | null;
+    firstName: string;
+    lastName: string;
+    gender: Gender;
+    dateOfBirth: Date | null;
+    phoneNumber: string;
+    email: string;
+    address: string;
+    stateId: number | null;
+    latestContract: ContractDTO;
+}
+
+export interface ContractDTO extends Base {
+    subContractorId?: number;
+    startDate: Date;
+    endDate: Date | null;
+    remunerationAmount: number;
+    remunerationAmountPer: Frequency; 
 }

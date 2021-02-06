@@ -15,25 +15,23 @@ export class Employee extends Base {
    @JoinColumn({ name: "contact_person_organization_id" })
    contactPersonOrganization: ContactPersonOrganization;
 
-   @Column({ name: "next_of_kin_name" })
+   @Column({ name: "next_of_kin_name", nullable: true })
    nextOfKinName: String;
 
-   @Column({ name: "next_of_kin_phone_number" })
+   @Column({ name: "next_of_kin_phone_number", nullable: true })
    nextOfKinPhoneNumber: String;
-
-   @Column({ name: "next_of_kin_date_of_birth" })
-   nextOfKinDateOfBirth: Date;
 
    @Column({ name: "next_of_kin_email", nullable: true }) 
    nextOfKinEmail: string;
 
-   @Column({ name: "next_of_kin_relation" }) 
+   @Column({ name: "next_of_kin_relation", nullable: true }) 
    nextOfKinRelation: string;
    
    @Column({
       type: "enum",
       enum: Gender,
-      name: "next_of_kin_gender"
+      name: "next_of_kin_gender", 
+      nullable: true
    })
    nextOfKinGender: Gender;
 
