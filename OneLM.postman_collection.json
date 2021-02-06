@@ -699,7 +699,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"firstName\": \"Asad updated\",\r\n    \"lastName\": \"Khan\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"kashif@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 2,\r\n    \"standardSkillStandardLevelIds\": [3,5],\r\n    \"contactPersonOrganizations\": [{\r\n        \"id\": 2,\r\n        \"startDate\": 1608512778651,\r\n        \"designation\": \"Senior Eng updated\",\r\n        \"organizationId\": 1\r\n    },\r\n    {\r\n        \"startDate\": 1608512778651,\r\n        \"designation\": \"Account Manager new\",\r\n        \"organizationId\": 2\r\n    }]\r\n}",
+							"raw": "{\r\n    \"firstName\": \"Asad updated aga\",\r\n    \"lastName\": \"Khan\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"kashif@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 2,\r\n    \"standardSkillStandardLevelIds\": [3,5],\r\n    \"contactPersonOrganizations\": [{\r\n        \"startDate\": 1608512778651,\r\n        \"designation\": \"Senior Eng updated\",\r\n        \"organizationId\": 1\r\n    },\r\n    {\r\n        \"startDate\": 1608512778651,\r\n        \"designation\": \"Account Manager new\",\r\n        \"organizationId\": 2\r\n    }]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -707,15 +707,11 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3301/api/v1/contactpersons/1",
-							"protocol": "http",
+							"raw": "{{Endpoint}}/contactpersons/1",
 							"host": [
-								"localhost"
+								"{{Endpoint}}"
 							],
-							"port": "3301",
 							"path": [
-								"api",
-								"v1",
 								"contactpersons",
 								"1"
 							]
@@ -889,7 +885,7 @@
 			]
 		},
 		{
-			"name": "Employment Contract",
+			"name": "SubContractors",
 			"item": [
 				{
 					"name": "List",
@@ -897,7 +893,77 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3301/api/v1/employment-contracts?employeeId=4",
+							"raw": "{{Endpoint}}/sub-contractors",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"sub-contractors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"contactPersonId\": 1,\r\n    \"organizationId\": 2,\r\n    \"firstName\": \"Asad updated as employee\",\r\n    \"lastName\": \"Khan\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"asadupdated@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 2,\r\n    \"latestContract\": {\r\n    \"startDate\": 1608512778351,\r\n    \"endDate\": null,\r\n    \"remunerationAmount\": 1201,\r\n    \"remunerationAmountPer\": 1\r\n    }\r\n    \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/sub-contractors",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"sub-contractors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"Asad updated as employee again\",\r\n    \"lastName\": \"Khan\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"asadupdated@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"latestContract\": {\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"remunerationAmount\": 1205,\r\n        \"remunerationAmountPer\": 1\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/sub-contractors/3",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"sub-contractors",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Contact Persons",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3301/api/v1/employees/get/contact-persons",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -906,12 +972,60 @@
 							"path": [
 								"api",
 								"v1",
-								"employment-contracts"
+								"employees",
+								"get",
+								"contact-persons"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "SubContractor Contract",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3301/api/v1/sub-contractors-contracts?subContractorId=3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3301",
+							"path": [
+								"api",
+								"v1",
+								"sub-contractors-contracts"
 							],
 							"query": [
 								{
-									"key": "employeeId",
-									"value": "4"
+									"key": "subContractorId",
+									"value": "3"
 								}
 							]
 						}
@@ -925,7 +1039,141 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"employeeId\": 4,\r\n    \"payslipEmail\": \"paynew@live.com\",\r\n    \"membershipAccountNo\": \"12345\",\r\n    \"payFrequency\": 1,\r\n    \"startDate\": 1608512778351,\r\n    \"endDate\": null,\r\n    \"type\": 1,\r\n    \"noOfHours\": 4,\r\n    \"noOfHoursPer\": 1,\r\n    \"remunerationAmount\": 1200,\r\n    \"remunerationAmountPer\": 1\r\n}",
+							"raw": "{\r\n    \"subContractorId\": \"3\",\r\n    \"startDate\": 1608512778351,\r\n    \"endDate\": null,\r\n    \"remunerationAmount\": 1200,\r\n    \"remunerationAmountPer\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3301/api/v1/sub-contractors-contracts",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3301",
+							"path": [
+								"api",
+								"v1",
+								"sub-contractors-contracts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"startDate\": 1608512778351,\r\n    \"endDate\": null,\r\n    \"remunerationAmount\": 1100,\r\n    \"remunerationAmountPer\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3301/api/v1/sub-contractors-contracts/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3301",
+							"path": [
+								"api",
+								"v1",
+								"sub-contractors-contracts",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Contact Persons",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/v1/employees",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"employees"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Employment Contract",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3301/api/v1/employment-contracts?employeeId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3301",
+							"path": [
+								"api",
+								"v1",
+								"employment-contracts"
+							],
+							"query": [
+								{
+									"key": "employeeId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employeeId\": \"1\",\r\n    \"payslipEmail\": \"paynew@live.com\",\r\n    \"membershipAccountNo\": \"12345\",\r\n    \"payFrequency\": 1,\r\n    \"startDate\": 1608512778351,\r\n    \"endDate\": null,\r\n    \"type\": 1,\r\n    \"noOfHours\": 4,\r\n    \"noOfHoursPer\": 1,\r\n    \"remunerationAmount\": 1200,\r\n    \"remunerationAmountPer\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -955,7 +1203,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"payslipEmail\": \"paynew@live.com\",\r\n    \"membershipAccountNo\": \"12345\",\r\n    \"payFrequency\": 1,\r\n    \"startDate\": 1608512778351,\r\n    \"endDate\": null,\r\n    \"type\": 1,\r\n    \"noOfHours\": 4,\r\n    \"noOfHoursPer\": 1,\r\n    \"remunerationAmount\": 1200,\r\n    \"remunerationAmountPer\": 1\r\n}",
+							"raw": "{\r\n    \"payslipEmail\": \"paynewupdated@live.com\",\r\n    \"membershipAccountNo\": \"12345\",\r\n    \"payFrequency\": 1,\r\n    \"startDate\": 1608512778351,\r\n    \"endDate\": null,\r\n    \"type\": 1,\r\n    \"noOfHours\": 4,\r\n    \"noOfHoursPer\": 1,\r\n    \"remunerationAmount\": 1200,\r\n    \"remunerationAmountPer\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -963,7 +1211,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3301/api/v1/employment-contracts/6",
+							"raw": "http://localhost:3301/api/v1/employment-contracts/3",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -973,7 +1221,7 @@
 								"api",
 								"v1",
 								"employment-contracts",
-								"6"
+								"3"
 							]
 						}
 					},
@@ -1049,7 +1297,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"OneLM\",\r\n    \"phoneNumber\": \"+123456789\",\r\n    \"email\": \"m_23qwet@live.com\",\r\n    \"address\": \"test address that is never to goiing to exist any way\",\r\n    \"website\": \"https://test.com\",\r\n    \"abn\": 123456,\r\n    \"textCode\": 123456,\r\n    \"expectedBusinessAmount\": 400000,\r\n    \"invoiceEmail\": \"test@test.com\",\r\n    \"piInsurer\": \"abd\",\r\n    \"plInsurer\": \"1qw\",\r\n    \"wcInsurer\": \"asdf\",\r\n    \"piPolicyNumber\": 123456,\r\n    \"plPolicyNumber\": 123456,\r\n    \"wcPolicyNumber\": 123456,\r\n    \"piSumInsured\": 1000,\r\n    \"plSumInsured\": 1000,\r\n    \"wcSumInsured\": 1000,\r\n    \"piInsuranceExpiry\": null,\r\n    \"plInsuranceExpiry\": null,\r\n    \"wcInsuranceExpiry\": null,\r\n    \"parentOrganizationId\": null,\r\n    \"delegateContactPersonOrganizationId\": null\r\n}",
+							"raw": "{\r\n    \"name\": \"Sudoware\",\r\n    \"phoneNumber\": \"+176456789\",\r\n    \"email\": \"mqwet@live.com\",\r\n    \"address\": \"test address that is never to goiing to exist any way\",\r\n    \"website\": \"https://test.com\",\r\n    \"abn\": 123456,\r\n    \"textCode\": 123456,\r\n    \"expectedBusinessAmount\": 400000,\r\n    \"invoiceEmail\": \"test@test.com\",\r\n    \"piInsurer\": \"abd\",\r\n    \"plInsurer\": \"1qw\",\r\n    \"wcInsurer\": \"asdf\",\r\n    \"piPolicyNumber\": 123456,\r\n    \"plPolicyNumber\": 123456,\r\n    \"wcPolicyNumber\": 123456,\r\n    \"piSumInsured\": 1000,\r\n    \"plSumInsured\": 1000,\r\n    \"wcSumInsured\": 1000,\r\n    \"piInsuranceExpiry\": null,\r\n    \"plInsuranceExpiry\": null,\r\n    \"wcInsuranceExpiry\": null,\r\n    \"parentOrganizationId\": null,\r\n    \"delegateContactPersonOrganizationId\": null\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
