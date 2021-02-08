@@ -199,8 +199,10 @@ export interface SubContractorDTO extends Base {
 
 export interface ContractDTO extends Base {
     subContractorId?: number;
+    payslipEmail: string;
     startDate: Date;
     endDate: Date | null;
+    noOfHours: number;
     remunerationAmount: number;
     remunerationAmountPer: Frequency; 
 }

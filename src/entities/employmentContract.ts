@@ -6,10 +6,10 @@ import { Employee } from './employee';
 @Entity("employment_contracts")
 export class EmploymentContract extends Base {
 
-   @Column({ name: "payslip_email" })
+   @Column({ name: "payslip_email", nullable: true })
    payslipEmail: String;
 
-   @Column({ name: "membership_account_no" })
+   @Column({ name: "membership_account_no", nullable: true  })
    membershipAccountNo: String;
 
    @Column({
@@ -32,7 +32,7 @@ export class EmploymentContract extends Base {
    })
    type: EmploymentType;
 
-   @Column({ name: "no_of_hours" }) 
+   @Column({ name: "no_of_hours", nullable: true }) 
    noOfHours: number;
 
    @Column({
