@@ -72,8 +72,8 @@ export class SubContractorRepository extends Repository<Employee> {
             if(endDate) {
                 employmentContract.endDate = new Date(endDate);
             }
-            employmentContract.payslipEmail = payslipEmail;
-            employmentContract.noOfHours = noOfHours;
+            // employmentContract.payslipEmail = payslipEmail;
+            // employmentContract.noOfHours = noOfHours;
             employmentContract.remunerationAmount = remunerationAmount;
             employmentContract.remunerationAmountPer = remunerationAmountPer;
             employmentContract.employeeId = employeeObj.id;
@@ -162,8 +162,8 @@ export class SubContractorRepository extends Repository<Employee> {
             if(endDate) {
                 subContractorContract.endDate = new Date(endDate);
             }
-            subContractorContract.payslipEmail = payslipEmail;
-            subContractorContract.noOfHours = noOfHours;
+            // subContractorContract.payslipEmail = payslipEmail;
+            // subContractorContract.noOfHours = noOfHours;
             subContractorContract.remunerationAmount = remunerationAmount;
             subContractorContract.remunerationAmountPer = remunerationAmountPer;
             subContractorContract.employeeId = subContractorObj.id;
