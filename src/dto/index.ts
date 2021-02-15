@@ -225,3 +225,12 @@ export interface OpportunityDTO extends Base {
     getPercentage: number;
     panelId: number;
 }
+
+export interface OpportunityResourceDTO extends Base {
+    panelSkillId: number;
+    panelSkillStandardLevelId: number;
+    billableHours: number;
+    buyingRate: number;
+    sellingRate: number;
+    userId: number | null;
+}

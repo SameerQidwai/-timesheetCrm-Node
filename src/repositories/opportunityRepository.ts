@@ -1,8 +1,9 @@
-import { OpportunityDTO } from "../dto";
+import { OpportunityDTO, OpportunityResourceDTO } from "../dto";
 import { EntityRepository, Repository } from "typeorm";
 import { Organization } from "./../entities/organization";
 import { Opportunity } from "./../entities/opportunity";
 import { Panel } from "./../entities/panel";
+import { OpportunityResource } from "./../entities/opportunityResource";
 
 @EntityRepository(Opportunity)
 export class OpportunityRepository extends Repository<Opportunity> {
@@ -120,5 +121,108 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
     async deleteCustom(id: number): Promise<any|undefined> {
         return this.softDelete(id);
+    }
+
+    async getAllActiveResources(opportunityId: number) {
+        if (!opportunityId) {
+            throw new Error("Opportunity not found!");
+        }
+        let opportunity = await this.findOne(opportunityId, {
+            relations: ["opportunityResources"]
+        });
+        if (!opportunity) {
+            throw new Error("Opportunity not found!");
+        }
+        return opportunity.opportunityResources;
+    }
+
+    async addResource(opportunityId: number, opportunityResourceDTO: OpportunityResourceDTO) {
+        if (!opportunityId) {
+            throw new Error("Opportunity not found!");
+        }
+        let opportunity = await this.findOne(opportunityId, {
+            relations: ["opportunityResources"]
+        });
+        if (!opportunity) {
+            throw new Error("Opportunity not found!");
+        }
+
+        let resource = new OpportunityResource();
+        resource.panelSkillId = opportunityResourceDTO.panelSkillId;
+        resource.panelSkillStandardLevelId = opportunityResourceDTO.panelSkillStandardLevelId;
+        resource.billableHours = opportunityResourceDTO.billableHours;
+        resource.opportunityId = opportunityId;
+        resource.sellingRate = opportunityResourceDTO.sellingRate;
+        resource.buyingRate = opportunityResourceDTO.buyingRate;
+        if (opportunityResourceDTO.userId) {
+            let resourceExists = opportunity.opportunityResources.filter(x => x.userId == opportunityResourceDTO.userId);
+            if(resourceExists.length) {
+                throw new Error("Cannot add resouce for same user again");
+            }
+        }
+        resource.userId = opportunityResourceDTO.userId;
+        return this.manager.save(resource);
+    }
+
+    async updateResource(opportunityId: number, id: number, opportunityResourceDTO: OpportunityResourceDTO) {
+        if (!opportunityId) {
+            throw new Error("Opportunity not found!");
+        }
+        let opportunity = await this.findOne(opportunityId, {
+            relations: ["opportunityResources"]
+        });
+        if (!opportunity) {
+            throw new Error("Opportunity not found!");
+        }
+
+        let resource = opportunity.opportunityResources.filter(x => x.id == id)[0];
+        if(!resource) {
+            throw new Error("Resource not found!");
+        }
+        resource.panelSkillId = opportunityResourceDTO.panelSkillId;
+        resource.panelSkillStandardLevelId = opportunityResourceDTO.panelSkillStandardLevelId;
+        resource.billableHours = opportunityResourceDTO.billableHours;
+        resource.opportunityId = opportunityId;
+        resource.sellingRate = opportunityResourceDTO.sellingRate;
+        resource.buyingRate = opportunityResourceDTO.buyingRate;
+        if (opportunityResourceDTO.userId) {
+            let resourceExists = opportunity.opportunityResources.filter(x => x.id != resource.id && x.userId == opportunityResourceDTO.userId);
+            if(resourceExists.length) {
+                throw new Error("Cannot add resouce for same user again");
+            }
+        }
+        resource.userId = opportunityResourceDTO.userId;
+        return this.manager.save(resource);
+    }
+
+    async findOneCustomResource(opportunityId: number, id: number): Promise<any|undefined> {
+        if (!opportunityId) {
+            throw new Error("Opportunity not found!");
+        }
+        let opportunity = await this.findOne(opportunityId, {
+            relations: ["opportunityResources"]
+        });
+        if (!opportunity) {
+            throw new Error("Opportunity not found!");
+        }
+        let resource = opportunity.opportunityResources.filter(x => x.id === id);
+        if(!resource) {
+            throw new Error("Resource not found");
+        }
+        return resource;
+    }
+
+    async deleteCustomResource(opportunityId: number, id: number): Promise<any|undefined> {
+        if (!opportunityId) {
+            throw new Error("Opportunity not found!");
+        }
+        let opportunity = await this.findOne(opportunityId, {
+            relations: ["opportunityResources"]
+        });
+        if (!opportunity) {
+            throw new Error("Opportunity not found!");
+        }
+        opportunity.opportunityResources = opportunity.opportunityResources.filter(x => x.id !== id);
+        return await this.manager.save(opportunity);
     }
 }

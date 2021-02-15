@@ -6,6 +6,7 @@ import { State } from './state';
 import { ContactPersonOrganization } from './contactPersonOrganization';
 import { Organization } from './organization';
 import { Panel } from './panel';
+import { OpportunityResource } from './opportunityResource';
 
 @Entity("opportunities")
 export class Opportunity extends Base {
@@ -70,6 +71,10 @@ export class Opportunity extends Base {
    @ManyToOne(() => Panel)
    @JoinColumn({ name: "panel_id" })
    panel: Panel;
+
+   @OneToMany(() => OpportunityResource, opportunityResource => opportunityResource.opportunity)
+   @JoinColumn({ name: "opportunity_resource_id" })
+   opportunityResources: OpportunityResource[];
 
    @Column({ name: "project_id", nullable: true})
    projectId: number;

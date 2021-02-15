@@ -1003,6 +1003,130 @@
 			]
 		},
 		{
+			"name": "Opportunity Resource",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/opportunities/1/resources",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities",
+								"1",
+								"resources"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"panelSkillId\": 1,\r\n    \"panelSkillStandardLevelId\": 1,\r\n    \"billableHours\": 220,\r\n    \"buyingRate\": 10,\r\n    \"sellingRate\": 12,\r\n    \"userId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/opportunities/1/resources",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities",
+								"1",
+								"resources"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"panelSkillId\": 1,\r\n    \"panelSkillStandardLevelId\": 1,\r\n    \"billableHours\": 240,\r\n    \"buyingRate\": 10,\r\n    \"sellingRate\": 12,\r\n    \"userId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/opportunities/1/resources/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities",
+								"1",
+								"resources",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Contact Persons",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3301/api/v1/employees/get/contact-persons",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3301",
+							"path": [
+								"api",
+								"v1",
+								"employees",
+								"get",
+								"contact-persons"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
 			"name": "SubContractors",
 			"item": [
 				{

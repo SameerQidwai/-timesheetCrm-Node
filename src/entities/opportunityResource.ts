@@ -11,7 +11,7 @@ import { PanelSkillStandardLevel } from './panelSkillStandardLevel';
 import { Opportunity } from './opportunity';
 import { Employee } from './employee';
 
-@Entity("opportunity_Resources")
+@Entity("opportunity_resources")
 export class OpportunityResource extends Base {
 
    @Column({ name: "panel_skill_id" })
@@ -41,18 +41,14 @@ export class OpportunityResource extends Base {
    @Column({ type: 'decimal', precision: 10, scale: 3, name: "selling_rate", nullable: true })
    sellingRate: number;
 
+   @Column({ type: 'decimal', precision: 10, scale: 3, name: "buying_rate", nullable: true })
+   buyingRate: number;
+
    @Column({ name: "user_id", nullable: true})
-   userId: number;
+   userId: number | null;
    
    @ManyToOne(() => Employee)
    @JoinColumn({ name: "user_id" })
    user: Employee;
-
-   @Column({ name: "panel_id", nullable: true})
-   panelId: number;
-   
-   @ManyToOne(() => Panel)
-   @JoinColumn({ name: "panel_id" })
-   panel: Panel;
 
 }
