@@ -885,6 +885,124 @@
 			]
 		},
 		{
+			"name": "Opportunities",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/opportunities",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"organizationId\": 2,\r\n    \"title\": \"Ecommerce website\",\r\n    \"value\": 20000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"tenderValue\": 25000,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/opportunities",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"organizationId\": 2,\r\n    \"title\": \"Ecommerce website updated\",\r\n    \"value\": 20000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"tenderValue\": 25000,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/opportunities/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Contact Persons",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3301/api/v1/employees/get/contact-persons",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3301",
+							"path": [
+								"api",
+								"v1",
+								"employees",
+								"get",
+								"contact-persons"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
 			"name": "SubContractors",
 			"item": [
 				{

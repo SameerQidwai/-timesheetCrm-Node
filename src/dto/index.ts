@@ -1,4 +1,4 @@
-import { EmploymentType, Gender, IncreaseEvery, Frequency } from "./../constants/constants";
+import { EmploymentType, Gender, IncreaseEvery, Frequency, ProjectType } from "./../constants/constants";
 
 export interface Base {
     id?: number;
@@ -205,4 +205,23 @@ export interface ContractDTO extends Base {
     noOfHours: number;
     remunerationAmount: number;
     remunerationAmountPer: Frequency; 
+}
+
+export interface OpportunityDTO extends Base {
+    organizationId: number;
+    title: string;
+    value: number;
+    type: ProjectType;
+    startDate: Date | null;
+    endDate: Date | null;
+    bidDate: Date | null;
+    entryDate: Date | null;
+    qualifiedOps: boolean;
+    tender: string;
+    tenderNumber: string;
+    tenderValue: number;
+    cmPercentage: number;
+    goPercentage: number;
+    getPercentage: number;
+    panelId: number;
 }

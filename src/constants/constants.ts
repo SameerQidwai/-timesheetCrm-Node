@@ -22,3 +22,8 @@ export enum EmploymentType {
     PART_TIME = 2,
     FULL_TIME = 3
 }
+
+export enum ProjectType {
+    MILESTONE_BASE = 1,
+    TIME_BASE = 2
+}
