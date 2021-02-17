@@ -128,7 +128,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
             throw new Error("Opportunity not found!");
         }
         let opportunity = await this.findOne(opportunityId, {
-            relations: ["opportunityResources"]
+            relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel", "opportunityResources.user"]
         });
         if (!opportunity) {
             throw new Error("Opportunity not found!");
@@ -200,7 +200,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
             throw new Error("Opportunity not found!");
         }
         let opportunity = await this.findOne(opportunityId, {
-            relations: ["opportunityResources"]
+            relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel", "opportunityResources.user"]
         });
         if (!opportunity) {
             throw new Error("Opportunity not found!");
