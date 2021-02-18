@@ -4,6 +4,7 @@ import { Base } from './common/base';
 import { StandardSkillStandardLevel } from './standardSkillStandardLevel';
 import { State } from './state';
 import { ContactPersonOrganization } from './contactPersonOrganization';
+import { ContactPerson } from './contactPerson';
 import { Organization } from './organization';
 import { Panel } from './panel';
 import { OpportunityResource } from './opportunityResource';
@@ -71,6 +72,21 @@ export class Opportunity extends Base {
    @ManyToOne(() => Panel)
    @JoinColumn({ name: "panel_id" })
    panel: Panel;
+
+   @Column({ name: "contact_person_id", nullable: true})
+   contactPersonId: number;
+
+   @ManyToOne(() => ContactPerson)
+   @JoinColumn({ name: "contact_person_id" })
+   contactPerson: ContactPerson;
+
+
+   @Column({ name: "state_id", nullable: true})
+   stateId: number;
+
+   @ManyToOne(() => State)
+   @JoinColumn({ name: "state_id" })
+   state: State;
 
    @OneToMany(() => OpportunityResource, opportunityResource => opportunityResource.opportunity)
    @JoinColumn({ name: "opportunity_resource_id" })
