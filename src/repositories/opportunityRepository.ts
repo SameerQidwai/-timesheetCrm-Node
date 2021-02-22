@@ -159,7 +159,9 @@ export class OpportunityRepository extends Repository<Opportunity> {
     }
 
     async findOneCustom(id: number): Promise<any|undefined> {
-        return this.findOne(id);
+        return this.findOne(id, {
+            relations: ["organization", "contactPerson"]
+        });
     }
 
     async deleteCustom(id: number): Promise<any|undefined> {
