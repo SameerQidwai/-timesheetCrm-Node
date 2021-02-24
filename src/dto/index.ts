@@ -224,6 +224,8 @@ export interface OpportunityDTO extends Base {
     goPercentage: number;
     getPercentage: number;
     panelId: number;
+    contactPersonId: number | null;
+    stateId: number | null;
 }
 
 export interface OpportunityResourceDTO extends Base {

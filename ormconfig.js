@@ -2,9 +2,9 @@ module.exports = {
     "type": "mysql",
     "host": "localhost",
     "port": 3306,
-    "username": process.env.DATABASE_USERNAME,
-    "password": process.env.DATABASE_PASSWORD,
-    "database": process.env.DATABASE_NAME,
+    "username": "root",
+    "password": "Account1!",
+    "database": "oneLmDev",
     "entities": [
         "src/entities/*.ts"
     ],
@@ -21,5 +21,5 @@ module.exports = {
 
 // "port": 3306,
 // "username": "root" || process.env.DATABASE_USERNAME,
-// "password": "" || process.env.DATABASE_PASSWORD,
+// "password": "Account1!" || process.env.DATABASE_PASSWORD,
 // "database": "oneLmDev" ||  process.env.DATABASE_NAME,

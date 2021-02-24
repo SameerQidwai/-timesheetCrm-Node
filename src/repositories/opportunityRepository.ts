@@ -3,6 +3,8 @@ import { EntityRepository, Repository } from "typeorm";
 import { Organization } from "./../entities/organization";
 import { Opportunity } from "./../entities/opportunity";
 import { Panel } from "./../entities/panel";
+import { State } from "./../entities/state";
+import { ContactPerson } from "./../entities/contactPerson";
 import { OpportunityResource } from "./../entities/opportunityResource";
 
 @EntityRepository(Opportunity)
@@ -54,6 +56,25 @@ export class OpportunityRepository extends Repository<Opportunity> {
                 }
                 opportunityObj.panelId = panel.id;
             }
+
+            let contactPerson: ContactPerson | undefined;
+            if (opportunity.contactPersonId) {
+                contactPerson = await this.manager.findOne(ContactPerson, opportunity.contactPersonId);
+                if (!contactPerson) {
+                    throw new Error("Contact Person not found");
+                }
+                opportunityObj.contactPersonId = contactPerson.id;
+            }
+
+            let state: State | undefined;
+            if (opportunity.stateId) {
+                state = await this.manager.findOne(State, opportunity.stateId);
+                if (!state) {
+                    throw new Error("State not found");
+                }
+                opportunityObj.stateId = state.id;
+            }
+
             await transactionalEntityManager.save(opportunityObj);
             return opportunityObj.id;
         });
@@ -61,7 +82,10 @@ export class OpportunityRepository extends Repository<Opportunity> {
     }
 
     async getAllActive(): Promise<any[]> {
-        return this.find();
+        let result = await this.find({
+            relations: ["organization"]
+        });
+        return result
     }
 
     async updateAndReturn(id: number, opportunity: OpportunityDTO): Promise<any|undefined> {
@@ -110,25 +134,46 @@ export class OpportunityRepository extends Repository<Opportunity> {
                 }
                 opportunityObj.panelId = panel.id;
             }
+
+            let contactPerson: ContactPerson | undefined;
+            if (opportunity.contactPersonId) {
+                contactPerson = await this.manager.findOne(ContactPerson, opportunity.contactPersonId);
+                if (!contactPerson) {
+                    throw new Error("Contact Person not found");
+                }
+                opportunityObj.contactPersonId = contactPerson.id;
+            }
+
+            let state: State | undefined;
+            if (opportunity.stateId) {
+                state = await this.manager.findOne(State, opportunity.stateId);
+                if (!state) {
+                    throw new Error("State not found");
+                }
+                opportunityObj.stateId = state.id;
+            }
+            
             await transactionalEntityManager.save(opportunityObj);
         });
         return this.findOneCustom(id);
     }
 
     async findOneCustom(id: number): Promise<any|undefined> {
-        return this.findOne(id);
+        return this.findOne(id, {
+            relations: ["organization", "contactPerson"]
+        });
     }
 
     async deleteCustom(id: number): Promise<any|undefined> {
         return this.softDelete(id);
     }
 
-    async getAllActiveResources(opportunityId: number) {
+    async getAllActiveResources(opportunityId: number) {        
         if (!opportunityId) {
-            throw new Error("Opportunity not found!");
+            throw new Error("This Opportunity not found!");
         }
         let opportunity = await this.findOne(opportunityId, {
-            relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel", "opportunityResources.user"]
+            relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel", "opportunityResources.user", "opportunityResources.user.contactPersonOrganization", "opportunityResources.user.contactPersonOrganization.contactPerson"]
         });
         if (!opportunity) {
             throw new Error("Opportunity not found!");
@@ -137,9 +182,11 @@ export class OpportunityRepository extends Repository<Opportunity> {
     }
 
     async addResource(opportunityId: number, opportunityResourceDTO: OpportunityResourceDTO) {
+        
         if (!opportunityId) {
-            throw new Error("Opportunity not found!");
+            throw new Error("Opportunity Id not found!");
         }
+
         let opportunity = await this.findOne(opportunityId, {
             relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel", "opportunityResources.user"]
         });
@@ -152,6 +199,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
         resource.panelSkillStandardLevelId = opportunityResourceDTO.panelSkillStandardLevelId;
         resource.billableHours = opportunityResourceDTO.billableHours;
         resource.opportunityId = opportunityId;
+        console.log(opportunityId);
         resource.sellingRate = opportunityResourceDTO.sellingRate;
         resource.buyingRate = opportunityResourceDTO.buyingRate;
         if (opportunityResourceDTO.userId) {
@@ -165,12 +213,16 @@ export class OpportunityRepository extends Repository<Opportunity> {
     }
 
     async updateResource(opportunityId: number, id: number, opportunityResourceDTO: OpportunityResourceDTO) {
+        console.log({opportunityId}, {id}, 'sQidwai');
+        
         if (!opportunityId) {
             throw new Error("Opportunity not found!");
         }
         let opportunity = await this.findOne(opportunityId, {
             relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel", "opportunityResources.user"]
         });
+        console.log(opportunity);
+        
         if (!opportunity) {
             throw new Error("Opportunity not found!");
         }
