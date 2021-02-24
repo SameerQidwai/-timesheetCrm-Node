@@ -16,5 +16,22 @@ export class EmployeeController extends BaseController<EmployeeDTO, EmployeeRepo
             data: records
         });
     }
+
+    async getEmployeesBySkill(req: Request, res: Response) {
+        const repository= getCustomRepository(EmployeeRepository);
+        let panelSkillStandardLevelId = req.query.panelSkillStandardLevelId?.toString();
+        if(!panelSkillStandardLevelId) {
+            throw Error("panelSkillStandardLevelId is required")
+        }  
+        // console.log("req.params.panelSkillStandardLevelId: ", req.query.panelSkillStandardLevelId);
+              
+        let records = await repository.getEmployeesBySkill(parseInt(panelSkillStandardLevelId));
+        console.log("records: ", records);
+        res.status(200).json({
+            success: true,
+            message: "Get ALL",
+            data: records
+        });
+    }
     
 }

@@ -8,6 +8,7 @@ import { Organization } from "./../entities/organization";
 import { Employee } from "./../entities/employee";
 import { EmploymentContract } from "./../entities/employmentContract";
 import { BankAccount } from "./../entities/bankAccount";
+import { PanelSkillStandardLevel } from "./../entities/panelSkillStandardLevel";
 
 @EntityRepository(Employee)
 export class EmployeeRepository extends Repository<Employee> {
@@ -230,4 +231,36 @@ export class EmployeeRepository extends Repository<Employee> {
         return this.softDelete(id);
     }
 
+    async getEmployeesBySkill(panelSkillStandardLevelId: number): Promise<any[]> {
+        let panelSkillStandardLevels = await this.manager.find(PanelSkillStandardLevel, {where: {
+            id: panelSkillStandardLevelId
+        }, relations: ["panelSkill"]});
+
+        if(!(await panelSkillStandardLevels).length) {
+            throw new Error("panelSkillStandardLevel not found");
+        }
+        let standardSkillId = panelSkillStandardLevels[0].panelSkill.standardSkillId;
+        let standardLevelId = panelSkillStandardLevels[0].standardLevelId;
+
+        let standardSkillStandardLevels = await this.manager.find(StandardSkillStandardLevel, {
+            where: {
+                standardSkillId: standardSkillId, standardLevelId: standardLevelId
+            }
+        });
+
+        if(!standardSkillStandardLevels.length) {
+            throw new Error("standardSkillStandardLevel not found");
+        }
+        let standardSkillStandardLevelPriority = standardSkillStandardLevels[0].priority;
+
+        let employees = await getRepository(Employee).createQueryBuilder("employee")
+        .innerJoin("employee.contactPersonOrganization", "contactPersonOrganization", "contactPersonOrganization.id = employee.contactPersonOrganization.id")
+        .innerJoin("contactPersonOrganization.contactPerson", "contactPerson", "contactPerson.id = contactPersonOrganization.contactPerson.id")
+        .innerJoin("contactPerson.StandardSkillStandardLevel", "StandardSkillStandardLevel", "StandardSkillStandardLevel.contactPerson.id = contactPerson.id")
+        .getMany();
+
+        console.log("employees: ", employees);
+        return employees;
+
+    }
 }

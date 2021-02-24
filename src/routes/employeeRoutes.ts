@@ -17,4 +17,7 @@ router.route("/:id")
 router.route("/get/contact-persons")
 .get(contr.contactPersons.bind(contr));
 
+router.route("/get/by-skills")
+.get(contr.getEmployeesBySkill.bind(contr));
+
 export default router;
