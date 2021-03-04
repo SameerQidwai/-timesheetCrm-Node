@@ -19,15 +19,15 @@ app.use("/api/v1", allRoutes);
 
 // 404
 app.use((req: Request, res: Response) => {
-    res.status(404).json("Resource not found!");
+  res.status(404).json("Resource not found!");
 });
 
 connection
-    .then(() => {
-        http.createServer(app).listen(port, () => {
-            console.log(`application is listening on port: ${port}`);
-        });
-    })
-    .catch((error) => {
-        console.error("error in DB connection: ", error);
+  .then(() => {
+    http.createServer(app).listen(port, () => {
+      console.log(`application is listening on port: ${port}`);
     });
+  })
+  .catch((error) => {
+    console.error("error in DB connection: ", error);
+  });

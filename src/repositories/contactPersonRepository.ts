@@ -30,6 +30,21 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
                 }
                 contactPersonObj.stateId = state.id;
             }
+
+            if(contactPerson.clearanceLevel && contactPerson.clearanceGrantedDate && contactPerson.clearanceExpiryDate) {
+                contactPersonObj.clearanceLevel = contactPerson.clearanceLevel;
+                contactPersonObj.clearanceGrantedDate = new Date(contactPerson.clearanceGrantedDate);
+                contactPersonObj.clearanceExpiryDate = new Date(contactPerson.clearanceExpiryDate);
+            }
+
+            let clearanceSponsor: Organization | undefined;
+            if(contactPerson.clearanceSponsorId) {
+                clearanceSponsor = await this.manager.findOne(Organization, contactPerson.clearanceSponsorId);
+                if(!clearanceSponsor) {
+                    throw new Error("Clearance Sponsor not found");
+                }
+                contactPersonObj.clearanceSponsorId = clearanceSponsor.id;
+            }
             
             let standardSkillStandardLevelList = await transactionalEntityManager.findByIds(StandardSkillStandardLevel, contactPerson.standardSkillStandardLevelIds);
             console.log("standardSkillStandardLevelList.length: ", standardSkillStandardLevelList.length);
@@ -82,6 +97,22 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
                 }
                 contactPersonObj.state = state;
             }
+
+            if(contactPerson.clearanceLevel && contactPerson.clearanceGrantedDate && contactPerson.clearanceExpiryDate) {
+                contactPersonObj.clearanceLevel = contactPerson.clearanceLevel;
+                contactPersonObj.clearanceGrantedDate = new Date(contactPerson.clearanceGrantedDate);
+                contactPersonObj.clearanceExpiryDate = new Date(contactPerson.clearanceExpiryDate);
+            }
+
+            let clearanceSponsor: Organization | undefined;
+            if(contactPerson.clearanceSponsorId) {
+                clearanceSponsor = await this.manager.findOne(Organization, contactPerson.clearanceSponsorId);
+                if(!clearanceSponsor) {
+                    throw new Error("Clearance Sponsor not found");
+                }
+                contactPersonObj.clearanceSponsorId = clearanceSponsor.id;
+            }
+
             let standardSkillStandardLevelList = await transactionalEntityManager.findByIds(StandardSkillStandardLevel, contactPerson.standardSkillStandardLevelIds);
             console.log("standardSkillStandardLevelList.length: ", standardSkillStandardLevelList.length);
             contactPersonObj.standardSkillStandardLevels = standardSkillStandardLevelList;

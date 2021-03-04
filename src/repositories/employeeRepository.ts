@@ -53,12 +53,19 @@ export class EmployeeRepository extends Repository<Employee> {
             employeeObj.nextOfKinPhoneNumber = employee.nextOfKinPhoneNumber;
             employeeObj.nextOfKinEmail = employee.nextOfKinEmail;
             employeeObj.nextOfKinRelation = employee.nextOfKinRelation;
-            employeeObj.nextOfKinGender = employee.nextOfKinGender;
             employeeObj.tfn = employee.tfn;
-            employeeObj.superAnnuationId = employee.superAnnuationId;
             employeeObj.superAnnuationName = employee.superAnnuationName;
             employeeObj.memberNumber = employee.memberNumber;
-            employeeObj.smsfBankAccountId = employee.smsfBankAccountId;
+            employeeObj.smsfABN = employee.smsfABN;
+            employeeObj.smsfAddress = employee.smsfAddress;
+            employeeObj.smsfName = employee.smsfName;
+            employeeObj.smsfBankName = employee.smsfBankName;
+            employeeObj.smsfBankBsb = employee.smsfBankBsb;
+            employeeObj.smsfBankAccountNo = employee.smsfBankAccountNo;
+            if(employee.taxFreeThreshold)
+                employeeObj.taxFreeThreshold = employee.taxFreeThreshold;
+            if(employee.helpHECS)
+                employeeObj.helpHECS = employee.helpHECS;
             employeeObj.training = employee.training;
             employeeObj = await transactionalEntityManager.save(employeeObj);
             id = employeeObj.id;
@@ -158,12 +165,19 @@ export class EmployeeRepository extends Repository<Employee> {
             employeeObj.nextOfKinPhoneNumber = employee.nextOfKinPhoneNumber;
             employeeObj.nextOfKinEmail = employee.nextOfKinEmail;
             employeeObj.nextOfKinRelation = employee.nextOfKinRelation;
-            employeeObj.nextOfKinGender = employee.nextOfKinGender;
             employeeObj.tfn = employee.tfn;
-            employeeObj.superAnnuationId = employee.superAnnuationId;
             employeeObj.superAnnuationName = employee.superAnnuationName;
             employeeObj.memberNumber = employee.memberNumber;
-            employeeObj.smsfBankAccountId = employee.smsfBankAccountId;
+            employeeObj.smsfABN = employee.smsfABN;
+            employeeObj.smsfAddress = employee.smsfAddress;
+            employeeObj.smsfName = employee.smsfName;
+            employeeObj.smsfBankName = employee.smsfBankName;
+            employeeObj.smsfBankBsb = employee.smsfBankBsb;
+            employeeObj.smsfBankAccountNo = employee.smsfBankAccountNo;
+            if(employee.taxFreeThreshold)
+                employeeObj.taxFreeThreshold = employee.taxFreeThreshold;
+            if(employee.helpHECS)
+                employeeObj.helpHECS = employee.helpHECS;
             employeeObj.training = employee.training;
             employeeObj = await transactionalEntityManager.save(employeeObj);
             

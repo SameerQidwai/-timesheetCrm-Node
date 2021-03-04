@@ -26,14 +26,6 @@ export class Employee extends Base {
 
    @Column({ name: "next_of_kin_relation", nullable: true }) 
    nextOfKinRelation: string;
-   
-   @Column({
-      type: "enum",
-      enum: Gender,
-      name: "next_of_kin_gender", 
-      nullable: true
-   })
-   nextOfKinGender: Gender;
 
    @Column({ name: "tfn", nullable: true }) 
    tfn: string;
@@ -41,14 +33,32 @@ export class Employee extends Base {
    @Column({ name: "super_annuation_name", nullable: true }) 
    superAnnuationName: string;
 
-   @Column({ name: "super_annuation_id", nullable: true }) 
-   superAnnuationId: string;
-
    @Column({ name: "member_number", nullable: true }) 
    memberNumber: string;
 
-   @Column({ name: "smsf_bank_account_id", nullable: true }) 
-   smsfBankAccountId: string;
+   @Column({ name: "smsf_name", nullable: true }) 
+   smsfName: string;
+
+   @Column({ name: "smsf_abn", nullable: true }) 
+   smsfABN: string;
+
+   @Column({ name: "smsf_address", nullable: true }) 
+   smsfAddress: string;
+
+   @Column({ name: "smsf_bank_name", nullable: true }) 
+   smsfBankName: string;
+
+   @Column({ name: "smsf_bank_bsb", nullable: true }) 
+   smsfBankBsb: string;
+
+   @Column({ name: "smsf_bank_account_no", nullable: true }) 
+   smsfBankAccountNo: string;
+
+   @Column({ name: "tax_free_threshold", nullable: true })
+   taxFreeThreshold: boolean;
+
+   @Column({ name: "help_hecs", nullable: true })
+   helpHECS: boolean;
 
    @Column({ name: "training", nullable: true }) 
    training: string;
