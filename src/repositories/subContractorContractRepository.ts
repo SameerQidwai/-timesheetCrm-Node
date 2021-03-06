@@ -29,6 +29,9 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
         if(contract.endDate) {
             obj.endDate = new Date(contract.endDate);
         }
+        obj.comments = contract.comments;
+        obj.noOfHours = contract.noOfHours;
+        obj.noOfHoursPer = contract.noOfHoursPer;
         obj.remunerationAmount = contract.remunerationAmount; 
         obj.remunerationAmountPer = contract.remunerationAmountPer; 
         return await this.save(obj);
@@ -73,6 +76,9 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
         if(contract.endDate) {
             employmentContractObj.endDate = new Date(contract.endDate);
         }
+        employmentContractObj.comments = contract.comments;
+        employmentContractObj.noOfHours = contract.noOfHours;
+        employmentContractObj.noOfHoursPer = contract.noOfHoursPer;
         employmentContractObj.remunerationAmount = contract.remunerationAmount; 
         employmentContractObj.remunerationAmountPer = contract.remunerationAmountPer; 
         

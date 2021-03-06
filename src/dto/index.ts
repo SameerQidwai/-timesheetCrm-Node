@@ -5,6 +5,7 @@ import {
   Frequency,
   ProjectType,
   ClearanceLevel,
+  BusinessType,
 } from "./../constants/constants";
 
 export interface Base {
@@ -97,6 +98,7 @@ export interface OrganizationDTO extends Base {
   address: string;
   website: string;
   abn: string;
+  businessType: BusinessType;
   taxCode: string;
   currentFinancialYearTotalForecast: number;
   nextFinancialYearTotalForecast: number;
@@ -184,7 +186,7 @@ export interface EmployeeDTO extends Base {
 export interface EmploymentContractDTO extends Base {
   employeeId?: number;
   payslipEmail: string;
-  membershipAccountNo: string;
+  comments: string;
   payFrequency: Frequency;
   startDate: Date;
   endDate: Date | null;
@@ -214,15 +216,20 @@ export interface SubContractorDTO extends Base {
   email: string;
   address: string;
   stateId: number | null;
+  nextOfKinName: string;
+  nextOfKinPhoneNumber: string;
+  nextOfKinEmail: string;
+  nextOfKinRelation: string;
   latestContract: ContractDTO;
 }
 
 export interface ContractDTO extends Base {
   subContractorId?: number;
-  payslipEmail: string;
+  comments: string;
   startDate: Date;
   endDate: Date | null;
   noOfHours: number;
+  noOfHoursPer: Frequency;
   remunerationAmount: number;
   remunerationAmountPer: Frequency;
 }

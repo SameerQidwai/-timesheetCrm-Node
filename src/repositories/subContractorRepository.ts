@@ -56,6 +56,10 @@ export class SubContractorRepository extends Repository<Employee> {
             await transactionalEntityManager.save(contactPersonObj);
             let employeeObj = new Employee();
             employeeObj.contactPersonOrganizationId = contactPersonOrganization.id;
+            employeeObj.nextOfKinName = subContractor.nextOfKinName;
+            employeeObj.nextOfKinPhoneNumber = subContractor.nextOfKinPhoneNumber;
+            employeeObj.nextOfKinEmail = subContractor.nextOfKinEmail;
+            employeeObj.nextOfKinRelation = subContractor.nextOfKinRelation;
             employeeObj = await transactionalEntityManager.save(employeeObj);
             id = employeeObj.id;
 
@@ -65,15 +69,16 @@ export class SubContractorRepository extends Repository<Employee> {
             
             let employmentContract = new EmploymentContract();
             let {
-                startDate, endDate, remunerationAmount, remunerationAmountPer, payslipEmail, noOfHours
+                startDate, endDate, remunerationAmount, remunerationAmountPer, comments, noOfHours, noOfHoursPer
             } = subContractor.latestContract;
             
             employmentContract.startDate = new Date(startDate);
             if(endDate) {
                 employmentContract.endDate = new Date(endDate);
             }
-            // employmentContract.payslipEmail = payslipEmail;
-            // employmentContract.noOfHours = noOfHours;
+            employmentContract.comments = comments;
+            employmentContract.noOfHours = noOfHours;
+            employmentContract.noOfHoursPer = noOfHoursPer;
             employmentContract.remunerationAmount = remunerationAmount;
             employmentContract.remunerationAmountPer = remunerationAmountPer;
             employmentContract.employeeId = employeeObj.id;
@@ -138,6 +143,10 @@ export class SubContractorRepository extends Repository<Employee> {
                 contactPersonObj.state = state;
             }
             await transactionalEntityManager.save(contactPersonObj);
+            subContractorObj.nextOfKinName = subContractor.nextOfKinName;
+            subContractorObj.nextOfKinPhoneNumber = subContractor.nextOfKinPhoneNumber;
+            subContractorObj.nextOfKinEmail = subContractor.nextOfKinEmail;
+            subContractorObj.nextOfKinRelation = subContractor.nextOfKinRelation;
             subContractorObj = await transactionalEntityManager.save(subContractorObj);
             
             if(!subContractor.latestContract) {
@@ -145,7 +154,7 @@ export class SubContractorRepository extends Repository<Employee> {
             }
             
             let {
-                startDate, endDate, remunerationAmount, remunerationAmountPer, payslipEmail, noOfHours
+                startDate, endDate, remunerationAmount, remunerationAmountPer, comments, noOfHours, noOfHoursPer
             } = subContractor.latestContract;
             
             // find latest contract here
@@ -162,8 +171,10 @@ export class SubContractorRepository extends Repository<Employee> {
             if(endDate) {
                 subContractorContract.endDate = new Date(endDate);
             }
-            // subContractorContract.payslipEmail = payslipEmail;
-            // subContractorContract.noOfHours = noOfHours;
+            subContractorContract.comments = comments;
+            subContractorContract.noOfHours = noOfHours;
+            subContractorContract.noOfHoursPer = noOfHoursPer;
+            
             subContractorContract.remunerationAmount = remunerationAmount;
             subContractorContract.remunerationAmountPer = remunerationAmountPer;
             subContractorContract.employeeId = subContractorObj.id;

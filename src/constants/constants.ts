@@ -5,7 +5,8 @@ export enum IncreaseEvery {
 
 export enum Gender {
     MALE = 'M',
-    FEMALE = 'F'
+    FEMALE = 'F',
+    OTHER = 'O'
 }
 
 export enum Frequency {
@@ -34,5 +35,11 @@ export enum ClearanceLevel {
   NEGATIVE_VETTING_1 = 'NV1',
   NEGATIVE_VETTING_2 = 'NV2',
   POSITIVE_VETTING = 'PV'
+}
 
+export enum BusinessType {
+    SOLE_TRADER = 1,
+    PARTNERSHIP = 2,
+    COMPANY = 3,
+    TRUST = 4
 }

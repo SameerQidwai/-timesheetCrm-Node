@@ -25,7 +25,7 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
         }
         let obj = new EmploymentContract();
         obj.employee = employee;
-        obj.membershipAccountNo = employmentContract.membershipAccountNo; 
+        obj.comments = employmentContract.comments; 
         obj.payslipEmail = employmentContract.payslipEmail; 
         obj.payFrequency = employmentContract.payFrequency; 
         obj.startDate = new Date(employmentContract.startDate);
@@ -75,7 +75,7 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
         }
 
         employmentContractObj.employeeId = employee.id;
-        employmentContractObj.membershipAccountNo = employmentContract.membershipAccountNo; 
+        employmentContractObj.comments = employmentContract.comments; 
         employmentContractObj.payslipEmail = employmentContract.payslipEmail; 
         employmentContractObj.payFrequency = employmentContract.payFrequency; 
         employmentContractObj.startDate = new Date(employmentContract.startDate);

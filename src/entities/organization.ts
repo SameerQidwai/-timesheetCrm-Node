@@ -1,3 +1,4 @@
+import { BusinessType } from "./../constants/constants";
 import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from "typeorm";
 import { BankAccount } from "./bankAccount";
 import { Base } from "./common/base";
@@ -22,6 +23,13 @@ export class Organization extends Base {
 
   @Column({ name: "australian_business_number", nullable: true })
   abn: string;
+
+  @Column({
+    type: "enum",
+    enum: BusinessType,
+    name: "business_type"
+  })
+  businessType: BusinessType;
 
   @Column({ name: "tax_code", nullable: true })
   taxCode: string;

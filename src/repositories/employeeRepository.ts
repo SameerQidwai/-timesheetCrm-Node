@@ -62,10 +62,8 @@ export class EmployeeRepository extends Repository<Employee> {
             employeeObj.smsfBankName = employee.smsfBankName;
             employeeObj.smsfBankBsb = employee.smsfBankBsb;
             employeeObj.smsfBankAccountNo = employee.smsfBankAccountNo;
-            if(employee.taxFreeThreshold)
-                employeeObj.taxFreeThreshold = employee.taxFreeThreshold;
-            if(employee.helpHECS)
-                employeeObj.helpHECS = employee.helpHECS;
+            employeeObj.taxFreeThreshold = (employee.taxFreeThreshold)? true : false;
+            employeeObj.helpHECS = (employee.helpHECS)? true : false;
             employeeObj.training = employee.training;
             employeeObj = await transactionalEntityManager.save(employeeObj);
             id = employeeObj.id;
@@ -76,13 +74,13 @@ export class EmployeeRepository extends Repository<Employee> {
             
             let employmentContract = new EmploymentContract();
             let {
-                payslipEmail, membershipAccountNo,
+                payslipEmail, comments,
                 payFrequency, startDate, endDate, type, noOfHours,
                 noOfHoursPer, remunerationAmount, remunerationAmountPer
             } = employee.latestEmploymentContract;
             
             employmentContract.payslipEmail = payslipEmail;
-            employmentContract.membershipAccountNo = membershipAccountNo;
+            employmentContract.comments = comments;
             employmentContract.payFrequency = payFrequency;
             employmentContract.startDate = new Date(startDate);
             if(endDate) {
@@ -174,10 +172,8 @@ export class EmployeeRepository extends Repository<Employee> {
             employeeObj.smsfBankName = employee.smsfBankName;
             employeeObj.smsfBankBsb = employee.smsfBankBsb;
             employeeObj.smsfBankAccountNo = employee.smsfBankAccountNo;
-            if(employee.taxFreeThreshold)
-                employeeObj.taxFreeThreshold = employee.taxFreeThreshold;
-            if(employee.helpHECS)
-                employeeObj.helpHECS = employee.helpHECS;
+            employeeObj.taxFreeThreshold = employee.taxFreeThreshold;
+            employeeObj.helpHECS = employee.helpHECS;
             employeeObj.training = employee.training;
             employeeObj = await transactionalEntityManager.save(employeeObj);
             
@@ -186,7 +182,7 @@ export class EmployeeRepository extends Repository<Employee> {
             }
             
             let {
-                payslipEmail, membershipAccountNo,
+                payslipEmail, comments,
                 payFrequency, startDate, endDate, type, noOfHours,
                 noOfHoursPer, remunerationAmount, remunerationAmountPer
             } = employee.latestEmploymentContract;
@@ -202,7 +198,7 @@ export class EmployeeRepository extends Repository<Employee> {
                 throw Error("Contract Not found");
             }
             employmentContract.payslipEmail = payslipEmail;
-            employmentContract.membershipAccountNo = membershipAccountNo;
+            employmentContract.comments = comments;
             employmentContract.payFrequency = payFrequency;
             employmentContract.startDate = new Date(startDate);
             if(endDate) {

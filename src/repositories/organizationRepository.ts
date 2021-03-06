@@ -17,6 +17,7 @@ export class OrganizationRepository extends Repository<Organization> {
       obj.address = organization.address;
       obj.website = organization.website;
       obj.abn = organization.abn;
+      obj.businessType = organization.businessType;
       obj.taxCode = organization.taxCode;
       obj.currentFinancialYearTotalForecast =
         organization.currentFinancialYearTotalForecast;
@@ -43,7 +44,8 @@ export class OrganizationRepository extends Repository<Organization> {
         obj.parentOrganization = await this.findOne(
           organization.parentOrganizationId
         );
-      obj = await transactionalEntityManager.save(obj);
+        obj = await transactionalEntityManager.save(obj);
+        console.log('obj: ', obj);
 
       // Bank Account
       let { bankName, bankAccountNo, bankBsb } = organization;
@@ -70,7 +72,7 @@ export class OrganizationRepository extends Repository<Organization> {
 
   async updateAndReturn(id: number, organization: OrganizationDTO): Promise<any | undefined> {
     await this.manager.transaction(async transactionalEntityManager => {
-        let obj = await this.findOneCustom(id);
+        let obj = await this.findOne(id);
         if (!obj) {
           throw new Error("Organization not found");
         }
@@ -81,6 +83,7 @@ export class OrganizationRepository extends Repository<Organization> {
         obj.address = organization.address;
         obj.website = organization.website;
         obj.abn = organization.abn;
+        obj.businessType = organization.businessType;
         obj.taxCode = organization.taxCode;
         obj.currentFinancialYearTotalForecast =
           organization.currentFinancialYearTotalForecast;
@@ -119,8 +122,8 @@ export class OrganizationRepository extends Repository<Organization> {
             obj.delegateContactPersonOrganizationId =
               delegateContactPersonOrganization.id;
         }
+        console.log('obj: ', obj);
         obj = await transactionalEntityManager.save(obj);
-        
         // Bank Account 
         let { bankName, bankAccountNo, bankBsb } = organization;
         let bankAccount = await transactionalEntityManager

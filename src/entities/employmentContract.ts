@@ -9,8 +9,8 @@ export class EmploymentContract extends Base {
    @Column({ name: "payslip_email", nullable: true })
    payslipEmail: String;
 
-   @Column({ name: "membership_account_no", nullable: true  })
-   membershipAccountNo: String;
+   @Column({ name: "comments", nullable: true  })
+   comments: String;
 
    @Column({
       type: "enum",
