@@ -4,6 +4,7 @@ import { Base } from './common/base';
 import { ContactPersonOrganization } from './contactPersonOrganization';
 import { EmploymentContract } from './employmentContract';
 import { BankAccount } from './bankAccount';
+import { Lease } from './lease';
 
 @Entity("employees")
 export class Employee extends Base {
@@ -72,4 +73,9 @@ export class Employee extends Base {
       cascade: true
    })
    bankAccounts: BankAccount[];
+
+   @OneToMany(() => Lease, lease => lease.employee, {
+      cascade: true
+   })
+   leases: Lease[];
 }

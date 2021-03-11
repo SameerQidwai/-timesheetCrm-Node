@@ -1,4 +1,4 @@
-import { ContactPersonDTO, EmployeeDTO } from "../dto";
+import { ContactPersonDTO, EmployeeDTO, LeaseDTO } from "../dto";
 import { EntityRepository, getRepository, Repository } from "typeorm";
 import { ContactPerson } from "./../entities/contactPerson";
 import { ContactPersonOrganization } from "./../entities/contactPersonOrganization";
@@ -9,6 +9,7 @@ import { Employee } from "./../entities/employee";
 import { EmploymentContract } from "./../entities/employmentContract";
 import { BankAccount } from "./../entities/bankAccount";
 import { PanelSkillStandardLevel } from "./../entities/panelSkillStandardLevel";
+import { Lease } from "./../entities/lease";
 
 @EntityRepository(Employee)
 export class EmployeeRepository extends Repository<Employee> {
@@ -272,5 +273,151 @@ export class EmployeeRepository extends Repository<Employee> {
         console.log("employees: ", employees);
         return employees;
 
+    }
+
+    async getAllLeases(employeeId: number) {
+        
+        // valid if employee id exists
+        if (!employeeId) {
+            throw new Error("Employee not found!");
+        }
+
+        // fetch employee
+        let employee = await this.findOne(employeeId, {
+            relations: ["leases"]
+        });
+
+        // valid if employee found
+        if(!employee) {
+            throw new Error("Employee not found!");
+        }
+
+        return employee.leases;
+    }
+
+    async addLease(employeeId: number, leaseDTO: LeaseDTO) {
+     
+        // valid if employee id exists
+        if (!employeeId) {
+            throw new Error("Employee not found!");
+        }
+
+        // fetch employee
+        let employee = await this.findOne(employeeId, {
+            relations: ["leases"]
+        });
+
+        // valid if employee found
+        if(!employee) {
+            throw new Error("Employee not found!");
+        }
+
+        let lease = new Lease();
+        lease.companyName = leaseDTO.companyName;
+        lease.vehicleRegistrationNo = leaseDTO.vehicleRegistrationNo;
+        lease.vehicleRegistrationNo = leaseDTO.vehicleRegistrationNo;
+        if(leaseDTO.startDate) {
+            lease.startDate = new Date(leaseDTO.startDate);
+        }
+        if(leaseDTO.endDate) {
+            lease.endDate = new Date(leaseDTO.endDate);
+        }
+        lease.financedAmount = leaseDTO.financedAmount;
+        lease.installmentFrequency = leaseDTO.installmentFrequency;
+        lease.preTaxDeductionAmount = leaseDTO.preTaxDeductionAmount;
+        lease.postTaxDeductionAmount = leaseDTO.postTaxDeductionAmount;
+        lease.financerName = leaseDTO.financerName;
+        lease.employeeId = employeeId;
+        return this.manager.save(lease);
+    }
+
+    async updateLease(employeeId: number, id: number, leaseDTO: LeaseDTO) {
+        
+        // valid if employee id exists
+        if (!employeeId) {
+            throw new Error("Employee not found!");
+        }
+
+        // fetch employee
+        let employee = await this.findOne(employeeId, {
+            relations: ["leases"]
+        });
+
+        // valid if employee found
+        if(!employee) {
+            throw new Error("Employee not found!");
+        }
+
+        let lease = employee.leases.filter(x => x.id == id)[0];
+        
+        // validate if lease found
+        if(!lease) {
+            throw new Error("Lease not found!");
+        }
+
+        lease.companyName = leaseDTO.companyName;
+        lease.vehicleRegistrationNo = leaseDTO.vehicleRegistrationNo;
+        lease.vehicleRegistrationNo = leaseDTO.vehicleRegistrationNo;
+        if(leaseDTO.startDate) {
+            lease.startDate = new Date(leaseDTO.startDate);
+        }
+        if(leaseDTO.endDate) {
+            lease.endDate = new Date(leaseDTO.endDate);
+        }
+        lease.financedAmount = leaseDTO.financedAmount;
+        lease.installmentFrequency = leaseDTO.installmentFrequency;
+        lease.preTaxDeductionAmount = leaseDTO.preTaxDeductionAmount;
+        lease.postTaxDeductionAmount = leaseDTO.postTaxDeductionAmount;
+        lease.financerName = leaseDTO.financerName;
+        lease.employeeId = employeeId;
+        return this.manager.save(lease);
+    }
+
+    async findOneCustomLease(employeeId: number, id: number): Promise<any|undefined> {
+
+        // valid if employee id exists
+        if (!employeeId) {
+            throw new Error("Employee not found!");
+        }
+
+        // fetch employee
+        let employee = await this.findOne(employeeId, {
+            relations: ["leases"]
+        });
+
+        // valid if employee found
+        if(!employee) {
+            throw new Error("Employee not found!");
+        }
+
+        let lease = employee.leases.filter(x => x.id == id)[0];
+        
+        // validate if lease found
+        if(!lease) {
+            throw new Error("Lease not found!");
+        }
+
+        return lease;
+    }
+
+    async deleteLease(employeeId: number, id: number): Promise<any|undefined> {
+           
+        // valid if employee id exists
+        if (!employeeId) {
+            throw new Error("Employee not found!");
+        }
+
+        // fetch employee
+        let employee = await this.findOne(employeeId, {
+            relations: ["leases"]
+        });
+
+        // valid if employee found
+        if(!employee) {
+            throw new Error("Employee not found!");
+        }
+
+        employee.leases = employee.leases.filter(x => x.id != id);
+        return this.manager.save(employee);
     }
 }

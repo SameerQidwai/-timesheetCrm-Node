@@ -197,6 +197,19 @@ export interface EmploymentContractDTO extends Base {
   remunerationAmountPer: Frequency;
 }
 
+export interface LeaseDTO extends Base {
+  companyName: string;
+  vehicleRegistrationNo: string;
+  vehicleMakeModel: String;
+  startDate: Date;
+  endDate: Date | null;
+  financedAmount: number;
+  installmentFrequency: Frequency;
+  preTaxDeductionAmount: number;
+  postTaxDeductionAmount: number;
+  financerName: string;
+}
+
 export interface BankAccountDTO extends Base {
   name: string;
   accountNo: string;
