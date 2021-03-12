@@ -315,7 +315,7 @@ export class EmployeeRepository extends Repository<Employee> {
         let lease = new Lease();
         lease.companyName = leaseDTO.companyName;
         lease.vehicleRegistrationNo = leaseDTO.vehicleRegistrationNo;
-        lease.vehicleRegistrationNo = leaseDTO.vehicleRegistrationNo;
+        lease.vehicleMakeModel = leaseDTO.vehicleMakeModel;
         if(leaseDTO.startDate) {
             lease.startDate = new Date(leaseDTO.startDate);
         }
@@ -357,7 +357,7 @@ export class EmployeeRepository extends Repository<Employee> {
 
         lease.companyName = leaseDTO.companyName;
         lease.vehicleRegistrationNo = leaseDTO.vehicleRegistrationNo;
-        lease.vehicleRegistrationNo = leaseDTO.vehicleRegistrationNo;
+        lease.vehicleMakeModel = leaseDTO.vehicleMakeModel;
         if(leaseDTO.startDate) {
             lease.startDate = new Date(leaseDTO.startDate);
         }
