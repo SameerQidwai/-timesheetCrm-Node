@@ -7,21 +7,21 @@ import { TimeOffType } from './timeOffType';
 @Entity("time_off_policy_time_off_types") 
 export class TimeOffPolicyTimeOffType extends Base { 
 
-   @Column({ name: "time_off_policy_id", nullable: true }) 
+   @Column({ name: "time_off_policy_id" }) 
    timeOffPolicyId: number;
 
-   @Column({ name: "time_off_type_id", nullable: true }) 
+   @Column({ name: "time_off_type_id" }) 
    timeOffTypeId: number;
 
-   @Column({ type: "int", name: "hours" }) 
-   hours: number;
+   @Column({ type: "int", name: "earn_hours" }) 
+   earnHours: number;
 
    @Column({
       type: "enum",
       enum: IncreaseEvery,
-      name: "increase_every"
+      name: "earns_every"
    }) 
-   increaseEvery: IncreaseEvery;
+   earnsEvery: IncreaseEvery;
 
    @Column("int")
    threshold: number;
