@@ -1,7 +1,7 @@
 import {
   EmploymentType,
   Gender,
-  IncreaseEvery,
+  TimeoffTriggerFrequency,
   Frequency,
   ProjectType,
   ClearanceLevel,
@@ -26,8 +26,10 @@ export interface TimeOffTypeDTO extends Base {
 export interface TimeOffPolicyTimeOffType extends Base {
   timeOffPolicyId?: number;
   timeOffTypeId: number;
-  hours: number;
-  increaseEvery: IncreaseEvery;
+  earnHours: number;
+  earnEvery: TimeoffTriggerFrequency;
+  resetEvery: TimeoffTriggerFrequency;
+  resetHours: number;
   threshold: number;
 }
 

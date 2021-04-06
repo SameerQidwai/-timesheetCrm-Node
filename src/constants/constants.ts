@@ -1,9 +1,9 @@
 export enum TimeoffTriggerFrequency {
     NEVER = 'N',
-    FINANCIAL_MONTH = 'FM',
-    FINANCIAL_YEAR = 'FY',
-    CALENDAR_MONTH = 'CM',
-    CALENDAR_YEAR = 'CY'
+    MONTH = 'M',
+    YEAR = 'Y',
+    EMPLOYEE_MONTH = 'EM',
+    EMPLOYEE_YEAR = 'EY'
 }
 
 export enum Gender {

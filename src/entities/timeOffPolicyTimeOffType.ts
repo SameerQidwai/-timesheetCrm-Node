@@ -1,4 +1,4 @@
-import { IncreaseEvery } from '../constants/constants';
+import { TimeoffTriggerFrequency } from '../constants/constants';
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm'; 
 import { Base } from './common/base';
 import { TimeOffPolicy } from './timeOffPolicy';
@@ -18,10 +18,20 @@ export class TimeOffPolicyTimeOffType extends Base {
 
    @Column({
       type: "enum",
-      enum: IncreaseEvery,
-      name: "earns_every"
+      enum: TimeoffTriggerFrequency,
+      name: "earn_every"
    }) 
-   earnsEvery: IncreaseEvery;
+   earnEvery: TimeoffTriggerFrequency;
+
+   @Column({ type: "int", name: "reset_hours" }) 
+   resetHours: number;
+
+   @Column({
+      type: "enum",
+      enum: TimeoffTriggerFrequency,
+      name: "reset_every"
+   }) 
+   resetEvery: TimeoffTriggerFrequency;
 
    @Column("int")
    threshold: number;
