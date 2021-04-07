@@ -1,4 +1,3 @@
-import { Gender } from '../constants/constants';
 import { Entity, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Base } from './common/base';
 import { ContactPersonOrganization } from './contactPersonOrganization';
@@ -16,6 +15,10 @@ export class Employee extends Base {
    @JoinColumn({ name: "contact_person_organization_id" })
    contactPersonOrganization: ContactPersonOrganization;
 
+   @Column({ name: "username", unique: true })
+   username: String; // unique email for login
+
+   // ---------------------------------------------------Next of kin info----------------------------------------
    @Column({ name: "next_of_kin_name", nullable: true })
    nextOfKinName: String;
 
@@ -27,39 +30,36 @@ export class Employee extends Base {
 
    @Column({ name: "next_of_kin_relation", nullable: true }) 
    nextOfKinRelation: string;
+   // ---------------------------------------------------Next of kin info----------------------------------------
 
    @Column({ name: "tfn", nullable: true }) 
-   tfn: string;
-
-   @Column({ name: "super_annuation_name", nullable: true }) 
-   superAnnuationName: string;
-
-   @Column({ name: "member_number", nullable: true }) 
-   memberNumber: string;
-
-   @Column({ name: "smsf_name", nullable: true }) 
-   smsfName: string;
-
-   @Column({ name: "smsf_abn", nullable: true }) 
-   smsfABN: string;
-
-   @Column({ name: "smsf_address", nullable: true }) 
-   smsfAddress: string;
-
-   @Column({ name: "smsf_bank_name", nullable: true }) 
-   smsfBankName: string;
-
-   @Column({ name: "smsf_bank_bsb", nullable: true }) 
-   smsfBankBsb: string;
-
-   @Column({ name: "smsf_bank_account_no", nullable: true }) 
-   smsfBankAccountNo: string;
-
+   tfn: string;   // tax file number
+   
    @Column({ name: "tax_free_threshold", nullable: true })
    taxFreeThreshold: boolean;
 
    @Column({ name: "help_hecs", nullable: true })
    helpHECS: boolean;
+
+   // ---------------------------------------------------Superannuation info----------------------------------------
+   @Column({ name: "superannuation_name", nullable: true }) 
+   superannuationName: string; // same as SMSF Name
+
+   @Column({ name: "superannuation_bank_name", nullable: true }) 
+   superannuationBankName: string;
+
+   @Column({ name: "superannuation_bank_account_or_membership_number", nullable: true }) 
+   superannuationBankAccountOrMembershipNumber: string; //Same as membership number
+
+   @Column({ name: "superannuation_abn_or_usi", nullable: true }) 
+   superannuationAbnOrUsi: string;  // Same as USI number
+
+   @Column({ name: "superannuation_bank_bsb", nullable: true }) 
+   superannuationBankBsb: string;
+
+   @Column({ name: "superannuation_address", nullable: true }) 
+   superannuationAddress: string; // ESA Address
+   // ---------------------------------------------------Superannuation info----------------------------------------
 
    @Column({ name: "training", nullable: true }) 
    training: string;

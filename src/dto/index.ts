@@ -155,6 +155,7 @@ export interface StateDTO extends Base {
 
 export interface EmployeeDTO extends Base {
   contactPersonId: number | null;
+  username: string;
   firstName: string;
   lastName: string;
   gender: Gender;
@@ -168,16 +169,14 @@ export interface EmployeeDTO extends Base {
   nextOfKinEmail: string;
   nextOfKinRelation: string;
   tfn: string;
-  superAnnuationName: string;
-  memberNumber: string;
-  smsfName: string; 
-  smsfABN: string; 
-  smsfAddress: string; 
-  smsfBankName: string; 
-  smsfBankBsb: string; 
-  smsfBankAccountNo: string;
   taxFreeThreshold: boolean | null;
-  helpHECS: boolean | null; 
+  helpHECS: boolean | null;
+  superannuationName: string;
+  superannuationBankName: string;
+  superannuationBankAccountOrMembershipNumber: string;
+  superannuationAbnOrUsi: string;
+  superannuationBankBsb: string;
+  superannuationAddress: string;
   training: string;
   latestEmploymentContract: EmploymentContractDTO;
   bankName: string;
@@ -223,6 +222,7 @@ export interface BankAccountDTO extends Base {
 export interface SubContractorDTO extends Base {
   organizationId: number | null;
   contactPersonId: number | null;
+  username: string;
   firstName: string;
   lastName: string;
   gender: Gender;

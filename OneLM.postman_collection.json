@@ -608,7 +608,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"firstName\": \"Mursal\",\r\n    \"lastName\": \"Khan\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"asad@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"clearanceLevel\": \"BV\",\r\n    \"clearanceGrantedDate\": 1608512778651,\r\n    \"clearanceExpiryDate\": 1608512878651,\r\n    \"clearanceSponsorId\": 3,\r\n    \"standardSkillStandardLevelIds\": [2],\r\n    \"contactPersonOrganizations\": [{\r\n        \"startDate\": 1608512778651,\r\n        \"designation\": \"Admin\",\r\n        \"organizationId\": 1\r\n    }]\r\n}",
+							"raw": "{\r\n    \"firstName\": \"Sohail\",\r\n    \"lastName\": \"Rauf\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"sohail@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"clearanceLevel\": \"BV\",\r\n    \"clearanceGrantedDate\": 1608512778651,\r\n    \"clearanceExpiryDate\": 1608512878651,\r\n    \"clearanceSponsorId\": 3,\r\n    \"standardSkillStandardLevelIds\": [2],\r\n    \"contactPersonOrganizations\": [{\r\n        \"startDate\": 1608512778651,\r\n        \"designation\": \"Developer\",\r\n        \"organizationId\": 2\r\n    }]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -813,7 +813,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"contactPersonId\": 1,\r\n    \"firstName\": \"Asad as employee\",\r\n    \"lastName\": \"Khan\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"asad@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"hamza\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"hamza@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"tfn\": \"\",\r\n    \"superAnnuationName\": \"\",\r\n    \"memberNumber\": \"\",\r\n    \"training\": \"need more\",\r\n    \"bankName\": \"HBL\",\r\n    \"bankAccountNo\": \"234353453453534534\",\r\n    \"bankBsb\": \"12qwe\",\r\n    \"latestEmploymentContract\": {\r\n        \"payslipEmail\": \"pay@live.com\",\r\n        \"payFrequency\": 1,\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n    \r\n}",
+							"raw": "{\r\n    \"contactPersonId\": 1,\r\n    \"firstName\": \"Mursal as employee\",\r\n    \"lastName\": \"Khan\",\r\n    \"username\": \"mursal@onelm.com\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"mursal@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"saad\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"saad@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"tfn\": \"\",\r\n    \"superannuationName\": \"Jubilee\",\r\n    \"superannuationBankName\": \"\",\r\n    \"superannuationBankAccountOrMembershipNumber\": \"1111-2222-3\",\r\n    \"superannuationAbnOrUsi\": \"12345\",\r\n    \"superannuationBankBsb\": \"\",\r\n    \"superannuationAddress\": \"\",\r\n    \"training\": \"need more\",\r\n    \"bankName\": \"HBL\",\r\n    \"bankAccountNo\": \"234353453453534534\",\r\n    \"bankBsb\": \"12qwe\",\r\n    \"latestEmploymentContract\": {\r\n        \"payslipEmail\": \"pay@live.com\",\r\n        \"payFrequency\": 1,\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n    \r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -839,7 +839,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"firstName\": \"Asad updated as employee again\",\r\n    \"lastName\": \"Khan\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"asadupdated@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"hamza\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"hamza@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"tfn\": \"test\",\r\n    \"superAnnuationName\": \"\",\r\n    \"memberNumber\": \"\",\r\n    \"smsfName\": \"smsf test name\",\r\n    \"smsfABN\": \"test abn\",\r\n    \"smsfAddress\": \"smsf address test\",\r\n    \"smsfBankName\": \"Alfalah\",\r\n    \"smsfBankBsb\": \"weee\",\r\n    \"smsfBankAccountNo\": \"2323-2323-232-323\",\r\n    \"taxFreeThreshold\": false,\r\n    \"helpHECS\": true,\r\n    \"training\": \"need more updated\",\r\n    \"bankName\": \"HBL-2\",\r\n    \"bankAccountNo\": \"234353453453534534\",\r\n    \"bankBsb\": \"12qwe\",\r\n    \"latestEmploymentContract\": {\r\n        \"payslipEmail\": \"pay@live.com\",\r\n        \"payFrequency\": 5,\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 9,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 5,\r\n        \"comments\": \"\"\r\n    }\r\n}",
+							"raw": "{\r\n    \"contactPersonId\": 1,\r\n    \"firstName\": \"Mursal as employee updated\",\r\n    \"lastName\": \"Khan\",\r\n    \"username\": \"mursal@onelm.com\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"mursal@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"saad\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"saad@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"tfn\": \"\",\r\n    \"superannuationName\": \"Jubilee\",\r\n    \"superannuationBankName\": \"\",\r\n    \"superannuationBankAccountOrMembershipNumber\": \"1111-2222-3\",\r\n    \"superannuationAbnOrUsi\": \"12345\",\r\n    \"superannuationBankBsb\": \"\",\r\n    \"superannuationAddress\": \"\",\r\n    \"training\": \"need more\",\r\n    \"bankName\": \"HBL\",\r\n    \"bankAccountNo\": \"234353453453534534\",\r\n    \"bankBsb\": \"12qwe\",\r\n    \"latestEmploymentContract\": {\r\n        \"payslipEmail\": \"pay@live.com\",\r\n        \"payFrequency\": 1,\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1153,7 +1153,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"contactPersonId\": 1,\r\n    \"organizationId\": 2,\r\n    \"firstName\": \"Asad updated as employee\",\r\n    \"lastName\": \"Khan\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"asadupdated@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"hamza\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"hamza@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"latestContract\": {\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n    \r\n}",
+							"raw": "{\r\n    \"contactPersonId\": 2,\r\n    \"organizationId\": 2,\r\n    \"username\": \"sohail@sudoware.com\",\r\n    \"firstName\": \"Sohail as Subcontractor\",\r\n    \"lastName\": \"Rauf\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"sohail@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"shehbaz\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"shehbaz@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"latestContract\": {\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n    \r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1179,7 +1179,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"firstName\": \"Asad updated as employee again\",\r\n    \"lastName\": \"Khan\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"asadupdated@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"hamza\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"hamza@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"latestContract\": {\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n}",
+							"raw": "{\r\n    \"username\": \"sohail@sudoware.com\",\r\n    \"firstName\": \"Sohail as Subcontractor\",\r\n    \"lastName\": \"Rauf\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"sohail@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"shehbaz\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"shehbaz@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"latestContract\": {\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1187,13 +1187,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{Endpoint}}/sub-contractors/3",
+							"raw": "{{Endpoint}}/sub-contractors/4",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"sub-contractors",
-								"3"
+								"4"
 							]
 						}
 					},
@@ -1535,7 +1535,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Sudoware\",\r\n    \"phoneNumber\": \"+176456789\",\r\n    \"email\": \"mqwet@sudoware.com\",\r\n    \"address\": \"test address that is never to goiing to exist any way\",\r\n    \"website\": \"https://test.com\",\r\n    \"abn\": 123456,\r\n    \"businessType\": 1,\r\n    \"taxCode\": 123456,\r\n    \"currentFinancialYearTotalForecast\": 400000,\r\n    \"nextFinancialYearTotalForecast\": 0,\r\n    \"invoiceEmail\": \"test@test.com\",\r\n    \"invoiceContactNumber\": \"+664543454\",\r\n    \"piInsurer\": \"abd\",\r\n    \"plInsurer\": \"1qw\",\r\n    \"wcInsurer\": \"asdf\",\r\n    \"piPolicyNumber\": 123456,\r\n    \"plPolicyNumber\": 123456,\r\n    \"wcPolicyNumber\": 123456,\r\n    \"piSumInsured\": 1000,\r\n    \"plSumInsured\": 1000,\r\n    \"wcSumInsured\": 1000,\r\n    \"piInsuranceExpiry\": null,\r\n    \"plInsuranceExpiry\": null,\r\n    \"wcInsuranceExpiry\": null,\r\n    \"parentOrganizationId\": null,\r\n    \"delegateContactPersonOrganizationId\": null,\r\n    \"bankName\": \"Standard Chartered\",\r\n    \"bankAccountNo\": \"111111111-2-3-444444\",\r\n    \"bankBsb\": \"12qwe\"\r\n}",
+							"raw": "{\r\n    \"name\": \"AB Security\",\r\n    \"phoneNumber\": \"+176456789\",\r\n    \"email\": \"mqwet@absecurity.com\",\r\n    \"address\": \"test address that is never to goiing to exist any way\",\r\n    \"website\": \"https://absecurity.com\",\r\n    \"abn\": 123456,\r\n    \"businessType\": 1,\r\n    \"taxCode\": 123456,\r\n    \"currentFinancialYearTotalForecast\": 400000,\r\n    \"nextFinancialYearTotalForecast\": 0,\r\n    \"invoiceEmail\": \"test@test.com\",\r\n    \"invoiceContactNumber\": \"+664543454\",\r\n    \"piInsurer\": \"abd\",\r\n    \"plInsurer\": \"1qw\",\r\n    \"wcInsurer\": \"asdf\",\r\n    \"piPolicyNumber\": 123456,\r\n    \"plPolicyNumber\": 123456,\r\n    \"wcPolicyNumber\": 123456,\r\n    \"piSumInsured\": 1000,\r\n    \"plSumInsured\": 1000,\r\n    \"wcSumInsured\": 1000,\r\n    \"piInsuranceExpiry\": null,\r\n    \"plInsuranceExpiry\": null,\r\n    \"wcInsuranceExpiry\": null,\r\n    \"parentOrganizationId\": null,\r\n    \"delegateContactPersonOrganizationId\": null,\r\n    \"bankName\": \"Standard Chartered\",\r\n    \"bankAccountNo\": \"111111111-2-3-444412\",\r\n    \"bankBsb\": \"12qwe\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"

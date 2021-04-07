@@ -56,6 +56,7 @@ export class SubContractorRepository extends Repository<Employee> {
             await transactionalEntityManager.save(contactPersonObj);
             let employeeObj = new Employee();
             employeeObj.contactPersonOrganizationId = contactPersonOrganization.id;
+            employeeObj.username = subContractor.username;
             employeeObj.nextOfKinName = subContractor.nextOfKinName;
             employeeObj.nextOfKinPhoneNumber = subContractor.nextOfKinPhoneNumber;
             employeeObj.nextOfKinEmail = subContractor.nextOfKinEmail;
@@ -143,6 +144,7 @@ export class SubContractorRepository extends Repository<Employee> {
                 contactPersonObj.state = state;
             }
             await transactionalEntityManager.save(contactPersonObj);
+            subContractorObj.username = subContractor.username;
             subContractorObj.nextOfKinName = subContractor.nextOfKinName;
             subContractorObj.nextOfKinPhoneNumber = subContractor.nextOfKinPhoneNumber;
             subContractorObj.nextOfKinEmail = subContractor.nextOfKinEmail;
