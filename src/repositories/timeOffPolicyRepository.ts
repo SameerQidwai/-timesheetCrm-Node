@@ -25,8 +25,10 @@ export class TimeOffPolicyRepository extends Repository<TimeOffPolicy> {
                 }
                 timeOffPolicyTimeOffTypeObj.timeOffPolicy = timeOffPolicyObj;
                 timeOffPolicyTimeOffTypeObj.timeOffType = timeOffType[0];
-                timeOffPolicyTimeOffTypeObj.hours = timeOffPolicyTimeOffType.hours;
-                timeOffPolicyTimeOffTypeObj.increaseEvery = timeOffPolicyTimeOffType.increaseEvery;
+                timeOffPolicyTimeOffTypeObj.earnHours = timeOffPolicyTimeOffType.earnHours;
+                timeOffPolicyTimeOffTypeObj.earnEvery = timeOffPolicyTimeOffType.earnEvery;
+                timeOffPolicyTimeOffTypeObj.resetHours = timeOffPolicyTimeOffType.resetHours;
+                timeOffPolicyTimeOffTypeObj.resetEvery = timeOffPolicyTimeOffType.resetEvery;
                 timeOffPolicyTimeOffTypeObj.threshold = timeOffPolicyTimeOffType.threshold;
                 return timeOffPolicyTimeOffTypeObj;
             });
@@ -75,8 +77,10 @@ export class TimeOffPolicyRepository extends Repository<TimeOffPolicy> {
                 }
                 console.log("timeOffPolicyTimeOffTypeObj - found or not: ", timeOffPolicyTimeOffTypeObj);
                 
-                timeOffPolicyTimeOffTypeObj.hours = timeOffPolicyTimeOffType.hours;
-                timeOffPolicyTimeOffTypeObj.increaseEvery = timeOffPolicyTimeOffType.increaseEvery;
+                timeOffPolicyTimeOffTypeObj.earnHours = timeOffPolicyTimeOffType.earnHours;
+                timeOffPolicyTimeOffTypeObj.earnEvery = timeOffPolicyTimeOffType.earnEvery;
+                timeOffPolicyTimeOffTypeObj.resetHours = timeOffPolicyTimeOffType.resetHours;
+                timeOffPolicyTimeOffTypeObj.resetEvery = timeOffPolicyTimeOffType.resetEvery;
                 timeOffPolicyTimeOffTypeObj.threshold = timeOffPolicyTimeOffType.threshold;
                 return timeOffPolicyTimeOffTypeObj;
             });

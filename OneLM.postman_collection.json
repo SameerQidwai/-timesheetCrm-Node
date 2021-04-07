@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "38b5c3e9-43ae-431a-91e3-45a24d8eb124",
+		"_postman_id": "0c46e353-5954-4235-b6a0-6217ac4cc12e",
 		"name": "OneLM",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -141,7 +141,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"label\": \"Casual\"\r\n}",
+							"raw": "{\r\n    \"label\": \"Sick Leave\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -189,7 +189,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"label\": \"Standard Policy\",\r\n    \"timeOffPolicyTimeOffTypes\": [\r\n        {\r\n            \"timeOffTypeId\": 1,\r\n            \"hours\": 50,\r\n            \"increaseEvery\": \"M\",\r\n            \"threshold\": 100\r\n        },\r\n        {\r\n            \"timeOffTypeId\": 2,\r\n            \"hours\": 50,\r\n            \"increaseEvery\": \"Y\",\r\n            \"threshold\": 100\r\n        }\r\n    ]\r\n}",
+							"raw": "{\r\n    \"label\": \"Standard Policy\",\r\n    \"timeOffPolicyTimeOffTypes\": [\r\n        {\r\n            \"timeOffTypeId\": 1,\r\n            \"earnHours\": 8,\r\n            \"earnEvery\": \"M\",\r\n            \"resetHours\": 8,\r\n            \"resetEvery\": \"Y\",\r\n            \"threshold\": 999\r\n        },\r\n        {\r\n            \"timeOffTypeId\": 2,\r\n            \"earnHours\": 40,\r\n            \"earnEvery\": \"EY\",\r\n            \"resetHours\": 0,\r\n            \"resetEvery\": \"N\",\r\n            \"threshold\": 80\r\n        }\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"

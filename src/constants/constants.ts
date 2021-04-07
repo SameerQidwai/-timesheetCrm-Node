@@ -1,6 +1,9 @@
-export enum IncreaseEvery {
-    MONTHLY = 'M',
-    YEARLY = 'Y'
+export enum TimeoffTriggerFrequency {
+    NEVER = 'N',
+    MONTH = 'M',
+    YEAR = 'Y',
+    EMPLOYEE_MONTH = 'EM',
+    EMPLOYEE_YEAR = 'EY'
 }
 
 export enum Gender {
