@@ -6,6 +6,7 @@ import {
   ProjectType,
   ClearanceLevel,
   BusinessType,
+  SuperannuationType,
 } from "./../constants/constants";
 
 export interface Base {
@@ -172,6 +173,7 @@ export interface EmployeeDTO extends Base {
   taxFreeThreshold: boolean | null;
   helpHECS: boolean | null;
   superannuationName: string;
+  superannuationType: SuperannuationType | null;
   superannuationBankName: string;
   superannuationBankAccountOrMembershipNumber: string;
   superannuationAbnOrUsi: string;

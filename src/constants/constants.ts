@@ -46,3 +46,8 @@ export enum BusinessType {
     COMPANY = 3,
     TRUST = 4
 }
+
+export enum SuperannuationType {
+    PUBLIC = 'P',
+    SMSF = 'S'
+}

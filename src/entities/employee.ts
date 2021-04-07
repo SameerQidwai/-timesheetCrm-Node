@@ -4,6 +4,7 @@ import { ContactPersonOrganization } from './contactPersonOrganization';
 import { EmploymentContract } from './employmentContract';
 import { BankAccount } from './bankAccount';
 import { Lease } from './lease';
+import { SuperannuationType } from 'src/constants/constants';
 
 @Entity("employees")
 export class Employee extends Base {
@@ -44,6 +45,14 @@ export class Employee extends Base {
    // ---------------------------------------------------Superannuation info----------------------------------------
    @Column({ name: "superannuation_name", nullable: true }) 
    superannuationName: string; // same as SMSF Name
+
+   @Column({
+      type: "enum",
+      enum: SuperannuationType,
+      name: "superannuation_type",
+      nullable: true
+   })
+   superannuationType: SuperannuationType;
 
    @Column({ name: "superannuation_bank_name", nullable: true }) 
    superannuationBankName: string;

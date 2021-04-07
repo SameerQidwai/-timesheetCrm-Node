@@ -59,6 +59,9 @@ export class EmployeeRepository extends Repository<Employee> {
             employeeObj.taxFreeThreshold = (employee.taxFreeThreshold)? true : false;
             employeeObj.helpHECS = (employee.helpHECS)? true : false;
             employeeObj.superannuationName = employee.superannuationName;
+            if(employee.superannuationType) {
+                employeeObj.superannuationType = employee.superannuationType;
+            }
             employeeObj.superannuationAbnOrUsi = employee.superannuationAbnOrUsi;
             employeeObj.superannuationAddress = employee.superannuationAddress;
             employeeObj.superannuationBankName = employee.superannuationBankName;
@@ -168,6 +171,9 @@ export class EmployeeRepository extends Repository<Employee> {
             employeeObj.taxFreeThreshold = employee.taxFreeThreshold;
             employeeObj.helpHECS = employee.helpHECS;
             employeeObj.superannuationName = employee.superannuationName;
+            if(employee.superannuationType) {
+                employeeObj.superannuationType = employee.superannuationType;
+            }
             employeeObj.superannuationAbnOrUsi = employee.superannuationAbnOrUsi;
             employeeObj.superannuationAddress = employee.superannuationAddress;
             employeeObj.superannuationBankName = employee.superannuationBankName;
