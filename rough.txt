@@ -1,28 +1,10 @@
-async (req: Request, res: Response) => {
-
-    const sampleRepository = getCustomRepository(SampleRepository);
-    let records = await sampleRepository.getAllActive();
-    console.log("records: ", records);
-
-    res.status(200).json({
-        success: true,
-        message: "Get ALL",
-        data: records
-    });
-}
-
-
-async (req: Request, res: Response) => {
-
-    const sampleRepository = getCustomRepository(SampleRepository);
-    let { title } = req.body;
-    let record = await sampleRepository.createAndSave({
-        title
-    });
-    console.log("record: ", record);
-    res.status(200).json({
-        success: true,
-        message: "Create",
-        data: record
-    });
-}
+resource.sellingRate = opportunityResourceDTO.sellingRate;
+        resource.buyingRate = opportunityResourceDTO.buyingRate;
+        if (opportunityResourceDTO.userId) {
+            let resourceExists = opportunity.opportunityResources.filter(x => x.userId == opportunityResourceDTO.userId);
+            if(resourceExists.length) {
+                throw new Error("Cannot add resouce for same user again");
+            }
+        }
+        resource.userId = opportunityResourceDTO.userId;
+        

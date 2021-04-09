@@ -47,7 +47,7 @@ export class Lease extends Base {
    @Column({ name: "employee_id" }) 
    employeeId: number;
 
-   @ManyToOne(() => Employee, employee => employee.employmentContracts)
+   @ManyToOne(() => Employee, employee => employee.leases)
    @JoinColumn({ name: "employee_id" })
    employee: Employee;
 }

@@ -32,7 +32,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
             opportunityObj.type = opportunity.type;
             opportunityObj.tender = opportunity.tender;
             opportunityObj.tenderNumber = opportunity.tenderNumber;
-            opportunityObj.tenderValue = opportunity.tenderValue;
+            opportunityObj.hoursPerDay = opportunity.hoursPerDay;
             opportunityObj.cmPercentage = opportunity.cmPercentage;
             opportunityObj.goPercentage = opportunity.goPercentage;
             opportunityObj.getPercentage = opportunity.getPercentage;
@@ -110,7 +110,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
             opportunityObj.type = opportunity.type;
             opportunityObj.tender = opportunity.tender;
             opportunityObj.tenderNumber = opportunity.tenderNumber;
-            opportunityObj.tenderValue = opportunity.tenderValue;
+            opportunityObj.hoursPerDay = opportunity.hoursPerDay;
             opportunityObj.cmPercentage = opportunity.cmPercentage;
             opportunityObj.goPercentage = opportunity.goPercentage;
             opportunityObj.getPercentage = opportunity.getPercentage;
@@ -173,7 +173,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
             throw new Error("This Opportunity not found!");
         }
         let opportunity = await this.findOne(opportunityId, {
-            relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel", "opportunityResources.user", "opportunityResources.user.contactPersonOrganization", "opportunityResources.user.contactPersonOrganization.contactPerson"]
+            relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel", "opportunityResources.opportunityResourceAllocations", "opportunityResources.opportunityResourceAllocations.contactPerson", "opportunityResources.opportunityResourceAllocations.contactPerson"]
         });
         if (!opportunity) {
             throw new Error("Opportunity not found!");
@@ -188,7 +188,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
         }
 
         let opportunity = await this.findOne(opportunityId, {
-            relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel", "opportunityResources.user"]
+            relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel"]
         });
         if (!opportunity) {
             throw new Error("Opportunity not found!");
@@ -200,15 +200,6 @@ export class OpportunityRepository extends Repository<Opportunity> {
         resource.billableHours = opportunityResourceDTO.billableHours;
         resource.opportunityId = opportunityId;
         console.log(opportunityId);
-        resource.sellingRate = opportunityResourceDTO.sellingRate;
-        resource.buyingRate = opportunityResourceDTO.buyingRate;
-        if (opportunityResourceDTO.userId) {
-            let resourceExists = opportunity.opportunityResources.filter(x => x.userId == opportunityResourceDTO.userId);
-            if(resourceExists.length) {
-                throw new Error("Cannot add resouce for same user again");
-            }
-        }
-        resource.userId = opportunityResourceDTO.userId;
         return this.manager.save(resource);
     }
 
@@ -219,7 +210,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
             throw new Error("Opportunity not found!");
         }
         let opportunity = await this.findOne(opportunityId, {
-            relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel", "opportunityResources.user"]
+            relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel"]
         });
         console.log(opportunity);
         
@@ -235,15 +226,6 @@ export class OpportunityRepository extends Repository<Opportunity> {
         resource.panelSkillStandardLevelId = opportunityResourceDTO.panelSkillStandardLevelId;
         resource.billableHours = opportunityResourceDTO.billableHours;
         resource.opportunityId = opportunityId;
-        resource.sellingRate = opportunityResourceDTO.sellingRate;
-        resource.buyingRate = opportunityResourceDTO.buyingRate;
-        if (opportunityResourceDTO.userId) {
-            let resourceExists = opportunity.opportunityResources.filter(x => x.id != resource.id && x.userId == opportunityResourceDTO.userId);
-            if(resourceExists.length) {
-                throw new Error("Cannot add resouce for same user again");
-            }
-        }
-        resource.userId = opportunityResourceDTO.userId;
         return this.manager.save(resource);
     }
 
@@ -252,7 +234,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
             throw new Error("Opportunity not found!");
         }
         let opportunity = await this.findOne(opportunityId, {
-            relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel", "opportunityResources.user"]
+            relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel", "opportunityResources.opportunityResourceAllocations", "opportunityResources.opportunityResourceAllocations.contactPerson"]
         });
         if (!opportunity) {
             throw new Error("Opportunity not found!");
@@ -269,12 +251,34 @@ export class OpportunityRepository extends Repository<Opportunity> {
             throw new Error("Opportunity not found!");
         }
         let opportunity = await this.findOne(opportunityId, {
-            relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel", "opportunityResources.user"]
+            relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel", "opportunityResources.opportunityResourceAllocations", "opportunityResources.opportunityResourceAllocations.contactPerson"]
         });
         if (!opportunity) {
             throw new Error("Opportunity not found!");
         }
         opportunity.opportunityResources = opportunity.opportunityResources.filter(x => x.id !== id);
         return await this.manager.save(opportunity);
+    }
+
+    async addResourceAllocation(opportunityId: number, opportunityResourceDTO: OpportunityResourceDTO) {
+        
+        if (!opportunityId) {
+            throw new Error("Opportunity Id not found!");
+        }
+
+        let opportunity = await this.findOne(opportunityId, {
+            relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel"]
+        });
+        if (!opportunity) {
+            throw new Error("Opportunity not found!");
+        }
+
+        let resource = new OpportunityResource();
+        resource.panelSkillId = opportunityResourceDTO.panelSkillId;
+        resource.panelSkillStandardLevelId = opportunityResourceDTO.panelSkillStandardLevelId;
+        resource.billableHours = opportunityResourceDTO.billableHours;
+        resource.opportunityId = opportunityId;
+        console.log(opportunityId);
+        return this.manager.save(resource);
     }
 }

@@ -47,9 +47,6 @@ export class Opportunity extends Base {
    @Column({ name: "tender_number", nullable: true })
    tenderNumber: String;
 
-   @Column({ name: "tender_value", nullable: true })
-   tenderValue: number;
-
    @Column({ name: "cm_percentage", nullable: true })
    cmPercentage: number;
 
@@ -58,6 +55,9 @@ export class Opportunity extends Base {
 
    @Column({ name: "get_percentage", nullable: true })
    getPercentage: number;
+
+   @Column({ name: "hours_per_day", nullable: true })
+   hoursPerDay: number;
 
    @Column({ name: "organization_id", nullable: true})
    organizationId: number;
@@ -80,7 +80,6 @@ export class Opportunity extends Base {
    @JoinColumn({ name: "contact_person_id" })
    contactPerson: ContactPerson;
 
-
    @Column({ name: "state_id", nullable: true})
    stateId: number;
 
@@ -88,11 +87,8 @@ export class Opportunity extends Base {
    @JoinColumn({ name: "state_id" })
    state: State;
 
-   @OneToMany(() => OpportunityResource, opportunityResource => opportunityResource.opportunity)
-   @JoinColumn({ name: "opportunity_resource_id" })
+   @OneToMany(() => OpportunityResource, opportunityResource => opportunityResource.opportunity, {
+      cascade: true
+   })
    opportunityResources: OpportunityResource[];
-
-   @Column({ name: "project_id", nullable: true})
-   projectId: number;
-   
 }

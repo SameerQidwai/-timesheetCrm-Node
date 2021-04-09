@@ -151,7 +151,7 @@ export class EmployeeRepository extends Repository<Employee> {
             contactPersonObj.gender = employee.gender;
             contactPersonObj.phoneNumber = employee.phoneNumber;
             if (employee.dateOfBirth)
-            contactPersonObj.dateOfBirth = new Date(employee.dateOfBirth);
+                contactPersonObj.dateOfBirth = new Date(employee.dateOfBirth);
 
             let state: State | undefined;
             if (employee.stateId) {

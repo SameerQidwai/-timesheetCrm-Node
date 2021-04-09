@@ -1,15 +1,10 @@
-import { Gender, ProjectType } from '../constants/constants';
-import { Entity, Column, ManyToOne, JoinColumn, ManyToMany, JoinTable, OneToMany } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Base } from './common/base';
-import { StandardSkillStandardLevel } from './standardSkillStandardLevel';
-import { State } from './state';
-import { ContactPersonOrganization } from './contactPersonOrganization';
-import { Organization } from './organization';
-import { Panel } from './panel';
 import { PanelSkill } from './panelSkill';
 import { PanelSkillStandardLevel } from './panelSkillStandardLevel';
 import { Opportunity } from './opportunity';
 import { Employee } from './employee';
+import { OpportunityResourceAllocation } from './opportunityResourceAllocation';
 
 @Entity("opportunity_resources")
 export class OpportunityResource extends Base {
@@ -38,17 +33,9 @@ export class OpportunityResource extends Base {
    @JoinColumn({ name: "opportunity_id" })
    opportunity: Opportunity;
 
-   @Column({ type: 'decimal', precision: 10, scale: 3, name: "selling_rate", nullable: true })
-   sellingRate: number;
-
-   @Column({ type: 'decimal', precision: 10, scale: 3, name: "buying_rate", nullable: true })
-   buyingRate: number;
-
-   @Column({ name: "user_id", nullable: true})
-   userId: number | null;
-   
-   @ManyToOne(() => Employee)
-   @JoinColumn({ name: "user_id" })
-   user: Employee;
+   @OneToMany(() => OpportunityResourceAllocation, opportunityResourceAllocation => opportunityResourceAllocation.opportunityResource, {
+      cascade: true
+   })
+   opportunityResourceAllocations: OpportunityResourceAllocation[];
 
 }

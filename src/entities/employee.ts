@@ -4,7 +4,7 @@ import { ContactPersonOrganization } from './contactPersonOrganization';
 import { EmploymentContract } from './employmentContract';
 import { BankAccount } from './bankAccount';
 import { Lease } from './lease';
-import { SuperannuationType } from 'src/constants/constants';
+import { SuperannuationType } from '../constants/constants';
 
 @Entity("employees")
 export class Employee extends Base {

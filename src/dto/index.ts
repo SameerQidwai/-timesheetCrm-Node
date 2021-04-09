@@ -263,7 +263,7 @@ export interface OpportunityDTO extends Base {
   qualifiedOps: boolean;
   tender: string;
   tenderNumber: string;
-  tenderValue: number;
+  hoursPerDay: number;
   cmPercentage: number;
   goPercentage: number;
   getPercentage: number;
@@ -276,7 +276,12 @@ export interface OpportunityResourceDTO extends Base {
   panelSkillId: number;
   panelSkillStandardLevelId: number;
   billableHours: number;
+}
+
+export interface OpportunityResourceAllocationDTO extends Base {
+  opportunityResourceId: number;
   buyingRate: number;
   sellingRate: number;
-  userId: number | null;
+  contactPersonId: number | null;
+  isMarkedAsSelected: boolean;
 }
