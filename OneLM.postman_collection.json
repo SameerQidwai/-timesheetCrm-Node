@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "0c46e353-5954-4235-b6a0-6217ac4cc12e",
+		"_postman_id": "b4600071-dcfa-4968-9895-f0cf3ad794bb",
 		"name": "OneLM",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -839,7 +839,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"contactPersonId\": 1,\r\n    \"firstName\": \"Mursal as employee updated\",\r\n    \"lastName\": \"Khan\",\r\n    \"username\": \"mursal@onelm.com\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"mursal@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"saad\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"saad@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"tfn\": \"\",\r\n    \"superannuationName\": \"Jubilee\",\r\n    \"superannuationBankName\": \"\",\r\n    \"superannuationBankAccountOrMembershipNumber\": \"1111-2222-3\",\r\n    \"superannuationAbnOrUsi\": \"12345\",\r\n    \"superannuationBankBsb\": \"\",\r\n    \"superannuationAddress\": \"\",\r\n    \"training\": \"need more\",\r\n    \"bankName\": \"HBL\",\r\n    \"bankAccountNo\": \"234353453453534534\",\r\n    \"bankBsb\": \"12qwe\",\r\n    \"latestEmploymentContract\": {\r\n        \"payslipEmail\": \"pay@live.com\",\r\n        \"payFrequency\": 1,\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n}",
+							"raw": "{\r\n    \"contactPersonId\": 1,\r\n    \"firstName\": \"Mursal as employee updated2\",\r\n    \"lastName\": \"Khan\",\r\n    \"username\": \"mursal@onelm.com\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"mursal@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"saad\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"saad@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"tfn\": \"\",\r\n    \"superannuationName\": \"Jubilee\",\r\n    \"superannuationBankName\": \"\",\r\n    \"superannuationBankAccountOrMembershipNumber\": \"1111-2222-3\",\r\n    \"superannuationAbnOrUsi\": \"12345\",\r\n    \"superannuationBankBsb\": \"\",\r\n    \"superannuationAddress\": \"\",\r\n    \"training\": \"need more\",\r\n    \"bankName\": \"HBL\",\r\n    \"bankAccountNo\": \"234353453453534534\",\r\n    \"bankBsb\": \"12qwe\",\r\n    \"latestEmploymentContract\": {\r\n        \"payslipEmail\": \"pay@live.com\",\r\n        \"payFrequency\": 1,\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -911,7 +911,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"organizationId\": 2,\r\n    \"title\": \"Ecommerce website\",\r\n    \"value\": 20000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"tenderValue\": 25000,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1\r\n}",
+							"raw": "{\r\n    \"organizationId\": 2,\r\n    \"title\": \"Ecommerce website\",\r\n    \"value\": 20000,\r\n    \"type\": 1,\r\n    \"stateId\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"hoursPerDay\": 8,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -963,15 +963,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3301/api/v1/employees/get/contact-persons",
-							"protocol": "http",
+							"raw": "{{Endpoint}}/employees/get/contact-persons",
 							"host": [
-								"localhost"
+								"{{Endpoint}}"
 							],
-							"port": "3301",
 							"path": [
-								"api",
-								"v1",
 								"employees",
 								"get",
 								"contact-persons"
@@ -1031,7 +1027,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"panelSkillId\": 1,\r\n    \"panelSkillStandardLevelId\": 1,\r\n    \"billableHours\": 220,\r\n    \"buyingRate\": 10,\r\n    \"sellingRate\": 12,\r\n    \"userId\": 1\r\n}",
+							"raw": "{\r\n    \"panelSkillId\": 1,\r\n    \"panelSkillStandardLevelId\": 1,\r\n    \"billableHours\": 120\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1059,7 +1055,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"panelSkillId\": 1,\r\n    \"panelSkillStandardLevelId\": 1,\r\n    \"billableHours\": 240,\r\n    \"buyingRate\": 10,\r\n    \"sellingRate\": 12,\r\n    \"userId\": null\r\n}",
+							"raw": "{\r\n    \"panelSkillId\": 1,\r\n    \"panelSkillStandardLevelId\": 2,\r\n    \"billableHours\": 502\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1080,25 +1076,120 @@
 						}
 					},
 					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
 				},
 				{
-					"name": "List Contact Persons",
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Opportunity Resource Allocation",
+			"item": [
+				{
+					"name": "Create",
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"buyingRate\": 9,\r\n    \"sellingRate\": 10,\r\n    \"contactPersonId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "http://localhost:3301/api/v1/employees/get/contact-persons",
-							"protocol": "http",
+							"raw": "{{Endpoint}}/opportunities/1/resources/1/allocations",
 							"host": [
-								"localhost"
+								"{{Endpoint}}"
 							],
-							"port": "3301",
 							"path": [
-								"api",
-								"v1",
-								"employees",
-								"get",
-								"contact-persons"
+								"opportunities",
+								"1",
+								"resources",
+								"1",
+								"allocations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"buyingRate\": 10,\r\n    \"sellingRate\": 12,\r\n    \"contactPersonId\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/opportunities/1/resources/1/allocations/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities",
+								"1",
+								"resources",
+								"1",
+								"allocations",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mark As Selected",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/opportunities/1/resources/1/allocations/2/mark-as-selected",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities",
+								"1",
+								"resources",
+								"1",
+								"allocations",
+								"2",
+								"mark-as-selected"
 							]
 						}
 					},
@@ -1179,7 +1270,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"sohail@sudoware.com\",\r\n    \"firstName\": \"Sohail as Subcontractor\",\r\n    \"lastName\": \"Rauf\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"sohail@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"shehbaz\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"shehbaz@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"latestContract\": {\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n}",
+							"raw": "{\r\n    \"username\": \"sohail@sudoware.com\",\r\n    \"firstName\": \"Sohail as Subcontractor2\",\r\n    \"lastName\": \"Rauf\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"sohail@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"shehbaz\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"shehbaz@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"latestContract\": {\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1856,7 +1947,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"label\": \"Backend Developer\",\r\n    \"standardSkillId\": 2,\r\n    \"panelId\": 2,\r\n    \"panelSkillStandardLevels\": [\r\n        {\r\n            \"standardLevelId\": 3,\r\n            \"levelLabel\": \"Expert\",\r\n            \"shortTermCeil\": 12.3,\r\n            \"longTermCeil\": 10\r\n        },\r\n        {\r\n            \"standardLevelId\": 2,\r\n            \"levelLabel\": \"intermediate\",\r\n            \"shortTermCeil\": 15.3,\r\n            \"longTermCeil\": 12\r\n        }\r\n    ]\r\n}",
+							"raw": "{\r\n    \"label\": \"Engineer\",\r\n    \"standardSkillId\": 1,\r\n    \"panelId\": 1,\r\n    \"panelSkillStandardLevels\": [\r\n        {\r\n            \"standardLevelId\": 1,\r\n            \"levelLabel\": \"Basic\",\r\n            \"shortTermCeil\": 12.3,\r\n            \"longTermCeil\": 10\r\n        },\r\n        {\r\n            \"standardLevelId\": 2,\r\n            \"levelLabel\": \"intermediate\",\r\n            \"shortTermCeil\": 15.3,\r\n            \"longTermCeil\": 12\r\n        }\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
