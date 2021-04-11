@@ -279,9 +279,7 @@ export interface OpportunityResourceDTO extends Base {
 }
 
 export interface OpportunityResourceAllocationDTO extends Base {
-  opportunityResourceId: number;
   buyingRate: number;
   sellingRate: number;
   contactPersonId: number | null;
-  isMarkedAsSelected: boolean;
 }

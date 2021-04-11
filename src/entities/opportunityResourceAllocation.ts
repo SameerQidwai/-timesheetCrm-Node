@@ -29,7 +29,7 @@ export class OpportunityResourceAllocation extends Base {
    @Column({ type: 'decimal', precision: 10, scale: 3, name: "buying_rate", nullable: true })
    buyingRate: number;
 
-   @Column({ name: "is_marked_as_selected" })
+   @Column({ name: "is_marked_as_selected", default: false })
    isMarkedAsSelected: boolean;
 
    @Column({ name: "contact_person_id", nullable: true})

@@ -1,4 +1,4 @@
-import { OpportunityDTO, OpportunityResourceDTO } from "../dto";
+import { OpportunityDTO, OpportunityResourceAllocationDTO, OpportunityResourceDTO } from "../dto";
 import { EntityRepository, Repository } from "typeorm";
 import { Organization } from "./../entities/organization";
 import { Opportunity } from "./../entities/opportunity";
@@ -6,6 +6,7 @@ import { Panel } from "./../entities/panel";
 import { State } from "./../entities/state";
 import { ContactPerson } from "./../entities/contactPerson";
 import { OpportunityResource } from "./../entities/opportunityResource";
+import { OpportunityResourceAllocation } from "../entities/opportunityResourceAllocation";
 
 @EntityRepository(Opportunity)
 export class OpportunityRepository extends Repository<Opportunity> {
@@ -173,7 +174,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
             throw new Error("This Opportunity not found!");
         }
         let opportunity = await this.findOne(opportunityId, {
-            relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel", "opportunityResources.opportunityResourceAllocations", "opportunityResources.opportunityResourceAllocations.contactPerson", "opportunityResources.opportunityResourceAllocations.contactPerson"]
+            relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel", "opportunityResources.opportunityResourceAllocations", "opportunityResources.opportunityResourceAllocations.contactPerson"]
         });
         if (!opportunity) {
             throw new Error("Opportunity not found!");
@@ -200,7 +201,8 @@ export class OpportunityRepository extends Repository<Opportunity> {
         resource.billableHours = opportunityResourceDTO.billableHours;
         resource.opportunityId = opportunityId;
         console.log(opportunityId);
-        return this.manager.save(resource);
+        resource = await this.manager.save(resource);
+        return this.findOneCustomResource(opportunityId, resource.id);
     }
 
     async updateResource(opportunityId: number, id: number, opportunityResourceDTO: OpportunityResourceDTO) {
@@ -210,7 +212,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
             throw new Error("Opportunity not found!");
         }
         let opportunity = await this.findOne(opportunityId, {
-            relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel"]
+            relations: ["opportunityResources"]
         });
         console.log(opportunity);
         
@@ -226,7 +228,8 @@ export class OpportunityRepository extends Repository<Opportunity> {
         resource.panelSkillStandardLevelId = opportunityResourceDTO.panelSkillStandardLevelId;
         resource.billableHours = opportunityResourceDTO.billableHours;
         resource.opportunityId = opportunityId;
-        return this.manager.save(resource);
+        await this.manager.save(resource);
+        return this.findOneCustomResource(opportunityId, id);
     }
 
     async findOneCustomResource(opportunityId: number, id: number): Promise<any|undefined> {
@@ -260,25 +263,197 @@ export class OpportunityRepository extends Repository<Opportunity> {
         return await this.manager.save(opportunity);
     }
 
-    async addResourceAllocation(opportunityId: number, opportunityResourceDTO: OpportunityResourceDTO) {
+    async addResourceAllocation(opportunityId: number, opportunityResourceId: number, opportunityResourceAllocationDTO: OpportunityResourceAllocationDTO) {
         
         if (!opportunityId) {
             throw new Error("Opportunity Id not found!");
         }
 
+        if (!opportunityResourceId) {
+            throw new Error("Opportunity Resource Id not found!");
+        }
+
         let opportunity = await this.findOne(opportunityId, {
-            relations: ["opportunityResources", "opportunityResources.panelSkill", "opportunityResources.panelSkillStandardLevel"]
+            relations: ["opportunityResources", "opportunityResources.opportunityResourceAllocations"]
         });
+        
         if (!opportunity) {
             throw new Error("Opportunity not found!");
         }
 
-        let resource = new OpportunityResource();
-        resource.panelSkillId = opportunityResourceDTO.panelSkillId;
-        resource.panelSkillStandardLevelId = opportunityResourceDTO.panelSkillStandardLevelId;
-        resource.billableHours = opportunityResourceDTO.billableHours;
-        resource.opportunityId = opportunityId;
-        console.log(opportunityId);
-        return this.manager.save(resource);
+        let opportunityResource = opportunity.opportunityResources.filter(x => x.id == opportunityResourceId)[0];
+
+        if(!opportunityResource) {
+            throw new Error("Opportunity Resource not found!");
+        }
+
+        // Validate if resource is already allocated or not
+        if (
+            opportunityResourceAllocationDTO.contactPersonId &&
+            opportunityResource.opportunityResourceAllocations
+                .filter(x => x.contactPersonId == opportunityResourceAllocationDTO.contactPersonId).length
+        ) {
+            throw new Error("Same resource cannot be allocated multiple time!")
+        }
+
+        let resourceAllocation = new OpportunityResourceAllocation();
+        resourceAllocation.buyingRate = opportunityResourceAllocationDTO.buyingRate;
+        resourceAllocation.sellingRate = opportunityResourceAllocationDTO.sellingRate;
+        // resourceAllocation.isMarkedAsSelected = opportunityResourceAllocationDTO.isMarkedAsSelected;
+        if(opportunityResourceAllocationDTO.contactPersonId) {
+            resourceAllocation.contactPersonId = opportunityResourceAllocationDTO.contactPersonId;
+        }
+        resourceAllocation.opportunityResourceId = opportunityResourceId;
+        resourceAllocation = await this.manager.save(resourceAllocation);
+        return this.findOneCustomResourceAllocation(opportunityId, opportunityResourceId, resourceAllocation.id);
+    }
+
+    async updateResourceAllocation(opportunityId: number, opportunityResourceId: number, id: number, opportunityResourceAllocationDTO: OpportunityResourceAllocationDTO) {
+        
+        if (!opportunityId) {
+            throw new Error("Opportunity Id not found!");
+        }
+
+        if (!opportunityResourceId) {
+            throw new Error("Opportunity Resource Id not found!");
+        }
+
+        let opportunity = await this.findOne(opportunityId, {
+            relations: ["opportunityResources", "opportunityResources.opportunityResourceAllocations"]
+        });
+
+        if (!opportunity) {
+            throw new Error("Opportunity not found!");
+        }
+
+        let opportunityResource = opportunity.opportunityResources.filter(x => x.id == opportunityResourceId)[0];
+
+        if(!opportunityResource) {
+            throw new Error("Opportunity Resource not found!");
+        }
+
+        let resourceAllocation = opportunityResource.opportunityResourceAllocations.filter(x => x.id == id)[0];
+        if(!resourceAllocation) {
+            throw new Error("Resource Allocation not found!");
+        }
+
+        // Validate if resource is already allocated or not
+        if (
+            opportunityResourceAllocationDTO.contactPersonId &&
+            opportunityResource.opportunityResourceAllocations
+                .filter(x => x.contactPersonId == opportunityResourceAllocationDTO.contactPersonId).length &&
+            resourceAllocation.contactPersonId != opportunityResourceAllocationDTO.contactPersonId
+        ) {
+            throw new Error("Same resource cannot be allocated multiple time!")
+        }
+
+        resourceAllocation.buyingRate = opportunityResourceAllocationDTO.buyingRate;
+        resourceAllocation.sellingRate = opportunityResourceAllocationDTO.sellingRate;
+        // resourceAllocation.isMarkedAsSelected = opportunityResourceAllocationDTO.isMarkedAsSelected;
+        if(opportunityResourceAllocationDTO.contactPersonId) {
+            resourceAllocation.contactPersonId = opportunityResourceAllocationDTO.contactPersonId;
+        }
+        resourceAllocation.opportunityResourceId = opportunityResourceId;
+        await this.manager.save(resourceAllocation);
+        return this.findOneCustomResourceAllocation(opportunityId, opportunityResourceId, id);
+    }
+
+    async findOneCustomResourceAllocation(opportunityId: number, opportunityResourceId: number, id: number): Promise<any|undefined> {
+        if (!opportunityId) {
+            throw new Error("Opportunity Id not found!");
+        }
+
+        if (!opportunityResourceId) {
+            throw new Error("Opportunity Resource Id not found!");
+        }
+
+        let opportunity = await this.findOne(opportunityId, {
+            relations: ["opportunityResources", "opportunityResources.opportunityResourceAllocations", "opportunityResources.opportunityResourceAllocations.contactPerson"]
+        });
+
+        if (!opportunity) {
+            throw new Error("Opportunity not found!");
+        }
+
+        let opportunityResource = opportunity.opportunityResources.filter(x => x.id == opportunityResourceId)[0];
+
+        if(!opportunityResource) {
+            throw new Error("Opportunity Resource not found!");
+        }
+
+        let resourceAllocation = opportunityResource.opportunityResourceAllocations.filter(x => x.id == id)[0];
+        if(!resourceAllocation) {
+            throw new Error("Resource Allocation not found!");
+        }
+        return resourceAllocation;
+    }
+
+    async deleteCustomResourceAllocation(opportunityId: number, opportunityResourceId: number, id: number): Promise<any|undefined> {
+        
+        if (!opportunityId) {
+            throw new Error("Opportunity Id not found!");
+        }
+
+        if (!opportunityResourceId) {
+            throw new Error("Opportunity Resource Id not found!");
+        }
+
+        let opportunity = await this.findOne(opportunityId, {
+            relations: ["opportunityResources", "opportunityResources.opportunityResourceAllocations", "opportunityResources.opportunityResourceAllocations.contactPerson"]
+        });
+        
+        if (!opportunity) {
+            throw new Error("Opportunity not found!");
+        }
+
+        let opportunityResource = opportunity.opportunityResources.filter(x => x.id == opportunityResourceId)[0];
+
+        if(!opportunityResource) {
+            throw new Error("Opportunity Resource not found!");
+        }
+
+        let opportunityResourceIndex = opportunity.opportunityResources.findIndex(x => x.id == opportunityResourceId);
+
+        opportunity.opportunityResources[opportunityResourceIndex].opportunityResourceAllocations = opportunity.opportunityResources[opportunityResourceIndex].opportunityResourceAllocations.filter(x => x.id !== id);
+        await this.manager.save(opportunity);
+        return true;
+    }
+    
+    async markResourceAllocationAsSelected(opportunityId: number, opportunityResourceId: number, id: number) {
+        
+        if (!opportunityId) {
+            throw new Error("Opportunity Id not found!");
+        }
+
+        if (!opportunityResourceId) {
+            throw new Error("Opportunity Resource Id not found!");
+        }
+
+        let opportunity = await this.findOne(opportunityId, {
+            relations: ["opportunityResources", "opportunityResources.opportunityResourceAllocations", "opportunityResources.opportunityResourceAllocations.contactPerson"]
+        });
+
+        if (!opportunity) {
+            throw new Error("Opportunity not found!");
+        }
+
+        let opportunityResource = opportunity.opportunityResources.filter(x => x.id == opportunityResourceId)[0];
+
+        if(!opportunityResource) {
+            throw new Error("Opportunity Resource not found!");
+        }
+
+        let opportunityResourceIndex = opportunity.opportunityResources.findIndex(x => x.id == opportunityResourceId);
+
+        opportunity.opportunityResources[opportunityResourceIndex].opportunityResourceAllocations = opportunity.opportunityResources[opportunityResourceIndex].opportunityResourceAllocations.map(x => {
+            if(x.id == id) {
+                x.isMarkedAsSelected = true;
+            } else {
+                x.isMarkedAsSelected = false;
+            }
+            return x;
+        });
+        await this.manager.save(opportunity);
+        return true;
     }
 }
