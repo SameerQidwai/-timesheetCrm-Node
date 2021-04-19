@@ -7,7 +7,7 @@ import {
   ClearanceLevel,
   BusinessType,
   SuperannuationType,
-} from "./../constants/constants";
+} from './../constants/constants';
 
 export interface Base {
   id?: number;
@@ -270,6 +270,10 @@ export interface OpportunityDTO extends Base {
   panelId: number;
   contactPersonId: number | null;
   stateId: number | null;
+  accountDirectorId: number | null;
+  accountManagerId: number | null;
+  opportunityManagerId: number | null;
+  projectManagerId: number | null;
 }
 
 export interface OpportunityResourceDTO extends Base {
