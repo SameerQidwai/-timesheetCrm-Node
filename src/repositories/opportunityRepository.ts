@@ -125,19 +125,6 @@ export class OpportunityRepository extends Repository<Opportunity> {
         // opportunityObj.opportunityManagerId = 1;
       }
 
-      let projectManager: Employee | undefined;
-      if (opportunity.projectManagerId) {
-        projectManager = await this.manager.findOne(
-          Employee,
-          opportunity.projectManagerId
-        );
-        if (!projectManager) {
-          throw new Error('Project Manager not found');
-        }
-        opportunityObj.projectManagerId = projectManager.id;
-        // opportunityObj.projectManagerId = 1;
-      }
-
       opportunityObj.status = 'O';
 
       await transactionalEntityManager.save(opportunityObj);
@@ -264,19 +251,6 @@ export class OpportunityRepository extends Repository<Opportunity> {
         }
         opportunityObj.opportunityManagerId = opportunityManager.id;
         // opportunityObj.opportunityManagerId = 1;
-      }
-
-      let projectManager: Employee | undefined;
-      if (opportunity.projectManagerId) {
-        projectManager = await this.manager.findOne(
-          Employee,
-          opportunity.projectManagerId
-        );
-        if (!projectManager) {
-          throw new Error('Project Manager not found');
-        }
-        opportunityObj.projectManagerId = projectManager.id;
-        // opportunityObj.projectManagerId = 1;
       }
 
       await transactionalEntityManager.save(opportunityObj);

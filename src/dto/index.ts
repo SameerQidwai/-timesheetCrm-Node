@@ -251,7 +251,7 @@ export interface ContractDTO extends Base {
   remunerationAmountPer: Frequency;
 }
 
-export interface OpportunityDTO extends Base {
+interface Work extends Base {
   organizationId: number;
   title: string;
   value: number;
@@ -272,8 +272,10 @@ export interface OpportunityDTO extends Base {
   stateId: number | null;
   accountDirectorId: number | null;
   accountManagerId: number | null;
+}
+
+export interface OpportunityDTO extends Work {
   opportunityManagerId: number | null;
-  projectManagerId: number | null;
 }
 
 export interface OpportunityResourceDTO extends Base {
@@ -285,5 +287,19 @@ export interface OpportunityResourceDTO extends Base {
 export interface OpportunityResourceAllocationDTO extends Base {
   buyingRate: number;
   sellingRate: number;
+  contactPersonId: number | null;
+}
+
+export interface ProjectDTO extends Work {
+  projectManagerId: number | null;
+}
+
+export interface ProjectResourceDTO extends Base {
+  panelSkillId: number;
+  panelSkillStandardLevelId: number;
+  billableHours: number;
+  buyingRate: number;
+  sellingRate: number;
+  isMarkedAsSelected: boolean;
   contactPersonId: number | null;
 }
