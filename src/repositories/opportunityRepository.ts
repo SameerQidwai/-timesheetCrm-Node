@@ -2,6 +2,7 @@ import {
   OpportunityDTO,
   OpportunityResourceAllocationDTO,
   OpportunityResourceDTO,
+  ProjectDTO,
 } from '../dto';
 import { EntityRepository, Repository } from 'typeorm';
 import { Organization } from './../entities/organization';
@@ -135,6 +136,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
   async getAllActive(): Promise<any[]> {
     let result = await this.find({
+      where: [{ status: 'O' }, { status: 'L' }],
       relations: ['organization'],
     });
     return result;
@@ -215,7 +217,9 @@ export class OpportunityRepository extends Repository<Opportunity> {
       }
 
       let accountDirector: Employee | undefined;
-      if (opportunity.accountDirectorId) {
+      if (opportunity.accountDirectorId == null) {
+        opportunityObj.accountDirectorId = null;
+      } else if (opportunity.accountDirectorId) {
         accountDirector = await this.manager.findOne(
           Employee,
           opportunity.accountDirectorId
@@ -224,11 +228,13 @@ export class OpportunityRepository extends Repository<Opportunity> {
           throw new Error('Account Director not found');
         }
         opportunityObj.accountDirectorId = accountDirector.id;
-        // opportunityObj.accountDirectorId = 1;
       }
+      // opportunityObj.accountDirectorId = 1;
 
       let accountManager: Employee | undefined;
-      if (opportunity.accountManagerId) {
+      if (opportunity.accountManagerId == null) {
+        opportunityObj.accountManagerId = null;
+      } else if (opportunity.accountManagerId) {
         accountManager = await this.manager.findOne(
           Employee,
           opportunity.accountManagerId
@@ -237,11 +243,13 @@ export class OpportunityRepository extends Repository<Opportunity> {
           throw new Error('Account Manager not found');
         }
         opportunityObj.accountManagerId = accountManager.id;
-        // opportunityObj.accountManagerId = 1;
       }
+      // opportunityObj.accountManagerId = 1;
 
       let opportunityManager: Employee | undefined;
-      if (opportunity.opportunityManagerId) {
+      if (opportunity.opportunityManagerId == null) {
+        opportunityObj.opportunityManagerId = null;
+      } else if (opportunity.opportunityManagerId) {
         opportunityManager = await this.manager.findOne(
           Employee,
           opportunity.opportunityManagerId
@@ -250,8 +258,8 @@ export class OpportunityRepository extends Repository<Opportunity> {
           throw new Error('Opportunity Manager not found');
         }
         opportunityObj.opportunityManagerId = opportunityManager.id;
-        // opportunityObj.opportunityManagerId = 1;
       }
+      // opportunityObj.opportunityManagerId = 1;
 
       await transactionalEntityManager.save(opportunityObj);
     });
@@ -672,5 +680,142 @@ export class OpportunityRepository extends Repository<Opportunity> {
     });
     await this.manager.save(opportunity);
     return true;
+  }
+
+  async markOpportunityAsWin(
+    id: number,
+    opportunity: ProjectDTO
+  ): Promise<any | undefined> {
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      let opportunityObj = await this.findOneCustom(id);
+
+      opportunityObj.title = opportunity.title;
+      if (opportunity.startDate) {
+        opportunityObj.startDate = new Date(opportunity.startDate);
+      }
+      if (opportunity.endDate) {
+        opportunityObj.endDate = new Date(opportunity.endDate);
+      }
+      if (opportunity.bidDate) {
+        opportunityObj.bidDate = new Date(opportunity.bidDate);
+      }
+      if (opportunity.entryDate) {
+        opportunityObj.entryDate = new Date(opportunity.entryDate);
+      }
+      opportunityObj.qualifiedOps = opportunity.qualifiedOps ? true : false;
+      opportunityObj.value = opportunity.value;
+      opportunityObj.type = opportunity.type;
+      opportunityObj.tender = opportunity.tender;
+      opportunityObj.tenderNumber = opportunity.tenderNumber;
+      opportunityObj.hoursPerDay = opportunity.hoursPerDay;
+      opportunityObj.cmPercentage = opportunity.cmPercentage;
+      opportunityObj.goPercentage = opportunity.goPercentage;
+      opportunityObj.getPercentage = opportunity.getPercentage;
+
+      // validate organization
+      let organization: Organization | undefined;
+      if (opportunity.organizationId) {
+        organization = await this.manager.findOne(
+          Organization,
+          opportunity.organizationId
+        );
+        if (!organization) {
+          throw new Error('Organization not found');
+        }
+        opportunityObj.organizationId = organization.id;
+      }
+
+      // validate panel
+      let panel: Panel | undefined;
+      if (opportunity.panelId) {
+        panel = await this.manager.findOne(Panel, opportunity.panelId);
+        if (!panel) {
+          throw new Error('Panel not found');
+        }
+        opportunityObj.panelId = panel.id;
+      }
+
+      let contactPerson: ContactPerson | undefined;
+      if (opportunity.contactPersonId) {
+        contactPerson = await this.manager.findOne(
+          ContactPerson,
+          opportunity.contactPersonId
+        );
+        if (!contactPerson) {
+          throw new Error('Contact Person not found');
+        }
+        opportunityObj.contactPersonId = contactPerson.id;
+      }
+
+      let state: State | undefined;
+      if (opportunity.stateId) {
+        state = await this.manager.findOne(State, opportunity.stateId);
+        if (!state) {
+          throw new Error('State not found');
+        }
+        opportunityObj.stateId = state.id;
+      }
+
+      let accountDirector: Employee | undefined;
+      if (opportunity.accountDirectorId == null) {
+        opportunityObj.accountDirectorId = null;
+      } else if (opportunity.accountDirectorId) {
+        accountDirector = await this.manager.findOne(
+          Employee,
+          opportunity.accountDirectorId
+        );
+        if (!accountDirector) {
+          throw new Error('Account Director not found');
+        }
+        opportunityObj.accountDirectorId = accountDirector.id;
+      }
+      // opportunityObj.accountDirectorId = 1;
+
+      let accountManager: Employee | undefined;
+      if (opportunity.accountManagerId == null) {
+        opportunityObj.accountManagerId = null;
+      } else if (opportunity.accountManagerId) {
+        accountManager = await this.manager.findOne(
+          Employee,
+          opportunity.accountManagerId
+        );
+        if (!accountManager) {
+          throw new Error('Account Manager not found');
+        }
+        opportunityObj.accountManagerId = accountManager.id;
+      }
+      // opportunityObj.accountManagerId = 1;
+
+      let opportunityManager: Employee | undefined;
+      if (opportunity.projectManagerId == null) {
+        opportunityObj.projectManagerId = null;
+      } else if (opportunity.projectManagerId) {
+        opportunityManager = await this.manager.findOne(
+          Employee,
+          opportunity.projectManagerId
+        );
+        if (!opportunityManager) {
+          throw new Error('Opportunity Manager not found');
+        }
+        opportunityObj.projectManagerId = opportunityManager.id;
+      }
+
+      opportunityObj.status = 'P';
+      // opportunityObj.opportunityManagerId = 1;
+
+      await transactionalEntityManager.save(opportunityObj);
+    });
+    return this.findOneCustom(id);
+  }
+  async markOpportunityAsLost(id: number): Promise<any | undefined> {
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      let opportunityObj = await this.findOneCustom(id);
+
+      opportunityObj.status = 'L';
+      // opportunityObj.opportunityManagerId = 1;
+
+      await transactionalEntityManager.save(opportunityObj);
+    });
+    return this.findOneCustom(id);
   }
 }
