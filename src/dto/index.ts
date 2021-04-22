@@ -306,3 +306,12 @@ export interface ProjectResourceDTO extends Base {
   isMarkedAsSelected: boolean;
   contactPersonId: number | null;
 }
+
+export interface PurchaseaOrderDTO extends Base {
+  description: string;
+  issueDate: Date;
+  expiryDate: Date;
+  value: number;
+  comment: string;
+  expense: number;
+}

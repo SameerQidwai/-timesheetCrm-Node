@@ -4,6 +4,7 @@ import {
   OpportunityResourceDTO,
   ProjectDTO,
   ProjectResourceDTO,
+  PurchaseaOrderDTO,
 } from '../dto';
 import { EntityRepository, Repository } from 'typeorm';
 import { Organization } from './../entities/organization';
@@ -14,6 +15,7 @@ import { ContactPerson } from './../entities/contactPerson';
 import { OpportunityResource } from './../entities/opportunityResource';
 import { OpportunityResourceAllocation } from '../entities/opportunityResourceAllocation';
 import { Employee } from '../entities/employee';
+import { PurchaseOrder } from '../entities/purchaseOrder';
 
 @EntityRepository(Opportunity)
 export class ProjectRepository extends Repository<Opportunity> {
@@ -461,5 +463,77 @@ export class ProjectRepository extends Repository<Opportunity> {
       };
     });
     return selectedResources;
+  }
+
+  //! PURCHASE ORDERS
+  async getAllPurchaseOrders(projectId: number) {
+    if (!projectId) {
+      throw new Error('This Project not found!');
+    }
+    let project = await this.findOne(projectId, {
+      relations: ['purchaseOrders'],
+    });
+    if (!project) {
+      throw new Error('Project not found!');
+    }
+    return project.purchaseOrders;
+  }
+
+  async addPurchaseOrder(
+    projectId: number,
+    purchaseOrderDTO: PurchaseaOrderDTO
+  ) {
+    let id = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        if (!projectId) {
+          throw new Error('Project Id not found!');
+        }
+
+        let project = await this.findOne(projectId, {
+          relations: ['purchaseOrders'],
+        });
+
+        if (!project) {
+          throw new Error('Project not found!');
+        }
+
+        let order = new PurchaseOrder();
+
+        order.description = purchaseOrderDTO.description;
+        order.issueDate = purchaseOrderDTO.issueDate;
+        order.expiryDate = purchaseOrderDTO.expiryDate;
+        order.value = purchaseOrderDTO.value;
+        order.comment = purchaseOrderDTO.comment;
+        order.expense = purchaseOrderDTO.expense;
+        order.projectId = projectId;
+
+        order = await transactionalEntityManager.save(order);
+
+        return order.id;
+      }
+    );
+
+    return this.findOneCustomPurchaseOrder(projectId, id);
+  }
+
+  async findOneCustomPurchaseOrder(
+    projectId: number,
+    id: number
+  ): Promise<any | undefined> {
+    if (!projectId) {
+      throw new Error('Project not found!');
+    }
+    let project = await this.findOne(projectId, {
+      relations: ['purchaseOrders'],
+    });
+    if (!project) {
+      throw new Error('Project not found!');
+    }
+    let resource = project.purchaseOrders.filter((x) => x.id === id)[0];
+    if (!resource) {
+      throw new Error('Resource not found');
+    }
+
+    return resource;
   }
 }

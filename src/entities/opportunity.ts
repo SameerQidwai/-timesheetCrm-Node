@@ -16,6 +16,7 @@ import { ContactPerson } from './contactPerson';
 import { Organization } from './organization';
 import { Panel } from './panel';
 import { OpportunityResource } from './opportunityResource';
+import { PurchaseOrder } from './purchaseOrder';
 import { Employee } from './employee';
 
 @Entity('opportunities')
@@ -134,4 +135,9 @@ export class Opportunity extends Base {
     }
   )
   opportunityResources: OpportunityResource[];
+
+  @OneToMany(() => PurchaseOrder, (purchaseOrder) => purchaseOrder.project, {
+    cascade: true,
+  })
+  purchaseOrders: PurchaseOrder[];
 }
