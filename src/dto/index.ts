@@ -288,6 +288,9 @@ export interface OpportunityResourceAllocationDTO extends Base {
   buyingRate: number;
   sellingRate: number;
   contactPersonId: number | null;
+  startDate: Date;
+  endDate: Date;
+  effortRate: number;
 }
 
 export interface ProjectDTO extends Work {

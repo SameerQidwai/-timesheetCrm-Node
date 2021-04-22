@@ -462,7 +462,12 @@ export class OpportunityRepository extends Repository<Opportunity> {
       resourceAllocation.contactPersonId =
         opportunityResourceAllocationDTO.contactPersonId;
     }
+
     resourceAllocation.opportunityResourceId = opportunityResourceId;
+    resourceAllocation.startDate = opportunityResourceAllocationDTO.startDate;
+    resourceAllocation.endDate = opportunityResourceAllocationDTO.endDate;
+    resourceAllocation.effortRate = opportunityResourceAllocationDTO.effortRate;
+
     resourceAllocation = await this.manager.save(resourceAllocation);
     return this.findOneCustomResourceAllocation(
       opportunityId,
@@ -807,6 +812,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
     });
     return this.findOneCustom(id);
   }
+
   async markOpportunityAsLost(id: number): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
       let opportunityObj = await this.findOneCustom(id);
