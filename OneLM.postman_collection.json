@@ -2148,6 +2148,87 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Show",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/projects/1/resources/2",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projects",
+								"1",
+								"resources",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Purchase Orders",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/projects/1/purchaseOrders",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projects",
+								"1",
+								"purchaseOrders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"description\" : \"Hello3\",\r\n    \"issueDate\" :  \"2021-04-22\",\r\n    \"expiryDate\" : \"2022-04-22\",\r\n    \"value\" : 22000,\r\n    \"comment\" :  \"Hello jeee2\",\r\n    \"expense\" :  12000\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/projects/1/purchaseOrders",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projects",
+								"1",
+								"purchaseOrders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": null
+					},
+					"response": []
 				}
 			]
 		}
