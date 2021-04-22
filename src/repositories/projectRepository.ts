@@ -398,8 +398,11 @@ export class ProjectRepository extends Repository<Opportunity> {
     if (!resource) {
       throw new Error('Resource not found');
     }
-
-    resource.opportunityResourceAllocations.filter((x) => x.isMarkedAsSelected);
+    resource.opportunityResourceAllocations = resource.opportunityResourceAllocations.filter(
+      (x) => {
+        return x.isMarkedAsSelected;
+      }
+    );
     return resource;
   }
 
