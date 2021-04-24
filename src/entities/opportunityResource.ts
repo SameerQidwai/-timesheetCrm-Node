@@ -6,36 +6,39 @@ import { Opportunity } from './opportunity';
 import { Employee } from './employee';
 import { OpportunityResourceAllocation } from './opportunityResourceAllocation';
 
-@Entity("opportunity_resources")
+@Entity('opportunity_resources')
 export class OpportunityResource extends Base {
+  @Column({ name: 'panel_skill_id' })
+  panelSkillId: number;
 
-   @Column({ name: "panel_skill_id" })
-   panelSkillId: number;
+  @ManyToOne(() => PanelSkill)
+  @JoinColumn({ name: 'panel_skill_id' })
+  panelSkill: PanelSkill;
 
-   @ManyToOne(() => PanelSkill)
-   @JoinColumn({ name: "panel_skill_id" })
-   panelSkill: PanelSkill;
+  @Column({ name: 'panel_skill_standard_level_id' })
+  panelSkillStandardLevelId: number;
 
-   @Column({ name: "panel_skill_standard_level_id" })
-   panelSkillStandardLevelId: number;
+  @ManyToOne(() => PanelSkillStandardLevel)
+  @JoinColumn({ name: 'panel_skill_standard_level_id' })
+  panelSkillStandardLevel: PanelSkillStandardLevel;
 
-   @ManyToOne(() => PanelSkillStandardLevel)
-   @JoinColumn({ name: "panel_skill_standard_level_id" })
-   panelSkillStandardLevel: PanelSkillStandardLevel;
+  @Column({ type: 'decimal', precision: 10, scale: 3, name: 'billable_hours' })
+  billableHours: number;
 
-   @Column({ type: 'decimal', precision: 10, scale: 3, name: "billable_hours" })
-   billableHours: number;
+  @Column({ name: 'opportunity_id' })
+  opportunityId: number;
 
-   @Column({ name: "opportunity_id" })
-   opportunityId: number;
+  @ManyToOne(() => Opportunity)
+  @JoinColumn({ name: 'opportunity_id' })
+  opportunity: Opportunity;
 
-   @ManyToOne(() => Opportunity)
-   @JoinColumn({ name: "opportunity_id" })
-   opportunity: Opportunity;
-
-   @OneToMany(() => OpportunityResourceAllocation, opportunityResourceAllocation => opportunityResourceAllocation.opportunityResource, {
-      cascade: true
-   })
-   opportunityResourceAllocations: OpportunityResourceAllocation[];
-
+  @OneToMany(
+    () => OpportunityResourceAllocation,
+    (opportunityResourceAllocation) =>
+      opportunityResourceAllocation.opportunityResource,
+    {
+      cascade: true,
+    }
+  )
+  opportunityResourceAllocations: OpportunityResourceAllocation[];
 }

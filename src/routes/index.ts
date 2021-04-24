@@ -18,6 +18,7 @@ import subContractorRoutes from "./subContractorRoutes";
 import employmentContractRoutes from "./employmentContractRoutes";
 import subContractorContractRoutes from "./subContractorContractRoutes";
 import opportunityRoutes from "./opportunityRoutes";
+import projectRoutes from "./projectRoutes";
 import opportunityResourceRoutes from "./opportunityResourceRoutes";
 import { getCustomRepository } from "typeorm";
 
@@ -40,6 +41,7 @@ router.use("/sub-contractors", subContractorRoutes);
 router.use("/employment-contracts", employmentContractRoutes);
 router.use("/sub-contractors-contracts", subContractorContractRoutes);
 router.use("/opportunities", opportunityRoutes);
+router.use("/projects", projectRoutes);
 // router.use("/opportunity-resources", opportunityResourceRoutes);
 router.post("/global-setting", async (req,res) => {
     let data =await getCustomRepository(GlobalSettingRepository).createAndSave({

@@ -7,7 +7,7 @@ import {
   ClearanceLevel,
   BusinessType,
   SuperannuationType,
-} from "./../constants/constants";
+} from './../constants/constants';
 
 export interface Base {
   id?: number;
@@ -251,7 +251,7 @@ export interface ContractDTO extends Base {
   remunerationAmountPer: Frequency;
 }
 
-export interface OpportunityDTO extends Base {
+interface Work extends Base {
   organizationId: number;
   title: string;
   value: number;
@@ -270,6 +270,12 @@ export interface OpportunityDTO extends Base {
   panelId: number;
   contactPersonId: number | null;
   stateId: number | null;
+  accountDirectorId: number | null;
+  accountManagerId: number | null;
+}
+
+export interface OpportunityDTO extends Work {
+  opportunityManagerId: number | null;
 }
 
 export interface OpportunityResourceDTO extends Base {
@@ -282,4 +288,30 @@ export interface OpportunityResourceAllocationDTO extends Base {
   buyingRate: number;
   sellingRate: number;
   contactPersonId: number | null;
+  startDate: Date;
+  endDate: Date;
+  effortRate: number;
+}
+
+export interface ProjectDTO extends Work {
+  projectManagerId: number | null;
+}
+
+export interface ProjectResourceDTO extends Base {
+  panelSkillId: number;
+  panelSkillStandardLevelId: number;
+  billableHours: number;
+  buyingRate: number;
+  sellingRate: number;
+  isMarkedAsSelected: boolean;
+  contactPersonId: number | null;
+}
+
+export interface PurchaseaOrderDTO extends Base {
+  description: string;
+  issueDate: Date;
+  expiryDate: Date;
+  value: number;
+  comment: string;
+  expense: number;
 }

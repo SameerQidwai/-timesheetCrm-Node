@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "b4600071-dcfa-4968-9895-f0cf3ad794bb",
+		"_postman_id": "681186a3-1964-4161-9b68-cc197173d4be",
 		"name": "OneLM",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -911,7 +911,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"organizationId\": 2,\r\n    \"title\": \"Ecommerce website\",\r\n    \"value\": 20000,\r\n    \"type\": 1,\r\n    \"stateId\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"hoursPerDay\": 8,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1\r\n}",
+							"raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website\",\r\n    \"value\": 20000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"hoursPerDay\": 8,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"opportunityManagerId\": null,\r\n    \"status\": 0\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -937,7 +937,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"organizationId\": 2,\r\n    \"title\": \"Ecommerce website updated\",\r\n    \"value\": 20000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"tenderValue\": 25000,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1\r\n}",
+							"raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website updated\",\r\n    \"value\": 20000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"tenderValue\": 25000,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"opportunityManagerId\": null\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -971,6 +971,34 @@
 								"employees",
 								"get",
 								"contact-persons"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Win",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website updated\",\r\n    \"value\": 30000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"tenderValue\": 25000,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"projectManagerId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/opportunities/1/win",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities",
+								"1",
+								"win"
 							]
 						}
 					},
@@ -2012,6 +2040,193 @@
 								"6"
 							]
 						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Projects",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website\",\r\n    \"value\": 20000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"hoursPerDay\": 8,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"projectManagerId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/projects",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/projects",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projects"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website updated\",\r\n    \"value\": 30000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"tenderValue\": 25000,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"projectManagerId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/projects/8",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projects",
+								"8"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Project Resource",
+			"item": [
+				{
+					"name": "List Selected",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/projects/1/resources",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projects",
+								"1",
+								"resources"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Show",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/projects/1/resources/2",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projects",
+								"1",
+								"resources",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Purchase Orders",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/projects/1/purchaseOrders",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projects",
+								"1",
+								"purchaseOrders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"description\" : \"Hello3\",\r\n    \"issueDate\" :  \"2021-04-22\",\r\n    \"expiryDate\" : \"2022-04-22\",\r\n    \"value\" : 22000,\r\n    \"comment\" :  \"Hello jeee2\",\r\n    \"expense\" :  12000\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/projects/1/purchaseOrders",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projects",
+								"1",
+								"purchaseOrders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": null
 					},
 					"response": []
 				}
