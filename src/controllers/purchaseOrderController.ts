@@ -47,7 +47,7 @@ export class PurchaseOrderController {
     const repository = getCustomRepository(ProjectRepository);
     let id = req.params.id;
     let projectId = req.params.projectId;
-    let record = await repository.updateResource(
+    let record = await repository.updatePurchaseOrder(
       parseInt(projectId),
       parseInt(id),
       req.body
@@ -79,7 +79,7 @@ export class PurchaseOrderController {
     const repository = getCustomRepository(ProjectRepository);
     let id = req.params.id;
     let projectId = req.params.projectId;
-    let record = await repository.deleteCustomResource(
+    let record = await repository.deletePurchaseOrder(
       parseInt(projectId),
       parseInt(id)
     );

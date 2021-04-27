@@ -258,18 +258,21 @@ interface Work extends Base {
   type: ProjectType;
   startDate: Date | null;
   endDate: Date | null;
-  bidDate: Date | null;
+  bidDate: Date | null; // ONLY IN OPPORTUNITY
   entryDate: Date | null;
   qualifiedOps: boolean;
   tender: string;
   tenderNumber: string;
   hoursPerDay: number;
   cmPercentage: number;
-  goPercentage: number;
-  getPercentage: number;
+  goPercentage: number | number; // ONLY IN OPPORTUNITY
+  getPercentage: number | number; // ONLY IN OPPORTUNITY
   panelId: number;
   contactPersonId: number | null;
   stateId: number | null;
+  // wonDate: Date | null;
+  // lostDate: Date | null;
+  // completedDate: Date | null;
   accountDirectorId: number | null;
   accountManagerId: number | null;
 }
@@ -303,11 +306,14 @@ export interface ProjectResourceDTO extends Base {
   billableHours: number;
   buyingRate: number;
   sellingRate: number;
+  startDate: Date | null;
+  endDate: Date | null;
   isMarkedAsSelected: boolean;
   contactPersonId: number | null;
+  effortRate: number;
 }
 
-export interface PurchaseaOrderDTO extends Base {
+export interface PurchaseOrderDTO extends Base {
   description: string;
   issueDate: Date;
   expiryDate: Date;

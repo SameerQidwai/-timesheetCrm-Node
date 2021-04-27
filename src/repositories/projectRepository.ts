@@ -4,7 +4,7 @@ import {
   OpportunityResourceDTO,
   ProjectDTO,
   ProjectResourceDTO,
-  PurchaseaOrderDTO,
+  PurchaseOrderDTO,
 } from '../dto';
 import { EntityRepository, Repository } from 'typeorm';
 import { Organization } from './../entities/organization';
@@ -30,9 +30,6 @@ export class ProjectRepository extends Repository<Opportunity> {
       if (project.endDate) {
         projectObj.endDate = new Date(project.endDate);
       }
-      if (project.bidDate) {
-        projectObj.bidDate = new Date(project.bidDate);
-      }
       if (project.entryDate) {
         projectObj.entryDate = new Date(project.entryDate);
       }
@@ -43,8 +40,6 @@ export class ProjectRepository extends Repository<Opportunity> {
       projectObj.tenderNumber = project.tenderNumber;
       projectObj.hoursPerDay = project.hoursPerDay;
       projectObj.cmPercentage = project.cmPercentage;
-      projectObj.goPercentage = project.goPercentage;
-      projectObj.getPercentage = project.getPercentage;
 
       // validate organization
       let organization: Organization | undefined;
@@ -159,9 +154,6 @@ export class ProjectRepository extends Repository<Opportunity> {
       if (project.endDate) {
         projectObj.endDate = new Date(project.endDate);
       }
-      if (project.bidDate) {
-        projectObj.bidDate = new Date(project.bidDate);
-      }
       if (project.entryDate) {
         projectObj.entryDate = new Date(project.entryDate);
       }
@@ -172,8 +164,6 @@ export class ProjectRepository extends Repository<Opportunity> {
       projectObj.tenderNumber = project.tenderNumber;
       projectObj.hoursPerDay = project.hoursPerDay;
       projectObj.cmPercentage = project.cmPercentage;
-      projectObj.goPercentage = project.goPercentage;
-      projectObj.getPercentage = project.getPercentage;
 
       // validate organization
       let organization: Organization | undefined;
@@ -312,16 +302,26 @@ export class ProjectRepository extends Repository<Opportunity> {
         }
 
         let resource = new OpportunityResource();
+
         resource.panelSkillId = projectResourceDTO.panelSkillId;
         resource.panelSkillStandardLevelId =
           projectResourceDTO.panelSkillStandardLevelId;
-        resource.billableHours = projectResourceDTO.billableHours;
+        resource.billableHours = projectResourceDTO.billableHours ?? 0;
         resource.opportunityId = projectId;
         resource = await transactionalEntityManager.save(resource);
 
         let resourceAllocation = new OpportunityResourceAllocation();
+
+        if (projectResourceDTO.startDate) {
+          resourceAllocation.startDate = new Date(projectResourceDTO.startDate);
+        }
+        if (projectResourceDTO.endDate) {
+          resourceAllocation.endDate = new Date(projectResourceDTO.endDate);
+        }
+
         resourceAllocation.buyingRate = projectResourceDTO.buyingRate;
         resourceAllocation.sellingRate = projectResourceDTO.sellingRate;
+        resourceAllocation.effortRate = projectResourceDTO.effortRate;
         resourceAllocation.isMarkedAsSelected =
           projectResourceDTO.isMarkedAsSelected;
         if (projectResourceDTO.contactPersonId) {
@@ -364,12 +364,31 @@ export class ProjectRepository extends Repository<Opportunity> {
       if (!resource) {
         throw new Error('Resource not found!');
       }
-
-      resource.panelSkillId = projectResourceDTO.panelSkillId;
-      resource.panelSkillStandardLevelId =
-        projectResourceDTO.panelSkillStandardLevelId;
       resource.billableHours = projectResourceDTO.billableHours;
-      resource.opportunityId = projectId;
+
+      let index = resource.opportunityResourceAllocations.findIndex(
+        (x) => x.isMarkedAsSelected == true
+      );
+
+      if (projectResourceDTO.startDate) {
+        resource.opportunityResourceAllocations[index].startDate = new Date(
+          projectResourceDTO.startDate
+        );
+      }
+      if (projectResourceDTO.endDate) {
+        resource.opportunityResourceAllocations[index].endDate = new Date(
+          projectResourceDTO.endDate
+        );
+      }
+
+      resource.opportunityResourceAllocations[index].buyingRate =
+        projectResourceDTO.buyingRate;
+
+      resource.opportunityResourceAllocations[index].sellingRate =
+        projectResourceDTO.sellingRate;
+
+      resource.opportunityResourceAllocations[index].effortRate =
+        projectResourceDTO.effortRate;
 
       await transactionalEntityManager.save(resource);
     });
@@ -465,7 +484,7 @@ export class ProjectRepository extends Repository<Opportunity> {
     return selectedResources;
   }
 
-  //! PURCHASE ORDERS
+  //-- PURCHASE ORDERS
   async getAllPurchaseOrders(projectId: number) {
     if (!projectId) {
       throw new Error('This Project not found!');
@@ -481,7 +500,7 @@ export class ProjectRepository extends Repository<Opportunity> {
 
   async addPurchaseOrder(
     projectId: number,
-    purchaseOrderDTO: PurchaseaOrderDTO
+    purchaseOrderDTO: PurchaseOrderDTO
   ) {
     let id = await this.manager.transaction(
       async (transactionalEntityManager) => {
@@ -529,11 +548,67 @@ export class ProjectRepository extends Repository<Opportunity> {
     if (!project) {
       throw new Error('Project not found!');
     }
-    let resource = project.purchaseOrders.filter((x) => x.id === id)[0];
-    if (!resource) {
-      throw new Error('Resource not found');
+    let purchaseOrder = project.purchaseOrders.filter((x) => x.id === id)[0];
+    if (!purchaseOrder) {
+      throw new Error('Purchase Order not found');
     }
 
-    return resource;
+    return purchaseOrder;
+  }
+
+  async updatePurchaseOrder(
+    projectId: number,
+    id: number,
+    purchaseOrderDTO: PurchaseOrderDTO
+  ) {
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      if (!projectId) {
+        throw new Error('Project not found!');
+      }
+
+      let project = await this.findOne(projectId, {
+        relations: ['purchaseOrders'],
+      });
+      if (!project) {
+        throw new Error('Project not found!');
+      }
+      let order = project.purchaseOrders.filter((x) => x.id === id)[0];
+
+      if (!order) {
+        throw new Error('Purchase Order not found!');
+      }
+
+      order.description = purchaseOrderDTO.description;
+      order.issueDate = purchaseOrderDTO.issueDate;
+      order.expiryDate = purchaseOrderDTO.expiryDate;
+      order.value = purchaseOrderDTO.value;
+      order.comment = purchaseOrderDTO.comment;
+      order.expense = purchaseOrderDTO.expense;
+      order.projectId = projectId;
+
+      await transactionalEntityManager.save(order);
+    });
+
+    return this.findOneCustomPurchaseOrder(projectId, id);
+  }
+  // not being used. not working either
+  async deletePurchaseOrder(
+    projectId: number,
+    id: number
+  ): Promise<any | undefined> {
+    if (!projectId) {
+      throw new Error('Project not found!');
+    }
+
+    let project = await this.findOne(projectId, {
+      relations: ['purchaseOrders'],
+    });
+    if (!project) {
+      throw new Error('Project not found!');
+    }
+
+    project.purchaseOrders = project.purchaseOrders.filter((x) => x.id !== id);
+
+    return await this.manager.save(project);
   }
 }

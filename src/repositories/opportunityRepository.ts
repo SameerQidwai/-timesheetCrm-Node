@@ -806,6 +806,10 @@ export class OpportunityRepository extends Repository<Opportunity> {
       }
 
       opportunityObj.status = 'P';
+      opportunityObj.wonDate = new Date()
+        .toISOString()
+        .slice(0, 19)
+        .replace('T', ' ');
       // opportunityObj.opportunityManagerId = 1;
 
       await transactionalEntityManager.save(opportunityObj);
@@ -819,6 +823,10 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
       opportunityObj.status = 'L';
       // opportunityObj.opportunityManagerId = 1;
+      opportunityObj.lostDate = new Date()
+        .toISOString()
+        .slice(0, 19)
+        .replace('T', ' ');
 
       await transactionalEntityManager.save(opportunityObj);
     });
