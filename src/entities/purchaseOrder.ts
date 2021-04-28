@@ -4,7 +4,7 @@ import { Opportunity } from './opportunity';
 
 @Entity('purchase_orders')
 export class PurchaseOrder extends Base {
-  @Column({ name: 'description', type: 'text' })
+  @Column({ name: 'description', type: 'text', nullable: true })
   description: string;
 
   @Column({ name: 'issue_date' })
@@ -16,7 +16,7 @@ export class PurchaseOrder extends Base {
   @Column({ name: 'value' })
   value: number;
 
-  @Column({ name: 'comment' })
+  @Column({ name: 'comment', nullable: true })
   comment: string;
 
   @Column({ name: 'expense' })
