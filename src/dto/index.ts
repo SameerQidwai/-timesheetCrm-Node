@@ -321,3 +321,5 @@ export interface PurchaseOrderDTO extends Base {
   comment: string;
   expense: number;
 }
+
+export interface TimesheetDTO extends Base {}
