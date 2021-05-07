@@ -9,6 +9,9 @@ export class Organization extends Base {
   @Column()
   name: string;
 
+  @Column({ name: 'title', nullable: true })
+  title: string;
+
   @Column({ name: 'phone_number', nullable: true })
   phoneNumber: string;
 

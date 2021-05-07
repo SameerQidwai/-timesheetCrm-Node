@@ -5,11 +5,14 @@ import { TimesheetProjectEntry } from './timesheetProjectEntry';
 
 @Entity('timesheet_entries')
 export class TimesheetEntry extends Base {
+  @Column({ name: 'date' })
+  date: string;
+
   @Column({ name: 'start_time' })
-  startTime: Date;
+  startTime: string;
 
   @Column({ name: 'end_time' })
-  endTime: Date;
+  endTime: string;
 
   @Column({ name: 'break_hours' })
   breakHours: number;
@@ -17,8 +20,8 @@ export class TimesheetEntry extends Base {
   @Column({ name: 'actual_hours' })
   hours: number;
 
-  @Column({ name: 'note', nullable: true })
-  note: string;
+  @Column({ name: 'notes', nullable: true })
+  notes: string;
 
   @Column({ name: 'submitted_at', nullable: true })
   submittedAt: Date;

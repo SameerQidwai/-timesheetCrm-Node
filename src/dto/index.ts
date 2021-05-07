@@ -96,6 +96,7 @@ export interface GlobalSettingDTO {
 
 export interface OrganizationDTO extends Base {
   name: string;
+  title: string;
   phoneNumber: string;
   email: string;
   address: string;
@@ -322,4 +323,12 @@ export interface PurchaseOrderDTO extends Base {
   expense: number;
 }
 
-export interface TimesheetDTO extends Base {}
+export interface TimesheetDTO extends Base {
+  date: string;
+  startTime: string;
+  endTime: string;
+  projectIid: number;
+  projectEntryId: number;
+  notes: string;
+  breakHours: number;
+}

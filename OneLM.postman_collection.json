@@ -1003,6 +1003,34 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Lost",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website updated\",\r\n    \"value\": 30000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"tenderValue\": 25000,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"projectManagerId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/opportunities/1/lost",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities",
+								"1",
+								"lost"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"event": [
@@ -2227,6 +2255,147 @@
 						"method": "GET",
 						"header": [],
 						"url": null
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Timesheets",
+			"item": [
+				{
+					"name": "Get timesheet by date",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/timesheets/01-05-2021&31-05-2021&1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"timesheets",
+								"01-05-2021&31-05-2021&1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Entry",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"date\": \"06-05-2021\",\r\n    \"startTime\": \"22:02\",\r\n    \"endTime\": \"23:02\",\r\n    \"breakHours\": \"2\",\r\n    \"note\": \"sameer\",\r\n    \"projectEntryId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/timesheets/01-05-2021&31-05-2021&1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"timesheets",
+								"01-05-2021&31-05-2021&1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Submit Project Entry",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/timesheets/01-05-2021&31-05-2021&1/projectEntries/1/submit",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"timesheets",
+								"01-05-2021&31-05-2021&1",
+								"projectEntries",
+								"1",
+								"submit"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approve Project Entry",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/timesheets/01-05-2021&31-05-2021&1/projectEntries/1/approve",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"timesheets",
+								"01-05-2021&31-05-2021&1",
+								"projectEntries",
+								"1",
+								"approve"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reject Project Entry",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/timesheets/01-05-2021&31-05-2021&1/projectEntries/1/reject",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"timesheets",
+								"01-05-2021&31-05-2021&1",
+								"projectEntries",
+								"1",
+								"reject"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": null
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Entry",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/timesheets/entries/16",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"timesheets",
+								"entries",
+								"16"
+							]
+						}
 					},
 					"response": []
 				}

@@ -12,17 +12,14 @@ export class Timesheet extends Base {
   @Column({ name: 'end_date' })
   endDate: Date;
 
-  @Column({ name: 'comment', type: 'text' })
-  comment: string;
-
   @Column({ name: 'employee_id' })
   employeeId: number;
 
   @Column({ name: 'status', type: 'enum', enum: TimesheetStatus })
   status: TimesheetStatus;
 
-  @Column({ name: 'note' })
-  note: string;
+  @Column({ name: 'notes', type: 'text' })
+  notes: string;
 
   @OneToMany(
     () => TimesheetProjectEntry,
