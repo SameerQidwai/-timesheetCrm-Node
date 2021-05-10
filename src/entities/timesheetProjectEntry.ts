@@ -20,7 +20,7 @@ export class TimesheetProjectEntry extends Base {
   @JoinColumn({ name: 'project_id' })
   project: Opportunity;
 
-  @Column({ name: 'notes' })
+  @Column({ name: 'notes', nullable: true })
   notes: string;
 
   @Column({ name: 'attachment' })

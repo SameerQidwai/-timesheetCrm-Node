@@ -61,9 +61,9 @@ export class TimesheetController {
           notes: entry.notes,
         };
 
-        if (entry.submittedAt !== null) status = TimesheetStatus.SUBMITTED;
-        else if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
+        if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
         else if (entry.approvedAt !== null) status = TimesheetStatus.APPROVED;
+        else if (entry.submittedAt !== null) status = TimesheetStatus.SUBMITTED;
       });
 
       project.status = status;
@@ -73,9 +73,20 @@ export class TimesheetController {
     });
 
     console.log(projectStatuses);
+    let timesheetStatus: TimesheetStatus = projectStatuses.includes(
+      TimesheetStatus.REJECTED
+    )
+      ? TimesheetStatus.REJECTED
+      : projectStatuses.includes(TimesheetStatus.SAVED)
+      ? TimesheetStatus.SAVED
+      : projectStatuses.includes(TimesheetStatus.SUBMITTED)
+      ? TimesheetStatus.SUBMITTED
+      : projectStatuses.includes(TimesheetStatus.APPROVED) ??
+        TimesheetStatus.APPROVED;
 
     let response = {
       id: record.id,
+      status: timesheetStatus,
       notes: record.notes,
       projects: projects,
     };
