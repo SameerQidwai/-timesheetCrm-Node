@@ -1,9 +1,11 @@
 import { TimesheetDTO } from '../dto';
 import { EntityRepository, Repository, MoreThan } from 'typeorm';
-import { Timesheet } from '../entities/timesheet';
 import moment from 'moment';
+import { Timesheet } from '../entities/timesheet';
+import { TimesheetProjectEntry } from '../entities/timesheetProjectEntry';
 import { TimesheetEntry } from '../entities/timesheetEntry';
 import { TimesheetStatus } from '../constants/constants';
+import { start } from 'node:repl';
 
 @EntityRepository(Timesheet)
 export class TimesheetRepository extends Repository<Timesheet> {
@@ -12,8 +14,12 @@ export class TimesheetRepository extends Repository<Timesheet> {
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number
   ): Promise<any | undefined> {
-    let cStartDate = moment(startDate, 'DD-MM-YYYY').format('YYYY-MM-DD');
-    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD');
+    let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
+      'YYYY-MM-DD HH:mm:ss'
+    );
+    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+
+    console.log(cStartDate, cEndDate);
     return this.findOne({
       where: { startDate: cStartDate, endDate: cEndDate, employeeId: userId },
       relations: [
@@ -25,24 +31,58 @@ export class TimesheetRepository extends Repository<Timesheet> {
   }
 
   async addTimesheetEntry(
-    startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
-    endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
+    startDate: string,
+    endDate: string,
     userId: number,
     timesheetDTO: TimesheetDTO
   ): Promise<any | undefined> {
-    let cStartDate = moment(startDate, 'DD-MM-YYYY').format('YYYY-MM-DD');
-    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD');
-    let timesheet = this.findOne({
-      where: { startDate: cStartDate, endDate: cEndDate, employeeId: userId },
-    });
+    let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
+      'YYYY-MM-DD HH:mm:ss'
+    );
+    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
 
-    if (!timesheet) {
-      throw new Error('Timesheet not found!');
-    }
-
-    // console.log(timesheetDTO);
     let entry = await this.manager.transaction(
       async (transactionalEntityManager) => {
+        let timesheet: Timesheet | undefined;
+        let projectEntry: TimesheetProjectEntry | undefined;
+
+        timesheet = await this.manager.findOne(Timesheet, {
+          where: {
+            startDate: cStartDate,
+            endDate: cEndDate,
+            employeeId: userId,
+          },
+        });
+
+        if (!timesheet) {
+          timesheet = new Timesheet();
+
+          timesheet.startDate = moment(
+            `${startDate} 00:00:00`,
+            'DD-MM-YYYY HH:mm:ss'
+          ).toDate();
+          timesheet.endDate = moment(
+            `${endDate} 00:00:00`,
+            'DD-MM-YYYY HH:mm:ss'
+          ).toDate();
+          timesheet.employeeId = userId;
+
+          timesheet = await transactionalEntityManager.save(timesheet);
+        }
+
+        projectEntry = await this.manager.findOne(TimesheetProjectEntry, {
+          where: { projectId: timesheetDTO.projectId },
+        });
+
+        if (!projectEntry) {
+          projectEntry = new TimesheetProjectEntry();
+
+          projectEntry.timesheetId = timesheet.id;
+          projectEntry.projectId = timesheetDTO.projectId;
+
+          projectEntry = await transactionalEntityManager.save(projectEntry);
+        }
+
         let entry = new TimesheetEntry();
 
         //--COMMENTED TIMEZONE LOGIC
@@ -77,12 +117,15 @@ export class TimesheetRepository extends Repository<Timesheet> {
           ) / 60
         );
         entry.notes = timesheetDTO.notes;
-        entry.projectEntryId = timesheetDTO.projectEntryId;
+        entry.projectEntryId = projectEntry.id;
+
         entry = await transactionalEntityManager.save(entry);
 
         return entry;
       }
     );
+
+    // console.log(timesheetDTO);
 
     return entry;
   }
@@ -163,8 +206,6 @@ export class TimesheetRepository extends Repository<Timesheet> {
         projectEntry.entries.map((entry) => {
           entry.submittedAt = moment().toDate();
         });
-
-        timesheet.status = TimesheetStatus.SUBMITTED;
 
         await transactionalEntityManager.save(timesheet);
 

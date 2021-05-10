@@ -15,9 +15,6 @@ export class Timesheet extends Base {
   @Column({ name: 'employee_id' })
   employeeId: number;
 
-  @Column({ name: 'status', type: 'enum', enum: TimesheetStatus })
-  status: TimesheetStatus;
-
   @Column({ name: 'notes', type: 'text' })
   notes: string;
 

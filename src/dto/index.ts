@@ -327,7 +327,7 @@ export interface TimesheetDTO extends Base {
   date: string;
   startTime: string;
   endTime: string;
-  projectIid: number;
+  projectId: number;
   projectEntryId: number;
   notes: string;
   breakHours: number;

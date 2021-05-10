@@ -22,7 +22,8 @@ export class TimesheetController {
       userId
     );
 
-    if(!record) {  // if no timesheet found
+    if (!record) {
+      // if no timesheet found
       return res.status(200).json({
         success: true,
         // message: `Win Opportunity ${req.params.id}`,
@@ -62,7 +63,7 @@ export class TimesheetController {
 
     let response = {
       id: record.id,
-      status: record.status,
+      status: 'SV',
       notes: record.notes,
       projects: projects,
     };
