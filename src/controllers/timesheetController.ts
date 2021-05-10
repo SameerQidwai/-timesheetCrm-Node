@@ -22,6 +22,15 @@ export class TimesheetController {
       userId
     );
 
+    if(!record) {  // if no timesheet found
+      return res.status(200).json({
+        success: true,
+        // message: `Win Opportunity ${req.params.id}`,
+        message: 'Specific Timesheet by Date',
+        data: null,
+      });
+    }
+
     //-- START OF MODIFIED RESPSONSE FOR FRONTEND
 
     let projects: any = [];
