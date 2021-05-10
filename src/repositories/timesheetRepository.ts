@@ -207,6 +207,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
         projectEntry.entries.map((entry) => {
           entry.submittedAt = moment().toDate();
+          entry.approvedAt = null;
+          entry.rejectedAt = null;
         });
 
         await transactionalEntityManager.save(timesheet);

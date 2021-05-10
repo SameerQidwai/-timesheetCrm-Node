@@ -26,11 +26,11 @@ export class TimesheetEntry extends Base {
   @Column({ name: 'submitted_at', nullable: true })
   submittedAt: Date;
 
-  @Column({ name: 'approved_at', nullable: true })
-  approvedAt: Date;
+  @Column({ type: 'date', name: 'approved_at', nullable: true })
+  approvedAt: Date | null;
 
-  @Column({ name: 'rejected_at', nullable: true })
-  rejectedAt: Date;
+  @Column({ type: 'date', name: 'rejected_at', nullable: true })
+  rejectedAt: Date | null;
 
   @Column({ name: 'submitted_by', nullable: true })
   submittedBy: number;

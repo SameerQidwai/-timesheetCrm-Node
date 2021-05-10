@@ -132,11 +132,30 @@ export class ProjectRepository extends Repository<Opportunity> {
     return await this.findOneCustom(id);
   }
 
-  async getAllActive(): Promise<any[]> {
+  async getAllActive(userId: number): Promise<any[]> {
     let result = await this.find({
       where: [{ status: 'P' }, { status: 'C' }],
-      relations: ['organization'],
+      relations: [
+        'opportunityResources',
+        'opportunityResources.panelSkill',
+        'opportunityResources.panelSkillStandardLevel',
+        'opportunityResources.opportunityResourceAllocations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
     });
+
+    if (userId) {
+      result.map((project, index) => {
+        project.opportunityResources.map((resource) => {
+          resource.opportunityResourceAllocations.filter((allocation) => {
+            if (allocation.contactPersonId !== userId) {
+            }
+          });
+        });
+        result = result.slice(index, 1);
+      });
+    }
+
     return result;
   }
 
