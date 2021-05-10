@@ -23,7 +23,7 @@ export class TimesheetProjectEntry extends Base {
   @Column({ name: 'notes', nullable: true })
   notes: string;
 
-  @Column({ name: 'attachment' })
+  @Column({ name: 'attachment', nullable: true })
   attachment: string;
 
   @OneToMany(

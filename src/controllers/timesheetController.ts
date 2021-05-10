@@ -81,8 +81,9 @@ export class TimesheetController {
       ? TimesheetStatus.SAVED
       : projectStatuses.includes(TimesheetStatus.SUBMITTED)
       ? TimesheetStatus.SUBMITTED
-      : projectStatuses.includes(TimesheetStatus.APPROVED) ??
-        TimesheetStatus.APPROVED;
+      : projectStatuses.includes(TimesheetStatus.APPROVED)
+      ? TimesheetStatus.APPROVED
+      : TimesheetStatus.SAVED;
 
     let response = {
       id: record.id,
