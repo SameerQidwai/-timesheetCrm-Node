@@ -173,8 +173,10 @@ export class TimesheetRepository extends Repository<Timesheet> {
     userId: number,
     projectEntryId: number
   ): Promise<any | undefined> {
-    let cStartDate = moment(startDate, 'DD-MM-YYYY').format('YYYY-MM-DD');
-    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD');
+    let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
+      'YYYY-MM-DD HH:mm:ss'
+    );
+    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
 
     let projectEntry = await this.manager.transaction(
       async (transactionalEntityManager) => {
@@ -225,8 +227,10 @@ export class TimesheetRepository extends Repository<Timesheet> {
     userId: number,
     projectEntryId: number
   ): Promise<any | undefined> {
-    let cStartDate = moment(startDate, 'DD-MM-YYYY').format('YYYY-MM-DD');
-    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD');
+    let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
+      'YYYY-MM-DD HH:mm:ss'
+    );
+    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
 
     let projectEntry = await this.manager.transaction(
       async (transactionalEntityManager) => {
@@ -277,8 +281,10 @@ export class TimesheetRepository extends Repository<Timesheet> {
     userId: number,
     projectEntryId: number
   ): Promise<any | undefined> {
-    let cStartDate = moment(startDate, 'DD-MM-YYYY').format('YYYY-MM-DD');
-    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD');
+    let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
+      'YYYY-MM-DD HH:mm:ss'
+    );
+    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
 
     let projectEntry = await this.manager.transaction(
       async (transactionalEntityManager) => {

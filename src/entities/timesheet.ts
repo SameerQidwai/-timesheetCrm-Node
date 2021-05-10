@@ -15,7 +15,7 @@ export class Timesheet extends Base {
   @Column({ name: 'employee_id' })
   employeeId: number;
 
-  @Column({ name: 'notes', type: 'text' })
+  @Column({ name: 'notes', type: 'text', nullable: true })
   notes: string;
 
   @OneToMany(

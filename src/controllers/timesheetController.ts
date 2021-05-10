@@ -7,6 +7,7 @@ import moment from 'moment';
 import { TimesheetProjectEntry } from '../entities/timesheetProjectEntry';
 import { TimesheetEntry } from '../entities/timesheetEntry';
 import { Timesheet } from '../entities/timesheet';
+import { TimesheetStatus } from '../constants/constants';
 
 export class TimesheetController {
   async getTimesheet(req: Request, res: Response) {
@@ -35,12 +36,15 @@ export class TimesheetController {
     //-- START OF MODIFIED RESPSONSE FOR FRONTEND
 
     let projects: any = [];
+    let projectStatuses: any = [];
 
     interface Any {
       [key: string]: any;
     }
 
     record.projectEntries.map((projectEntry: TimesheetProjectEntry) => {
+      let status: TimesheetStatus = TimesheetStatus.SAVED;
+
       let project: Any = {
         projectEntryId: projectEntry.id,
         projectId: projectEntry.projectId,
@@ -56,14 +60,22 @@ export class TimesheetController {
           breakHours: entry.breakHours,
           notes: entry.notes,
         };
+
+        if (entry.submittedAt !== null) status = TimesheetStatus.SUBMITTED;
+        else if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
+        else if (entry.approvedAt !== null) status = TimesheetStatus.APPROVED;
       });
+
+      project.status = status;
+      projectStatuses.push(status);
 
       projects.push(project);
     });
 
+    console.log(projectStatuses);
+
     let response = {
       id: record.id,
-      status: 'SV',
       notes: record.notes,
       projects: projects,
     };
@@ -133,7 +145,7 @@ export class TimesheetController {
     console.log('record: ', record);
     res.status(200).json({
       success: true,
-      message: 'Create',
+      message: 'Submit',
       data: record,
     });
   }
@@ -156,7 +168,7 @@ export class TimesheetController {
     console.log('record: ', record);
     res.status(200).json({
       success: true,
-      message: 'Create',
+      message: 'Approve',
       data: record,
     });
   }
@@ -179,7 +191,7 @@ export class TimesheetController {
     console.log('record: ', record);
     res.status(200).json({
       success: true,
-      message: 'Create',
+      message: 'Reject',
       data: record,
     });
   }
