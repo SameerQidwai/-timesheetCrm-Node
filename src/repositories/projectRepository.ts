@@ -162,10 +162,9 @@ export class ProjectRepository extends Repository<Opportunity> {
         });
         if (add_flag === 1) response.push(project);
       });
+    } else {
+      return result;
     }
-
-    console.log('heyyy', response);
-    console.log('waaaaa', result);
 
     return response;
   }
@@ -449,11 +448,10 @@ export class ProjectRepository extends Repository<Opportunity> {
     if (!resource) {
       throw new Error('Resource not found');
     }
-    resource.opportunityResourceAllocations = resource.opportunityResourceAllocations.filter(
-      (x) => {
+    resource.opportunityResourceAllocations =
+      resource.opportunityResourceAllocations.filter((x) => {
         return x.isMarkedAsSelected;
-      }
-    );
+      });
     return resource;
   }
 
@@ -504,11 +502,10 @@ export class ProjectRepository extends Repository<Opportunity> {
     let selectedResources = project.opportunityResources.map((value) => {
       return {
         ...value,
-        opportunityResourceAllocations: value.opportunityResourceAllocations.filter(
-          (value2) => {
+        opportunityResourceAllocations:
+          value.opportunityResourceAllocations.filter((value2) => {
             return value2.isMarkedAsSelected === true;
-          }
-        ),
+          }),
       };
     });
     return selectedResources;
