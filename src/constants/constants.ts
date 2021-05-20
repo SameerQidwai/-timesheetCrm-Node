@@ -58,3 +58,12 @@ export enum TimesheetStatus {
   REJECTED = 'RJ',
   APPROVED = 'AP',
 }
+
+export enum EntityType {
+  EMPLOYEE = 'EMP',
+  CONTACT_PERSON = 'CPE',
+  ORGANIZATION = 'ORG',
+  WORK = 'WOR',
+  TIMESHEET = 'TSH',
+  PURCHASE_ORDER = 'POR',
+}

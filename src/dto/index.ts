@@ -7,6 +7,7 @@ import {
   ClearanceLevel,
   BusinessType,
   SuperannuationType,
+  EntityType,
 } from './../constants/constants';
 
 export interface Base {
@@ -331,4 +332,20 @@ export interface TimesheetDTO extends Base {
   projectEntryId: number;
   notes: string;
   breakHours: number;
+}
+
+export interface FileDTO extends Base {
+  files: object[];
+}
+
+export interface AttachmentDTO extends Base {
+  files: number[];
+  type: EntityType;
+  target: number;
+}
+
+export interface CommentDTO extends Base {
+  content: string;
+  type: EntityType;
+  target: number;
 }
