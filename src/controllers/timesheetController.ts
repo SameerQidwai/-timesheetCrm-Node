@@ -58,6 +58,7 @@ export class TimesheetController {
           startTime: moment(entry.startTime, 'HH:mm').format('HH:mm'),
           endTime: moment(entry.endTime, 'HH:mm').format('HH:mm'),
           breakHours: entry.breakHours,
+          actualHours: entry.hours,
           notes: entry.notes,
         };
 
