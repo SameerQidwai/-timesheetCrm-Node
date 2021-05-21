@@ -2269,13 +2269,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Endpoint}}/timesheets/01-05-2021&31-05-2021&1",
+							"raw": "{{Endpoint}}/timesheets/01-06-2021&30-06-2021&2",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"timesheets",
-								"01-05-2021&31-05-2021&1"
+								"01-06-2021&30-06-2021&2"
 							]
 						}
 					},
@@ -2288,7 +2288,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"date\": \"06-05-2021\",\r\n    \"startTime\": \"22:02\",\r\n    \"endTime\": \"23:02\",\r\n    \"breakHours\": \"2\",\r\n    \"note\": \"sameer\",\r\n    \"projectEntryId\": 1\r\n}",
+							"raw": "{\r\n    \"date\": \"06-05-2021\",\r\n    \"startTime\": \"22:02\",\r\n    \"endTime\": \"23:02\",\r\n    \"breakHours\": \"2\",\r\n    \"notes\": \"sameer\",\r\n    \"projectId\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2314,15 +2314,15 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{Endpoint}}/timesheets/01-05-2021&31-05-2021&1/projectEntries/1/submit",
+							"raw": "{{Endpoint}}/timesheets/01-06-2021&30-06-2021&2/projectEntries/7/submit",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"timesheets",
-								"01-05-2021&31-05-2021&1",
+								"01-06-2021&30-06-2021&2",
 								"projectEntries",
-								"1",
+								"7",
 								"submit"
 							]
 						}
@@ -2335,15 +2335,15 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{Endpoint}}/timesheets/01-05-2021&31-05-2021&1/projectEntries/1/approve",
+							"raw": "{{Endpoint}}/timesheets/01-06-2021&30-06-2021&2/projectEntries/7/approve",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"timesheets",
-								"01-05-2021&31-05-2021&1",
+								"01-06-2021&30-06-2021&2",
 								"projectEntries",
-								"1",
+								"7",
 								"approve"
 							]
 						}
@@ -2394,6 +2394,150 @@
 								"timesheets",
 								"entries",
 								"16"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Files",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "multipart/form-data",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "files",
+									"type": "file",
+									"src": "/C:/work/office/onelm-backend/onelm.sql"
+								},
+								{
+									"key": "files",
+									"type": "file",
+									"src": "/C:/work/office/onelm-backend/onelm.sql"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{Endpoint}}/files",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"files"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Attachments",
+			"item": [
+				{
+					"name": "Get",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/attachments/CPE/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"attachments",
+								"CPE",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"files\":[\r\n        23,24\r\n    ],\r\n    \"target\":1,\r\n    \"type\":\"CPE\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/attachments",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"attachments"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Comments",
+			"item": [
+				{
+					"name": "Get",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/comments/CPE/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"comments",
+								"CPE",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"content\":\"Hey whats up\",\r\n    \"target\":1,\r\n    \"type\":\"CPE\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/comments",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"comments"
 							]
 						}
 					},
