@@ -17,7 +17,7 @@ export class TimesheetEntry extends Base {
   @Column({ name: 'break_hours' })
   breakHours: number;
 
-  @Column({ name: 'actual_hours' })
+  @Column({ name: 'actual_hours', type: 'float' })
   hours: number;
 
   @Column({ name: 'notes', nullable: true })
