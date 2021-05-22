@@ -334,6 +334,11 @@ export interface TimesheetDTO extends Base {
   breakHours: number;
 }
 
+export interface TimesheetProjectNoteDTO extends Base {
+  note: string;
+  attachments: number[];
+}
+
 export interface FileDTO extends Base {
   files: object[];
 }
@@ -345,7 +350,8 @@ export interface AttachmentDTO extends Base {
 }
 
 export interface CommentDTO extends Base {
-  content: string;
   type: EntityType;
   target: number;
+  content: string;
+  attachments: number[] | [];
 }

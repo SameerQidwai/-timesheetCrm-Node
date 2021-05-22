@@ -7,9 +7,16 @@ export class CommentController {
   async create(req: Request, res: Response) {
     const repository = getCustomRepository(CommentRepository);
 
-    let response: string = await repository.createAndSave(req.body);
+    let content: string = req.body.content;
+    let type: EntityType = req.params.type as EntityType;
+    let id: number = parseInt(req.params.id);
+    let response: string = await repository.createAndSave({
+      type: type,
+      target: id,
+      content: content,
+      attachments: req.body.attachments,
+    });
 
-    // if no timesheet found
     return res.status(200).json({
       success: true,
       // message: `Win Opportunity ${req.params.id}`,

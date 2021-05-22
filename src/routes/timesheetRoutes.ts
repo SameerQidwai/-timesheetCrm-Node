@@ -5,6 +5,10 @@ const router = Router();
 let contr = new TimesheetController();
 
 router
+  .route('/projectEntries/:id')
+  .patch(contr.updateTimesheetProjectEntryNote.bind(contr));
+
+router
   .route('/:startDate&:endDate&:userId')
   .get(contr.getTimesheet.bind(contr))
   .post(contr.addTimesheetEntry.bind(contr));

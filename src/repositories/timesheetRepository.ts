@@ -4,8 +4,8 @@ import moment from 'moment';
 import { Timesheet } from '../entities/timesheet';
 import { TimesheetProjectEntry } from '../entities/timesheetProjectEntry';
 import { TimesheetEntry } from '../entities/timesheetEntry';
-import { TimesheetStatus } from '../constants/constants';
-import { start } from 'node:repl';
+import { Attachment } from '../entities/attachment';
+import { TimesheetStatus, EntityType } from '../constants/constants';
 
 @EntityRepository(Timesheet)
 export class TimesheetRepository extends Repository<Timesheet> {
@@ -110,13 +110,13 @@ export class TimesheetRepository extends Repository<Timesheet> {
         );
         entry.endTime = moment(timesheetDTO.endTime, 'HH:mm').format('HH:mm');
         entry.breakHours = timesheetDTO.breakHours;
-        entry.hours = Math.abs(
-          moment(timesheetDTO.startTime, 'HH:mm').diff(
-            moment(timesheetDTO.endTime, 'HH:mm'),
-            'minutes'
-          ) / 60
-        );
-        entry.notes = timesheetDTO.notes;
+        entry.hours =
+          Math.abs(
+            moment(timesheetDTO.startTime, 'HH:mm').diff(
+              moment(timesheetDTO.endTime, 'HH:mm'),
+              'minutes'
+            ) / 60
+          ) - timesheetDTO.breakHours;
         entry.projectEntryId = projectEntry.id;
 
         entry = await transactionalEntityManager.save(entry);
@@ -156,7 +156,6 @@ export class TimesheetRepository extends Repository<Timesheet> {
             'minutes'
           ) / 60
         );
-        entry.notes = timesheetDTO.notes;
         entry.projectEntryId = timesheetDTO.projectEntryId;
         entry = await transactionalEntityManager.save(entry);
 
@@ -340,5 +339,44 @@ export class TimesheetRepository extends Repository<Timesheet> {
     }
 
     return await this.manager.delete(TimesheetEntry, entry.id);
+  }
+
+  async updateTimesheetProjectEntryNote(
+    projectEntryId: number,
+    notes: string,
+    attachments: []
+  ): Promise<any | undefined> {
+    let entry = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let projectEntry: TimesheetProjectEntry | undefined;
+        projectEntry = await this.manager.findOne(
+          TimesheetProjectEntry,
+          projectEntryId
+        );
+
+        if (!projectEntry) {
+          throw new Error('Project Entry not found');
+        }
+        projectEntry.notes = notes;
+
+        projectEntry = await transactionalEntityManager.save(projectEntry);
+
+        if (attachments) {
+          for (const file of attachments) {
+            let attachmentObj = new Attachment();
+            attachmentObj.fileId = file;
+            attachmentObj.targetId = projectEntry.id;
+            attachmentObj.type = EntityType.PROJECT_ENTRY;
+            let attachment = await transactionalEntityManager.save(
+              attachmentObj
+            );
+          }
+        }
+
+        return projectEntry;
+      }
+    );
+
+    return entry;
   }
 }

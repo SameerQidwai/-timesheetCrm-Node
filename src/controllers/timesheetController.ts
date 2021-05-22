@@ -223,4 +223,21 @@ export class TimesheetController {
       data: record,
     });
   }
+
+  async updateTimesheetProjectEntryNote(req: Request, res: Response) {
+    const repository = getCustomRepository(TimesheetRepository);
+    let projectEntryId = parseInt(req.params.id);
+
+    let record = await repository.updateTimesheetProjectEntryNote(
+      projectEntryId,
+      req.body.note,
+      req.body.attachments
+    );
+    console.log('record: ', record);
+    res.status(200).json({
+      success: true,
+      message: 'Project Entry note updated',
+      data: record,
+    });
+  }
 }

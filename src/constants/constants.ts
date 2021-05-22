@@ -66,4 +66,6 @@ export enum EntityType {
   WORK = 'WOR',
   TIMESHEET = 'TSH',
   PURCHASE_ORDER = 'POR',
+  COMMENT = 'COM',
+  PROJECT_ENTRY = 'PEN',
 }
