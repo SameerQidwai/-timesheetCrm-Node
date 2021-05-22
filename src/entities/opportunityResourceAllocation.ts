@@ -64,6 +64,6 @@ export class OpportunityResourceAllocation extends Base {
   @Column({ name: 'end_date', nullable: true })
   endDate: Date;
 
-  @Column({ name: 'effort_rate', default: 0 })
+  @Column({ name: 'effort_rate', default: 100 })
   effortRate: number;
 }

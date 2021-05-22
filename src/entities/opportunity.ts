@@ -103,9 +103,18 @@ export class Opportunity extends Base {
   @Column({ name: 'project_manager_id', nullable: true })
   projectManagerId: number;
 
+  @Column({ name: 'won_date', nullable: true })
+  wonDate: Date;
+
+  @Column({ name: 'lost_date', nullable: true })
+  lostDate: Date;
+
+  @Column({ name: 'completed_date', nullable: true })
+  completedDate: Date;
+
   @Column({ name: 'status', default: 'O' })
   status: string;
-  //O = Opportunity //P = Project //C = Completed
+  //L = Lost //O = Opportunity //P = Project //C = Completed
 
   @ManyToOne(() => State)
   @JoinColumn({ name: 'state_id' })

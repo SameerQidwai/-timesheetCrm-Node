@@ -31,7 +31,9 @@ router
 router
   .route('/:projectId/purchaseOrders')
   .get(orderContr.index.bind(orderContr))
-  .post(orderContr.create.bind(orderContr));
+  .post(orderContr.create.bind(orderContr))
+  .put(orderContr.update.bind(orderContr))
+  .delete(orderContr.delete.bind(orderContr));
 
 router
   .route('/:projectId/purchaseOrders/:id')

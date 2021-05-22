@@ -7,6 +7,7 @@ import {
   ClearanceLevel,
   BusinessType,
   SuperannuationType,
+  EntityType,
 } from './../constants/constants';
 
 export interface Base {
@@ -96,6 +97,7 @@ export interface GlobalSettingDTO {
 
 export interface OrganizationDTO extends Base {
   name: string;
+  title: string;
   phoneNumber: string;
   email: string;
   address: string;
@@ -258,18 +260,21 @@ interface Work extends Base {
   type: ProjectType;
   startDate: Date | null;
   endDate: Date | null;
-  bidDate: Date | null;
+  bidDate: Date | null; // ONLY IN OPPORTUNITY
   entryDate: Date | null;
   qualifiedOps: boolean;
   tender: string;
   tenderNumber: string;
   hoursPerDay: number;
   cmPercentage: number;
-  goPercentage: number;
-  getPercentage: number;
+  goPercentage: number | number; // ONLY IN OPPORTUNITY
+  getPercentage: number | number; // ONLY IN OPPORTUNITY
   panelId: number;
   contactPersonId: number | null;
   stateId: number | null;
+  // wonDate: Date | null;
+  // lostDate: Date | null;
+  // completedDate: Date | null;
   accountDirectorId: number | null;
   accountManagerId: number | null;
 }
@@ -303,15 +308,50 @@ export interface ProjectResourceDTO extends Base {
   billableHours: number;
   buyingRate: number;
   sellingRate: number;
+  startDate: Date | null;
+  endDate: Date | null;
   isMarkedAsSelected: boolean;
   contactPersonId: number | null;
+  effortRate: number;
 }
 
-export interface PurchaseaOrderDTO extends Base {
+export interface PurchaseOrderDTO extends Base {
   description: string;
   issueDate: Date;
   expiryDate: Date;
   value: number;
   comment: string;
   expense: number;
+}
+
+export interface TimesheetDTO extends Base {
+  date: string;
+  startTime: string;
+  endTime: string;
+  projectId: number;
+  projectEntryId: number;
+  notes: string;
+  breakHours: number;
+}
+
+export interface TimesheetProjectNoteDTO extends Base {
+  note: string;
+  attachments: number[];
+}
+
+export interface FileDTO extends Base {
+  files: object[];
+}
+
+export interface AttachmentDTO extends Base {
+  files: number[];
+  type: EntityType;
+  target: number;
+}
+
+export interface CommentDTO extends Base {
+  type: EntityType;
+  target: number;
+  content: string;
+  attachments: number[] | [];
 }
