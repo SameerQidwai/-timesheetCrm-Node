@@ -42,4 +42,20 @@ export class CommentController {
       data: response,
     });
   }
+
+  async delete(req: Request, res: Response) {
+    const repository = getCustomRepository(CommentRepository);
+
+    let response: string = await repository.deleteComment(
+      parseInt(req.params.id)
+    );
+
+    // if no timesheet found
+    return res.status(200).json({
+      success: true,
+      // message: `Win Opportunity ${req.params.id}`,
+      message: 'Delete target comment',
+      data: response,
+    });
+  }
 }

@@ -43,4 +43,13 @@ export class CommentRepository extends Repository<Comment> {
 
     return result;
   }
+
+  async deleteComment(id: number): Promise<any | undefined> {
+    let comment = await this.findOne(id);
+    if (!comment) {
+      throw new Error('Comment not found!');
+    }
+
+    return this.softDelete(id);
+  }
 }

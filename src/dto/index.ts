@@ -339,6 +339,8 @@ export interface TimesheetProjectNoteDTO extends Base {
   attachments: number[];
 }
 
+//!! DONT LOOK AT THESE THREE
+
 export interface FileDTO extends Base {
   files: object[];
 }

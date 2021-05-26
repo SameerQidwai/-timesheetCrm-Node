@@ -27,4 +27,13 @@ export class AttachmentRepository extends Repository<Attachment> {
 
     return result;
   }
+
+  async deleteAttachment(id: number): Promise<any | undefined> {
+    let attachment = await this.findOne(id);
+    if (!attachment) {
+      throw new Error('Attachment not found!');
+    }
+
+    return this.softDelete(id);
+  }
 }

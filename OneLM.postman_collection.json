@@ -2398,6 +2398,33 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"note\": \"hello jeee\",\r\n    \"attachments\": [25,26]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/projectEntries/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projectEntries",
+								"1"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -2474,7 +2501,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"files\":[\r\n        23,24\r\n    ],\r\n    \"target\":1,\r\n    \"type\":\"CPE\"\r\n}",
+							"raw": "{\r\n    \"files\":[\r\n        29,30\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2482,12 +2509,32 @@
 							}
 						},
 						"url": {
-							"raw": "{{Endpoint}}/attachments",
+							"raw": "{{Endpoint}}/attachments/CPE/1",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
-								"attachments"
+								"attachments",
+								"CPE",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/attachments/18",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"attachments",
+								"18"
 							]
 						}
 					},
@@ -2504,13 +2551,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Endpoint}}/comments/CPE/1",
+							"raw": "{{Endpoint}}/comments/TSH/1",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"comments",
-								"CPE",
+								"TSH",
 								"1"
 							]
 						}
@@ -2524,7 +2571,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"content\":\"Hey whats up\",\r\n    \"target\":1,\r\n    \"type\":\"CPE\"\r\n}",
+							"raw": "{\r\n    \"content\":\"HELLOOOO\",\r\n    \"attachments\": [\r\n        25,26\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2532,12 +2579,32 @@
 							}
 						},
 						"url": {
-							"raw": "{{Endpoint}}/comments",
+							"raw": "{{Endpoint}}/comments/TSH/1",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
-								"comments"
+								"comments",
+								"TSH",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/comments/11",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"comments",
+								"11"
 							]
 						}
 					},
