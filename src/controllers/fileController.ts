@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { FileRepository } from './../repositories/fileRepository';
 import { getCustomRepository } from 'typeorm';
+import path from 'path';
 
 export class FileController {
   async create(req: Request, res: Response) {
@@ -14,5 +15,19 @@ export class FileController {
       message: 'Files Uploaded Succesfully',
       data: response,
     });
+  }
+
+  async show(req: Request, res: Response) {
+    const repository = getCustomRepository(FileRepository);
+    let name = req.params.name;
+    // let response: string = await repository.show(name);
+    res.sendFile(path.join(__dirname, '../../public/uploads/' + name));
+    // if no timesheet found
+    // return res.status(200).json({
+    //   success: true,
+    //   // message: `Win Opportunity ${req.params.id}`,
+    //   message: 'Files Uploaded Succesfully',
+    //   data: response,
+    // });
   }
 }

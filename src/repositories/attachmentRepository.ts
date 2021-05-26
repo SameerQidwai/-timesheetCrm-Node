@@ -13,7 +13,11 @@ export class AttachmentRepository extends Repository<Attachment> {
       obj.targetId = attachments.target;
       obj.type = attachments.type;
       let dbAttachment = await this.save(obj);
-      responseAttachments.push(dbAttachment);
+      let attachment = await this.findOne(dbAttachment.id, {
+        relations: ['file'],
+      });
+      console.log(attachment);
+      responseAttachments.push(attachment);
     }
 
     return responseAttachments;

@@ -1,6 +1,7 @@
 import { EntityType } from '../constants/constants';
-import { Entity, Column, OneToMany } from 'typeorm';
+import { Entity, Column, OneToMany, JoinColumn } from 'typeorm';
 import { Base } from './common/base';
+import { Attachment } from './attachment';
 
 @Entity('comments')
 export class Comment extends Base {

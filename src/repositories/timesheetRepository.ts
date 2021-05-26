@@ -362,6 +362,12 @@ export class TimesheetRepository extends Repository<Timesheet> {
         projectEntry = await transactionalEntityManager.save(projectEntry);
 
         if (attachments) {
+          let oldAttachments = await this.manager.find(Attachment, {
+            select: ['id'],
+            where: { targetId: projectEntry.id, type: 'PEN' },
+          });
+
+          this.manager.softDelete(Attachment, oldAttachments);
           for (const file of attachments) {
             let attachmentObj = new Attachment();
             attachmentObj.fileId = file;
