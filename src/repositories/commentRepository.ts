@@ -88,8 +88,12 @@ export class CommentRepository extends Repository<Comment> {
           createdAt: queryComment.attachment_created_at,
           updatedAt: queryComment.attachment_updated_at,
           deletedAt: queryComment.attachment_deleted_at,
-          targetType: queryComment.attachment_target_type,
+          target: queryComment.attachment_target_type,
           targetId: queryComment.attachment_target_id,
+          fileId: queryComment.file_id,
+          uid: queryComment.file_unique_name,
+          name: queryComment.file_original_name,
+          type: queryComment.file_type,
           file: {
             id: queryComment.file_id,
             createdAt: queryComment.file_created_at,
