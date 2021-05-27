@@ -634,8 +634,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       throw new Error('Project not found!');
     }
 
-    project.purchaseOrders = project.purchaseOrders.filter((x) => x.id !== id);
-
-    return await this.manager.save(project);
+    let deletedOrder = project.purchaseOrders.filter((x) => x.id === id);
+    return await this.manager.softDelete(PurchaseOrder, deletedOrder);
   }
 }
