@@ -82,7 +82,7 @@ export class OrganizationRepository extends Repository<Organization> {
       }
 
       obj.name = organization.name;
-      obj.name = organization.title;
+      obj.title = organization.title;
       obj.phoneNumber = organization.phoneNumber;
       obj.email = organization.email;
       obj.address = organization.address;
