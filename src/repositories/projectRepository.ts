@@ -618,7 +618,7 @@ export class ProjectRepository extends Repository<Opportunity> {
 
     return this.findOneCustomPurchaseOrder(projectId, id);
   }
-  // not being used. not working either
+
   async deletePurchaseOrder(
     projectId: number,
     id: number
