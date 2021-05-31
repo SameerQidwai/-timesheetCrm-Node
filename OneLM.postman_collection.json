@@ -813,7 +813,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"contactPersonId\": 1,\r\n    \"firstName\": \"Mursal as employee\",\r\n    \"lastName\": \"Khan\",\r\n    \"username\": \"mursal@onelm.com\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"mursal@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"saad\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"saad@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"tfn\": \"\",\r\n    \"superannuationName\": \"Jubilee\",\r\n    \"superannuationBankName\": \"\",\r\n    \"superannuationBankAccountOrMembershipNumber\": \"1111-2222-3\",\r\n    \"superannuationAbnOrUsi\": \"12345\",\r\n    \"superannuationBankBsb\": \"\",\r\n    \"superannuationAddress\": \"\",\r\n    \"training\": \"need more\",\r\n    \"bankName\": \"HBL\",\r\n    \"bankAccountNo\": \"234353453453534534\",\r\n    \"bankBsb\": \"12qwe\",\r\n    \"latestEmploymentContract\": {\r\n        \"payslipEmail\": \"pay@live.com\",\r\n        \"payFrequency\": 1,\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n    \r\n}",
+							"raw": "{\r\n    \"contactPersonId\": 3,\r\n    \"firstName\": \"Mursal as employee\",\r\n    \"lastName\": \"Khan\",\r\n    \"username\": \"mursal@onelm.com\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"mursal@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"saad\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"saad@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"tfn\": \"\",\r\n    \"superannuationName\": \"Jubilee\",\r\n    \"superannuationBankName\": \"\",\r\n    \"superannuationBankAccountOrMembershipNumber\": \"1111-2222-3\",\r\n    \"superannuationAbnOrUsi\": \"12345\",\r\n    \"superannuationBankBsb\": \"\",\r\n    \"superannuationAddress\": \"\",\r\n    \"training\": \"need more\",\r\n    \"bankName\": \"HBL\",\r\n    \"bankAccountNo\": \"234353453453534534\",\r\n    \"bankBsb\": \"12qwe\",\r\n    \"latestEmploymentContract\": {\r\n        \"payslipEmail\": \"pay@live.com\",\r\n        \"payFrequency\": 1,\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n    \r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1566,15 +1566,11 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3301/api/v1/employment-contracts",
-							"protocol": "http",
+							"raw": "{{Endpoint}}/employment-contracts",
 							"host": [
-								"localhost"
+								"{{Endpoint}}"
 							],
-							"port": "3301",
 							"path": [
-								"api",
-								"v1",
 								"employment-contracts"
 							]
 						}
@@ -2252,9 +2248,19 @@
 				{
 					"name": "New Request",
 					"request": {
-						"method": "GET",
+						"method": "DELETE",
 						"header": [],
-						"url": null
+						"url": {
+							"raw": "{{Endpoint}}/projects/1/purchaseOrders",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projects",
+								"1",
+								"purchaseOrders"
+							]
+						}
 					},
 					"response": []
 				}
@@ -2372,11 +2378,30 @@
 					"response": []
 				},
 				{
-					"name": "New Request",
+					"name": "Edit Note",
 					"request": {
-						"method": "GET",
+						"method": "PATCH",
 						"header": [],
-						"url": null
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"note\": \"heyyy whatsuppp duudeeeeeeeeee\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/timesheets/projectEntries/7",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"timesheets",
+								"projectEntries",
+								"7"
+							]
+						}
 					},
 					"response": []
 				},
@@ -2449,7 +2474,7 @@
 								{
 									"key": "files",
 									"type": "file",
-									"src": "/C:/work/office/onelm-backend/onelm.sql"
+									"src": "/C:/Users/shahz/Documents/Lightshot/Screenshot_1.png"
 								},
 								{
 									"key": "files",
@@ -2469,6 +2494,24 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/files/1622030225056.sql",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"files",
+								"1622030225056.sql"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -2481,14 +2524,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Endpoint}}/attachments/CPE/1",
+							"raw": "{{Endpoint}}/attachments/PEN/7",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"attachments",
-								"CPE",
-								"1"
+								"PEN",
+								"7"
 							]
 						}
 					},
@@ -2501,7 +2544,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"files\":[\r\n        29,30\r\n    ]\r\n}",
+							"raw": "{\r\n    \"files\":[\r\n        49,50\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2551,13 +2594,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Endpoint}}/comments/TSH/1",
+							"raw": "{{Endpoint}}/comments/ASD/1",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"comments",
-								"TSH",
+								"ASD",
 								"1"
 							]
 						}
@@ -2571,7 +2614,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"content\":\"HELLOOOO\",\r\n    \"attachments\": [\r\n        25,26\r\n    ]\r\n}",
+							"raw": "{\r\n    \"content\":\"HELLOOOO222\",\r\n    \"attachments\": [\r\n        35,36\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2579,13 +2622,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{Endpoint}}/comments/TSH/1",
+							"raw": "{{Endpoint}}/comments/ASD/1",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"comments",
-								"TSH",
+								"ASD",
 								"1"
 							]
 						}
@@ -2605,6 +2648,60 @@
 							"path": [
 								"comments",
 								"11"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"mursal@onelm.com\",\r\n    \"password\": \"123123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/login",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Middleware check",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiaWF0IjoxNjIyNDIzODI5LCJleHAiOjE2MjUwMTU4Mjl9.ZUY8nNbV5qssvdCZasX_ERybzcAVolgwahewlmXic4s",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{Endpoint}}/webtokencheck",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"webtokencheck"
 							]
 						}
 					},
