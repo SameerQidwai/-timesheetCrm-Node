@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import authRoutes from './authRoutes';
 import sampleRoutes from './sample';
 import timeOffTypeRoutes from './timeOffTypeRoutes';
 import timeOffPolicyRoutes from './timeOffPolicyRoutes';
@@ -27,6 +28,7 @@ import opportunityResourceRoutes from './opportunityResourceRoutes';
 import { getCustomRepository } from 'typeorm';
 
 const router: Router = Router();
+router.use('', authRoutes);
 router.use('/samples', sampleRoutes);
 router.use('/time-off-types', timeOffTypeRoutes);
 router.use('/time-off-policies', timeOffPolicyRoutes);
