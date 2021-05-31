@@ -10,7 +10,7 @@ export class CommentController {
     let content: string = req.body.content;
     let type: EntityType = req.params.type as EntityType;
     let id: number = parseInt(req.params.id);
-    let response: string = await repository.createAndSave({
+    let response = await repository.createAndSave({
       type: type,
       target: id,
       content: content,
@@ -20,7 +20,7 @@ export class CommentController {
     return res.status(200).json({
       success: true,
       // message: `Win Opportunity ${req.params.id}`,
-      message: 'Comment Save Successfully',
+      message: 'Comment Saved Successfully',
       data: response,
     });
   }

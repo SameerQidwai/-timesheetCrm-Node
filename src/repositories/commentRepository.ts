@@ -9,6 +9,8 @@ export class CommentRepository extends Repository<Comment> {
   async createAndSave(comment: CommentDTO): Promise<any> {
     let dbComment = await this.manager.transaction(
       async (transactionalEntityManager) => {
+        let responseComment;
+
         let commentObj = new Comment();
         commentObj.content = comment.content;
         commentObj.targetId = comment.target;
@@ -26,10 +28,19 @@ export class CommentRepository extends Repository<Comment> {
               attachmentObj
             );
             responseAttachments.push(dbAttachment);
+            let queryAttachments = await transactionalEntityManager.find(
+              Attachment,
+              {
+                relations: ['file'],
+                where: { targetId: dbComment.id, type: 'COM' },
+              }
+            );
+
+            responseComment = { ...dbComment, attachments: queryAttachments };
           }
         }
 
-        return dbComment;
+        return responseComment;
       }
     );
 
