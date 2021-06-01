@@ -24,7 +24,7 @@ export let isLoggedIn = async (
         const newToken = jwt.sign({ id: user }, 'onelm', {
           expiresIn: '1h',
         });
-        res.setHeader('x-token', newToken);
+        res.setHeader('Authorization', `Bearer ${newToken}`);
 
         next();
 

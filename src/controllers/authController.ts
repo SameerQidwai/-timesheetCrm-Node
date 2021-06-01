@@ -37,7 +37,7 @@ export class AuthController {
         message: 'Logged in',
         data: {
           email: user.email,
-          accessToken: token,
+          accessToken: `Bearer ${token}`,
         },
       });
     } else {

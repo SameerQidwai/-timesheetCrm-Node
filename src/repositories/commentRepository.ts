@@ -33,7 +33,7 @@ export class CommentRepository extends Repository<Comment> {
               Attachment,
               {
                 relations: ['file'],
-                where: { targetId: dbComment.id, type: 'COM' },
+                where: { targetId: dbComment.id, targetType: 'COM' },
               }
             );
 

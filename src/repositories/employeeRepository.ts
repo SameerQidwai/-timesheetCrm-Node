@@ -126,7 +126,9 @@ export class EmployeeRepository extends Repository<Employee> {
       await transactionalEntityManager.save(bankAccount);
       return employeeObj.id;
     });
-    return await this.findOneCustom(id);
+    let responseEmployee = await this.findOneCustom(id);
+
+    return responseEmployee;
   }
 
   async getAllActive(): Promise<any[]> {
