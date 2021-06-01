@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { sendMail } from '../utilities/mailer';
 import { ContactPersonDTO, EmployeeDTO, LeaseDTO } from '../dto';
 import { EntityRepository, getRepository, Repository } from 'typeorm';
 import { ContactPerson } from './../entities/contactPerson';
@@ -16,6 +17,7 @@ import { Lease } from './../entities/lease';
 export class EmployeeRepository extends Repository<Employee> {
   async createAndSave(employee: EmployeeDTO): Promise<any> {
     let id: number;
+    let generatedPassword = Math.random().toString(36).substring(4);
     id = await this.manager.transaction(async (transactionalEntityManager) => {
       if (!employee.contactPersonId) {
         throw Error('Must provide contact person');
@@ -62,7 +64,10 @@ export class EmployeeRepository extends Repository<Employee> {
       employeeObj.contactPersonOrganizationId = contactPersonOrganization.id;
       employeeObj.username = employee.username;
       // Math.random().toString(36).substring(4)
-      employeeObj.password = bcrypt.hashSync('123123', bcrypt.genSaltSync(8));
+      employeeObj.password = bcrypt.hashSync(
+        generatedPassword,
+        bcrypt.genSaltSync(8)
+      );
 
       employeeObj.nextOfKinName = employee.nextOfKinName;
       employeeObj.nextOfKinPhoneNumber = employee.nextOfKinPhoneNumber;
@@ -127,6 +132,17 @@ export class EmployeeRepository extends Repository<Employee> {
       return employeeObj.id;
     });
     let responseEmployee = await this.findOneCustom(id);
+    let user = {
+      username:
+        responseEmployee.contactPersonOrganization.contactPerson.firstName,
+      email: responseEmployee.username,
+    };
+    sendMail(
+      'crm.onelm.com',
+      user,
+      'Account Password',
+      `You registered account is ${generatedPassword}`
+    );
 
     return responseEmployee;
   }
@@ -526,11 +542,5 @@ export class EmployeeRepository extends Repository<Employee> {
 
     employee.leases = employee.leases.filter((x) => x.id != id);
     return this.manager.save(employee);
-  }
-
-  async login(email: string, password: string): Promise<any | undefined> {
-    return this.findOne({
-      where: { username: email },
-    });
   }
 }

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { EmployeeRepository } from './../repositories/employeeRepository';
 import { getCustomRepository } from 'typeorm';
 import { EntityType } from '../constants/constants';
+import { secret } from '../utilities/configs';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -11,7 +12,9 @@ export class AuthController {
 
     let email: string = req.body.email;
     let password: string = req.body.password;
-    let user = await repository.login(email, password);
+    let user = await repository.findOne({
+      where: { username: email },
+    });
 
     let token: string;
     if (user) {
@@ -27,7 +30,7 @@ export class AuthController {
         });
       }
       console.log(user.id);
-      token = jwt.sign({ id: user.id }, 'onelm', {
+      token = jwt.sign({ id: user.id }, secret, {
         expiresIn: '1h', // 24 * 30 hours
       });
 
@@ -36,13 +39,13 @@ export class AuthController {
         // message: `Win Opportunity ${req.params.id}`,
         message: 'Logged in',
         data: {
-          email: user.email,
+          email: user.username,
           accessToken: `Bearer ${token}`,
         },
       });
     } else {
       return res.status(200).json({
-        success: true,
+        success: false,
         message: 'User Not Found',
       });
     }

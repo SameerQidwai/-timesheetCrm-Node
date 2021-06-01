@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { EmployeeRepository } from '../repositories/employeeRepository';
 import { getCustomRepository } from 'typeorm';
+import { secret } from '../utilities/configs';
 import jwt from 'jsonwebtoken';
 export let isLoggedIn = async (
   req: Request,
@@ -11,7 +12,7 @@ export let isLoggedIn = async (
 
   if (req.headers.authorization) {
     let token = req.headers.authorization.split(' ')[1];
-    jwt.verify(token, 'onelm', async (err: any, decoded: any) => {
+    jwt.verify(token, secret, async (err: any, decoded: any) => {
       console.log(token, decoded);
       if (err) {
         console.log(err);
@@ -21,7 +22,7 @@ export let isLoggedIn = async (
         });
       } else {
         let user = await repository.findOne(decoded.id);
-        const newToken = jwt.sign({ id: user }, 'onelm', {
+        const newToken = jwt.sign({ id: user }, secret, {
           expiresIn: '1h',
         });
         res.setHeader('Authorization', `Bearer ${newToken}`);
