@@ -372,7 +372,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
             let attachmentObj = new Attachment();
             attachmentObj.fileId = file;
             attachmentObj.targetId = projectEntry.id;
-            attachmentObj.type = EntityType.PROJECT_ENTRY;
+            attachmentObj.targetType = EntityType.PROJECT_ENTRY;
             let attachment = await transactionalEntityManager.save(
               attachmentObj
             );

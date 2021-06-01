@@ -6,7 +6,7 @@ import { EntityType } from '../constants/constants';
 @Entity('attachments')
 export class Attachment extends Base {
   @Column({ name: 'target_type' })
-  type: EntityType;
+  targetType: EntityType;
   @Column({ name: 'file_id' })
   fileId: number;
   @Column({ name: 'target_id' })

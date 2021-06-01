@@ -14,7 +14,7 @@ export class CommentRepository extends Repository<Comment> {
         let commentObj = new Comment();
         commentObj.content = comment.content;
         commentObj.targetId = comment.target;
-        commentObj.type = comment.type;
+        commentObj.targetType = comment.targetType;
         let dbComment = await transactionalEntityManager.save(commentObj);
 
         if (comment.attachments) {
@@ -22,7 +22,7 @@ export class CommentRepository extends Repository<Comment> {
             let attachmentObj = new Attachment();
             attachmentObj.fileId = file;
             attachmentObj.targetId = dbComment.id;
-            attachmentObj.type = EntityType.COMMENT;
+            attachmentObj.targetType = EntityType.COMMENT;
             let dbAttachment = await transactionalEntityManager.save(
               attachmentObj
             );
@@ -40,7 +40,6 @@ export class CommentRepository extends Repository<Comment> {
             let responseAttachments = queryAttachments.map((attachment) => {
               return {
                 ...attachment,
-                fileId: attachment.file.id,
                 uid: attachment.file.uniqueName,
                 name: attachment.file.originalName,
                 type: attachment.file.type,
@@ -112,7 +111,7 @@ export class CommentRepository extends Repository<Comment> {
           createdAt: queryComment.attachment_created_at,
           updatedAt: queryComment.attachment_updated_at,
           deletedAt: queryComment.attachment_deleted_at,
-          target: queryComment.attachment_target_type,
+          targetType: queryComment.attachment_target_type,
           targetId: queryComment.attachment_target_id,
           fileId: queryComment.file_id,
           uid: queryComment.file_unique_name,

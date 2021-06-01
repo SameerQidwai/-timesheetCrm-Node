@@ -8,7 +8,7 @@ export class Comment extends Base {
   @Column({ name: 'content' })
   content: string;
   @Column({ name: 'target_type' })
-  type: EntityType;
+  targetType: EntityType;
   @Column({ name: 'target_id' })
   targetId: number;
 }

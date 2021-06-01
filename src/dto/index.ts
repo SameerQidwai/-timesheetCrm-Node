@@ -347,12 +347,12 @@ export interface FileDTO extends Base {
 
 export interface AttachmentDTO extends Base {
   files: number[];
-  type: EntityType;
+  targetType: EntityType;
   target: number;
 }
 
 export interface CommentDTO extends Base {
-  type: EntityType;
+  targetType: EntityType;
   target: number;
   content: string;
   attachments: number[] | [];
