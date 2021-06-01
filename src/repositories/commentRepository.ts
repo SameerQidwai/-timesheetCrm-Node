@@ -18,7 +18,6 @@ export class CommentRepository extends Repository<Comment> {
         let dbComment = await transactionalEntityManager.save(commentObj);
 
         if (comment.attachments) {
-          let responseAttachments = [];
           for (const file of comment.attachments) {
             let attachmentObj = new Attachment();
             attachmentObj.fileId = file;
@@ -27,7 +26,9 @@ export class CommentRepository extends Repository<Comment> {
             let dbAttachment = await transactionalEntityManager.save(
               attachmentObj
             );
-            responseAttachments.push(dbAttachment);
+
+            console.log(dbAttachment);
+
             let queryAttachments = await transactionalEntityManager.find(
               Attachment,
               {
@@ -36,7 +37,19 @@ export class CommentRepository extends Repository<Comment> {
               }
             );
 
-            responseComment = { ...dbComment, attachments: queryAttachments };
+            let responseAttachments = queryAttachments.map((attachment) => {
+              return {
+                ...attachment,
+                fileId: attachment.file.id,
+                uid: attachment.file.uniqueName,
+                name: attachment.file.originalName,
+                type: attachment.file.type,
+              };
+            });
+            responseComment = {
+              ...dbComment,
+              attachments: responseAttachments,
+            };
           }
         }
 

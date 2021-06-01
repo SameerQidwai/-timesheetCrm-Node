@@ -21,6 +21,13 @@ export let isLoggedIn = async (
         });
       } else {
         let user = await repository.findOne(decoded.id);
+        const newToken = jwt.sign({ id: user }, 'onelm', {
+          expiresIn: '1h',
+        });
+        res.setHeader('x-token', newToken);
+
+        next();
+
         if (user) {
           next();
         } else {

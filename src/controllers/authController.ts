@@ -28,7 +28,7 @@ export class AuthController {
       }
       console.log(user.id);
       token = jwt.sign({ id: user.id }, 'onelm', {
-        expiresIn: 86400 * 30, // 24 * 30 hours
+        expiresIn: '1h', // 24 * 30 hours
       });
 
       return res.status(200).json({

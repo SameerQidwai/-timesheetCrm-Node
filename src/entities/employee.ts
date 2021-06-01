@@ -26,10 +26,10 @@ export class Employee extends Base {
 
   // ---------------------------------------------------Next of kin info----------------------------------------
   @Column({ name: 'next_of_kin_name', nullable: true })
-  nextOfKinName: String;
+  nextOfKinName: string;
 
   @Column({ name: 'next_of_kin_phone_number', nullable: true })
-  nextOfKinPhoneNumber: String;
+  nextOfKinPhoneNumber: string;
 
   @Column({ name: 'next_of_kin_email', nullable: true })
   nextOfKinEmail: string;
