@@ -11,7 +11,7 @@ export class CommentController {
     let type: EntityType = req.params.type as EntityType;
     let id: number = parseInt(req.params.id);
     let response = await repository.createAndSave({
-      type: type,
+      targetType: type,
       target: id,
       content: content,
       attachments: req.body.attachments,

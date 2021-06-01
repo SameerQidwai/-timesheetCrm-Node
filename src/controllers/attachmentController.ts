@@ -10,7 +10,7 @@ export class AttachmentController {
     let type: EntityType = req.params.type as EntityType;
     let response: string = await repository.createAndSave({
       files: req.body.files,
-      type: type,
+      targetType: type,
       target: parseInt(req.params.id),
     });
 

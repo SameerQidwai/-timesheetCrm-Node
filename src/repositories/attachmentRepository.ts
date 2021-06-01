@@ -11,7 +11,7 @@ export class AttachmentRepository extends Repository<Attachment> {
       let obj = new Attachment();
       obj.fileId = file;
       obj.targetId = attachments.target;
-      obj.type = attachments.type;
+      obj.targetType = attachments.targetType;
       let dbAttachment = await this.save(obj);
       let attachment = await this.findOne(dbAttachment.id, {
         relations: ['file'],
