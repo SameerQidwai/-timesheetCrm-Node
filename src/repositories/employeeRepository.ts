@@ -171,24 +171,48 @@ export class EmployeeRepository extends Repository<Employee> {
     // .leftJoinAndSelect(qb => qb.subQuery().select("e.*, MAX(e.startDate)", "max_date").from(EmploymentContract, "e").groupBy("e.employee.id"), "employmentContract", "employmentContract.employee_id = employee.id")
     // .printSql().getRawMany();
 
-    return getRepository(ContactPerson)
-      .createQueryBuilder('contactPerson')
-      .innerJoinAndSelect(
-        'contactPerson.contactPersonOrganizations',
-        'contactPersonOrganization',
-        'contactPersonOrganization.organization.id = 1'
-      )
-      .leftJoinAndSelect(
-        'contactPersonOrganization.employee',
-        'employee',
-        'employee.contactPersonOrganization.id = contactPersonOrganization.id'
-      )
-      .leftJoinAndSelect(
-        'employee.employmentContracts',
-        'employmentContract',
-        'employmentContract.employee.id = employee.id'
-      )
-      .getMany();
+    let all = await getRepository(ContactPerson).find({
+      relations: [
+        'contactPersonOrganizations',
+        'contactPersonOrganizations.employee',
+      ],
+    });
+
+    let onlyContactPersons: any = [];
+    all.forEach((person) => {
+      person.contactPersonOrganizations.forEach((org) => {
+        if (
+          org.organizationId === 1 &&
+          (org.endDate === null || org.endDate === null)
+        ) {
+          console.log('this ran', person);
+          if (org.employee === null) {
+            onlyContactPersons.push(person);
+          }
+        }
+      });
+    });
+
+    return onlyContactPersons;
+
+    // return getRepository(ContactPerson)
+    //   .createQueryBuilder('contactPerson')
+    //   .innerJoinAndSelect(
+    //     'contactPerson.contactPersonOrganizations',
+    //     'contactPersonOrganization',
+    //     'contactPersonOrganization.organization.id = 1'
+    //   )
+    //   .leftJoinAndSelect(
+    //     'contactPersonOrganization.employee',
+    //     'employee',
+    //     'employee.contactPersonOrganization.id = contactPersonOrganization.id'
+    //   )
+    //   .leftJoinAndSelect(
+    //     'employee.employmentContracts',
+    //     'employmentContract',
+    //     'employmentContract.employee.id = employee.id'
+    //   )
+    //   .getMany();
   }
 
   async updateAndReturn(
