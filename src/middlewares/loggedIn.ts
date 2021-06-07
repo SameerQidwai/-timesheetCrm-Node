@@ -21,15 +21,13 @@ export let isLoggedIn = async (
           message: 'Not Authorized',
         });
       } else {
+        res.locals.jwtPayload = decoded;
         let user = await repository.findOne(decoded.id);
-        const newToken = jwt.sign({ id: user }, secret, {
-          expiresIn: '1h',
-        });
-        res.setHeader('Authorization', `Bearer ${newToken}`);
-
-        next();
-
         if (user) {
+          const newToken = jwt.sign({ id: user }, secret, {
+            expiresIn: '1h',
+          });
+          res.setHeader('Authorization', `Bearer ${newToken}`);
           next();
         } else {
           return res.status(200).json({
@@ -38,6 +36,11 @@ export let isLoggedIn = async (
           });
         }
       }
+    });
+  } else {
+    return res.status(200).json({
+      success: false,
+      message: 'Not Authorized',
     });
   }
 

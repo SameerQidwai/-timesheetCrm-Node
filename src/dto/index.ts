@@ -357,3 +357,24 @@ export interface CommentDTO extends Base {
   content: string;
   attachments: number[] | [];
 }
+
+export interface Settings extends Base {
+  nextOfKinName: string;
+  nextOfKinPhoneNumber: string;
+  nextOfKinEmail: string;
+  nextOfKinRelation: string;
+  tfn: string;
+  taxFreeThreshold: boolean | null;
+  helpHECS: boolean | null;
+  superannuationName: string;
+  superannuationType: SuperannuationType | null;
+  superannuationBankName: string;
+  superannuationBankAccountOrMembershipNumber: string;
+  superannuationAbnOrUsi: string;
+  superannuationBankBsb: string;
+  superannuationAddress: string;
+  training: string;
+  // bankName: string; //! NOT USING BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
+  // bankAccountNo: string; //! NOT USING BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
+  // bankBsb: string; //! NOT USING BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
+}

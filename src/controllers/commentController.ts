@@ -6,16 +6,19 @@ import { EntityType } from '../constants/constants';
 export class CommentController {
   async create(req: Request, res: Response) {
     const repository = getCustomRepository(CommentRepository);
-
+    let userId = res.locals.jwtPayload.id;
     let content: string = req.body.content;
     let type: EntityType = req.params.type as EntityType;
     let id: number = parseInt(req.params.id);
-    let response = await repository.createAndSave({
-      targetType: type,
-      target: id,
-      content: content,
-      attachments: req.body.attachments,
-    });
+    let response = await repository.createAndSave(
+      {
+        targetType: type,
+        target: id,
+        content: content,
+        attachments: req.body.attachments,
+      },
+      userId
+    );
 
     return res.status(200).json({
       success: true,

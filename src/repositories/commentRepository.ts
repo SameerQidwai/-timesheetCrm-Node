@@ -6,7 +6,7 @@ import { EntityType } from '../constants/constants';
 
 @EntityRepository(Comment)
 export class CommentRepository extends Repository<Comment> {
-  async createAndSave(comment: CommentDTO): Promise<any> {
+  async createAndSave(comment: CommentDTO, userId: number): Promise<any> {
     let dbComment = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let responseComment;
@@ -15,6 +15,7 @@ export class CommentRepository extends Repository<Comment> {
         commentObj.content = comment.content;
         commentObj.targetId = comment.target;
         commentObj.targetType = comment.targetType;
+        commentObj.userId = userId;
         let dbComment = await transactionalEntityManager.save(commentObj);
 
         if (comment.attachments) {
@@ -22,6 +23,7 @@ export class CommentRepository extends Repository<Comment> {
             let attachmentObj = new Attachment();
             attachmentObj.fileId = file;
             attachmentObj.targetId = dbComment.id;
+            attachmentObj.userId = userId;
             attachmentObj.targetType = EntityType.COMMENT;
             let dbAttachment = await transactionalEntityManager.save(
               attachmentObj

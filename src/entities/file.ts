@@ -9,4 +9,6 @@ export class File extends Base {
   originalName: string;
   @Column({ name: 'type' })
   type: string;
+  @Column({ name: 'user_id', nullable: false })
+  userId: number;
 }

@@ -813,7 +813,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"contactPersonId\": 3,\r\n    \"firstName\": \"Mursal as employee\",\r\n    \"lastName\": \"Khan\",\r\n    \"username\": \"mursal@onelm.com\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"mursal@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"saad\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"saad@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"tfn\": \"\",\r\n    \"superannuationName\": \"Jubilee\",\r\n    \"superannuationBankName\": \"\",\r\n    \"superannuationBankAccountOrMembershipNumber\": \"1111-2222-3\",\r\n    \"superannuationAbnOrUsi\": \"12345\",\r\n    \"superannuationBankBsb\": \"\",\r\n    \"superannuationAddress\": \"\",\r\n    \"training\": \"need more\",\r\n    \"bankName\": \"HBL\",\r\n    \"bankAccountNo\": \"234353453453534534\",\r\n    \"bankBsb\": \"12qwe\",\r\n    \"latestEmploymentContract\": {\r\n        \"payslipEmail\": \"pay@live.com\",\r\n        \"payFrequency\": 1,\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n    \r\n}",
+							"raw": "{\r\n    \"contactPersonId\": 3,\r\n    \"firstName\": \"Mursal as employee\",\r\n    \"lastName\": \"Khan\",\r\n    \"username\": \"thedevshezzy@gmail.com\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"mursal@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"saad\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"saad@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"tfn\": \"\",\r\n    \"superannuationName\": \"Jubilee\",\r\n    \"superannuationBankName\": \"\",\r\n    \"superannuationBankAccountOrMembershipNumber\": \"1111-2222-3\",\r\n    \"superannuationAbnOrUsi\": \"12345\",\r\n    \"superannuationBankBsb\": \"\",\r\n    \"superannuationAddress\": \"\",\r\n    \"training\": \"need more\",\r\n    \"bankName\": \"HBL\",\r\n    \"bankAccountNo\": \"234353453453534534\",\r\n    \"bankBsb\": \"12qwe\",\r\n    \"latestEmploymentContract\": {\r\n        \"payslipEmail\": \"pay@live.com\",\r\n        \"payFrequency\": 1,\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n    \r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2479,7 +2479,7 @@
 								{
 									"key": "files",
 									"type": "file",
-									"src": "/C:/work/office/onelm-backend/onelm.sql"
+									"src": "/C:/Users/shahz/Documents/Lightshot/Screenshot_1.png"
 								}
 							]
 						},
@@ -2541,7 +2541,13 @@
 					"name": "Create",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"files\":[\r\n        49,50\r\n    ]\r\n}",
@@ -2614,7 +2620,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"content\":\"HELLOOOO222\",\r\n    \"attachments\": [\r\n        35,36\r\n    ]\r\n}",
+							"raw": "{\r\n    \"content\":\"QWERTYUIOP\",\r\n    \"attachments\": [\r\n        75,76\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2665,7 +2671,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"email\": \"mursal@onelm.com\",\r\n    \"password\": \"123123\"\r\n}",
+							"raw": "{\r\n    \"email\": \"thedevshezzy@gmail.com\",\r\n    \"password\": \"123123\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2702,6 +2708,70 @@
 							],
 							"path": [
 								"webtokencheck"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Password",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTMsImlhdCI6MTYyMzAyMzU3MiwiZXhwIjoxNjIzMDI3MTcyfQ.5fGqKeVjhcDxPx1jAadEBJCE1KqJWGtowqQ5hY7OJF0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"oldPassword\": \"2bgmrs74q\",\r\n    \"newPassword\": \"123123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/password",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Updated Settings",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTMsImlhdCI6MTYyMzAyMzkzOCwiZXhwIjoxNjIzMDI3NTM4fQ.euY9NBnuZdX6-Mginmtx-sJ3g6FVhZRVJ3yvXJVQHJE",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nextOfKinName\": \"usman\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"saad@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"tfn\": \"\",\r\n    \"taxFreeThreshold\": false,\r\n    \"helpHECS\": false,\r\n    \"superannuationName\": \"Jubilee\",\r\n    \"superannuationType\": null,\r\n    \"superannuationBankName\": \"\",\r\n    \"superannuationBankAccountOrMembershipNumber\": \"1111-2222-3\",\r\n    \"superannuationAbnOrUsi\": \"12345\",\r\n    \"superannuationBankBsb\": \"\",\r\n    \"superannuationAddress\": \"\",\r\n    \"training\": \"need more\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/settings",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"settings"
 							]
 						}
 					},

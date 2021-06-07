@@ -11,6 +11,8 @@ export class Attachment extends Base {
   fileId: number;
   @Column({ name: 'target_id' })
   targetId: number;
+  @Column({ name: 'user_id', nullable: false })
+  userId: number;
 
   @OneToOne(() => File)
   @JoinColumn({ name: 'file_id' })

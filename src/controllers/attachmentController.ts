@@ -6,13 +6,16 @@ import { EntityType } from '../constants/constants';
 export class AttachmentController {
   async create(req: Request, res: Response) {
     const repository = getCustomRepository(AttachmentRepository);
-
+    let userId = res.locals.jwtPayload.id;
     let type: EntityType = req.params.type as EntityType;
-    let response: string = await repository.createAndSave({
-      files: req.body.files,
-      targetType: type,
-      target: parseInt(req.params.id),
-    });
+    let response: string = await repository.createAndSave(
+      {
+        files: req.body.files,
+        targetType: type,
+        target: parseInt(req.params.id),
+      },
+      userId
+    );
 
     // if no timesheet found
     return res.status(200).json({

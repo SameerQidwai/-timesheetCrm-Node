@@ -378,7 +378,7 @@ export class EmployeeRepository extends Repository<Employee> {
       }
     );
 
-    if (!(await panelSkillStandardLevels).length) {
+    if (!panelSkillStandardLevels.length) {
       throw new Error('panelSkillStandardLevel not found');
     }
     let standardSkillId =
@@ -394,6 +394,8 @@ export class EmployeeRepository extends Repository<Employee> {
         },
       }
     );
+
+    console.log(standardSkillStandardLevels);
 
     if (!standardSkillStandardLevels.length) {
       throw new Error('standardSkillStandardLevel not found');
@@ -413,11 +415,7 @@ export class EmployeeRepository extends Repository<Employee> {
         'contactPerson',
         'contactPerson.id = contactPersonOrganization.contactPerson.id'
       )
-      .innerJoin(
-        'contactPerson.StandardSkillStandardLevel',
-        'StandardSkillStandardLevel',
-        'StandardSkillStandardLevel.contactPerson.id = contactPerson.id'
-      )
+
       .getMany();
 
     console.log('employees: ', employees);
@@ -567,4 +565,11 @@ export class EmployeeRepository extends Repository<Employee> {
     employee.leases = employee.leases.filter((x) => x.id != id);
     return this.manager.save(employee);
   }
+
+  // async getUsersBySkill(panelSkillId: number): Promise<any | undefined> {
+  //   if (!panelSkillId) {
+  //     throw new Error('Panel Skill Id not found');
+  //   }
+
+  // }
 }

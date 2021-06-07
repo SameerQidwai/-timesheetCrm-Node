@@ -6,7 +6,8 @@ import path from 'path';
 export class FileController {
   async create(req: Request, res: Response) {
     const repository = getCustomRepository(FileRepository);
-    let response: string = await repository.createAndSave(req.files);
+    let userId = res.locals.jwtPayload.id;
+    let response: string = await repository.createAndSave(req.files, userId);
 
     // if no timesheet found
     return res.status(200).json({

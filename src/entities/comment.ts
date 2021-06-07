@@ -11,4 +11,6 @@ export class Comment extends Base {
   targetType: EntityType;
   @Column({ name: 'target_id' })
   targetId: number;
+  @Column({ name: 'user_id', nullable: false })
+  userId: number;
 }
