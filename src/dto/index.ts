@@ -1,3 +1,4 @@
+import { Action, Grant, Resource } from './../constants/authorization';
 import {
   EmploymentType,
   Gender,
@@ -356,4 +357,14 @@ export interface CommentDTO extends Base {
   target: number;
   content: string;
   attachments: number[] | [];
+}
+
+export interface PermissionDTO extends Base {
+  action: Action;
+  resource: Resource;
+  grant: Grant;
+}
+
+export interface RoleDTO extends Base {
+  label: string;
 }
