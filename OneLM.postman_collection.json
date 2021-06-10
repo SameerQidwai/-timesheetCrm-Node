@@ -865,20 +865,34 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3301/api/v1/employees/get/contact-persons",
-							"protocol": "http",
+							"raw": "{{Endpoint}}/employees/get/contact-persons",
 							"host": [
-								"localhost"
+								"{{Endpoint}}"
 							],
-							"port": "3301",
 							"path": [
-								"api",
-								"v1",
 								"employees",
 								"get",
 								"contact-persons"
 							]
 						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get by skills",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": null
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": null
 					},
 					"response": []
 				}
@@ -2466,6 +2480,11 @@
 								"value": "multipart/form-data",
 								"type": "text",
 								"disabled": true
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTMsImlhdCI6MTYyMzAyNDM0NiwiZXhwIjoxNjIzMDI3OTQ2fQ.fj75fyVdXjaiuKseIXMIJ5w2Bgrko7lknK2EM8i7EQw",
+								"type": "text"
 							}
 						],
 						"body": {
