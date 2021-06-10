@@ -43,6 +43,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
     let entry = await this.manager.transaction(
       async (transactionalEntityManager) => {
+        let flag_newTimesheet = 0;
         let timesheet: Timesheet | undefined;
         let projectEntry: TimesheetProjectEntry | undefined;
 
@@ -71,10 +72,14 @@ export class TimesheetRepository extends Repository<Timesheet> {
         }
 
         projectEntry = await this.manager.findOne(TimesheetProjectEntry, {
-          where: { projectId: timesheetDTO.projectId },
+          where: {
+            projectId: timesheetDTO.projectId,
+            timesheetId: timesheet.id,
+          },
         });
 
         if (!projectEntry) {
+          console.log(' I RANN');
           projectEntry = new TimesheetProjectEntry();
 
           projectEntry.timesheetId = timesheet.id;
@@ -118,6 +123,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
             ) / 60
           ) - timesheetDTO.breakHours;
         entry.projectEntryId = projectEntry.id;
+        entry.notes = timesheetDTO.notes;
 
         entry = await transactionalEntityManager.save(entry);
 
@@ -157,6 +163,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
           ) / 60
         );
         entry.projectEntryId = timesheetDTO.projectEntryId;
+
         entry = await transactionalEntityManager.save(entry);
 
         return entry;
@@ -364,7 +371,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         if (attachments) {
           let oldAttachments = await this.manager.find(Attachment, {
             select: ['id'],
-            where: { targetId: projectEntry.id, type: 'PEN' },
+            where: { targetId: projectEntry.id, targetType: 'PEN' },
           });
 
           this.manager.softDelete(Attachment, oldAttachments);

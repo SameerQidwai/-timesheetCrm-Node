@@ -24,6 +24,7 @@ import timesheetRoutes from './timesheetRoutes';
 import fileRoutes from './fileRoutes';
 import attachmentRoutes from './attachmentRoutes';
 import commentRoutes from './commentRoutes';
+import userRoutes from './userRoutes';
 import opportunityResourceRoutes from './opportunityResourceRoutes';
 import { getCustomRepository } from 'typeorm';
 
@@ -52,6 +53,7 @@ router.use('/timesheets', timesheetRoutes);
 router.use('/files', fileRoutes);
 router.use('/attachments', attachmentRoutes);
 router.use('/comments', commentRoutes);
+router.use('/users', userRoutes);
 // router.use("/opportunity-resources", opportunityResourceRoutes);
 router.post('/global-setting', async (req, res) => {
   let data = await getCustomRepository(GlobalSettingRepository).createAndSave({

@@ -415,7 +415,11 @@ export class EmployeeRepository extends Repository<Employee> {
         'contactPerson',
         'contactPerson.id = contactPersonOrganization.contactPerson.id'
       )
-
+      .innerJoin(
+        'contactPerson.standardSkillStandardLevels',
+        'standardSkillStandardLevel',
+        'standardSkillStandardLevel.contactPersons.id = contactPerson.id'
+      )
       .getMany();
 
     console.log('employees: ', employees);
@@ -572,4 +576,14 @@ export class EmployeeRepository extends Repository<Employee> {
   //   }
 
   // }
+
+  async getAllUsers(): Promise<any[]> {
+    let result = await this.find({
+      relations: [
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+      ],
+    });
+    return result;
+  }
 }

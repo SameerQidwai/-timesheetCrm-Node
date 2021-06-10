@@ -40,6 +40,7 @@ export class AuthController {
         // message: `Win Opportunity ${req.params.id}`,
         message: 'Logged in',
         data: {
+          id: user.id,
           email: user.username,
           accessToken: `Bearer ${token}`,
         },
