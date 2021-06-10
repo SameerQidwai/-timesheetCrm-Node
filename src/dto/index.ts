@@ -1,3 +1,4 @@
+import { Action, Grant, Resource } from './../constants/authorization';
 import {
   EmploymentType,
   Gender,
@@ -377,4 +378,13 @@ export interface Settings extends Base {
   // bankName: string; //! NOT USING BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
   // bankAccountNo: string; //! NOT USING BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
   // bankBsb: string; //! NOT USING BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
+}
+export interface PermissionDTO extends Base {
+  action: Action;
+  resource: Resource;
+  grant: Grant;
+}
+
+export interface RoleDTO extends Base {
+  label: string;
 }
