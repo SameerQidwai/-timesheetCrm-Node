@@ -1,10 +1,11 @@
-import { Entity, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Entity, Column, OneToOne, JoinColumn, OneToMany, ManyToOne } from 'typeorm';
 import { Base } from './common/base';
 import { ContactPersonOrganization } from './contactPersonOrganization';
 import { EmploymentContract } from './employmentContract';
 import { BankAccount } from './bankAccount';
 import { Lease } from './lease';
 import { SuperannuationType } from '../constants/constants';
+import { Role } from './role';
 
 @Entity('employees')
 export class Employee extends Base {
@@ -99,4 +100,11 @@ export class Employee extends Base {
     cascade: true,
   })
   leases: Lease[];
+
+  @Column({ name: 'role_id' })
+  roleId: number;
+
+  @ManyToOne(() => Role)
+  @JoinColumn({ name: "role_id" })
+  role: Role;
 }

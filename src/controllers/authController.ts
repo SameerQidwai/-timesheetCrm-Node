@@ -6,6 +6,7 @@ import { secret } from '../utilities/configs';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { SuperannuationType } from '../constants/constants';
+import { Role } from 'src/entities/role';
 
 export class AuthController {
   async login(req: Request, res: Response) {
@@ -15,26 +16,31 @@ export class AuthController {
     let password: string = req.body.password;
     let user = await repository.findOne({
       where: { username: email },
+      relations: ["role", "role.permissions"]
     });
 
     let token: string;
     if (user) {
-      console.log('123123', user.password);
       let same = bcrypt.compareSync(password, user.password); // true
-      // console.log(password);
-      // console.log(user.hash);
-      // console.log(same);
       if (!same) {
         return res.status(200).json({
           success: false,
           message: 'Incorrect Password',
         });
       }
-      console.log(user.id);
       token = jwt.sign({ id: user.id }, secret, {
         expiresIn: '1h', // 24 * 30 hours
       });
-
+      let role = {
+        roleId: user.role.id,
+        role: user.role.label,
+        permissions: user.role.permissions.map(x => {
+          const { resource, action, grant } = x;
+          return {
+            resource, action, grant
+          };
+        })
+      };
       return res.status(200).json({
         success: true,
         // message: `Win Opportunity ${req.params.id}`,
@@ -42,6 +48,7 @@ export class AuthController {
         data: {
           id: user.id,
           email: user.username,
+          role: role,
           accessToken: `Bearer ${token}`,
         },
       });

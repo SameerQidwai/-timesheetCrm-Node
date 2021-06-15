@@ -1,2300 +1,2843 @@
 {
-  "info": {
-    "_postman_id": "ec650f6f-be4b-48c9-8510-b321f2ad844b",
-    "name": "OneLM",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "item": [
-    {
-      "name": "Sample",
-      "item": [
-        {
-          "name": "Sample List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:3000/api/v1/samples",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
-              "path": ["api", "v1", "samples"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Sample Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"title\": \"New test 2\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "http://localhost:3000/api/v1/samples",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
-              "path": ["api", "v1", "samples"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Sample Update",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"title\": \"New test 2 updated\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "http://localhost:3000/api/v1/samples/2",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
-              "path": ["api", "v1", "samples", "2"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Sample Delete",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:3000/api/v1/samples/1",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
-              "path": ["api", "v1", "samples", "1"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "TimeOffTypes",
-      "item": [
-        {
-          "name": "Time Off Type List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/time-off-types",
-              "host": ["{{Endpoint}}"],
-              "path": ["time-off-types"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Time Off Type Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"label\": \"Sick Leave\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/time-off-types",
-              "host": ["{{Endpoint}}"],
-              "path": ["time-off-types"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "TimeOffPolicies",
-      "item": [
-        {
-          "name": "Time Off Policy List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/time-off-policies",
-              "host": ["{{Endpoint}}"],
-              "path": ["time-off-policies"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Time Off Policy Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"label\": \"Standard Policy\",\r\n    \"timeOffPolicyTimeOffTypes\": [\r\n        {\r\n            \"timeOffTypeId\": 1,\r\n            \"earnHours\": 8,\r\n            \"earnEvery\": \"M\",\r\n            \"resetHours\": 8,\r\n            \"resetEvery\": \"Y\",\r\n            \"threshold\": 999\r\n        },\r\n        {\r\n            \"timeOffTypeId\": 2,\r\n            \"earnHours\": 40,\r\n            \"earnEvery\": \"EY\",\r\n            \"resetHours\": 0,\r\n            \"resetEvery\": \"N\",\r\n            \"threshold\": 80\r\n        }\r\n    ]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/time-off-policies",
-              "host": ["{{Endpoint}}"],
-              "path": ["time-off-policies"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "TimeOff Policy Update",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"label\": \"Standard Policy updated\",\r\n    \"timeOffPolicyTimeOffTypes\": [\r\n        {\r\n            \"timeOffTypeId\": 2,\r\n            \"hours\": 66,\r\n            \"increaseEvery\": \"M\",\r\n            \"threshold\": 100\r\n        }\r\n    ]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/time-off-policies/2",
-              "host": ["{{Endpoint}}"],
-              "path": ["time-off-policies", "2"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Sample Delete",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:3000/api/v1/time-off-policies/6",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
-              "path": ["api", "v1", "time-off-policies", "6"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "StandardLevels",
-      "item": [
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/standard-levels",
-              "host": ["{{Endpoint}}"],
-              "path": ["standard-levels"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"label\": \"Level 3\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/standard-levels",
-              "host": ["{{Endpoint}}"],
-              "path": ["standard-levels"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "StandardSkills",
-      "item": [
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/standard-skills",
-              "host": ["{{Endpoint}}"],
-              "path": ["standard-skills"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"label\": \"React Developer\",\r\n    \"standardSkillStandardLevels\": [\r\n        {\r\n            \"standardLevelId\": 1,\r\n            \"priority\": 1\r\n        },\r\n        {\r\n            \"standardLevelId\": 2,\r\n            \"priority\": 2\r\n        }\r\n    ]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/standard-skills",
-              "host": ["{{Endpoint}}"],
-              "path": ["standard-skills"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"label\": \"Node Developer Updated\",\r\n    \"standardSkillStandardLevels\": [\r\n        {\r\n            \"standardLevelId\": 3,\r\n            \"priority\": 1\r\n        },\r\n        {\r\n            \"standardLevelId\": 1,\r\n            \"priority\": 22\r\n        }\r\n    ]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/standard-skills/1",
-              "host": ["{{Endpoint}}"],
-              "path": ["standard-skills", "1"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:3000/api/v1/standard-skills/6",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
-              "path": ["api", "v1", "standard-skills", "6"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "HolidayTypes",
-      "item": [
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/holiday-types",
-              "host": ["{{Endpoint}}"],
-              "path": ["holiday-types"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"label\": \"Bank Day\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/holiday-types",
-              "host": ["{{Endpoint}}"],
-              "path": ["holiday-types"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Calendars",
-      "item": [
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/calendars",
-              "host": ["{{Endpoint}}"],
-              "path": ["calendars"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"label\": \"State wise\",\r\n    \"isActive\": true\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/calendars",
-              "host": ["{{Endpoint}}"],
-              "path": ["calendars"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "CalendarHolidays",
-      "item": [
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/calendar-holidays?calendarId=1",
-              "host": ["{{Endpoint}}"],
-              "path": ["calendar-holidays"],
-              "query": [
-                {
-                  "key": "calendarId",
-                  "value": "1"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"calendarId\": 1,\r\n    \"holidayTypeId\": 1,\r\n    \"date\": 1608512778651\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/calendar-holidays",
-              "host": ["{{Endpoint}}"],
-              "path": ["calendar-holidays"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"calendarId\": 1,\r\n    \"holidayTypeId\": 2,\r\n    \"date\": 1608512778651\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/calendar-holidays/1",
-              "host": ["{{Endpoint}}"],
-              "path": ["calendar-holidays", "1"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Contact Persons",
-      "item": [
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/contactpersons",
-              "host": ["{{Endpoint}}"],
-              "path": ["contactpersons"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"firstName\": \"Sohail\",\r\n    \"lastName\": \"Rauf\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"sohail@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"clearanceLevel\": \"BV\",\r\n    \"clearanceGrantedDate\": 1608512778651,\r\n    \"clearanceExpiryDate\": 1608512878651,\r\n    \"clearanceSponsorId\": 3,\r\n    \"standardSkillStandardLevelIds\": [2],\r\n    \"contactPersonOrganizations\": [{\r\n        \"startDate\": 1608512778651,\r\n        \"designation\": \"Developer\",\r\n        \"organizationId\": 2\r\n    }]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/contactpersons",
-              "host": ["{{Endpoint}}"],
-              "path": ["contactpersons"]
-            }
-          },
-          "response": [
-            {
-              "name": "Create",
-              "originalRequest": {
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"name\": \"organization test 1\",\r\n    \"phoneNumber\": \"+123456789\",\r\n    \"email\": \"m_23qwet@live.com\",\r\n    \"address\": \"test address that is never to goiing to exist any way\",\r\n    \"website\": \"https://test.com\",\r\n    \"abn\": 123456,\r\n    \"textCode\": 123456,\r\n    \"expectedBusinessAmount\": 400000,\r\n    \"invoiceEmail\": \"test@test.com\",\r\n    \"piInsurer\": \"abd\",\r\n    \"plInsurer\": \"1qw\",\r\n    \"wcInsurer\": \"asdf\",\r\n    \"piPolicyNumber\": 123456,\r\n    \"plPolicyNumber\": 123456,\r\n    \"wcPolicyNumber\": 123456,\r\n    \"piSumInsured\": 1000,\r\n    \"plSumInsured\": 1000,\r\n    \"wcSumInsured\": 1000,\r\n    \"piInsuranceExpiry\": null,\r\n    \"plInsuranceExpiry\": null,\r\n    \"wcInsuranceExpiry\": null,\r\n    \"parentOrganizationId\": null,\r\n    \"delegateContactPersonOrganizationId\": null\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "http://localhost:3000/api/v1/organizations",
-                  "protocol": "http",
-                  "host": ["localhost"],
-                  "port": "3000",
-                  "path": ["api", "v1", "organizations"]
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "X-Powered-By",
-                  "value": "Express"
-                },
-                {
-                  "key": "Access-Control-Allow-Origin",
-                  "value": "*"
-                },
-                {
-                  "key": "Content-Type",
-                  "value": "application/json; charset=utf-8"
-                },
-                {
-                  "key": "Content-Length",
-                  "value": "696"
-                },
-                {
-                  "key": "ETag",
-                  "value": "W/\"2b8-EMQ4x1Nc0jl2Qb7d3mU8SjsqVs0\""
-                },
-                {
-                  "key": "Date",
-                  "value": "Thu, 14 Jan 2021 16:46:17 GMT"
-                },
-                {
-                  "key": "Connection",
-                  "value": "keep-alive"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Create\",\n    \"data\": {\n        \"name\": \"organization test 1\",\n        \"phoneNumber\": \"+123456789\",\n        \"email\": \"m_23qwet@live.com\",\n        \"address\": \"test address that is never to goiing to exist any way\",\n        \"website\": \"https://test.com\",\n        \"abn\": 123456,\n        \"textCode\": 123456,\n        \"expectedBusinessAmount\": \"400000.000\",\n        \"invoiceEmail\": \"test@test.com\",\n        \"piInsurer\": \"abd\",\n        \"plInsurer\": \"1qw\",\n        \"wcInsurer\": \"asdf\",\n        \"piPolicyNumber\": 123456,\n        \"plPolicyNumber\": 123456,\n        \"wcPolicyNumber\": 123456,\n        \"deletedAt\": null,\n        \"piSumInsured\": \"0.000\",\n        \"plSumInsured\": \"0.000\",\n        \"wcSumInsured\": \"0.000\",\n        \"piInsuranceExpiry\": null,\n        \"plInsuranceExpiry\": null,\n        \"wcInsuranceExpiry\": null,\n        \"id\": 1,\n        \"createdAt\": \"2021-01-14T16:46:17.562Z\",\n        \"updatedAt\": \"2021-01-14T16:46:17.562Z\"\n    }\n}"
-            }
-          ]
-        },
-        {
-          "name": "Put",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"firstName\": \"Asad updated aga\",\r\n    \"lastName\": \"Khan\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"kashif@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 2,\r\n    \"standardSkillStandardLevelIds\": [3,5],\r\n    \"contactPersonOrganizations\": [{\r\n        \"startDate\": 1608512778651,\r\n        \"designation\": \"Senior Eng updated\",\r\n        \"organizationId\": 1\r\n    },\r\n    {\r\n        \"startDate\": 1608512778651,\r\n        \"designation\": \"Account Manager new\",\r\n        \"organizationId\": 2\r\n    }]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/contactpersons/1",
-              "host": ["{{Endpoint}}"],
-              "path": ["contactpersons", "1"]
-            }
-          },
-          "response": [
-            {
-              "name": "Create",
-              "originalRequest": {
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"name\": \"organization test 1\",\r\n    \"phoneNumber\": \"+123456789\",\r\n    \"email\": \"m_23qwet@live.com\",\r\n    \"address\": \"test address that is never to goiing to exist any way\",\r\n    \"website\": \"https://test.com\",\r\n    \"abn\": 123456,\r\n    \"textCode\": 123456,\r\n    \"expectedBusinessAmount\": 400000,\r\n    \"invoiceEmail\": \"test@test.com\",\r\n    \"piInsurer\": \"abd\",\r\n    \"plInsurer\": \"1qw\",\r\n    \"wcInsurer\": \"asdf\",\r\n    \"piPolicyNumber\": 123456,\r\n    \"plPolicyNumber\": 123456,\r\n    \"wcPolicyNumber\": 123456,\r\n    \"piSumInsured\": 1000,\r\n    \"plSumInsured\": 1000,\r\n    \"wcSumInsured\": 1000,\r\n    \"piInsuranceExpiry\": null,\r\n    \"plInsuranceExpiry\": null,\r\n    \"wcInsuranceExpiry\": null,\r\n    \"parentOrganizationId\": null,\r\n    \"delegateContactPersonOrganizationId\": null\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "http://localhost:3000/api/v1/organizations",
-                  "protocol": "http",
-                  "host": ["localhost"],
-                  "port": "3000",
-                  "path": ["api", "v1", "organizations"]
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "X-Powered-By",
-                  "value": "Express"
-                },
-                {
-                  "key": "Access-Control-Allow-Origin",
-                  "value": "*"
-                },
-                {
-                  "key": "Content-Type",
-                  "value": "application/json; charset=utf-8"
-                },
-                {
-                  "key": "Content-Length",
-                  "value": "696"
-                },
-                {
-                  "key": "ETag",
-                  "value": "W/\"2b8-EMQ4x1Nc0jl2Qb7d3mU8SjsqVs0\""
-                },
-                {
-                  "key": "Date",
-                  "value": "Thu, 14 Jan 2021 16:46:17 GMT"
-                },
-                {
-                  "key": "Connection",
-                  "value": "keep-alive"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Create\",\n    \"data\": {\n        \"name\": \"organization test 1\",\n        \"phoneNumber\": \"+123456789\",\n        \"email\": \"m_23qwet@live.com\",\n        \"address\": \"test address that is never to goiing to exist any way\",\n        \"website\": \"https://test.com\",\n        \"abn\": 123456,\n        \"textCode\": 123456,\n        \"expectedBusinessAmount\": \"400000.000\",\n        \"invoiceEmail\": \"test@test.com\",\n        \"piInsurer\": \"abd\",\n        \"plInsurer\": \"1qw\",\n        \"wcInsurer\": \"asdf\",\n        \"piPolicyNumber\": 123456,\n        \"plPolicyNumber\": 123456,\n        \"wcPolicyNumber\": 123456,\n        \"deletedAt\": null,\n        \"piSumInsured\": \"0.000\",\n        \"plSumInsured\": \"0.000\",\n        \"wcSumInsured\": \"0.000\",\n        \"piInsuranceExpiry\": null,\n        \"plInsuranceExpiry\": null,\n        \"wcInsuranceExpiry\": null,\n        \"id\": 1,\n        \"createdAt\": \"2021-01-14T16:46:17.562Z\",\n        \"updatedAt\": \"2021-01-14T16:46:17.562Z\"\n    }\n}"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Employees",
-      "item": [
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/employees",
-              "host": ["{{Endpoint}}"],
-              "path": ["employees"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"contactPersonId\": 3,\r\n    \"firstName\": \"Mursal as employee\",\r\n    \"lastName\": \"Khan\",\r\n    \"username\": \"thedevshezzy@gmail.com\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"mursal@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"saad\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"saad@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"tfn\": \"\",\r\n    \"superannuationName\": \"Jubilee\",\r\n    \"superannuationBankName\": \"\",\r\n    \"superannuationBankAccountOrMembershipNumber\": \"1111-2222-3\",\r\n    \"superannuationAbnOrUsi\": \"12345\",\r\n    \"superannuationBankBsb\": \"\",\r\n    \"superannuationAddress\": \"\",\r\n    \"training\": \"need more\",\r\n    \"bankName\": \"HBL\",\r\n    \"bankAccountNo\": \"234353453453534534\",\r\n    \"bankBsb\": \"12qwe\",\r\n    \"latestEmploymentContract\": {\r\n        \"payslipEmail\": \"pay@live.com\",\r\n        \"payFrequency\": 1,\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n    \r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/employees",
-              "host": ["{{Endpoint}}"],
-              "path": ["employees"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Put",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"contactPersonId\": 1,\r\n    \"firstName\": \"Mursal as employee updated2\",\r\n    \"lastName\": \"Khan\",\r\n    \"username\": \"mursal@onelm.com\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"mursal@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"saad\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"saad@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"tfn\": \"\",\r\n    \"superannuationName\": \"Jubilee\",\r\n    \"superannuationBankName\": \"\",\r\n    \"superannuationBankAccountOrMembershipNumber\": \"1111-2222-3\",\r\n    \"superannuationAbnOrUsi\": \"12345\",\r\n    \"superannuationBankBsb\": \"\",\r\n    \"superannuationAddress\": \"\",\r\n    \"training\": \"need more\",\r\n    \"bankName\": \"HBL\",\r\n    \"bankAccountNo\": \"234353453453534534\",\r\n    \"bankBsb\": \"12qwe\",\r\n    \"latestEmploymentContract\": {\r\n        \"payslipEmail\": \"pay@live.com\",\r\n        \"payFrequency\": 1,\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/employees/1",
-              "host": ["{{Endpoint}}"],
-              "path": ["employees", "1"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "List Contact Persons",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/employees/get/contact-persons",
-              "host": ["{{Endpoint}}"],
-              "path": ["employees", "get", "contact-persons"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get by skills",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": null
-          },
-          "response": []
-        },
-        {
-          "name": "Get All Users",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": null
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Opportunities",
-      "item": [
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/opportunities",
-              "host": ["{{Endpoint}}"],
-              "path": ["opportunities"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website\",\r\n    \"value\": 20000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"hoursPerDay\": 8,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"opportunityManagerId\": null,\r\n    \"status\": 0\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/opportunities",
-              "host": ["{{Endpoint}}"],
-              "path": ["opportunities"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Put",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website updated\",\r\n    \"value\": 20000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"tenderValue\": 25000,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"opportunityManagerId\": null\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/opportunities/1",
-              "host": ["{{Endpoint}}"],
-              "path": ["opportunities", "1"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "List Contact Persons",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/employees/get/contact-persons",
-              "host": ["{{Endpoint}}"],
-              "path": ["employees", "get", "contact-persons"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Win",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website updated\",\r\n    \"value\": 30000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"tenderValue\": 25000,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"projectManagerId\": 1\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/opportunities/1/win",
-              "host": ["{{Endpoint}}"],
-              "path": ["opportunities", "1", "win"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Lost",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website updated\",\r\n    \"value\": 30000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"tenderValue\": 25000,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"projectManagerId\": 1\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/opportunities/1/lost",
-              "host": ["{{Endpoint}}"],
-              "path": ["opportunities", "1", "lost"]
-            }
-          },
-          "response": []
-        }
-      ],
-      "event": [
-        {
-          "listen": "prerequest",
-          "script": {
-            "type": "text/javascript",
-            "exec": [""]
-          }
-        },
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [""]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Opportunity Resource",
-      "item": [
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/opportunities/1/resources",
-              "host": ["{{Endpoint}}"],
-              "path": ["opportunities", "1", "resources"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"panelSkillId\": 1,\r\n    \"panelSkillStandardLevelId\": 1,\r\n    \"billableHours\": 120\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/opportunities/1/resources",
-              "host": ["{{Endpoint}}"],
-              "path": ["opportunities", "1", "resources"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Put",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"panelSkillId\": 1,\r\n    \"panelSkillStandardLevelId\": 2,\r\n    \"billableHours\": 502\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/opportunities/1/resources/1",
-              "host": ["{{Endpoint}}"],
-              "path": ["opportunities", "1", "resources", "1"]
-            }
-          },
-          "response": []
-        }
-      ],
-      "event": [
-        {
-          "listen": "prerequest",
-          "script": {
-            "type": "text/javascript",
-            "exec": [""]
-          }
-        },
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [""]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Opportunity Resource Allocation",
-      "item": [
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"buyingRate\": 9,\r\n    \"sellingRate\": 10,\r\n    \"contactPersonId\": 1\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/opportunities/1/resources/1/allocations",
-              "host": ["{{Endpoint}}"],
-              "path": ["opportunities", "1", "resources", "1", "allocations"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Put",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"buyingRate\": 10,\r\n    \"sellingRate\": 12,\r\n    \"contactPersonId\": 2\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/opportunities/1/resources/1/allocations/1",
-              "host": ["{{Endpoint}}"],
-              "path": [
-                "opportunities",
-                "1",
-                "resources",
-                "1",
-                "allocations",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Mark As Selected",
-          "request": {
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/opportunities/1/resources/1/allocations/2/mark-as-selected",
-              "host": ["{{Endpoint}}"],
-              "path": [
-                "opportunities",
-                "1",
-                "resources",
-                "1",
-                "allocations",
-                "2",
-                "mark-as-selected"
-              ]
-            }
-          },
-          "response": []
-        }
-      ],
-      "event": [
-        {
-          "listen": "prerequest",
-          "script": {
-            "type": "text/javascript",
-            "exec": [""]
-          }
-        },
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [""]
-          }
-        }
-      ]
-    },
-    {
-      "name": "SubContractors",
-      "item": [
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/sub-contractors",
-              "host": ["{{Endpoint}}"],
-              "path": ["sub-contractors"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"contactPersonId\": 2,\r\n    \"organizationId\": 2,\r\n    \"username\": \"sohail@sudoware.com\",\r\n    \"firstName\": \"Sohail as Subcontractor\",\r\n    \"lastName\": \"Rauf\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"sohail@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"shehbaz\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"shehbaz@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"latestContract\": {\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n    \r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/sub-contractors",
-              "host": ["{{Endpoint}}"],
-              "path": ["sub-contractors"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Put",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"username\": \"sohail@sudoware.com\",\r\n    \"firstName\": \"Sohail as Subcontractor2\",\r\n    \"lastName\": \"Rauf\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"sohail@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"shehbaz\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"shehbaz@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"latestContract\": {\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/sub-contractors/4",
-              "host": ["{{Endpoint}}"],
-              "path": ["sub-contractors", "4"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "List Contact Persons",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:3301/api/v1/employees/get/contact-persons",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3301",
-              "path": ["api", "v1", "employees", "get", "contact-persons"]
-            }
-          },
-          "response": []
-        }
-      ],
-      "event": [
-        {
-          "listen": "prerequest",
-          "script": {
-            "type": "text/javascript",
-            "exec": [""]
-          }
-        },
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [""]
-          }
-        }
-      ]
-    },
-    {
-      "name": "SubContractor Contract",
-      "item": [
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:3301/api/v1/sub-contractors-contracts?subContractorId=3",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3301",
-              "path": ["api", "v1", "sub-contractors-contracts"],
-              "query": [
-                {
-                  "key": "subContractorId",
-                  "value": "3"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"subContractorId\": \"3\",\r\n    \"startDate\": 1608512778351,\r\n    \"endDate\": null,\r\n    \"noOfHours\": 4,\r\n    \"noOfHoursPer\": 1,\r\n    \"remunerationAmount\": 1200,\r\n    \"remunerationAmountPer\": 1,\r\n    \"comments\": \"\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "http://localhost:3301/api/v1/sub-contractors-contracts",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3301",
-              "path": ["api", "v1", "sub-contractors-contracts"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Put",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"startDate\": 1608512778351,\r\n    \"endDate\": null,\r\n    \"noOfHours\": 4,\r\n    \"noOfHoursPer\": 1,\r\n    \"remunerationAmount\": 1200,\r\n    \"remunerationAmountPer\": 1,\r\n    \"comments\": \"\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "http://localhost:3301/api/v1/sub-contractors-contracts/2",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3301",
-              "path": ["api", "v1", "sub-contractors-contracts", "2"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "List Contact Persons",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:3000/api/v1/employees",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
-              "path": ["api", "v1", "employees"]
-            }
-          },
-          "response": []
-        }
-      ],
-      "event": [
-        {
-          "listen": "prerequest",
-          "script": {
-            "type": "text/javascript",
-            "exec": [""]
-          }
-        },
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [""]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Employment Contract",
-      "item": [
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/employment-contracts?employeeId=1",
-              "host": ["{{Endpoint}}"],
-              "path": ["employment-contracts"],
-              "query": [
-                {
-                  "key": "employeeId",
-                  "value": "1"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"employeeId\": \"1\",\r\n    \"payslipEmail\": \"paynew@live.com\",\r\n    \"payFrequency\": 1,\r\n    \"startDate\": 1608512778351,\r\n    \"endDate\": null,\r\n    \"type\": 1,\r\n    \"noOfHours\": 4,\r\n    \"noOfHoursPer\": 1,\r\n    \"remunerationAmount\": 1200,\r\n    \"remunerationAmountPer\": 1,\r\n    \"comments\": \"\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/employment-contracts",
-              "host": ["{{Endpoint}}"],
-              "path": ["employment-contracts"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Put",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"payslipEmail\": \"paynewupdated@live.com\",\r\n    \"payFrequency\": 1,\r\n    \"startDate\": 1608512778351,\r\n    \"endDate\": null,\r\n    \"type\": 1,\r\n    \"noOfHours\": 4,\r\n    \"noOfHoursPer\": 1,\r\n    \"remunerationAmount\": 1200,\r\n    \"remunerationAmountPer\": 1,\r\n    \"comments\":\"\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "http://localhost:3301/api/v1/employment-contracts/3",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3301",
-              "path": ["api", "v1", "employment-contracts", "3"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "List Contact Persons",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:3000/api/v1/employees",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
-              "path": ["api", "v1", "employees"]
-            }
-          },
-          "response": []
-        }
-      ],
-      "event": [
-        {
-          "listen": "prerequest",
-          "script": {
-            "type": "text/javascript",
-            "exec": [""]
-          }
-        },
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [""]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Organizations",
-      "item": [
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/organizations",
-              "host": ["{{Endpoint}}"],
-              "path": ["organizations"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"name\": \"AB Security\",\r\n    \"phoneNumber\": \"+176456789\",\r\n    \"email\": \"mqwet@absecurity.com\",\r\n    \"address\": \"test address that is never to goiing to exist any way\",\r\n    \"website\": \"https://absecurity.com\",\r\n    \"abn\": 123456,\r\n    \"businessType\": 1,\r\n    \"taxCode\": 123456,\r\n    \"currentFinancialYearTotalForecast\": 400000,\r\n    \"nextFinancialYearTotalForecast\": 0,\r\n    \"invoiceEmail\": \"test@test.com\",\r\n    \"invoiceContactNumber\": \"+664543454\",\r\n    \"piInsurer\": \"abd\",\r\n    \"plInsurer\": \"1qw\",\r\n    \"wcInsurer\": \"asdf\",\r\n    \"piPolicyNumber\": 123456,\r\n    \"plPolicyNumber\": 123456,\r\n    \"wcPolicyNumber\": 123456,\r\n    \"piSumInsured\": 1000,\r\n    \"plSumInsured\": 1000,\r\n    \"wcSumInsured\": 1000,\r\n    \"piInsuranceExpiry\": null,\r\n    \"plInsuranceExpiry\": null,\r\n    \"wcInsuranceExpiry\": null,\r\n    \"parentOrganizationId\": null,\r\n    \"delegateContactPersonOrganizationId\": null,\r\n    \"bankName\": \"Standard Chartered\",\r\n    \"bankAccountNo\": \"111111111-2-3-444412\",\r\n    \"bankBsb\": \"12qwe\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/organizations",
-              "host": ["{{Endpoint}}"],
-              "path": ["organizations"]
-            }
-          },
-          "response": [
-            {
-              "name": "Create",
-              "originalRequest": {
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"name\": \"organization test 1\",\r\n    \"phoneNumber\": \"+123456789\",\r\n    \"email\": \"m_23qwet@live.com\",\r\n    \"address\": \"test address that is never to goiing to exist any way\",\r\n    \"website\": \"https://test.com\",\r\n    \"abn\": 123456,\r\n    \"textCode\": 123456,\r\n    \"expectedBusinessAmount\": 400000,\r\n    \"invoiceEmail\": \"test@test.com\",\r\n    \"piInsurer\": \"abd\",\r\n    \"plInsurer\": \"1qw\",\r\n    \"wcInsurer\": \"asdf\",\r\n    \"piPolicyNumber\": 123456,\r\n    \"plPolicyNumber\": 123456,\r\n    \"wcPolicyNumber\": 123456,\r\n    \"piSumInsured\": 1000,\r\n    \"plSumInsured\": 1000,\r\n    \"wcSumInsured\": 1000,\r\n    \"piInsuranceExpiry\": null,\r\n    \"plInsuranceExpiry\": null,\r\n    \"wcInsuranceExpiry\": null,\r\n    \"parentOrganizationId\": null,\r\n    \"delegateContactPersonOrganizationId\": null\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "http://localhost:3000/api/v1/organizations",
-                  "protocol": "http",
-                  "host": ["localhost"],
-                  "port": "3000",
-                  "path": ["api", "v1", "organizations"]
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "X-Powered-By",
-                  "value": "Express"
-                },
-                {
-                  "key": "Access-Control-Allow-Origin",
-                  "value": "*"
-                },
-                {
-                  "key": "Content-Type",
-                  "value": "application/json; charset=utf-8"
-                },
-                {
-                  "key": "Content-Length",
-                  "value": "696"
-                },
-                {
-                  "key": "ETag",
-                  "value": "W/\"2b8-EMQ4x1Nc0jl2Qb7d3mU8SjsqVs0\""
-                },
-                {
-                  "key": "Date",
-                  "value": "Thu, 14 Jan 2021 16:46:17 GMT"
-                },
-                {
-                  "key": "Connection",
-                  "value": "keep-alive"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Create\",\n    \"data\": {\n        \"name\": \"organization test 1\",\n        \"phoneNumber\": \"+123456789\",\n        \"email\": \"m_23qwet@live.com\",\n        \"address\": \"test address that is never to goiing to exist any way\",\n        \"website\": \"https://test.com\",\n        \"abn\": 123456,\n        \"textCode\": 123456,\n        \"expectedBusinessAmount\": \"400000.000\",\n        \"invoiceEmail\": \"test@test.com\",\n        \"piInsurer\": \"abd\",\n        \"plInsurer\": \"1qw\",\n        \"wcInsurer\": \"asdf\",\n        \"piPolicyNumber\": 123456,\n        \"plPolicyNumber\": 123456,\n        \"wcPolicyNumber\": 123456,\n        \"deletedAt\": null,\n        \"piSumInsured\": \"0.000\",\n        \"plSumInsured\": \"0.000\",\n        \"wcSumInsured\": \"0.000\",\n        \"piInsuranceExpiry\": null,\n        \"plInsuranceExpiry\": null,\n        \"wcInsuranceExpiry\": null,\n        \"id\": 1,\n        \"createdAt\": \"2021-01-14T16:46:17.562Z\",\n        \"updatedAt\": \"2021-01-14T16:46:17.562Z\"\n    }\n}"
-            }
-          ]
-        },
-        {
-          "name": "Update",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"name\": \"Sudoware\",\r\n    \"phoneNumber\": \"+176456789\",\r\n    \"email\": \"mqwet@sudoware.com\",\r\n    \"address\": \"test address that is never to goiing to exist any way\",\r\n    \"website\": \"https://test.com\",\r\n    \"abn\": 123456,\r\n    \"businessType\": 2,\r\n    \"taxCode\": 123456,\r\n    \"currentFinancialYearTotalForecast\": 0,\r\n    \"nextFinancialYearTotalForecast\": 0,\r\n    \"invoiceEmail\": \"test@test.com\",\r\n    \"invoiceContactNumber\": \"+664543454\",\r\n    \"piInsurer\": \"abd\",\r\n    \"plInsurer\": \"1qw\",\r\n    \"wcInsurer\": \"asdf\",\r\n    \"piPolicyNumber\": 123456,\r\n    \"plPolicyNumber\": 123456,\r\n    \"wcPolicyNumber\": 123456,\r\n    \"piSumInsured\": 1000,\r\n    \"plSumInsured\": 1000,\r\n    \"wcSumInsured\": 1000,\r\n    \"piInsuranceExpiry\": null,\r\n    \"plInsuranceExpiry\": null,\r\n    \"wcInsuranceExpiry\": null,\r\n    \"parentOrganizationId\": null,\r\n    \"delegateContactPersonOrganizationId\": 2,\r\n    \"bankName\": \"Standard Chartered\",\r\n    \"bankAccountNo\": \"111111111-2-3-444444\",\r\n    \"bankBsb\": \"12qwe\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/organizations/1",
-              "host": ["{{Endpoint}}"],
-              "path": ["organizations", "1"]
-            }
-          },
-          "response": [
-            {
-              "name": "Create",
-              "originalRequest": {
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"name\": \"organization test 1\",\r\n    \"phoneNumber\": \"+123456789\",\r\n    \"email\": \"m_23qwet@live.com\",\r\n    \"address\": \"test address that is never to goiing to exist any way\",\r\n    \"website\": \"https://test.com\",\r\n    \"abn\": 123456,\r\n    \"textCode\": 123456,\r\n    \"expectedBusinessAmount\": 400000,\r\n    \"invoiceEmail\": \"test@test.com\",\r\n    \"piInsurer\": \"abd\",\r\n    \"plInsurer\": \"1qw\",\r\n    \"wcInsurer\": \"asdf\",\r\n    \"piPolicyNumber\": 123456,\r\n    \"plPolicyNumber\": 123456,\r\n    \"wcPolicyNumber\": 123456,\r\n    \"piSumInsured\": 1000,\r\n    \"plSumInsured\": 1000,\r\n    \"wcSumInsured\": 1000,\r\n    \"piInsuranceExpiry\": null,\r\n    \"plInsuranceExpiry\": null,\r\n    \"wcInsuranceExpiry\": null,\r\n    \"parentOrganizationId\": null,\r\n    \"delegateContactPersonOrganizationId\": null\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "http://localhost:3000/api/v1/organizations",
-                  "protocol": "http",
-                  "host": ["localhost"],
-                  "port": "3000",
-                  "path": ["api", "v1", "organizations"]
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "X-Powered-By",
-                  "value": "Express"
-                },
-                {
-                  "key": "Access-Control-Allow-Origin",
-                  "value": "*"
-                },
-                {
-                  "key": "Content-Type",
-                  "value": "application/json; charset=utf-8"
-                },
-                {
-                  "key": "Content-Length",
-                  "value": "696"
-                },
-                {
-                  "key": "ETag",
-                  "value": "W/\"2b8-EMQ4x1Nc0jl2Qb7d3mU8SjsqVs0\""
-                },
-                {
-                  "key": "Date",
-                  "value": "Thu, 14 Jan 2021 16:46:17 GMT"
-                },
-                {
-                  "key": "Connection",
-                  "value": "keep-alive"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Create\",\n    \"data\": {\n        \"name\": \"organization test 1\",\n        \"phoneNumber\": \"+123456789\",\n        \"email\": \"m_23qwet@live.com\",\n        \"address\": \"test address that is never to goiing to exist any way\",\n        \"website\": \"https://test.com\",\n        \"abn\": 123456,\n        \"textCode\": 123456,\n        \"expectedBusinessAmount\": \"400000.000\",\n        \"invoiceEmail\": \"test@test.com\",\n        \"piInsurer\": \"abd\",\n        \"plInsurer\": \"1qw\",\n        \"wcInsurer\": \"asdf\",\n        \"piPolicyNumber\": 123456,\n        \"plPolicyNumber\": 123456,\n        \"wcPolicyNumber\": 123456,\n        \"deletedAt\": null,\n        \"piSumInsured\": \"0.000\",\n        \"plSumInsured\": \"0.000\",\n        \"wcSumInsured\": \"0.000\",\n        \"piInsuranceExpiry\": null,\n        \"plInsuranceExpiry\": null,\n        \"wcInsuranceExpiry\": null,\n        \"id\": 1,\n        \"createdAt\": \"2021-01-14T16:46:17.562Z\",\n        \"updatedAt\": \"2021-01-14T16:46:17.562Z\"\n    }\n}"
-            }
-          ]
-        }
-      ],
-      "event": [
-        {
-          "listen": "prerequest",
-          "script": {
-            "type": "text/javascript",
-            "exec": [""]
-          }
-        },
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [""]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Panels",
-      "item": [
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/panels",
-              "host": ["{{Endpoint}}"],
-              "path": ["panels"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"label\": \"Panel C\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/panels",
-              "host": ["{{Endpoint}}"],
-              "path": ["panels"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "States",
-      "item": [
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/states",
-              "host": ["{{Endpoint}}"],
-              "path": ["states"]
-            }
-          },
-          "response": []
-        }
-      ],
-      "event": [
-        {
-          "listen": "prerequest",
-          "script": {
-            "type": "text/javascript",
-            "exec": [""]
-          }
-        },
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [""]
-          }
-        }
-      ]
-    },
-    {
-      "name": "PanelSkills",
-      "item": [
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/panel-skills?panelId=1",
-              "host": ["{{Endpoint}}"],
-              "path": ["panel-skills"],
-              "query": [
-                {
-                  "key": "panelId",
-                  "value": "1"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"label\": \"Engineer\",\r\n    \"standardSkillId\": 1,\r\n    \"panelId\": 1,\r\n    \"panelSkillStandardLevels\": [\r\n        {\r\n            \"standardLevelId\": 1,\r\n            \"levelLabel\": \"Basic\",\r\n            \"shortTermCeil\": 12.3,\r\n            \"longTermCeil\": 10\r\n        },\r\n        {\r\n            \"standardLevelId\": 2,\r\n            \"levelLabel\": \"intermediate\",\r\n            \"shortTermCeil\": 15.3,\r\n            \"longTermCeil\": 12\r\n        }\r\n    ]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/panel-skills",
-              "host": ["{{Endpoint}}"],
-              "path": ["panel-skills"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"label\": \"Frontend Updated\",\r\n    \"standardSkillId\": 2,\r\n    \"panelId\": 1,\r\n    \"panelSkillStandardLevels\": [\r\n        {\r\n            \"standardLevelId\": 1,\r\n            \"levelLabel\": \"Fresh\",\r\n            \"shortTermCeil\": 12.3,\r\n            \"longTermCeil\": 10\r\n        },\r\n        {\r\n            \"standardLevelId\": 3,\r\n            \"levelLabel\": \"expert\",\r\n            \"shortTermCeil\": 15.3,\r\n            \"longTermCeil\": 12\r\n        }\r\n    ]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/panel-skills/1",
-              "host": ["{{Endpoint}}"],
-              "path": ["panel-skills", "1"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:3000/api/v1/standard-skills/6",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
-              "path": ["api", "v1", "standard-skills", "6"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Projects",
-      "item": [
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website\",\r\n    \"value\": 20000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"hoursPerDay\": 8,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"projectManagerId\": null\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/projects",
-              "host": ["{{Endpoint}}"],
-              "path": ["projects"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/projects",
-              "host": ["{{Endpoint}}"],
-              "path": ["projects"],
-              "query": [
-                {
-                  "key": "",
-                  "value": "",
-                  "disabled": true
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Put",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website updated\",\r\n    \"value\": 30000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"tenderValue\": 25000,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"projectManagerId\": null\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/projects/8",
-              "host": ["{{Endpoint}}"],
-              "path": ["projects", "8"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Project Resource",
-      "item": [
-        {
-          "name": "List Selected",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/projects/1/resources",
-              "host": ["{{Endpoint}}"],
-              "path": ["projects", "1", "resources"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Show",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/projects/1/resources/2",
-              "host": ["{{Endpoint}}"],
-              "path": ["projects", "1", "resources", "2"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Purchase Orders",
-      "item": [
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/projects/1/purchaseOrders",
-              "host": ["{{Endpoint}}"],
-              "path": ["projects", "1", "purchaseOrders"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"description\" : \"Hello3\",\r\n    \"issueDate\" :  \"2021-04-22\",\r\n    \"expiryDate\" : \"2022-04-22\",\r\n    \"value\" : 22000,\r\n    \"comment\" :  \"Hello jeee2\",\r\n    \"expense\" :  12000\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/projects/1/purchaseOrders",
-              "host": ["{{Endpoint}}"],
-              "path": ["projects", "1", "purchaseOrders"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "New Request",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": ""
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Timesheets",
-      "item": [
-        {
-          "name": "Get timesheet by date",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/timesheets/01-06-2021&30-06-2021&2",
-              "host": ["{{Endpoint}}"],
-              "path": ["timesheets", "01-06-2021&30-06-2021&2"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Add Entry",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"date\": \"06-05-2021\",\r\n    \"startTime\": \"22:02\",\r\n    \"endTime\": \"23:02\",\r\n    \"breakHours\": \"2\",\r\n    \"notes\": \"sameer\",\r\n    \"projectId\": 1\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/timesheets/01-05-2021&31-05-2021&1",
-              "host": ["{{Endpoint}}"],
-              "path": ["timesheets", "01-05-2021&31-05-2021&1"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Submit Project Entry",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/timesheets/01-06-2021&30-06-2021&2/projectEntries/7/submit",
-              "host": ["{{Endpoint}}"],
-              "path": [
-                "timesheets",
-                "01-06-2021&30-06-2021&2",
-                "projectEntries",
-                "7",
-                "submit"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Approve Project Entry",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/timesheets/01-06-2021&30-06-2021&2/projectEntries/7/approve",
-              "host": ["{{Endpoint}}"],
-              "path": [
-                "timesheets",
-                "01-06-2021&30-06-2021&2",
-                "projectEntries",
-                "7",
-                "approve"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Reject Project Entry",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/timesheets/01-05-2021&31-05-2021&1/projectEntries/1/reject",
-              "host": ["{{Endpoint}}"],
-              "path": [
-                "timesheets",
-                "01-05-2021&31-05-2021&1",
-                "projectEntries",
-                "1",
-                "reject"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Edit Note",
-          "request": {
-            "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": ""
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Entry",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/timesheets/entries/16",
-              "host": ["{{Endpoint}}"],
-              "path": ["timesheets", "entries", "16"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "New Request",
-          "request": {
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"note\": \"hello jeee\",\r\n    \"attachments\": [25,26]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/projectEntries/1",
-              "host": ["{{Endpoint}}"],
-              "path": ["projectEntries", "1"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Files",
-      "item": [
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "multipart/form-data",
-                "type": "text",
-                "disabled": true
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTMsImlhdCI6MTYyMzAyNDM0NiwiZXhwIjoxNjIzMDI3OTQ2fQ.fj75fyVdXjaiuKseIXMIJ5w2Bgrko7lknK2EM8i7EQw",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "files",
-                  "type": "file",
-                  "src": "/C:/Users/shahz/Documents/Lightshot/Screenshot_1.png"
-                },
-                {
-                  "key": "files",
-                  "type": "file",
-                  "src": "/C:/Users/shahz/Documents/Lightshot/Screenshot_1.png"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{Endpoint}}/files",
-              "host": ["{{Endpoint}}"],
-              "path": ["files"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/files/1622030225056.sql",
-              "host": ["{{Endpoint}}"],
-              "path": ["files", "1622030225056.sql"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Attachments",
-      "item": [
-        {
-          "name": "Get",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/attachments/PEN/7",
-              "host": ["{{Endpoint}}"],
-              "path": ["attachments", "PEN", "7"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"files\":[\r\n        49,50\r\n    ]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/attachments/CPE/1",
-              "host": ["{{Endpoint}}"],
-              "path": ["attachments", "CPE", "1"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/attachments/18",
-              "host": ["{{Endpoint}}"],
-              "path": ["attachments", "18"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Comments",
-      "item": [
-        {
-          "name": "Get",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/comments/ASD/1",
-              "host": ["{{Endpoint}}"],
-              "path": ["comments", "ASD", "1"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"content\":\"QWERTYUIOP\",\r\n    \"attachments\": [\r\n        75,76\r\n    ]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/comments/ASD/1",
-              "host": ["{{Endpoint}}"],
-              "path": ["comments", "ASD", "1"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/comments/11",
-              "host": ["{{Endpoint}}"],
-              "path": ["comments", "11"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Roles",
-      "item": [
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{Endpoint}}/roles",
-              "host": ["{{Endpoint}}"],
-              "path": ["roles"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"label\": \"Workforce\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/roles",
-              "host": ["{{Endpoint}}"],
-              "path": ["roles"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"label\": \"Workforce\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/roles/2",
-              "host": ["{{Endpoint}}"],
-              "path": ["roles", "2"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update Permissions",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "[\r\n    {\r\n        \"resource\": \"CONTACT_PERSONS\",\r\n        \"action\": \"ADD\",\r\n        \"grant\": \"OWN\"\r\n    },\r\n    {\r\n        \"resource\": \"CONTACT_PERSONS\",\r\n        \"action\": \"UPDATE\",\r\n        \"grant\": \"OWN\"\r\n    }\r\n]",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{Endpoint}}/roles/1/update-permissions",
-              "host": ["{{Endpoint}}"],
-              "path": ["roles", "1", "update-permissions"]
-            }
-          },
-          "response": []
-        }
-      ],
-      "event": [
-        {
-          "listen": "prerequest",
-          "script": {
-            "type": "text/javascript",
-            "exec": [""]
-          }
-        },
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [""]
-          }
-        }
-      ]
-    }
-  ],
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "type": "text/javascript",
-        "exec": [""]
-      }
-    },
-    {
-      "listen": "test",
-      "script": {
-        "type": "text/javascript",
-        "exec": [""]
-      }
-    }
-  ],
-  "variable": [
-    {
-      "key": "Endpoint",
-      "value": "http://localhost:3000/api/v1"
-    }
-  ]
+	"info": {
+		"_postman_id": "ea771061-ad18-41a5-9e0c-991042b4552d",
+		"name": "OneLM",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Sample",
+			"item": [
+				{
+					"name": "Sample List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/v1/samples",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"samples"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sample Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"New test 2\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/v1/samples",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"samples"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sample Update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"New test 2 updated\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/v1/samples/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"samples",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sample Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/v1/samples/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"samples",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TimeOffTypes",
+			"item": [
+				{
+					"name": "Time Off Type List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/time-off-types",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"time-off-types"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Time Off Type Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"label\": \"Sick Leave\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/time-off-types",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"time-off-types"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TimeOffPolicies",
+			"item": [
+				{
+					"name": "Time Off Policy List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/time-off-policies",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"time-off-policies"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Time Off Policy Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"label\": \"Standard Policy\",\r\n    \"timeOffPolicyTimeOffTypes\": [\r\n        {\r\n            \"timeOffTypeId\": 1,\r\n            \"earnHours\": 8,\r\n            \"earnEvery\": \"M\",\r\n            \"resetHours\": 8,\r\n            \"resetEvery\": \"Y\",\r\n            \"threshold\": 999\r\n        },\r\n        {\r\n            \"timeOffTypeId\": 2,\r\n            \"earnHours\": 40,\r\n            \"earnEvery\": \"EY\",\r\n            \"resetHours\": 0,\r\n            \"resetEvery\": \"N\",\r\n            \"threshold\": 80\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/time-off-policies",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"time-off-policies"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TimeOff Policy Update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"label\": \"Standard Policy updated\",\r\n    \"timeOffPolicyTimeOffTypes\": [\r\n        {\r\n            \"timeOffTypeId\": 2,\r\n            \"hours\": 66,\r\n            \"increaseEvery\": \"M\",\r\n            \"threshold\": 100\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/time-off-policies/2",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"time-off-policies",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sample Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/v1/time-off-policies/6",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"time-off-policies",
+								"6"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "StandardLevels",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/standard-levels",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"standard-levels"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"label\": \"Level 3\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/standard-levels",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"standard-levels"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "StandardSkills",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/standard-skills",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"standard-skills"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"label\": \"React Developer\",\r\n    \"standardSkillStandardLevels\": [\r\n        {\r\n            \"standardLevelId\": 1,\r\n            \"priority\": 1\r\n        },\r\n        {\r\n            \"standardLevelId\": 2,\r\n            \"priority\": 2\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/standard-skills",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"standard-skills"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"label\": \"Node Developer Updated\",\r\n    \"standardSkillStandardLevels\": [\r\n        {\r\n            \"standardLevelId\": 3,\r\n            \"priority\": 1\r\n        },\r\n        {\r\n            \"standardLevelId\": 1,\r\n            \"priority\": 22\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/standard-skills/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"standard-skills",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/v1/standard-skills/6",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"standard-skills",
+								"6"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "HolidayTypes",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/holiday-types",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"holiday-types"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"label\": \"Bank Day\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/holiday-types",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"holiday-types"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Calendars",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/calendars",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"calendars"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"label\": \"State wise\",\r\n    \"isActive\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/calendars",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"calendars"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "CalendarHolidays",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/calendar-holidays?calendarId=1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"calendar-holidays"
+							],
+							"query": [
+								{
+									"key": "calendarId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"calendarId\": 1,\r\n    \"holidayTypeId\": 1,\r\n    \"date\": 1608512778651\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/calendar-holidays",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"calendar-holidays"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"calendarId\": 1,\r\n    \"holidayTypeId\": 2,\r\n    \"date\": 1608512778651\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/calendar-holidays/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"calendar-holidays",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Contact Persons",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/contactpersons",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"contactpersons"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"Sohail\",\r\n    \"lastName\": \"Rauf\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"sohail@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"clearanceLevel\": \"BV\",\r\n    \"clearanceGrantedDate\": 1608512778651,\r\n    \"clearanceExpiryDate\": 1608512878651,\r\n    \"clearanceSponsorId\": 3,\r\n    \"standardSkillStandardLevelIds\": [2],\r\n    \"contactPersonOrganizations\": [{\r\n        \"startDate\": 1608512778651,\r\n        \"designation\": \"Developer\",\r\n        \"organizationId\": 2\r\n    }]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/contactpersons",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"contactpersons"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Create",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"organization test 1\",\r\n    \"phoneNumber\": \"+123456789\",\r\n    \"email\": \"m_23qwet@live.com\",\r\n    \"address\": \"test address that is never to goiing to exist any way\",\r\n    \"website\": \"https://test.com\",\r\n    \"abn\": 123456,\r\n    \"textCode\": 123456,\r\n    \"expectedBusinessAmount\": 400000,\r\n    \"invoiceEmail\": \"test@test.com\",\r\n    \"piInsurer\": \"abd\",\r\n    \"plInsurer\": \"1qw\",\r\n    \"wcInsurer\": \"asdf\",\r\n    \"piPolicyNumber\": 123456,\r\n    \"plPolicyNumber\": 123456,\r\n    \"wcPolicyNumber\": 123456,\r\n    \"piSumInsured\": 1000,\r\n    \"plSumInsured\": 1000,\r\n    \"wcSumInsured\": 1000,\r\n    \"piInsuranceExpiry\": null,\r\n    \"plInsuranceExpiry\": null,\r\n    \"wcInsuranceExpiry\": null,\r\n    \"parentOrganizationId\": null,\r\n    \"delegateContactPersonOrganizationId\": null\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3000/api/v1/organizations",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"v1",
+										"organizations"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "696"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"2b8-EMQ4x1Nc0jl2Qb7d3mU8SjsqVs0\""
+								},
+								{
+									"key": "Date",
+									"value": "Thu, 14 Jan 2021 16:46:17 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Create\",\n    \"data\": {\n        \"name\": \"organization test 1\",\n        \"phoneNumber\": \"+123456789\",\n        \"email\": \"m_23qwet@live.com\",\n        \"address\": \"test address that is never to goiing to exist any way\",\n        \"website\": \"https://test.com\",\n        \"abn\": 123456,\n        \"textCode\": 123456,\n        \"expectedBusinessAmount\": \"400000.000\",\n        \"invoiceEmail\": \"test@test.com\",\n        \"piInsurer\": \"abd\",\n        \"plInsurer\": \"1qw\",\n        \"wcInsurer\": \"asdf\",\n        \"piPolicyNumber\": 123456,\n        \"plPolicyNumber\": 123456,\n        \"wcPolicyNumber\": 123456,\n        \"deletedAt\": null,\n        \"piSumInsured\": \"0.000\",\n        \"plSumInsured\": \"0.000\",\n        \"wcSumInsured\": \"0.000\",\n        \"piInsuranceExpiry\": null,\n        \"plInsuranceExpiry\": null,\n        \"wcInsuranceExpiry\": null,\n        \"id\": 1,\n        \"createdAt\": \"2021-01-14T16:46:17.562Z\",\n        \"updatedAt\": \"2021-01-14T16:46:17.562Z\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Put",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"Asad updated aga\",\r\n    \"lastName\": \"Khan\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"kashif@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 2,\r\n    \"standardSkillStandardLevelIds\": [3,5],\r\n    \"contactPersonOrganizations\": [{\r\n        \"startDate\": 1608512778651,\r\n        \"designation\": \"Senior Eng updated\",\r\n        \"organizationId\": 1\r\n    },\r\n    {\r\n        \"startDate\": 1608512778651,\r\n        \"designation\": \"Account Manager new\",\r\n        \"organizationId\": 2\r\n    }]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/contactpersons/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"contactpersons",
+								"1"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Create",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"organization test 1\",\r\n    \"phoneNumber\": \"+123456789\",\r\n    \"email\": \"m_23qwet@live.com\",\r\n    \"address\": \"test address that is never to goiing to exist any way\",\r\n    \"website\": \"https://test.com\",\r\n    \"abn\": 123456,\r\n    \"textCode\": 123456,\r\n    \"expectedBusinessAmount\": 400000,\r\n    \"invoiceEmail\": \"test@test.com\",\r\n    \"piInsurer\": \"abd\",\r\n    \"plInsurer\": \"1qw\",\r\n    \"wcInsurer\": \"asdf\",\r\n    \"piPolicyNumber\": 123456,\r\n    \"plPolicyNumber\": 123456,\r\n    \"wcPolicyNumber\": 123456,\r\n    \"piSumInsured\": 1000,\r\n    \"plSumInsured\": 1000,\r\n    \"wcSumInsured\": 1000,\r\n    \"piInsuranceExpiry\": null,\r\n    \"plInsuranceExpiry\": null,\r\n    \"wcInsuranceExpiry\": null,\r\n    \"parentOrganizationId\": null,\r\n    \"delegateContactPersonOrganizationId\": null\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3000/api/v1/organizations",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"v1",
+										"organizations"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "696"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"2b8-EMQ4x1Nc0jl2Qb7d3mU8SjsqVs0\""
+								},
+								{
+									"key": "Date",
+									"value": "Thu, 14 Jan 2021 16:46:17 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Create\",\n    \"data\": {\n        \"name\": \"organization test 1\",\n        \"phoneNumber\": \"+123456789\",\n        \"email\": \"m_23qwet@live.com\",\n        \"address\": \"test address that is never to goiing to exist any way\",\n        \"website\": \"https://test.com\",\n        \"abn\": 123456,\n        \"textCode\": 123456,\n        \"expectedBusinessAmount\": \"400000.000\",\n        \"invoiceEmail\": \"test@test.com\",\n        \"piInsurer\": \"abd\",\n        \"plInsurer\": \"1qw\",\n        \"wcInsurer\": \"asdf\",\n        \"piPolicyNumber\": 123456,\n        \"plPolicyNumber\": 123456,\n        \"wcPolicyNumber\": 123456,\n        \"deletedAt\": null,\n        \"piSumInsured\": \"0.000\",\n        \"plSumInsured\": \"0.000\",\n        \"wcSumInsured\": \"0.000\",\n        \"piInsuranceExpiry\": null,\n        \"plInsuranceExpiry\": null,\n        \"wcInsuranceExpiry\": null,\n        \"id\": 1,\n        \"createdAt\": \"2021-01-14T16:46:17.562Z\",\n        \"updatedAt\": \"2021-01-14T16:46:17.562Z\"\n    }\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Employees",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/employees",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"employees"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"contactPersonId\": 3,\r\n    \"firstName\": \"Mursal as employee\",\r\n    \"lastName\": \"Khan\",\r\n    \"username\": \"thedevshezzy@gmail.com\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"mursal@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"saad\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"saad@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"tfn\": \"\",\r\n    \"superannuationName\": \"Jubilee\",\r\n    \"superannuationBankName\": \"\",\r\n    \"superannuationBankAccountOrMembershipNumber\": \"1111-2222-3\",\r\n    \"superannuationAbnOrUsi\": \"12345\",\r\n    \"superannuationBankBsb\": \"\",\r\n    \"superannuationAddress\": \"\",\r\n    \"training\": \"need more\",\r\n    \"bankName\": \"HBL\",\r\n    \"bankAccountNo\": \"234353453453534534\",\r\n    \"bankBsb\": \"12qwe\",\r\n    \"latestEmploymentContract\": {\r\n        \"payslipEmail\": \"pay@live.com\",\r\n        \"payFrequency\": 1,\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n    \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/employees",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"employees"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"contactPersonId\": 1,\r\n    \"firstName\": \"Mursal as employee updated2\",\r\n    \"lastName\": \"Khan\",\r\n    \"username\": \"mursal@onelm.com\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"mursal@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"saad\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"saad@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"tfn\": \"\",\r\n    \"superannuationName\": \"Jubilee\",\r\n    \"superannuationBankName\": \"\",\r\n    \"superannuationBankAccountOrMembershipNumber\": \"1111-2222-3\",\r\n    \"superannuationAbnOrUsi\": \"12345\",\r\n    \"superannuationBankBsb\": \"\",\r\n    \"superannuationAddress\": \"\",\r\n    \"training\": \"need more\",\r\n    \"bankName\": \"HBL\",\r\n    \"bankAccountNo\": \"234353453453534534\",\r\n    \"bankBsb\": \"12qwe\",\r\n    \"latestEmploymentContract\": {\r\n        \"payslipEmail\": \"pay@live.com\",\r\n        \"payFrequency\": 1,\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/employees/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"employees",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Contact Persons",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/employees/get/contact-persons",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"employees",
+								"get",
+								"contact-persons"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get by skills",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Opportunities",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/opportunities",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website\",\r\n    \"value\": 20000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"hoursPerDay\": 8,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"opportunityManagerId\": null,\r\n    \"status\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/opportunities",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website updated\",\r\n    \"value\": 20000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"tenderValue\": 25000,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"opportunityManagerId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/opportunities/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Contact Persons",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/employees/get/contact-persons",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"employees",
+								"get",
+								"contact-persons"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Win",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website updated\",\r\n    \"value\": 30000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"tenderValue\": 25000,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"projectManagerId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/opportunities/1/win",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities",
+								"1",
+								"win"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Lost",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website updated\",\r\n    \"value\": 30000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"tenderValue\": 25000,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"projectManagerId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/opportunities/1/lost",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities",
+								"1",
+								"lost"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Opportunity Resource",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/opportunities/1/resources",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities",
+								"1",
+								"resources"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"panelSkillId\": 1,\r\n    \"panelSkillStandardLevelId\": 1,\r\n    \"billableHours\": 120\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/opportunities/1/resources",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities",
+								"1",
+								"resources"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"panelSkillId\": 1,\r\n    \"panelSkillStandardLevelId\": 2,\r\n    \"billableHours\": 502\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/opportunities/1/resources/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities",
+								"1",
+								"resources",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Opportunity Resource Allocation",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"buyingRate\": 9,\r\n    \"sellingRate\": 10,\r\n    \"contactPersonId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/opportunities/1/resources/1/allocations",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities",
+								"1",
+								"resources",
+								"1",
+								"allocations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"buyingRate\": 10,\r\n    \"sellingRate\": 12,\r\n    \"contactPersonId\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/opportunities/1/resources/1/allocations/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities",
+								"1",
+								"resources",
+								"1",
+								"allocations",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mark As Selected",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/opportunities/1/resources/1/allocations/2/mark-as-selected",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities",
+								"1",
+								"resources",
+								"1",
+								"allocations",
+								"2",
+								"mark-as-selected"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "SubContractors",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/sub-contractors",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"sub-contractors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"contactPersonId\": 2,\r\n    \"organizationId\": 2,\r\n    \"username\": \"sohail@sudoware.com\",\r\n    \"firstName\": \"Sohail as Subcontractor\",\r\n    \"lastName\": \"Rauf\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"sohail@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"shehbaz\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"shehbaz@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"latestContract\": {\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n    \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/sub-contractors",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"sub-contractors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"sohail@sudoware.com\",\r\n    \"firstName\": \"Sohail as Subcontractor2\",\r\n    \"lastName\": \"Rauf\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"sohail@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"shehbaz\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"shehbaz@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"latestContract\": {\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/sub-contractors/4",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"sub-contractors",
+								"4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Contact Persons",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3301/api/v1/employees/get/contact-persons",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3301",
+							"path": [
+								"api",
+								"v1",
+								"employees",
+								"get",
+								"contact-persons"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "SubContractor Contract",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3301/api/v1/sub-contractors-contracts?subContractorId=3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3301",
+							"path": [
+								"api",
+								"v1",
+								"sub-contractors-contracts"
+							],
+							"query": [
+								{
+									"key": "subContractorId",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"subContractorId\": \"3\",\r\n    \"startDate\": 1608512778351,\r\n    \"endDate\": null,\r\n    \"noOfHours\": 4,\r\n    \"noOfHoursPer\": 1,\r\n    \"remunerationAmount\": 1200,\r\n    \"remunerationAmountPer\": 1,\r\n    \"comments\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3301/api/v1/sub-contractors-contracts",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3301",
+							"path": [
+								"api",
+								"v1",
+								"sub-contractors-contracts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"startDate\": 1608512778351,\r\n    \"endDate\": null,\r\n    \"noOfHours\": 4,\r\n    \"noOfHoursPer\": 1,\r\n    \"remunerationAmount\": 1200,\r\n    \"remunerationAmountPer\": 1,\r\n    \"comments\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3301/api/v1/sub-contractors-contracts/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3301",
+							"path": [
+								"api",
+								"v1",
+								"sub-contractors-contracts",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Contact Persons",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/v1/employees",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"employees"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Employment Contract",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/employment-contracts?employeeId=1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"employment-contracts"
+							],
+							"query": [
+								{
+									"key": "employeeId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employeeId\": \"1\",\r\n    \"payslipEmail\": \"paynew@live.com\",\r\n    \"payFrequency\": 1,\r\n    \"startDate\": 1608512778351,\r\n    \"endDate\": null,\r\n    \"type\": 1,\r\n    \"noOfHours\": 4,\r\n    \"noOfHoursPer\": 1,\r\n    \"remunerationAmount\": 1200,\r\n    \"remunerationAmountPer\": 1,\r\n    \"comments\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/employment-contracts",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"employment-contracts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"payslipEmail\": \"paynewupdated@live.com\",\r\n    \"payFrequency\": 1,\r\n    \"startDate\": 1608512778351,\r\n    \"endDate\": null,\r\n    \"type\": 1,\r\n    \"noOfHours\": 4,\r\n    \"noOfHoursPer\": 1,\r\n    \"remunerationAmount\": 1200,\r\n    \"remunerationAmountPer\": 1,\r\n    \"comments\":\"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3301/api/v1/employment-contracts/3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3301",
+							"path": [
+								"api",
+								"v1",
+								"employment-contracts",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Contact Persons",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/v1/employees",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"employees"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Organizations",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/organizations",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"AB Security\",\r\n    \"phoneNumber\": \"+176456789\",\r\n    \"email\": \"mqwet@absecurity.com\",\r\n    \"address\": \"test address that is never to goiing to exist any way\",\r\n    \"website\": \"https://absecurity.com\",\r\n    \"abn\": 123456,\r\n    \"businessType\": 1,\r\n    \"taxCode\": 123456,\r\n    \"currentFinancialYearTotalForecast\": 400000,\r\n    \"nextFinancialYearTotalForecast\": 0,\r\n    \"invoiceEmail\": \"test@test.com\",\r\n    \"invoiceContactNumber\": \"+664543454\",\r\n    \"piInsurer\": \"abd\",\r\n    \"plInsurer\": \"1qw\",\r\n    \"wcInsurer\": \"asdf\",\r\n    \"piPolicyNumber\": 123456,\r\n    \"plPolicyNumber\": 123456,\r\n    \"wcPolicyNumber\": 123456,\r\n    \"piSumInsured\": 1000,\r\n    \"plSumInsured\": 1000,\r\n    \"wcSumInsured\": 1000,\r\n    \"piInsuranceExpiry\": null,\r\n    \"plInsuranceExpiry\": null,\r\n    \"wcInsuranceExpiry\": null,\r\n    \"parentOrganizationId\": null,\r\n    \"delegateContactPersonOrganizationId\": null,\r\n    \"bankName\": \"Standard Chartered\",\r\n    \"bankAccountNo\": \"111111111-2-3-444412\",\r\n    \"bankBsb\": \"12qwe\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/organizations",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"organizations"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Create",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"organization test 1\",\r\n    \"phoneNumber\": \"+123456789\",\r\n    \"email\": \"m_23qwet@live.com\",\r\n    \"address\": \"test address that is never to goiing to exist any way\",\r\n    \"website\": \"https://test.com\",\r\n    \"abn\": 123456,\r\n    \"textCode\": 123456,\r\n    \"expectedBusinessAmount\": 400000,\r\n    \"invoiceEmail\": \"test@test.com\",\r\n    \"piInsurer\": \"abd\",\r\n    \"plInsurer\": \"1qw\",\r\n    \"wcInsurer\": \"asdf\",\r\n    \"piPolicyNumber\": 123456,\r\n    \"plPolicyNumber\": 123456,\r\n    \"wcPolicyNumber\": 123456,\r\n    \"piSumInsured\": 1000,\r\n    \"plSumInsured\": 1000,\r\n    \"wcSumInsured\": 1000,\r\n    \"piInsuranceExpiry\": null,\r\n    \"plInsuranceExpiry\": null,\r\n    \"wcInsuranceExpiry\": null,\r\n    \"parentOrganizationId\": null,\r\n    \"delegateContactPersonOrganizationId\": null\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3000/api/v1/organizations",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"v1",
+										"organizations"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "696"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"2b8-EMQ4x1Nc0jl2Qb7d3mU8SjsqVs0\""
+								},
+								{
+									"key": "Date",
+									"value": "Thu, 14 Jan 2021 16:46:17 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Create\",\n    \"data\": {\n        \"name\": \"organization test 1\",\n        \"phoneNumber\": \"+123456789\",\n        \"email\": \"m_23qwet@live.com\",\n        \"address\": \"test address that is never to goiing to exist any way\",\n        \"website\": \"https://test.com\",\n        \"abn\": 123456,\n        \"textCode\": 123456,\n        \"expectedBusinessAmount\": \"400000.000\",\n        \"invoiceEmail\": \"test@test.com\",\n        \"piInsurer\": \"abd\",\n        \"plInsurer\": \"1qw\",\n        \"wcInsurer\": \"asdf\",\n        \"piPolicyNumber\": 123456,\n        \"plPolicyNumber\": 123456,\n        \"wcPolicyNumber\": 123456,\n        \"deletedAt\": null,\n        \"piSumInsured\": \"0.000\",\n        \"plSumInsured\": \"0.000\",\n        \"wcSumInsured\": \"0.000\",\n        \"piInsuranceExpiry\": null,\n        \"plInsuranceExpiry\": null,\n        \"wcInsuranceExpiry\": null,\n        \"id\": 1,\n        \"createdAt\": \"2021-01-14T16:46:17.562Z\",\n        \"updatedAt\": \"2021-01-14T16:46:17.562Z\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Sudoware\",\r\n    \"phoneNumber\": \"+176456789\",\r\n    \"email\": \"mqwet@sudoware.com\",\r\n    \"address\": \"test address that is never to goiing to exist any way\",\r\n    \"website\": \"https://test.com\",\r\n    \"abn\": 123456,\r\n    \"businessType\": 2,\r\n    \"taxCode\": 123456,\r\n    \"currentFinancialYearTotalForecast\": 0,\r\n    \"nextFinancialYearTotalForecast\": 0,\r\n    \"invoiceEmail\": \"test@test.com\",\r\n    \"invoiceContactNumber\": \"+664543454\",\r\n    \"piInsurer\": \"abd\",\r\n    \"plInsurer\": \"1qw\",\r\n    \"wcInsurer\": \"asdf\",\r\n    \"piPolicyNumber\": 123456,\r\n    \"plPolicyNumber\": 123456,\r\n    \"wcPolicyNumber\": 123456,\r\n    \"piSumInsured\": 1000,\r\n    \"plSumInsured\": 1000,\r\n    \"wcSumInsured\": 1000,\r\n    \"piInsuranceExpiry\": null,\r\n    \"plInsuranceExpiry\": null,\r\n    \"wcInsuranceExpiry\": null,\r\n    \"parentOrganizationId\": null,\r\n    \"delegateContactPersonOrganizationId\": 2,\r\n    \"bankName\": \"Standard Chartered\",\r\n    \"bankAccountNo\": \"111111111-2-3-444444\",\r\n    \"bankBsb\": \"12qwe\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/organizations/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"organizations",
+								"1"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Create",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"organization test 1\",\r\n    \"phoneNumber\": \"+123456789\",\r\n    \"email\": \"m_23qwet@live.com\",\r\n    \"address\": \"test address that is never to goiing to exist any way\",\r\n    \"website\": \"https://test.com\",\r\n    \"abn\": 123456,\r\n    \"textCode\": 123456,\r\n    \"expectedBusinessAmount\": 400000,\r\n    \"invoiceEmail\": \"test@test.com\",\r\n    \"piInsurer\": \"abd\",\r\n    \"plInsurer\": \"1qw\",\r\n    \"wcInsurer\": \"asdf\",\r\n    \"piPolicyNumber\": 123456,\r\n    \"plPolicyNumber\": 123456,\r\n    \"wcPolicyNumber\": 123456,\r\n    \"piSumInsured\": 1000,\r\n    \"plSumInsured\": 1000,\r\n    \"wcSumInsured\": 1000,\r\n    \"piInsuranceExpiry\": null,\r\n    \"plInsuranceExpiry\": null,\r\n    \"wcInsuranceExpiry\": null,\r\n    \"parentOrganizationId\": null,\r\n    \"delegateContactPersonOrganizationId\": null\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3000/api/v1/organizations",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"v1",
+										"organizations"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "696"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"2b8-EMQ4x1Nc0jl2Qb7d3mU8SjsqVs0\""
+								},
+								{
+									"key": "Date",
+									"value": "Thu, 14 Jan 2021 16:46:17 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Create\",\n    \"data\": {\n        \"name\": \"organization test 1\",\n        \"phoneNumber\": \"+123456789\",\n        \"email\": \"m_23qwet@live.com\",\n        \"address\": \"test address that is never to goiing to exist any way\",\n        \"website\": \"https://test.com\",\n        \"abn\": 123456,\n        \"textCode\": 123456,\n        \"expectedBusinessAmount\": \"400000.000\",\n        \"invoiceEmail\": \"test@test.com\",\n        \"piInsurer\": \"abd\",\n        \"plInsurer\": \"1qw\",\n        \"wcInsurer\": \"asdf\",\n        \"piPolicyNumber\": 123456,\n        \"plPolicyNumber\": 123456,\n        \"wcPolicyNumber\": 123456,\n        \"deletedAt\": null,\n        \"piSumInsured\": \"0.000\",\n        \"plSumInsured\": \"0.000\",\n        \"wcSumInsured\": \"0.000\",\n        \"piInsuranceExpiry\": null,\n        \"plInsuranceExpiry\": null,\n        \"wcInsuranceExpiry\": null,\n        \"id\": 1,\n        \"createdAt\": \"2021-01-14T16:46:17.562Z\",\n        \"updatedAt\": \"2021-01-14T16:46:17.562Z\"\n    }\n}"
+						}
+					]
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Panels",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/panels",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"panels"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"label\": \"Panel C\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/panels",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"panels"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "States",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/states",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"states"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "PanelSkills",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/panel-skills?panelId=1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"panel-skills"
+							],
+							"query": [
+								{
+									"key": "panelId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"label\": \"Engineer\",\r\n    \"standardSkillId\": 1,\r\n    \"panelId\": 1,\r\n    \"panelSkillStandardLevels\": [\r\n        {\r\n            \"standardLevelId\": 1,\r\n            \"levelLabel\": \"Basic\",\r\n            \"shortTermCeil\": 12.3,\r\n            \"longTermCeil\": 10\r\n        },\r\n        {\r\n            \"standardLevelId\": 2,\r\n            \"levelLabel\": \"intermediate\",\r\n            \"shortTermCeil\": 15.3,\r\n            \"longTermCeil\": 12\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/panel-skills",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"panel-skills"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"label\": \"Frontend Updated\",\r\n    \"standardSkillId\": 2,\r\n    \"panelId\": 1,\r\n    \"panelSkillStandardLevels\": [\r\n        {\r\n            \"standardLevelId\": 1,\r\n            \"levelLabel\": \"Fresh\",\r\n            \"shortTermCeil\": 12.3,\r\n            \"longTermCeil\": 10\r\n        },\r\n        {\r\n            \"standardLevelId\": 3,\r\n            \"levelLabel\": \"expert\",\r\n            \"shortTermCeil\": 15.3,\r\n            \"longTermCeil\": 12\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/panel-skills/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"panel-skills",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/v1/standard-skills/6",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"standard-skills",
+								"6"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Projects",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website\",\r\n    \"value\": 20000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"hoursPerDay\": 8,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"projectManagerId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/projects",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/projects",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projects"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website updated\",\r\n    \"value\": 30000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"tenderValue\": 25000,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"projectManagerId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/projects/8",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projects",
+								"8"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Project Resource",
+			"item": [
+				{
+					"name": "List Selected",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/projects/1/resources",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projects",
+								"1",
+								"resources"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Show",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/projects/1/resources/2",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projects",
+								"1",
+								"resources",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Purchase Orders",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/projects/1/purchaseOrders",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projects",
+								"1",
+								"purchaseOrders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"description\" : \"Hello3\",\r\n    \"issueDate\" :  \"2021-04-22\",\r\n    \"expiryDate\" : \"2022-04-22\",\r\n    \"value\" : 22000,\r\n    \"comment\" :  \"Hello jeee2\",\r\n    \"expense\" :  12000\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/projects/1/purchaseOrders",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projects",
+								"1",
+								"purchaseOrders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Timesheets",
+			"item": [
+				{
+					"name": "Get timesheet by date",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/timesheets/01-06-2021&30-06-2021&2",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"timesheets",
+								"01-06-2021&30-06-2021&2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Entry",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"date\": \"06-05-2021\",\r\n    \"startTime\": \"22:02\",\r\n    \"endTime\": \"23:02\",\r\n    \"breakHours\": \"2\",\r\n    \"notes\": \"sameer\",\r\n    \"projectId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/timesheets/01-05-2021&31-05-2021&1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"timesheets",
+								"01-05-2021&31-05-2021&1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Submit Project Entry",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/timesheets/01-06-2021&30-06-2021&2/projectEntries/7/submit",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"timesheets",
+								"01-06-2021&30-06-2021&2",
+								"projectEntries",
+								"7",
+								"submit"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approve Project Entry",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/timesheets/01-06-2021&30-06-2021&2/projectEntries/7/approve",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"timesheets",
+								"01-06-2021&30-06-2021&2",
+								"projectEntries",
+								"7",
+								"approve"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reject Project Entry",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/timesheets/01-05-2021&31-05-2021&1/projectEntries/1/reject",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"timesheets",
+								"01-05-2021&31-05-2021&1",
+								"projectEntries",
+								"1",
+								"reject"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit Note",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Entry",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/timesheets/entries/16",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"timesheets",
+								"entries",
+								"16"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"note\": \"hello jeee\",\r\n    \"attachments\": [25,26]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/projectEntries/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projectEntries",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Files",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "multipart/form-data",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTMsImlhdCI6MTYyMzAyNDM0NiwiZXhwIjoxNjIzMDI3OTQ2fQ.fj75fyVdXjaiuKseIXMIJ5w2Bgrko7lknK2EM8i7EQw",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "files",
+									"type": "file",
+									"src": "/C:/Users/shahz/Documents/Lightshot/Screenshot_1.png"
+								},
+								{
+									"key": "files",
+									"type": "file",
+									"src": "/C:/Users/shahz/Documents/Lightshot/Screenshot_1.png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{Endpoint}}/files",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"files"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/files/1622030225056.sql",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"files",
+								"1622030225056.sql"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Attachments",
+			"item": [
+				{
+					"name": "Get",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/attachments/PEN/7",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"attachments",
+								"PEN",
+								"7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"files\":[\r\n        49,50\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/attachments/CPE/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"attachments",
+								"CPE",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/attachments/18",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"attachments",
+								"18"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Comments",
+			"item": [
+				{
+					"name": "Get",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/comments/ASD/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"comments",
+								"ASD",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"content\":\"QWERTYUIOP\",\r\n    \"attachments\": [\r\n        75,76\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/comments/ASD/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"comments",
+								"ASD",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/comments/11",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"comments",
+								"11"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Roles",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/roles",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"label\": \"Workforce\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/roles",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"label\": \"Workforce\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/roles/2",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"roles",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Permissions",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\r\n    {\r\n        \"resource\": \"CONTACT_PERSONS\",\r\n        \"action\": \"ADD\",\r\n        \"grant\": \"OWN\"\r\n    },\r\n    {\r\n        \"resource\": \"CONTACT_PERSONS\",\r\n        \"action\": \"UPDATE\",\r\n        \"grant\": \"OWN\"\r\n    }\r\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/roles/1/update-permissions",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"roles",
+								"1",
+								"update-permissions"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"mursal@onelm.com\",\r\n    \"password\": \"test123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/login",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "Endpoint",
+			"value": "http://localhost:3000/api/v1"
+		}
+	]
 }
