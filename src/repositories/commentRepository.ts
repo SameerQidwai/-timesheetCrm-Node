@@ -67,6 +67,22 @@ export class CommentRepository extends Repository<Comment> {
 
     //Query to get comments with attachments and files
     let queryComments = await this.createQueryBuilder('comment')
+      .orderBy('comment.id')
+      .leftJoinAndSelect(
+        'employees',
+        'employee',
+        'employee.id = comment.user_id'
+      )
+      .leftJoinAndSelect(
+        'contact_person_organizations',
+        'organization',
+        'organization.id = employee.contact_person_organization_id'
+      )
+      .leftJoinAndSelect(
+        'contact_persons',
+        'contact_person',
+        'contact_person.id = organization.contact_person_id'
+      )
       .leftJoinAndSelect(
         'attachments',
         'attachment',
@@ -83,12 +99,21 @@ export class CommentRepository extends Repository<Comment> {
     //Saving comment indexes in object to avoid looping
     let commentIndexes: any = {};
 
+    //Saving attachments
+    // let commentAttachments: any = {};
+
     //saving comments
+    let indexCounter = 0;
     let comments = queryComments
-      .map((queryComment, index) => {
+      .map((queryComment) => {
+        if (commentIndexes[queryComment.comment_id] === undefined) {
+          commentIndexes[queryComment.comment_id] = indexCounter;
+          indexCounter++;
+        }
         if (!doneIndexes.includes(queryComment.comment_id)) {
           doneIndexes.push(queryComment.comment_id);
-          commentIndexes[queryComment.comment_id] = index;
+
+          // commentAttachments[queryComment.comment_id] =  [...commentAttachments[queryComment.comment_id],{}];
           return {
             id: queryComment.comment_id,
             createdAt: queryComment.comment_created_at,
@@ -97,6 +122,8 @@ export class CommentRepository extends Repository<Comment> {
             content: queryComment.comment_content,
             targetType: queryComment.comment_target_type,
             targetId: queryComment.comment_target_id,
+            authorId: queryComment.employee_id,
+            author: `${queryComment.contact_person_first_name} ${queryComment.contact_person_last_name}`,
             attachments: [] as any[],
           };
         }

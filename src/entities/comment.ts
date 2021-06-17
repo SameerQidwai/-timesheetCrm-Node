@@ -1,7 +1,8 @@
 import { EntityType } from '../constants/constants';
-import { Entity, Column, OneToMany, JoinColumn } from 'typeorm';
+import { Entity, Column, JoinColumn, ManyToOne } from 'typeorm';
 import { Base } from './common/base';
 import { Attachment } from './attachment';
+import { Employee } from './employee';
 
 @Entity('comments')
 export class Comment extends Base {
@@ -13,4 +14,8 @@ export class Comment extends Base {
   targetId: number;
   @Column({ name: 'user_id', nullable: false })
   userId: number;
+
+  // @ManyToOne(() => Employee)
+  // @JoinColumn({ name: 'user_id' })
+  // employee: Employee;
 }

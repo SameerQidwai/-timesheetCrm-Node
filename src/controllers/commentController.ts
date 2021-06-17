@@ -7,6 +7,7 @@ export class CommentController {
   async create(req: Request, res: Response) {
     const repository = getCustomRepository(CommentRepository);
     let userId = res.locals.jwtPayload.id;
+    console.log(userId);
     let content: string = req.body.content;
     let type: EntityType = req.params.type as EntityType;
     let id: number = parseInt(req.params.id);
@@ -19,6 +20,12 @@ export class CommentController {
       },
       userId
     );
+
+    response = {
+      ...response,
+      authorId: res.locals.user.id,
+      author: res.locals.user.contactPersonOrganization.contactPerson.firstName,
+    };
 
     return res.status(200).json({
       success: true,

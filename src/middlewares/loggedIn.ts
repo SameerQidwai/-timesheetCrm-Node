@@ -13,7 +13,6 @@ export let isLoggedIn = async (
   if (req.headers.authorization) {
     let token = req.headers.authorization.split(' ')[1];
     jwt.verify(token, secret, async (err: any, decoded: any) => {
-      console.log(token, decoded);
       if (err) {
         console.log(err);
         return res.status(200).json({
@@ -22,8 +21,14 @@ export let isLoggedIn = async (
         });
       } else {
         res.locals.jwtPayload = decoded;
-        let user = await repository.findOne(decoded.id);
+        let user = await repository.findOne(decoded.id, {
+          relations: [
+            'contactPersonOrganization',
+            'contactPersonOrganization.contactPerson',
+          ],
+        });
         if (user) {
+          res.locals.user = user;
           const newToken = jwt.sign({ id: user }, secret, {
             expiresIn: '1h',
           });
