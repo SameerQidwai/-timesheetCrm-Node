@@ -91,6 +91,30 @@ export class AuthController {
     });
   }
 
+  async getSettings(req: Request, res: Response) {
+    const repository = getCustomRepository(EmployeeRepository);
+
+    //Get userId from JWT
+    const userId = res.locals.jwtPayload.id;
+
+    let user = await repository.findOne({
+      where: { id: userId },
+      relations: [
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+        'contactPersonOrganization.organization',
+        'bankAccounts',
+        'employmentContracts',
+      ],
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Password Updated Successfully',
+      data: user,
+    });
+  }
+
   async updateSettings(req: Request, res: Response) {
     const repository = getCustomRepository(EmployeeRepository);
     const userId = res.locals.jwtPayload.id;

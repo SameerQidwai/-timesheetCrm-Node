@@ -139,10 +139,7 @@ export class SubContractorRepository extends Repository<Employee> {
     let onlyContactPersons: any = [];
     all.forEach((person) => {
       person.contactPersonOrganizations.forEach((org) => {
-        if (
-          org.organizationId === organizationId &&
-          (org.endDate === null || org.endDate === null)
-        ) {
+        if (org.organizationId === organizationId && org.status === true) {
           console.log('this ran', person);
           if (org.employee === null) {
             onlyContactPersons.push(person);

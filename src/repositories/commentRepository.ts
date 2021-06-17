@@ -28,31 +28,30 @@ export class CommentRepository extends Repository<Comment> {
             let dbAttachment = await transactionalEntityManager.save(
               attachmentObj
             );
-
-            console.log(dbAttachment);
-
-            let queryAttachments = await transactionalEntityManager.find(
-              Attachment,
-              {
-                relations: ['file'],
-                where: { targetId: dbComment.id, targetType: 'COM' },
-              }
-            );
-
-            let responseAttachments = queryAttachments.map((attachment) => {
-              return {
-                ...attachment,
-                uid: attachment.file.uniqueName,
-                name: attachment.file.originalName,
-                type: attachment.file.type,
-              };
-            });
-            responseComment = {
-              ...dbComment,
-              attachments: responseAttachments,
-            };
           }
         }
+
+        let queryAttachments = await transactionalEntityManager.find(
+          Attachment,
+          {
+            relations: ['file'],
+            where: { targetId: dbComment.id, targetType: 'COM' },
+          }
+        );
+
+        let responseAttachments = queryAttachments.map((attachment) => {
+          return {
+            ...attachment,
+            uid: attachment.file.uniqueName,
+            name: attachment.file.originalName,
+            type: attachment.file.type,
+          };
+        });
+
+        responseComment = {
+          ...dbComment,
+          attachments: responseAttachments,
+        };
 
         return responseComment;
       }
@@ -107,7 +106,7 @@ export class CommentRepository extends Repository<Comment> {
     //attaching attachments and files with comments
     queryComments.forEach((queryComment) => {
       let comment = comments[commentIndexes[queryComment.comment_id]];
-      if (comment) {
+      if (comment && queryComment.attachment_id !== null) {
         comment.attachments.push({
           id: queryComment.attachment_id,
           createdAt: queryComment.attachment_created_at,

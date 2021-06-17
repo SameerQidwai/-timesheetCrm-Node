@@ -32,12 +32,19 @@ export class EmployeeRepository extends Repository<Employee> {
       }
 
       // find contactpersonorganization id for oneLM
+
       let contactPersonOrganization =
         contactPersonObj.contactPersonOrganizations.filter(
           (x) => x.organizationId == 1
         )[0];
       if (!contactPersonOrganization) {
         throw Error('Not associated with oneLM');
+      } else {
+        contactPersonOrganization.status = true;
+        await transactionalEntityManager.save(
+          ContactPersonOrganization,
+          contactPersonOrganization
+        );
       }
       contactPersonObj.firstName = employee.firstName;
       contactPersonObj.lastName = employee.lastName;
@@ -57,7 +64,6 @@ export class EmployeeRepository extends Repository<Employee> {
         if (!state) {
           throw new Error('State not found');
         }
-        contactPersonObj.state = state;
       }
       await transactionalEntityManager.save(contactPersonObj);
       let employeeObj = new Employee();
@@ -137,12 +143,16 @@ export class EmployeeRepository extends Repository<Employee> {
         responseEmployee.contactPersonOrganization.contactPerson.firstName,
       email: responseEmployee.username,
     };
-    sendMail(
-      'crm.onelm.com',
-      user,
-      'Account Password',
-      `You registered account is ${generatedPassword}`
-    );
+    try {
+      sendMail(
+        'crm.onelm.com',
+        user,
+        'Account Password',
+        `You registered account is ${generatedPassword}`
+      );
+    } catch (e) {
+      console.log(e);
+    }
 
     return responseEmployee;
   }
@@ -181,10 +191,7 @@ export class EmployeeRepository extends Repository<Employee> {
     let onlyContactPersons: any = [];
     all.forEach((person) => {
       person.contactPersonOrganizations.forEach((org) => {
-        if (
-          org.organizationId === 1 &&
-          (org.endDate === null || org.endDate === null)
-        ) {
+        if (org.organizationId === 1 && org.status === true) {
           console.log('this ran', person);
           if (org.employee === null) {
             onlyContactPersons.push(person);

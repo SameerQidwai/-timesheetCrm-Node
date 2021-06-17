@@ -15,6 +15,9 @@ router.route('/login').post(contr.login.bind(contr));
 //     });
 //   });
 router.route('/password').patch([isLoggedIn], contr.updatePassword.bind(contr));
-router.route('/settings').patch([isLoggedIn], contr.updateSettings.bind(contr));
+router
+  .route('/settings')
+  .get([isLoggedIn], contr.getSettings.bind(contr))
+  .patch([isLoggedIn], contr.updateSettings.bind(contr));
 
 export default router;
