@@ -1,3 +1,5 @@
+import bcrypt from 'bcryptjs';
+import { sendMail } from '../utilities/mailer';
 import { ContactPersonDTO, EmployeeDTO, SubContractorDTO } from '../dto';
 import { EntityRepository, getRepository, Not, Repository } from 'typeorm';
 import { ContactPerson } from './../entities/contactPerson';
@@ -13,6 +15,7 @@ import { BankAccount } from './../entities/bankAccount';
 export class SubContractorRepository extends Repository<Employee> {
   async createAndSave(subContractor: SubContractorDTO): Promise<any> {
     let id: number;
+    let generatedPassword = Math.random().toString(36).substring(4);
     id = await this.manager.transaction(async (transactionalEntityManager) => {
       if (!subContractor.organizationId) {
         throw Error('Must provide organization');
@@ -69,6 +72,11 @@ export class SubContractorRepository extends Repository<Employee> {
       let employeeObj = new Employee();
       employeeObj.contactPersonOrganizationId = contactPersonOrganization.id;
       employeeObj.username = subContractor.username;
+      employeeObj.password = bcrypt.hashSync(
+        generatedPassword,
+        bcrypt.genSaltSync(8)
+      );
+
       employeeObj.nextOfKinName = subContractor.nextOfKinName;
       employeeObj.nextOfKinPhoneNumber = subContractor.nextOfKinPhoneNumber;
       employeeObj.nextOfKinEmail = subContractor.nextOfKinEmail;
@@ -104,7 +112,23 @@ export class SubContractorRepository extends Repository<Employee> {
       await transactionalEntityManager.save(employmentContract);
       return employeeObj.id;
     });
-    return await this.findOneCustom(id);
+    let responseSubContractor = await this.findOneCustom(id);
+    let user = {
+      username:
+        responseSubContractor.contactPersonOrganization.contactPerson.firstName,
+      email: responseSubContractor.username,
+    };
+    try {
+      sendMail(
+        'crm.onelm.com',
+        user,
+        'Account Password',
+        `You registered account password is ${generatedPassword}`
+      );
+    } catch (e) {
+      console.log(e);
+    }
+
   }
 
   async getAllActive(): Promise<any[]> {
