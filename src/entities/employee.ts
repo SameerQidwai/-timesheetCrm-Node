@@ -101,7 +101,7 @@ export class Employee extends Base {
   })
   leases: Lease[];
 
-  @Column({ name: 'role_id' })
+  @Column({ name: 'role_id' , default: 1})
   roleId: number;
 
   @ManyToOne(() => Role)

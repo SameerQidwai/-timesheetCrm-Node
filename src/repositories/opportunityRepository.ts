@@ -404,10 +404,12 @@ export class OpportunityRepository extends Repository<Opportunity> {
     if (!opportunity) {
       throw new Error('Opportunity not found!');
     }
+
     opportunity.opportunityResources = opportunity.opportunityResources.filter(
       (x) => x.id !== id
     );
     return await this.manager.save(opportunity);
+
   }
 
   async addResourceAllocation(
