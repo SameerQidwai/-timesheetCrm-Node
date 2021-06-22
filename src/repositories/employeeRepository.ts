@@ -191,7 +191,8 @@ export class EmployeeRepository extends Repository<Employee> {
     let onlyContactPersons: any = [];
     all.forEach((person) => {
       person.contactPersonOrganizations.forEach((org) => {
-        if (org.organizationId === 1 && org.status === true) {
+        // if (org.organizationId === 1 && org.status === true) { //! FUTURE IMPLEMENTATION
+        if (org.organizationId === 1) {
           console.log('this ran', person);
           if (org.employee === null) {
             onlyContactPersons.push(person);
