@@ -29,7 +29,7 @@ export let isLoggedIn = async (
         });
         if (user) {
           res.locals.user = user;
-          const newToken = jwt.sign({ id: user }, secret, {
+          const newToken = jwt.sign({ id: user.id }, secret, {
             expiresIn: '1h',
           });
           res.setHeader('Authorization', `Bearer ${newToken}`);
