@@ -47,6 +47,25 @@ export class SubContractorRepository extends Repository<Employee> {
         )[0];
       if (!contactPersonOrganization) {
         throw Error('Not associated with this organization');
+      } else {
+        let oldOrganization =
+          contactPersonObj.contactPersonOrganizations.filter(
+            (x) => x.status == true
+          )[0];
+        if (oldOrganization) {
+          oldOrganization.status = false;
+
+          await transactionalEntityManager.save(
+            ContactPersonOrganization,
+            oldOrganization
+          );
+        }
+
+        contactPersonOrganization.status = true;
+        await transactionalEntityManager.save(
+          ContactPersonOrganization,
+          contactPersonOrganization
+        );
       }
       contactPersonObj.firstName = subContractor.firstName;
       contactPersonObj.lastName = subContractor.lastName;
@@ -128,7 +147,6 @@ export class SubContractorRepository extends Repository<Employee> {
     } catch (e) {
       console.log(e);
     }
-
   }
 
   async getAllActive(): Promise<any[]> {
@@ -164,7 +182,7 @@ export class SubContractorRepository extends Repository<Employee> {
     all.forEach((person) => {
       person.contactPersonOrganizations.forEach((org) => {
         // if (org.organizationId === organizationId && org.status == true) { //! FUTURE IMPLEMENTATION
-          if (org.organizationId === organizationId ) {
+        if (org.organizationId === organizationId) {
           console.log('this ran', person);
           if (org.employee === null) {
             onlyContactPersons.push(person);

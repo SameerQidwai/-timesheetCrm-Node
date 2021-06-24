@@ -40,6 +40,19 @@ export class EmployeeRepository extends Repository<Employee> {
       if (!contactPersonOrganization) {
         throw Error('Not associated with oneLM');
       } else {
+        let oldOrganization =
+          contactPersonObj.contactPersonOrganizations.filter(
+            (x) => x.status == true
+          )[0];
+        if (oldOrganization) {
+          oldOrganization.status = false;
+
+          await transactionalEntityManager.save(
+            ContactPersonOrganization,
+            oldOrganization
+          );
+        }
+
         contactPersonOrganization.status = true;
         await transactionalEntityManager.save(
           ContactPersonOrganization,
@@ -585,13 +598,44 @@ export class EmployeeRepository extends Repository<Employee> {
 
   // }
 
-  async getAllUsers(): Promise<any[]> {
-    let result = await this.find({
+  async helperGetAllContactPersons(
+    organization: number,
+    status: number
+  ): Promise<any | undefined> {
+    let all = await getRepository(ContactPerson).find({
       relations: [
-        'contactPersonOrganization',
-        'contactPersonOrganization.contactPerson',
+        'contactPersonOrganizations',
+        'contactPersonOrganizations.employee',
       ],
     });
-    return result;
+
+    let filtered: any[] = [];
+
+    all.forEach((cp) => {
+      let flag_found = 0;
+      cp.contactPersonOrganizations.forEach((org) => {
+        if (!isNaN(organization) && !isNaN(status)) {
+          if (
+            org.organizationId === organization &&
+            org.status === Boolean(status)
+          ) {
+            flag_found = 1;
+          }
+        } else if (!isNaN(organization)) {
+          if (org.organizationId === organization) {
+            flag_found = 1;
+          }
+        } else if (!isNaN(status)) {
+          if (org.status === Boolean(status)) {
+            flag_found = 1;
+          }
+        } else {
+          flag_found = 1;
+        }
+      });
+      if (flag_found === 1) filtered.push(cp);
+    });
+
+    return filtered;
   }
 }

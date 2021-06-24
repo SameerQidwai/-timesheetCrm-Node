@@ -39,9 +39,16 @@ export class EmployeeController extends BaseController<
     });
   }
 
-  async getAllUsers(req: Request, res: Response) {
+  async helperGetAlContactPersons(req: Request, res: Response) {
+    let organization = req.query.organizationId?.toString() ?? '';
+    let status = req.query.active?.toString() ?? '';
+    console.log({ organization, status });
     const repository = getCustomRepository(EmployeeRepository);
-    let records = await repository.getAllUsers();
+
+    let records = await repository.helperGetAllContactPersons(
+      parseInt(organization),
+      parseInt(status)
+    );
     console.log('records: ', records);
     res.status(200).json({
       success: true,
