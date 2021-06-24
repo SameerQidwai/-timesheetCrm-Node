@@ -611,29 +611,41 @@ export class EmployeeRepository extends Repository<Employee> {
 
     let filtered: any[] = [];
 
-    all.forEach((cp) => {
+    all.forEach((cp: ContactPerson | any) => {
+      let cpRole = 'Sub Contractor';
       let flag_found = 0;
-      cp.contactPersonOrganizations.forEach((org) => {
-        if (!isNaN(organization) && !isNaN(status)) {
-          if (
-            org.organizationId === organization &&
-            org.status === Boolean(status)
-          ) {
+      cp.contactPersonOrganizations.forEach(
+        (org: ContactPersonOrganization | any) => {
+          if (!isNaN(organization) && !isNaN(status)) {
+            if (
+              org.organizationId === organization &&
+              org.status === Boolean(status)
+            ) {
+              flag_found = 1;
+            }
+          } else if (!isNaN(organization)) {
+            if (org.organizationId === organization) {
+              flag_found = 1;
+            }
+          } else if (!isNaN(status)) {
+            if (org.status === Boolean(status)) {
+              flag_found = 1;
+            }
+          } else {
             flag_found = 1;
           }
-        } else if (!isNaN(organization)) {
-          if (org.organizationId === organization) {
-            flag_found = 1;
+          if (org.organizationId == 1) {
+            cpRole = 'Employee';
+          } else {
+            cpRole = 'Sub Contractor';
           }
-        } else if (!isNaN(status)) {
-          if (org.status === Boolean(status)) {
-            flag_found = 1;
-          }
-        } else {
-          flag_found = 1;
         }
-      });
-      if (flag_found === 1) filtered.push(cp);
+      );
+      if (flag_found === 1) {
+        cp.fullName = `${cp.firstName} ${cp.lastName} (${cpRole})`;
+        cp.role = cpRole;
+        filtered.push(cp);
+      }
     });
 
     return filtered;

@@ -409,7 +409,6 @@ export class OpportunityRepository extends Repository<Opportunity> {
       (x) => x.id !== id
     );
     return await this.manager.save(opportunity);
-
   }
 
   async addResourceAllocation(
@@ -511,9 +510,10 @@ export class OpportunityRepository extends Repository<Opportunity> {
       throw new Error('Opportunity Resource not found!');
     }
 
-    let resourceAllocation = opportunityResource.opportunityResourceAllocations.filter(
-      (x) => x.id == id
-    )[0];
+    let resourceAllocation =
+      opportunityResource.opportunityResourceAllocations.filter(
+        (x) => x.id == id
+      )[0];
     if (!resourceAllocation) {
       throw new Error('Resource Allocation not found!');
     }
@@ -539,6 +539,9 @@ export class OpportunityRepository extends Repository<Opportunity> {
       resourceAllocation.contactPersonId =
         opportunityResourceAllocationDTO.contactPersonId;
     }
+    resourceAllocation.startDate = opportunityResourceAllocationDTO.startDate;
+    resourceAllocation.endDate = opportunityResourceAllocationDTO.endDate;
+    resourceAllocation.effortRate = opportunityResourceAllocationDTO.effortRate;
     resourceAllocation.opportunityResourceId = opportunityResourceId;
     await this.manager.save(resourceAllocation);
     return this.findOneCustomResourceAllocation(
@@ -581,9 +584,10 @@ export class OpportunityRepository extends Repository<Opportunity> {
       throw new Error('Opportunity Resource not found!');
     }
 
-    let resourceAllocation = opportunityResource.opportunityResourceAllocations.filter(
-      (x) => x.id == id
-    )[0];
+    let resourceAllocation =
+      opportunityResource.opportunityResourceAllocations.filter(
+        (x) => x.id == id
+      )[0];
     if (!resourceAllocation) {
       throw new Error('Resource Allocation not found!');
     }
