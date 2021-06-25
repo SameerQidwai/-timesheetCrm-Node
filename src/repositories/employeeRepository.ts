@@ -87,7 +87,8 @@ export class EmployeeRepository extends Repository<Employee> {
         generatedPassword,
         bcrypt.genSaltSync(8)
       );
-
+      console.log(employeeObj.password);
+        
       employeeObj.nextOfKinName = employee.nextOfKinName;
       employeeObj.nextOfKinPhoneNumber = employee.nextOfKinPhoneNumber;
       employeeObj.nextOfKinEmail = employee.nextOfKinEmail;
@@ -642,7 +643,8 @@ export class EmployeeRepository extends Repository<Employee> {
         }
       );
       if (flag_found === 1) {
-        cp.fullName = `${cp.firstName} ${cp.lastName} (${cpRole})`;
+        cp.label = `${cp.firstName} ${cp.lastName} (${cpRole})`;
+        cp.value = cp.id;
         cp.role = cpRole;
         filtered.push(cp);
       }
