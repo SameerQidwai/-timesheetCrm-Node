@@ -89,7 +89,7 @@ export class CommentRepository extends Repository<Comment> {
         'attachment.targetId = comment.id'
       )
       .leftJoinAndSelect('files', 'file', 'file.id = attachment.fileId')
-      .where('comment.id = :id', { id })
+      .where('comment.target_id = :id', { id })
       .where('comment.target_type = :type', { type })
       .getRawMany();
 

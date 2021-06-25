@@ -1,4 +1,11 @@
-import { Entity, Column, OneToOne, JoinColumn, OneToMany, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  Column,
+  OneToOne,
+  JoinColumn,
+  OneToMany,
+  ManyToOne,
+} from 'typeorm';
 import { Base } from './common/base';
 import { ContactPersonOrganization } from './contactPersonOrganization';
 import { EmploymentContract } from './employmentContract';
@@ -101,10 +108,10 @@ export class Employee extends Base {
   })
   leases: Lease[];
 
-  @Column({ name: 'role_id', default:1 })
+  @Column({ name: 'role_id', default: 1 })
   roleId: number;
 
   @ManyToOne(() => Role)
-  @JoinColumn({ name: "role_id" })
+  @JoinColumn({ name: 'role_id' })
   role: Role;
 }
