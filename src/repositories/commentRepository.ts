@@ -64,7 +64,7 @@ export class CommentRepository extends Repository<Comment> {
     // let result = await this.find({
     //   where: { type: type, targetId: id },
     // });
-
+    console.log(type, id);
     //Query to get comments with attachments and files
     let queryComments = await this.createQueryBuilder('comment')
       .orderBy('comment.id')
@@ -88,9 +88,10 @@ export class CommentRepository extends Repository<Comment> {
         'attachment',
         'attachment.targetId = comment.id'
       )
+      .where('attachment.target_type = COM')
       .leftJoinAndSelect('files', 'file', 'file.id = attachment.fileId')
       .where('comment.target_id = :id', { id })
-      .where('comment.target_type = :type', { type })
+      .andWhere('comment.target_type = :type', { type })
       .getRawMany();
 
     //Making unique of comments
