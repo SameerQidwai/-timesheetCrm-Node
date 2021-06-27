@@ -163,7 +163,7 @@ export class EmployeeRepository extends Repository<Employee> {
         'crm.onelm.com',
         user,
         'Account Password',
-        `You registered account is ${generatedPassword}`
+        `You registered account password is ${generatedPassword}`
       );
     } catch (e) {
       console.log(e);
