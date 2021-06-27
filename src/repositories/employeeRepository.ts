@@ -592,6 +592,85 @@ export class EmployeeRepository extends Repository<Employee> {
     return this.manager.save(employee);
   }
 
+  async getEmployeesBySkill(panelSkillStandardLevelId: number): Promise<any[]> {
+    let panelSkillStandardLevels = await this.manager.find(
+      PanelSkillStandardLevel,
+      {
+        where: {
+          id: panelSkillStandardLevelId,
+        },
+        relations: ['panelSkill'],
+      }
+    );
+
+    if (!panelSkillStandardLevels.length) {
+      throw new Error('panelSkillStandardLevel not found');
+    }
+    let standardSkillId =
+      panelSkillStandardLevels[0].panelSkill.standardSkillId;
+    let standardLevelId = panelSkillStandardLevels[0].standardLevelId;
+
+    let standardSkillStandardLevels = await this.manager.find(
+      StandardSkillStandardLevel,
+      {
+        where: {
+          standardSkillId: standardSkillId,
+          standardLevelId: standardLevelId,
+        },
+      }
+    );
+
+    console.log(standardSkillStandardLevels);
+
+    if (!standardSkillStandardLevels.length) {
+      throw new Error('standardSkillStandardLevel not found');
+    }
+    let skillPriority = standardSkillStandardLevels[0].priority;
+
+    let contactPersons = await getRepository(ContactPerson)
+      .createQueryBuilder('contactPerson')
+      .leftJoinAndSelect(
+        'contactPerson.contactPersonOrganizations',
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPersonId = contactPerson.id'
+      )
+      .innerJoinAndSelect(
+        'contactPerson.standardSkillStandardLevels',
+        'standardSkillStandardLevel',
+        'standardSkillStandardLevel.standardSkillId = :standardSkillId',
+        { standardSkillId }
+      )
+      .where('standardSkillStandardLevel.priority >= :skillPriority', {
+        skillPriority,
+      })
+      .getMany();
+
+    let filtered: any = [];
+
+    contactPersons.forEach((cp) => {
+      let Obj: any = {};
+      let cpRole: string = 'Contact Person';
+      if (cp.contactPersonOrganizations.length > 0) {
+        cpRole =
+          cp.contactPersonOrganizations.filter((org) => org.status == true)[0]
+            .organizationId == 1
+            ? 'Employee'
+            : cp.contactPersonOrganizations.filter(
+                (org) => org.status == true
+              )[0].organizationId != 1
+            ? 'Sub Contractor'
+            : 'Contact Person';
+      }
+
+      Obj.value = cp.id;
+      Obj.label = `${cp.firstName} ${cp.lastName} ${cpRole}`;
+
+      filtered.push(Obj);
+    });
+    console.log('employees: ', contactPersons);
+    return filtered;
+  }
+
   async helperGetAllContactPersons(
     associated: number,
     organization: number,
@@ -669,85 +748,6 @@ export class EmployeeRepository extends Repository<Employee> {
       }
     });
 
-    return filtered;
-  }
-
-  async getEmployeesBySkill(panelSkillStandardLevelId: number): Promise<any[]> {
-    let panelSkillStandardLevels = await this.manager.find(
-      PanelSkillStandardLevel,
-      {
-        where: {
-          id: panelSkillStandardLevelId,
-        },
-        relations: ['panelSkill'],
-      }
-    );
-
-    if (!panelSkillStandardLevels.length) {
-      throw new Error('panelSkillStandardLevel not found');
-    }
-    let standardSkillId =
-      panelSkillStandardLevels[0].panelSkill.standardSkillId;
-    let standardLevelId = panelSkillStandardLevels[0].standardLevelId;
-
-    let standardSkillStandardLevels = await this.manager.find(
-      StandardSkillStandardLevel,
-      {
-        where: {
-          standardSkillId: standardSkillId,
-          standardLevelId: standardLevelId,
-        },
-      }
-    );
-
-    console.log(standardSkillStandardLevels);
-
-    if (!standardSkillStandardLevels.length) {
-      throw new Error('standardSkillStandardLevel not found');
-    }
-    let skillPriority = standardSkillStandardLevels[0].priority;
-
-    let contactPersons = await getRepository(ContactPerson)
-      .createQueryBuilder('contactPerson')
-      .leftJoinAndSelect(
-        'contactPerson.contactPersonOrganizations',
-        'contactPersonOrganization',
-        'contactPersonOrganization.contactPersonId = contactPerson.id'
-      )
-      .innerJoinAndSelect(
-        'contactPerson.standardSkillStandardLevels',
-        'standardSkillStandardLevel',
-        'standardSkillStandardLevel.standardSkillId = :standardSkillId',
-        { standardSkillId }
-      )
-      .where('standardSkillStandardLevel.priority >= :skillPriority', {
-        skillPriority,
-      })
-      .getMany();
-
-    let filtered: any = [];
-
-    contactPersons.forEach((cp) => {
-      let Obj: any = {};
-      let cpRole: string = 'Contact Person';
-      if (cp.contactPersonOrganizations.length > 0) {
-        cpRole =
-          cp.contactPersonOrganizations.filter((org) => org.status == true)[0]
-            .organizationId == 1
-            ? 'Employee'
-            : cp.contactPersonOrganizations.filter(
-                (org) => org.status == true
-              )[0].organizationId != 1
-            ? 'Sub Contractor'
-            : 'Contact Person';
-      }
-
-      Obj.value = cp.id;
-      Obj.label = `${cp.firstName} ${cp.lastName} ${cpRole}`;
-
-      filtered.push(Obj);
-    });
-    console.log('employees: ', contactPersons);
     return filtered;
   }
 }
