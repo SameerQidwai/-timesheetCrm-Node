@@ -107,6 +107,7 @@ export class EmployeeRepository extends Repository<Employee> {
       employeeObj.superannuationBankAccountOrMembershipNumber =
         employee.superannuationBankAccountOrMembershipNumber;
       employeeObj.training = employee.training;
+      employeeObj.roleId = employee.roleId;
       employeeObj = await transactionalEntityManager.save(employeeObj);
       id = employeeObj.id;
 
@@ -294,6 +295,7 @@ export class EmployeeRepository extends Repository<Employee> {
       employeeObj.superannuationBankAccountOrMembershipNumber =
         employee.superannuationBankAccountOrMembershipNumber;
       employeeObj.training = employee.training;
+      employeeObj.roleId = employee.roleId;
       employeeObj = await transactionalEntityManager.save(employeeObj);
 
       if (!employee.latestEmploymentContract) {

@@ -187,6 +187,7 @@ export interface EmployeeDTO extends Base {
   bankName: string;
   bankAccountNo: string;
   bankBsb: string;
+  roleId: number;
 }
 
 export interface EmploymentContractDTO extends Base {
@@ -241,6 +242,7 @@ export interface SubContractorDTO extends Base {
   nextOfKinEmail: string;
   nextOfKinRelation: string;
   latestContract: ContractDTO;
+  roleId: number;
 }
 
 export interface ContractDTO extends Base {
