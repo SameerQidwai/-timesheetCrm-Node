@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import http from 'http';
 import dotenv from 'dotenv';
 
@@ -24,6 +24,13 @@ app.use('/api/v1', allRoutes);
 // 404
 app.use((req: Request, res: Response) => {
   res.status(404).json('Resource not found!');
+});
+
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  res.status(500).send({
+    success: false,
+    message: err.message,
+  });
 });
 
 connection
