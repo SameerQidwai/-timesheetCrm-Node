@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { getCustomRepository } from 'typeorm';
+import { RoleRepository } from './../repositories/roleRepository';
 import { EmployeeRepository } from './../repositories/employeeRepository';
 import { StandardSkillRepository } from './../repositories/standardSkillRepository';
 
@@ -45,6 +46,20 @@ export class HelperController {
       res.status(200).json({
         success: true,
         message: 'Get ALL',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async helperGetAllRoles(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(RoleRepository);
+      let records = await repository.helperGetActiveRoles();
+      res.status(200).json({
+        success: true,
+        message: 'Get All Roles',
         data: records,
       });
     } catch (e) {

@@ -11,4 +11,6 @@ router
 
 router.route('/levels-by-skill').get(contr.helperGetLevelsBySkill.bind(contr));
 
+router.route('/roles').get(contr.helperGetAllRoles.bind(contr));
+
 export default router;
