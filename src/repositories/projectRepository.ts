@@ -637,4 +637,114 @@ export class ProjectRepository extends Repository<Opportunity> {
     let deletedOrder = project.purchaseOrders.filter((x) => x.id === id);
     return await this.manager.softDelete(PurchaseOrder, deletedOrder);
   }
+
+  async getOwnActive(userId: any): Promise<any[]> {
+    let response: any = [];
+
+    let result = await this.find({
+      where: [{ status: 'P' }, { status: 'C' }],
+      relations: [
+        'opportunityResources',
+        'opportunityResources.panelSkill',
+        'opportunityResources.panelSkillStandardLevel',
+        'opportunityResources.opportunityResourceAllocations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
+    });
+
+    console.log('this ran');
+    result.map((project, index) => {
+      let add_flag = 0;
+      project.opportunityResources.map((resource) => {
+        resource.opportunityResourceAllocations.filter((allocation) => {
+          if (
+            allocation.contactPersonId === parseInt(userId) &&
+            allocation.isMarkedAsSelected
+          ) {
+            add_flag = 1;
+          }
+        });
+      });
+      if (add_flag === 1) response.push(project);
+    });
+
+    return response;
+  }
+
+  async getManageActive(userId: any): Promise<any[]> {
+    let result = await this.find({
+      where: [
+        {
+          status: 'P',
+          accountDirectorId: userId,
+          accountManagerId: userId,
+          opportunityManagerId: userId,
+          projectManagerId: userId,
+        },
+        {
+          status: 'C',
+          accountDirectorId: userId,
+          accountManagerId: userId,
+          opportunityManagerId: userId,
+          projectManagerId: userId,
+        },
+      ],
+      relations: [
+        'opportunityResources',
+        'opportunityResources.panelSkill',
+        'opportunityResources.panelSkillStandardLevel',
+        'opportunityResources.opportunityResourceAllocations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
+    });
+
+    return result;
+  }
+
+  async getOwnAndManageActive(userId: any): Promise<any[]> {
+    let response: any = [];
+    let result = await this.find({
+      where: [
+        {
+          status: 'P',
+          accountDirectorId: userId,
+          accountManagerId: userId,
+          opportunityManagerId: userId,
+          projectManagerId: userId,
+        },
+        {
+          status: 'C',
+          accountDirectorId: userId,
+          accountManagerId: userId,
+          opportunityManagerId: userId,
+          projectManagerId: userId,
+        },
+      ],
+      relations: [
+        'opportunityResources',
+        'opportunityResources.panelSkill',
+        'opportunityResources.panelSkillStandardLevel',
+        'opportunityResources.opportunityResourceAllocations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
+    });
+
+    console.log('this ran');
+    result.map((project, index) => {
+      let add_flag = 0;
+      project.opportunityResources.map((resource) => {
+        resource.opportunityResourceAllocations.filter((allocation) => {
+          if (
+            allocation.contactPersonId === parseInt(userId) &&
+            allocation.isMarkedAsSelected
+          ) {
+            add_flag = 1;
+          }
+        });
+      });
+      if (add_flag === 1) response.push(project);
+    });
+
+    return response;
+  }
 }

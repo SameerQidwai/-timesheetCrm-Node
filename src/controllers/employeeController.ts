@@ -40,14 +40,18 @@ export class EmployeeController extends BaseController<
   }
 
   async helperGetAlContactPersons(req: Request, res: Response) {
+    let associated = req.query.associated?.toString() ?? '';
     let organization = req.query.organizationId?.toString() ?? '';
     let status = req.query.active?.toString() ?? '';
+    let getEmployee = req.query.employee?.toString() ?? '';
     console.log({ organization, status });
     const repository = getCustomRepository(EmployeeRepository);
 
     let records = await repository.helperGetAllContactPersons(
+      parseInt(associated),
       parseInt(organization),
-      parseInt(status)
+      parseInt(status),
+      parseInt(getEmployee)
     );
     console.log('records: ', records);
     res.status(200).json({

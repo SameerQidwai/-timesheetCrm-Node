@@ -87,42 +87,75 @@ export class OpportunityRepository extends Repository<Opportunity> {
         opportunityObj.stateId = state.id;
       }
 
-      let accountDirector: Employee | undefined;
+      let accountDirector: ContactPerson | undefined;
       if (opportunity.accountDirectorId) {
         accountDirector = await this.manager.findOne(
-          Employee,
-          opportunity.accountDirectorId
+          ContactPerson,
+          opportunity.accountDirectorId,
+          {
+            relations: [
+              'contactPersonOrganizations',
+              'contactPersonOrganizations.employee',
+            ],
+          }
         );
         if (!accountDirector) {
           throw new Error('Account Director not found');
         }
-        opportunityObj.accountDirectorId = accountDirector.id;
+        let accountDirectorEmployee =
+          accountDirector.contactPersonOrganizations.filter(
+            (org) => org.status == true
+          );
+        opportunityObj.accountDirectorId =
+          accountDirectorEmployee[0].employee.id;
         // opportunityObj.accountDirectorId = 1;
       }
 
-      let accountManager: Employee | undefined;
+      let accountManager: ContactPerson | undefined;
+
       if (opportunity.accountManagerId) {
         accountManager = await this.manager.findOne(
-          Employee,
-          opportunity.accountManagerId
+          ContactPerson,
+          opportunity.accountManagerId,
+          {
+            relations: [
+              'contactPersonOrganizations',
+              'contactPersonOrganizations.employee',
+            ],
+          }
         );
         if (!accountManager) {
-          throw new Error('Account Manager not found');
+          throw new Error('Account Director not found');
         }
-        opportunityObj.accountManagerId = accountManager.id;
+        let accountManagerEmployee =
+          accountManager.contactPersonOrganizations.filter(
+            (org) => org.status == true
+          );
+        opportunityObj.accountManagerId = accountManagerEmployee[0].employee.id;
         // opportunityObj.accountManagerId = 1;
       }
 
-      let opportunityManager: Employee | undefined;
+      let opportunityManager: ContactPerson | undefined;
       if (opportunity.opportunityManagerId) {
         opportunityManager = await this.manager.findOne(
-          Employee,
-          opportunity.opportunityManagerId
+          ContactPerson,
+          opportunity.opportunityManagerId,
+          {
+            relations: [
+              'contactPersonOrganizations',
+              'contactPersonOrganizations.employee',
+            ],
+          }
         );
         if (!opportunityManager) {
-          throw new Error('Opportunity Manager not found');
+          throw new Error('Account Director not found');
         }
-        opportunityObj.opportunityManagerId = opportunityManager.id;
+        let opportunityManagerEmployee =
+          opportunityManager.contactPersonOrganizations.filter(
+            (org) => org.status == true
+          );
+        opportunityObj.opportunityManagerId =
+          opportunityManagerEmployee[0].employee.id;
         // opportunityObj.opportunityManagerId = 1;
       }
 
@@ -837,5 +870,28 @@ export class OpportunityRepository extends Repository<Opportunity> {
       await transactionalEntityManager.save(opportunityObj);
     });
     return this.findOneCustom(id);
+  }
+
+  async getManageActive(userId: any): Promise<any[]> {
+    let result = await this.find({
+      where: [
+        {
+          status: 'O',
+          accountDirectorId: userId,
+          accountManagerId: userId,
+          opportunityManagerId: userId,
+          projectManagerId: userId,
+        },
+        {
+          status: 'L',
+          accountDirectorId: userId,
+          accountManagerId: userId,
+          opportunityManagerId: userId,
+          projectManagerId: userId,
+        },
+      ],
+      relations: ['organization'],
+    });
+    return result;
   }
 }

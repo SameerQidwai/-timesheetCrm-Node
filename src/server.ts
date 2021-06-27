@@ -6,13 +6,16 @@ import * as bodyParser from 'body-parser';
 import { createConnection } from 'typeorm';
 import allRoutes from './routes';
 
+const corsOptions = {
+  exposedHeaders: 'Authorization',
+};
 // initialize configuration
 dotenv.config();
 const port = process.env.PORT;
 const app: express.Application = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(require('cors')());
+app.use(require('cors')(corsOptions));
 const connection = createConnection();
 
 //register routes

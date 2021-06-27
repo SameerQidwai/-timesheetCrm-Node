@@ -88,7 +88,7 @@ export class EmployeeRepository extends Repository<Employee> {
         bcrypt.genSaltSync(8)
       );
       console.log(employeeObj.password);
-        
+
       employeeObj.nextOfKinName = employee.nextOfKinName;
       employeeObj.nextOfKinPhoneNumber = employee.nextOfKinPhoneNumber;
       employeeObj.nextOfKinEmail = employee.nextOfKinEmail;
@@ -389,64 +389,64 @@ export class EmployeeRepository extends Repository<Employee> {
     return this.softDelete(id);
   }
 
-  async getEmployeesBySkill(panelSkillStandardLevelId: number): Promise<any[]> {
-    let panelSkillStandardLevels = await this.manager.find(
-      PanelSkillStandardLevel,
-      {
-        where: {
-          id: panelSkillStandardLevelId,
-        },
-        relations: ['panelSkill'],
-      }
-    );
+  // async getEmployeesBySkill(panelSkillStandardLevelId: number): Promise<any[]> {
+  //   let panelSkillStandardLevels = await this.manager.find(
+  //     PanelSkillStandardLevel,
+  //     {
+  //       where: {
+  //         id: panelSkillStandardLevelId,
+  //       },
+  //       relations: ['panelSkill'],
+  //     }
+  //   );
 
-    if (!panelSkillStandardLevels.length) {
-      throw new Error('panelSkillStandardLevel not found');
-    }
-    let standardSkillId =
-      panelSkillStandardLevels[0].panelSkill.standardSkillId;
-    let standardLevelId = panelSkillStandardLevels[0].standardLevelId;
+  //   if (!panelSkillStandardLevels.length) {
+  //     throw new Error('panelSkillStandardLevel not found');
+  //   }
+  //   let standardSkillId =
+  //     panelSkillStandardLevels[0].panelSkill.standardSkillId;
+  //   let standardLevelId = panelSkillStandardLevels[0].standardLevelId;
 
-    let standardSkillStandardLevels = await this.manager.find(
-      StandardSkillStandardLevel,
-      {
-        where: {
-          standardSkillId: standardSkillId,
-          standardLevelId: standardLevelId,
-        },
-      }
-    );
+  //   let standardSkillStandardLevels = await this.manager.find(
+  //     StandardSkillStandardLevel,
+  //     {
+  //       where: {
+  //         standardSkillId: standardSkillId,
+  //         standardLevelId: standardLevelId,
+  //       },
+  //     }
+  //   );
 
-    console.log(standardSkillStandardLevels);
+  //   console.log(standardSkillStandardLevels);
 
-    if (!standardSkillStandardLevels.length) {
-      throw new Error('standardSkillStandardLevel not found');
-    }
-    let standardSkillStandardLevelPriority =
-      standardSkillStandardLevels[0].priority;
+  //   if (!standardSkillStandardLevels.length) {
+  //     throw new Error('standardSkillStandardLevel not found');
+  //   }
+  //   let standardSkillStandardLevelPriority =
+  //     standardSkillStandardLevels[0].priority;
 
-    let employees = await getRepository(Employee)
-      .createQueryBuilder('employee')
-      .innerJoin(
-        'employee.contactPersonOrganization',
-        'contactPersonOrganization',
-        'contactPersonOrganization.id = employee.contactPersonOrganization.id'
-      )
-      .innerJoin(
-        'contactPersonOrganization.contactPerson',
-        'contactPerson',
-        'contactPerson.id = contactPersonOrganization.contactPerson.id'
-      )
-      .innerJoin(
-        'contactPerson.standardSkillStandardLevels',
-        'standardSkillStandardLevel',
-        'standardSkillStandardLevel.contactPersons.id = contactPerson.id'
-      )
-      .getMany();
+  //   let employees = await getRepository(Employee)
+  //     .createQueryBuilder('employee')
+  //     .innerJoin(
+  //       'employee.contactPersonOrganization',
+  //       'contactPersonOrganization',
+  //       'contactPersonOrganization.id = employee.contactPersonOrganization.id'
+  //     )
+  //     .innerJoin(
+  //       'contactPersonOrganization.contactPerson',
+  //       'contactPerson',
+  //       'contactPerson.id = contactPersonOrganization.contactPerson.id'
+  //     )
+  //     .innerJoin(
+  //       'contactPerson.standardSkillStandardLevels',
+  //       'standardSkillStandardLevel',
+  //       'standardSkillStandardLevel.contactPersons.id = contactPerson.id'
+  //     )
+  //     .getMany();
 
-    console.log('employees: ', employees);
-    return employees;
-  }
+  //   console.log('employees: ', employees);
+  //   return employees;
+  // }
 
   async getAllLeases(employeeId: number) {
     // valid if employee id exists
@@ -592,16 +592,11 @@ export class EmployeeRepository extends Repository<Employee> {
     return this.manager.save(employee);
   }
 
-  // async getUsersBySkill(panelSkillId: number): Promise<any | undefined> {
-  //   if (!panelSkillId) {
-  //     throw new Error('Panel Skill Id not found');
-  //   }
-
-  // }
-
   async helperGetAllContactPersons(
+    associated: number,
     organization: number,
-    status: number
+    status: number,
+    getEmployeeID: number
   ): Promise<any | undefined> {
     let all = await getRepository(ContactPerson).find({
       relations: [
@@ -613,43 +608,146 @@ export class EmployeeRepository extends Repository<Employee> {
     let filtered: any[] = [];
 
     all.forEach((cp: ContactPerson | any) => {
-      let cpRole = 'Sub Contractor';
+      let cpRole = 'Contact Person';
+      let cpEmployeeID: number | string = '-';
       let flag_found = 0;
-      cp.contactPersonOrganizations.forEach(
-        (org: ContactPersonOrganization | any) => {
-          if (!isNaN(organization) && !isNaN(status)) {
-            if (
-              org.organizationId === organization &&
-              org.status === Boolean(status)
-            ) {
-              flag_found = 1;
+      if (
+        (associated == 1 || isNaN(associated)) &&
+        cp.contactPersonOrganizations.length > 0
+      ) {
+        cp.contactPersonOrganizations.forEach(
+          (org: ContactPersonOrganization | any) => {
+            if (flag_found != 1) {
+              if (!isNaN(organization) && !isNaN(status) && flag_found != 1) {
+                if (
+                  org.organizationId === organization &&
+                  org.status === Boolean(status)
+                ) {
+                  flag_found = 1;
+                }
+              } else if (!isNaN(organization) && flag_found != 1) {
+                if (org.organizationId === organization) {
+                  flag_found = 1;
+                }
+              } else if (!isNaN(status) && flag_found != 1) {
+                if (org.status === Boolean(status)) {
+                  flag_found = 1;
+                }
+              } else if (flag_found != 1) {
+                flag_found = 1;
+              }
+
+              console.log(org.organizationId, flag_found);
+              if (org.organizationId == 1 && flag_found == 1) {
+                cpRole = 'Employee';
+              } else if (org.organizationId != 1 && flag_found == 1) {
+                cpRole = 'Sub Contractor';
+              }
+
+              if (org.status == 1 && flag_found == 1) {
+                cpEmployeeID = org.employee.id;
+              }
             }
-          } else if (!isNaN(organization)) {
-            if (org.organizationId === organization) {
-              flag_found = 1;
-            }
-          } else if (!isNaN(status)) {
-            if (org.status === Boolean(status)) {
-              flag_found = 1;
-            }
-          } else {
-            flag_found = 1;
           }
-          if (org.organizationId == 1) {
-            cpRole = 'Employee';
-          } else {
-            cpRole = 'Sub Contractor';
-          }
-        }
-      );
+        );
+      } else if (
+        (associated == 0 || isNaN(associated)) &&
+        cp.contactPersonOrganizations.length == 0
+      ) {
+        flag_found = 1;
+      }
+
       if (flag_found === 1) {
         cp.label = `${cp.firstName} ${cp.lastName} (${cpRole})`;
-        cp.value = cp.id;
-        cp.role = cpRole;
+        if (getEmployeeID == 1) {
+          cp.value = cpEmployeeID;
+        } else {
+          cp.value = cp.id;
+        }
+        // cp.role = cpRole;
         filtered.push(cp);
       }
     });
 
+    return filtered;
+  }
+
+  async getEmployeesBySkill(panelSkillStandardLevelId: number): Promise<any[]> {
+    let panelSkillStandardLevels = await this.manager.find(
+      PanelSkillStandardLevel,
+      {
+        where: {
+          id: panelSkillStandardLevelId,
+        },
+        relations: ['panelSkill'],
+      }
+    );
+
+    if (!panelSkillStandardLevels.length) {
+      throw new Error('panelSkillStandardLevel not found');
+    }
+    let standardSkillId =
+      panelSkillStandardLevels[0].panelSkill.standardSkillId;
+    let standardLevelId = panelSkillStandardLevels[0].standardLevelId;
+
+    let standardSkillStandardLevels = await this.manager.find(
+      StandardSkillStandardLevel,
+      {
+        where: {
+          standardSkillId: standardSkillId,
+          standardLevelId: standardLevelId,
+        },
+      }
+    );
+
+    console.log(standardSkillStandardLevels);
+
+    if (!standardSkillStandardLevels.length) {
+      throw new Error('standardSkillStandardLevel not found');
+    }
+    let skillPriority = standardSkillStandardLevels[0].priority;
+
+    let contactPersons = await getRepository(ContactPerson)
+      .createQueryBuilder('contactPerson')
+      .leftJoinAndSelect(
+        'contactPerson.contactPersonOrganizations',
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPersonId = contactPerson.id'
+      )
+      .innerJoinAndSelect(
+        'contactPerson.standardSkillStandardLevels',
+        'standardSkillStandardLevel',
+        'standardSkillStandardLevel.standardSkillId = :standardSkillId',
+        { standardSkillId }
+      )
+      .where('standardSkillStandardLevel.priority >= :skillPriority', {
+        skillPriority,
+      })
+      .getMany();
+
+    let filtered: any = [];
+
+    contactPersons.forEach((cp) => {
+      let Obj: any = {};
+      let cpRole: string = 'Contact Person';
+      if (cp.contactPersonOrganizations.length > 0) {
+        cpRole =
+          cp.contactPersonOrganizations.filter((org) => org.status == true)[0]
+            .organizationId == 1
+            ? 'Employee'
+            : cp.contactPersonOrganizations.filter(
+                (org) => org.status == true
+              )[0].organizationId != 1
+            ? 'Sub Contractor'
+            : 'Contact Person';
+      }
+
+      Obj.value = cp.id;
+      Obj.label = `${cp.firstName} ${cp.lastName} ${cpRole}`;
+
+      filtered.push(Obj);
+    });
+    console.log('employees: ', contactPersons);
     return filtered;
   }
 }
