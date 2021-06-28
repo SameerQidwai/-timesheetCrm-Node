@@ -92,6 +92,7 @@ export interface PanelSkillDTO extends Base {
 
 export interface GlobalSettingDTO {
   fromEmail: string;
+  displayEmail: string;
   recordsPerPage: string;
   timeZone: string;
 }
