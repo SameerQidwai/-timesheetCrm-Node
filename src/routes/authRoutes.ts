@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { AuthController } from '../controllers/authController';
 import { isLoggedIn } from '../middlewares/loggedIn';
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 
 const router = Router();
 const contr = new AuthController();
