@@ -31,7 +31,7 @@ export class LeaseController {
       console.log('record: ', record);
       res.status(200).json({
         success: true,
-        message: 'Create',
+        message: 'Created Successfully',
         data: record,
       });
     } catch (e) {
@@ -51,7 +51,7 @@ export class LeaseController {
       );
       res.status(200).json({
         success: true,
-        message: `Update ${req.params.id}`,
+        message: `Updated ${req.params.id} Successfully`,
         data: record,
       });
     } catch (e) {
@@ -90,7 +90,7 @@ export class LeaseController {
       );
       res.status(200).json({
         success: true,
-        message: `Delete ${req.params.id}`,
+        message: `Deleted ${req.params.id} Successfully`,
         data: record,
       });
     } catch (e) {

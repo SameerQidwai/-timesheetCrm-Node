@@ -31,7 +31,7 @@ export class ProjectController extends BaseController<
       console.log('records: ', records);
       res.status(200).json({
         success: true,
-        message: 'Get ALL',
+        message: 'Index projects',
         data: records,
       });
     } catch (e) {

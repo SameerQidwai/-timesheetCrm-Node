@@ -33,7 +33,7 @@ export class BaseController<D, R extends IRepository<D>> {
       console.log('records: ', records);
       res.status(200).json({
         success: true,
-        message: 'Get ALL',
+        message: 'Index',
         data: records,
       });
     } catch (e) {
@@ -50,7 +50,7 @@ export class BaseController<D, R extends IRepository<D>> {
       console.log('record: ', record);
       res.status(200).json({
         success: true,
-        message: 'Create',
+        message: 'Created Successfully',
         data: record,
       });
     } catch (e) {
@@ -67,7 +67,7 @@ export class BaseController<D, R extends IRepository<D>> {
       let record = await repository.updateAndReturn(parseInt(id), req.body);
       res.status(200).json({
         success: true,
-        message: `Update ${req.params.id}`,
+        message: `Updated Employee Successfully`,
         data: record,
       });
     } catch (e) {
@@ -85,7 +85,7 @@ export class BaseController<D, R extends IRepository<D>> {
       if (!record) throw new Error('not found');
       res.status(200).json({
         success: true,
-        message: `Get ${req.params.id}`,
+        message: `Get`,
         data: record,
       });
     } catch (e) {
@@ -102,7 +102,7 @@ export class BaseController<D, R extends IRepository<D>> {
       let record = await repository.deleteCustom(parseInt(id));
       res.status(200).json({
         success: true,
-        message: `Delete ${req.params.id}`,
+        message: `Deleted Successfully`,
         data: record,
       });
     } catch (e) {

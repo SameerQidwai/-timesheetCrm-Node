@@ -126,7 +126,7 @@ export class TimesheetController {
       console.log('record: ', record);
       res.status(200).json({
         success: true,
-        message: 'Create',
+        message: 'Tiemsheet Created Successfully',
         data: record,
       });
     } catch (e) {
@@ -145,7 +145,7 @@ export class TimesheetController {
       console.log('record: ', record);
       res.status(200).json({
         success: true,
-        message: 'Edit',
+        message: 'Timesheet Updated Succesfully',
         data: record,
       });
     } catch (e) {
@@ -176,7 +176,7 @@ export class TimesheetController {
       console.log('record: ', record);
       res.status(200).json({
         success: true,
-        message: 'Submit',
+        message: 'Timesheet Submitted',
         data: record,
       });
     } catch (e) {
@@ -207,7 +207,7 @@ export class TimesheetController {
       console.log('record: ', record);
       res.status(200).json({
         success: true,
-        message: 'Approve',
+        message: 'Timesheet Approved',
         data: record,
       });
     } catch (e) {
@@ -238,7 +238,7 @@ export class TimesheetController {
       console.log('record: ', record);
       res.status(200).json({
         success: true,
-        message: 'Reject',
+        message: 'Timesheet Rejected',
         data: record,
       });
     } catch (e) {
@@ -257,7 +257,7 @@ export class TimesheetController {
       console.log('record: ', record);
       res.status(200).json({
         success: true,
-        message: 'Deleted',
+        message: 'Timesheet Deleted',
         data: record,
       });
     } catch (e) {
@@ -282,7 +282,7 @@ export class TimesheetController {
       console.log('record: ', record);
       res.status(200).json({
         success: true,
-        message: 'Project Entry note updated',
+        message: 'Note Updated Successfully',
         data: record,
       });
     } catch (e) {

@@ -54,7 +54,7 @@ export class CommentController {
       return res.status(200).json({
         success: true,
         // message: `Win Opportunity ${req.params.id}`,
-        message: 'Get target attachments',
+        message: 'Get target Comments',
         data: response,
       });
     } catch (e) {
@@ -74,7 +74,7 @@ export class CommentController {
       return res.status(200).json({
         success: true,
         // message: `Win Opportunity ${req.params.id}`,
-        message: 'Delete target comment',
+        message: 'Comment Deleted Successfully',
         data: response,
       });
     } catch (e) {

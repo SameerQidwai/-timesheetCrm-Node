@@ -15,7 +15,7 @@ export class EmployeeController extends BaseController<
       console.log('records: ', records);
       res.status(200).json({
         success: true,
-        message: 'Get ALL',
+        message: 'Get Employee ContactPersons',
         data: records,
       });
     } catch (e) {
@@ -69,7 +69,7 @@ export class EmployeeController extends BaseController<
       console.log('records: ', records);
       res.status(200).json({
         success: true,
-        message: 'Get ALL',
+        message: 'Helper get Contact persons',
         data: records,
       });
     } catch (e) {

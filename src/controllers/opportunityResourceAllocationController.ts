@@ -19,7 +19,7 @@ export class OpportunityResourceAllocationController {
       console.log('record: ', record);
       res.status(200).json({
         success: true,
-        message: 'Create',
+        message: 'Resource Created Successfully',
         data: record,
       });
     } catch (e) {
@@ -41,7 +41,7 @@ export class OpportunityResourceAllocationController {
       );
       res.status(200).json({
         success: true,
-        message: `Update ${req.params.id}`,
+        message: `Updated Resource Successfully`,
         data: record,
       });
     } catch (e) {
@@ -63,7 +63,7 @@ export class OpportunityResourceAllocationController {
       if (!record) throw new Error('not found');
       res.status(200).json({
         success: true,
-        message: `Get ${req.params.id}`,
+        message: `Get`,
         data: record,
       });
     } catch (e) {
@@ -84,7 +84,7 @@ export class OpportunityResourceAllocationController {
       );
       res.status(200).json({
         success: true,
-        message: `Delete ${req.params.id}`,
+        message: `Deleted Successfully`,
         data: record,
       });
     } catch (e) {
@@ -105,7 +105,7 @@ export class OpportunityResourceAllocationController {
       );
       res.status(200).json({
         success: true,
-        message: `Marked as Selected ${req.params.id}`,
+        message: `Marked as Selected`,
         data: null,
       });
     } catch (e) {

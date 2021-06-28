@@ -41,7 +41,7 @@ export class ProjectResourceController {
       console.log('record: ', record);
       res.status(200).json({
         success: true,
-        message: 'Create',
+        message: 'Created Resource Successfully',
         data: record,
       });
     } catch (e) {
@@ -61,7 +61,7 @@ export class ProjectResourceController {
       );
       res.status(200).json({
         success: true,
-        message: `Update ${req.params.id}`,
+        message: `Updated Resource Successfully`,
         data: record,
       });
     } catch (e) {
@@ -81,7 +81,7 @@ export class ProjectResourceController {
       if (!record) throw new Error('not found');
       res.status(200).json({
         success: true,
-        message: `Get ${req.params.id}`,
+        message: `Get Successfully`,
         data: record,
       });
     } catch (e) {
@@ -100,7 +100,7 @@ export class ProjectResourceController {
       );
       res.status(200).json({
         success: true,
-        message: `Delete ${req.params.id}`,
+        message: `Deleted Resource Successfully`,
         data: record,
       });
     } catch (e) {

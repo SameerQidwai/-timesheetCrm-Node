@@ -62,7 +62,7 @@ export class OpportunityController extends BaseController<
       console.log('records: ', records);
       res.status(200).json({
         success: true,
-        message: 'Get ALL',
+        message: 'Index Opportunity',
         data: records,
       });
     } catch (e) {

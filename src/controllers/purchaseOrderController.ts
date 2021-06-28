@@ -43,7 +43,7 @@ export class PurchaseOrderController {
       console.log('record: ', record);
       res.status(200).json({
         success: true,
-        message: 'Create',
+        message: 'Created Purchase Order Successfully',
         data: record,
       });
     } catch (e) {
@@ -63,7 +63,7 @@ export class PurchaseOrderController {
       );
       res.status(200).json({
         success: true,
-        message: `Update ${req.params.id}`,
+        message: `Updated Purchase Order Successfully`,
         data: record,
       });
     } catch (e) {
@@ -83,7 +83,7 @@ export class PurchaseOrderController {
       if (!record) throw new Error('not found');
       res.status(200).json({
         success: true,
-        message: `Get ${req.params.id}`,
+        message: `Get`,
         data: record,
       });
     } catch (e) {
@@ -102,7 +102,7 @@ export class PurchaseOrderController {
       );
       res.status(200).json({
         success: true,
-        message: `Delete ${req.params.id}`,
+        message: `Deleted Purchase Order Successfully`,
         data: record,
       });
     } catch (e) {

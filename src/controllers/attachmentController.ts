@@ -22,7 +22,7 @@ export class AttachmentController {
       return res.status(200).json({
         success: true,
         // message: `Win Opportunity ${req.params.id}`,
-        message: 'Attachment Save Successfully',
+        message: 'Attachment Saved Successfully',
         data: response,
       });
     } catch (e) {
@@ -44,7 +44,7 @@ export class AttachmentController {
       return res.status(200).json({
         success: true,
         // message: `Win Opportunity ${req.params.id}`,
-        message: 'Get target attachments',
+        message: 'Get Target Attachments',
         data: response,
       });
     } catch (e) {
@@ -64,7 +64,7 @@ export class AttachmentController {
       return res.status(200).json({
         success: true,
         // message: `Win Opportunity ${req.params.id}`,
-        message: 'Delete target attachment',
+        message: 'Target Attachment Deleted',
         data: response,
       });
     } catch (e) {

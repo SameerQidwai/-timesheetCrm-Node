@@ -36,7 +36,7 @@ export class OpportunityResourceController {
       console.log('record: ', record);
       res.status(200).json({
         success: true,
-        message: 'Create',
+        message: 'Created Resource Successfully',
         data: record,
       });
     } catch (e) {
@@ -56,7 +56,7 @@ export class OpportunityResourceController {
       );
       res.status(200).json({
         success: true,
-        message: `Update ${req.params.id}`,
+        message: `Updated Resource Successfully`,
         data: record,
       });
     } catch (e) {
@@ -76,7 +76,7 @@ export class OpportunityResourceController {
       if (!record) throw new Error('not found');
       res.status(200).json({
         success: true,
-        message: `Get ${req.params.id}`,
+        message: `Get`,
         data: record,
       });
     } catch (e) {
@@ -95,7 +95,7 @@ export class OpportunityResourceController {
       );
       res.status(200).json({
         success: true,
-        message: `Delete ${req.params.id}`,
+        message: `Deleted Resource Successfully`,
         data: record,
       });
     } catch (e) {
