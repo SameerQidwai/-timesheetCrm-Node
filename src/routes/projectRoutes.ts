@@ -3,19 +3,24 @@ import { ProjectController } from './../controllers/projectController';
 import { ProjectRepository } from './../repositories/projectRepository';
 import { ProjectResourceController } from './../controllers/projectResourceController';
 import { PurchaseOrderController } from './../controllers/purchaseOrderController';
+import { Action, Resource } from './../constants/authorization';
+import { isLoggedIn } from './../middlewares/loggedIn';
+import { can } from './../middlewares/can';
 
 const router = Router();
 let contr = new ProjectController(ProjectRepository);
 let resourceContr = new ProjectResourceController();
 let orderContr = new PurchaseOrderController();
 
-router.route('/').get(contr.index.bind(contr)).post(contr.create.bind(contr));
+router.route('/')
+.get([isLoggedIn, can(Action.READ, Resource.PROJECTS)], contr.index.bind(contr))
+.post([isLoggedIn, can(Action.ADD, Resource.PROJECTS)], contr.create.bind(contr));
 
 router
   .route('/:id')
-  .get(contr.get.bind(contr))
-  .put(contr.update.bind(contr))
-  .delete(contr.delete.bind(contr));
+  .get([isLoggedIn, can(Action.READ, Resource.PROJECTS, "id")], contr.get.bind(contr))
+  .put([isLoggedIn, can(Action.UPDATE, Resource.PROJECTS, "id")], contr.update.bind(contr))
+  .delete([isLoggedIn, can(Action.DELETE, Resource.PROJECTS, "id")], contr.delete.bind(contr));
 
 router
   .route('/:projectId/resources')

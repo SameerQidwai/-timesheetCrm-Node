@@ -22,10 +22,7 @@ export let isLoggedIn = async (
       } else {
         res.locals.jwtPayload = decoded;
         let user = await repository.findOne(decoded.id, {
-          relations: [
-            'contactPersonOrganization',
-            'contactPersonOrganization.contactPerson',
-          ],
+          relations: ["role", "role.permissions", "contactPersonOrganization", "contactPersonOrganization.contactPerson"]
         });
         if (user) {
           res.locals.user = user;

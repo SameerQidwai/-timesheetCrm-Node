@@ -35,6 +35,14 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 connection
   .then(() => {
+    //register routes
+    app.use('/api/v1', allRoutes);
+
+    // 404
+    app.use((req: Request, res: Response) => {
+      res.status(404).json('Resource not found!');
+    });
+
     http.createServer(app).listen(port, () => {
       console.log(`application is listening on port: ${port}`);
     });
