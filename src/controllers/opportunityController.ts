@@ -31,4 +31,30 @@ export class OpportunityController extends BaseController<
       data: record,
     });
   }
+
+  async index(req: Request, res: Response) {
+    const repository = getCustomRepository(OpportunityRepository);
+    let records = [];
+    const { grantLevel } = res.locals;
+    if (grantLevel.includes("ANY")) {
+
+      records = await repository.getAllActive();
+
+    } else if (grantLevel.includes("MANAGE") && grantLevel.includes("OWN")) {
+      // Call repo function that returns both
+
+    } else if (grantLevel.includes("MANAGE")) {
+      // call repo function that returns only Managed
+
+    } else if (grantLevel.includes("OWN")) {
+      // call repo function that return only owned
+
+    }
+    console.log("records: ", records);
+    res.status(200).json({
+        success: true,
+        message: "Get ALL",
+        data: records
+    });
+}
 }

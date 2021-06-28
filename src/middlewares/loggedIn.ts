@@ -22,9 +22,12 @@ export let isLoggedIn = async (
         });
       } else {
         res.locals.jwtPayload = decoded;
-        let user = await repository.findOne(decoded.id);
+        let user = await repository.findOne(decoded.id, {
+          relations: ["role", "role.permissions", "contactPersonOrganization", "contactPersonOrganization.contactPerson"]
+        });
         if (user) {
-          const newToken = jwt.sign({ id: user }, secret, {
+          res.locals.user = user;
+          const newToken = jwt.sign({ id: user.id }, secret, {
             expiresIn: '1h',
           });
           res.setHeader('Authorization', `Bearer ${newToken}`);

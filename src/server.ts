@@ -15,16 +15,16 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(require('cors')());
 const connection = createConnection();
 
-//register routes
-app.use('/api/v1', allRoutes);
-
-// 404
-app.use((req: Request, res: Response) => {
-  res.status(404).json('Resource not found!');
-});
-
 connection
   .then(() => {
+    //register routes
+    app.use('/api/v1', allRoutes);
+
+    // 404
+    app.use((req: Request, res: Response) => {
+      res.status(404).json('Resource not found!');
+    });
+
     http.createServer(app).listen(port, () => {
       console.log(`application is listening on port: ${port}`);
     });
