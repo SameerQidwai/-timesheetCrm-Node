@@ -67,7 +67,7 @@ export class BaseController<D, R extends IRepository<D>> {
       let record = await repository.updateAndReturn(parseInt(id), req.body);
       res.status(200).json({
         success: true,
-        message: `Updated Employee Successfully`,
+        message: `Updated Successfully`,
         data: record,
       });
     } catch (e) {
