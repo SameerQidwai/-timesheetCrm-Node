@@ -872,7 +872,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
     return this.findOneCustom(id);
   }
 
-  async getManageActive(userId: any): Promise<any[]> {
+  async getManageActive(userId: number): Promise<any[]> {
     let result = await this.find({
       where: [
         {

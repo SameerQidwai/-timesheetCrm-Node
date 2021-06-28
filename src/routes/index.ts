@@ -26,6 +26,7 @@ import attachmentRoutes from './attachmentRoutes';
 import commentRoutes from './commentRoutes';
 import helperRoutes from './helperRoutes';
 import roleRoutes from './roleRoutes';
+import globalRoutes from './globalRoutes';
 import opportunityResourceRoutes from './opportunityResourceRoutes';
 import { getCustomRepository } from 'typeorm';
 
@@ -56,19 +57,9 @@ router.use('/attachments', attachmentRoutes);
 router.use('/comments', commentRoutes);
 router.use('/helpers', helperRoutes);
 router.use('/roles', roleRoutes);
+router.use('/global-setting', globalRoutes);
 // router.use("/opportunity-resources", opportunityResourceRoutes);
-router.post('/global-setting', async (req, res) => {
-  let data = await getCustomRepository(GlobalSettingRepository).createAndSave({
-    fromEmail: 'tst',
-    recordsPerPage: '15',
-    timeZone: 'gmt+5',
-  });
-  res.status(200).json({
-    success: true,
-    message: `POST test`,
-    data: data,
-  });
-});
+
 // console.log("router: ", router);
 
 export default router;

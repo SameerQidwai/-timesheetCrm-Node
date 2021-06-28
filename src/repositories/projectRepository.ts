@@ -132,7 +132,7 @@ export class ProjectRepository extends Repository<Opportunity> {
     return await this.findOneCustom(id);
   }
 
-  async getAllActive(params: any): Promise<any[]> {
+  async getAllActive(): Promise<any[]> {
     let response: any = [];
 
     let result = await this.find({
@@ -146,27 +146,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       ],
     });
 
-    if (params.userId) {
-      console.log('this ran');
-      result.map((project, index) => {
-        let add_flag = 0;
-        project.opportunityResources.map((resource) => {
-          resource.opportunityResourceAllocations.filter((allocation) => {
-            if (
-              allocation.contactPersonId === parseInt(params.userId) &&
-              allocation.isMarkedAsSelected
-            ) {
-              add_flag = 1;
-            }
-          });
-        });
-        if (add_flag === 1) response.push(project);
-      });
-    } else {
-      return result;
-    }
-
-    return response;
+    return result;
   }
 
   async updateAndReturn(
@@ -638,7 +618,7 @@ export class ProjectRepository extends Repository<Opportunity> {
     return await this.manager.softDelete(PurchaseOrder, deletedOrder);
   }
 
-  async getOwnActive(userId: any): Promise<any[]> {
+  async getOwnActive(userId: number): Promise<any[]> {
     let response: any = [];
 
     let result = await this.find({
@@ -658,7 +638,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       project.opportunityResources.map((resource) => {
         resource.opportunityResourceAllocations.filter((allocation) => {
           if (
-            allocation.contactPersonId === parseInt(userId) &&
+            allocation.contactPersonId === userId &&
             allocation.isMarkedAsSelected
           ) {
             add_flag = 1;
@@ -671,7 +651,7 @@ export class ProjectRepository extends Repository<Opportunity> {
     return response;
   }
 
-  async getManageActive(userId: any): Promise<any[]> {
+  async getManageActive(userId: number): Promise<any[]> {
     let result = await this.find({
       where: [
         {
@@ -701,7 +681,7 @@ export class ProjectRepository extends Repository<Opportunity> {
     return result;
   }
 
-  async getOwnAndManageActive(userId: any): Promise<any[]> {
+  async getOwnAndManageActive(userId: number): Promise<any[]> {
     let response: any = [];
     let result = await this.find({
       where: [
@@ -735,7 +715,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       project.opportunityResources.map((resource) => {
         resource.opportunityResourceAllocations.filter((allocation) => {
           if (
-            allocation.contactPersonId === parseInt(userId) &&
+            allocation.contactPersonId === userId &&
             allocation.isMarkedAsSelected
           ) {
             add_flag = 1;
