@@ -656,12 +656,12 @@ export class EmployeeRepository extends Repository<Employee> {
         cpRole =
           cp.contactPersonOrganizations.filter((org) => org.status == true)[0]
             .organizationId == 1
-            ? 'Employee'
+            ? '(Employee)'
             : cp.contactPersonOrganizations.filter(
                 (org) => org.status == true
               )[0].organizationId != 1
-            ? 'Sub Contractor'
-            : 'Contact Person';
+            ? '(Sub Contractor)'
+            : '(Contact Person)';
       }
 
       Obj.value = cp.id;
@@ -674,10 +674,11 @@ export class EmployeeRepository extends Repository<Employee> {
   }
 
   async helperGetAllContactPersons(
-    associated: number,
+    isAssociated: number,
     organization: number,
     status: number,
-    getEmployeeID: number
+    getEmployeeID: number,
+    showLabel: number
   ): Promise<any | undefined> {
     let all = await getRepository(ContactPerson).find({
       relations: [
@@ -693,7 +694,7 @@ export class EmployeeRepository extends Repository<Employee> {
       let cpEmployeeID: number | string = '-';
       let flag_found = 0;
       if (
-        (associated == 1 || isNaN(associated)) &&
+        (isAssociated == 1 || isNaN(isAssociated)) &&
         cp.contactPersonOrganizations.length > 0
       ) {
         cp.contactPersonOrganizations.forEach(
@@ -702,7 +703,8 @@ export class EmployeeRepository extends Repository<Employee> {
               if (!isNaN(organization) && !isNaN(status) && flag_found != 1) {
                 if (
                   org.organizationId === organization &&
-                  org.status === Boolean(status)
+                  (org.status === Boolean(status) ||
+                    (org.employee != null && status == 1))
                 ) {
                   flag_found = 1;
                 }
@@ -711,17 +713,27 @@ export class EmployeeRepository extends Repository<Employee> {
                   flag_found = 1;
                 }
               } else if (!isNaN(status) && flag_found != 1) {
-                if (org.status === Boolean(status)) {
+                if (
+                  org.status === Boolean(status) ||
+                  (org.employee != null && status == 1)
+                ) {
                   flag_found = 1;
                 }
               } else if (flag_found != 1) {
                 flag_found = 1;
               }
 
-              console.log(org.organizationId, flag_found);
-              if (org.organizationId == 1 && flag_found == 1) {
+              if (
+                org.organizationId == 1 &&
+                flag_found == 1 &&
+                (org.employee != null || org.status == 1)
+              ) {
                 cpRole = 'Employee';
-              } else if (org.organizationId != 1 && flag_found == 1) {
+              } else if (
+                org.organizationId != 1 &&
+                flag_found == 1 &&
+                (org.employee != null || org.status == 1)
+              ) {
                 cpRole = 'Sub Contractor';
               }
 
@@ -732,21 +744,24 @@ export class EmployeeRepository extends Repository<Employee> {
           }
         );
       } else if (
-        (associated == 0 || isNaN(associated)) &&
+        (isAssociated == 0 || isNaN(isAssociated)) &&
         cp.contactPersonOrganizations.length == 0
       ) {
         flag_found = 1;
       }
 
       if (flag_found === 1) {
-        cp.label = `${cp.firstName} ${cp.lastName} (${cpRole})`;
+        let Obj: any = {};
+        Obj.label = `${cp.firstName} ${cp.lastName}${
+          showLabel == 1 ? `-(${cpRole})` : ''
+        }`;
         if (getEmployeeID == 1) {
-          cp.value = cpEmployeeID;
+          Obj.value = cpEmployeeID;
         } else {
-          cp.value = cp.id;
+          Obj.value = cp.id;
         }
         // cp.role = cpRole;
-        filtered.push(cp);
+        filtered.push(Obj);
       }
     });
 
