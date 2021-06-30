@@ -14,7 +14,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
   async getAnyTimesheet(
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
-    userId: number
+    userId: number,
+    authId: number
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
       'YYYY-MM-DD HH:mm:ss'
@@ -47,10 +48,22 @@ export class TimesheetRepository extends Repository<Timesheet> {
     timesheet.projectEntries.map((projectEntry: TimesheetProjectEntry) => {
       let status: TimesheetStatus = TimesheetStatus.SAVED;
 
+      let authHaveThisProject = false;
+      if (
+        projectEntry.project.accountDirectorId == authId ||
+        projectEntry.project.accountManagerId == authId ||
+        projectEntry.project.projectManagerId == authId
+      ) {
+        authHaveThisProject = true;
+      }
+
+      projectEntry.project.accountDirectorId;
+
       let project: Any = {
         projectEntryId: projectEntry.id,
         projectId: projectEntry.projectId,
         project: projectEntry.project.title,
+        isManaged: authHaveThisProject,
         notes: projectEntry.notes,
       };
 
@@ -104,7 +117,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    AuthId: number
+    authId: number
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
       'YYYY-MM-DD HH:mm:ss'
@@ -136,27 +149,30 @@ export class TimesheetRepository extends Repository<Timesheet> {
     timesheet.projectEntries.map((projectEntry: TimesheetProjectEntry) => {
       let status: TimesheetStatus = TimesheetStatus.SAVED;
 
+      let authHaveThisProject = false;
+      if (
+        projectEntry.project.accountDirectorId == authId ||
+        projectEntry.project.accountManagerId == authId ||
+        projectEntry.project.projectManagerId == authId
+      ) {
+        authHaveThisProject = true;
+      }
+
       let project: Any = {
         projectEntryId: projectEntry.id,
         projectId: projectEntry.projectId,
         project: projectEntry.project.title,
+        isManaged: authHaveThisProject,
         notes: projectEntry.notes,
       };
-      let authHaveThisProject = 0;
-      if (
-        projectEntry.project.accountDirectorId == AuthId ||
-        projectEntry.project.accountManagerId == AuthId ||
-        projectEntry.project.projectManagerId == AuthId
-      ) {
-        authHaveThisProject = 1;
-      }
+
       console.log({
         gotProject: authHaveThisProject,
-        AuthId: AuthId,
+        authId: authId,
         comparingWith: projectEntry.project.accountDirectorId,
       });
 
-      if (authHaveThisProject == 1) {
+      if (authHaveThisProject) {
         projectEntry.entries.map((entry: TimesheetEntry) => {
           project[moment(entry.date, 'DD-MM-YYYY').format('D/M')] = {
             entryId: entry.id,
@@ -209,7 +225,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    AuthId: number
+    authId: number
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
       'YYYY-MM-DD HH:mm:ss'
@@ -238,14 +254,24 @@ export class TimesheetRepository extends Repository<Timesheet> {
       [key: string]: any;
     }
 
-    if (timesheet.employeeId == AuthId) {
+    if (timesheet.employeeId == authId) {
       timesheet.projectEntries.map((projectEntry: TimesheetProjectEntry) => {
         let status: TimesheetStatus = TimesheetStatus.SAVED;
+
+        let authHaveThisProject = false;
+        if (
+          projectEntry.project.accountDirectorId == authId ||
+          projectEntry.project.accountManagerId == authId ||
+          projectEntry.project.projectManagerId == authId
+        ) {
+          authHaveThisProject = true;
+        }
 
         let project: Any = {
           projectEntryId: projectEntry.id,
           projectId: projectEntry.projectId,
           project: projectEntry.project.title,
+          isManaged: authHaveThisProject,
           notes: projectEntry.notes,
         };
 

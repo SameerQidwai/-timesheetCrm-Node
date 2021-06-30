@@ -21,7 +21,12 @@ export class TimesheetController {
       const { grantLevel } = res.locals;
       const { user } = res.locals;
       if (grantLevel.includes('ANY')) {
-        record = await repository.getAnyTimesheet(startDate, endDate, userId);
+        record = await repository.getAnyTimesheet(
+          startDate,
+          endDate,
+          userId,
+          user.id
+        );
       } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
         if (user.id == userId) {
           record = await repository.getOwnTimesheet(
