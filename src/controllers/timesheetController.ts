@@ -17,91 +17,33 @@ export class TimesheetController {
       let endDate = req.params.endDate as string;
       let userId = parseInt(req.params.userId) as number;
 
-      console.log(startDate, endDate, userId);
-      let record: Timesheet = await repository.getTimesheet(
-        startDate,
-        endDate,
-        userId
-      );
-
-      if (!record) {
-        // if no timesheet found
-        return res.status(200).json({
-          success: true,
-          // message: `Win Opportunity ${req.params.id}`,
-          message: 'Specific Timesheet by Date',
-          data: null,
-        });
+      let record: any = [];
+      const { grantLevel } = res.locals;
+      const { user } = res.locals;
+      if (grantLevel.includes('ANY')) {
+        record = await repository.getAnyTimesheet(startDate, endDate, userId);
+      } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
+      } else if (grantLevel.includes('MANAGE')) {
+        record = await repository.getManageTimesheet(
+          startDate,
+          endDate,
+          userId,
+          parseInt(user.id)
+        );
+      } else if (grantLevel.includes('OWN')) {
+        record = await repository.getOwnTimesheet(
+          startDate,
+          endDate,
+          userId,
+          parseInt(user.id)
+        );
       }
-
-      //-- START OF MODIFIED RESPSONSE FOR FRONTEND
-
-      let projects: any = [];
-      let projectStatuses: any = [];
-
-      interface Any {
-        [key: string]: any;
-      }
-
-      record.projectEntries.map((projectEntry: TimesheetProjectEntry) => {
-        let status: TimesheetStatus = TimesheetStatus.SAVED;
-
-        let project: Any = {
-          projectEntryId: projectEntry.id,
-          projectId: projectEntry.projectId,
-          project: projectEntry.project.title,
-          notes: projectEntry.notes,
-        };
-
-        projectEntry.entries.map((entry: TimesheetEntry) => {
-          project[moment(entry.date, 'DD-MM-YYYY').format('D/M')] = {
-            entryId: entry.id,
-            startTime: moment(entry.startTime, 'HH:mm').format('HH:mm'),
-            endTime: moment(entry.endTime, 'HH:mm').format('HH:mm'),
-            breakHours: entry.breakHours,
-            actualHours: entry.hours,
-            notes: entry.notes,
-          };
-
-          if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
-          else if (entry.approvedAt !== null) status = TimesheetStatus.APPROVED;
-          else if (entry.submittedAt !== null)
-            status = TimesheetStatus.SUBMITTED;
-        });
-
-        project.status = status;
-        projectStatuses.push(status);
-
-        projects.push(project);
-      });
-
-      console.log(projectStatuses);
-      let timesheetStatus: TimesheetStatus = projectStatuses.includes(
-        TimesheetStatus.REJECTED
-      )
-        ? TimesheetStatus.REJECTED
-        : projectStatuses.includes(TimesheetStatus.SAVED)
-        ? TimesheetStatus.SAVED
-        : projectStatuses.includes(TimesheetStatus.SUBMITTED)
-        ? TimesheetStatus.SUBMITTED
-        : projectStatuses.includes(TimesheetStatus.APPROVED)
-        ? TimesheetStatus.APPROVED
-        : TimesheetStatus.SAVED;
-
-      let response = {
-        id: record.id,
-        status: timesheetStatus,
-        notes: record.notes,
-        projects: projects,
-      };
-
-      //-- END OF MODIFIED RESPONSE FOR FRONTEND
 
       res.status(200).json({
         success: true,
         // message: `Win Opportunity ${req.params.id}`,
         message: 'Specific Timesheet by Date',
-        data: response,
+        data: record,
       });
     } catch (e) {
       next(e);
@@ -126,7 +68,7 @@ export class TimesheetController {
       console.log('record: ', record);
       res.status(200).json({
         success: true,
-        message: 'Tiemsheet Created Successfully',
+        message: 'Timesheet Created Successfully',
         data: record,
       });
     } catch (e) {
@@ -284,6 +226,42 @@ export class TimesheetController {
         success: true,
         message: 'Note Updated Successfully',
         data: record,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async getTimesheetProjectUsers(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const repository = getCustomRepository(TimesheetRepository);
+      let records: any = [];
+      const { grantLevel } = res.locals;
+      const { user } = res.locals;
+      if (grantLevel.includes('ANY')) {
+        records = await repository.getAnyProjectUsers();
+      } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
+        records = await repository.getManageAndOwnProjectUsers(
+          user.id,
+          `${user.contactPersonOrganization.contactPerson.firstName} ${user.contactPersonOrganization.contactPerson.lastName}`
+        );
+      } else if (grantLevel.includes('MANAGE')) {
+        records = await repository.getManageProjectUsers(user.id);
+      } else if (grantLevel.includes('OWN')) {
+        records = await repository.getOwnProjectUsers(
+          user.id,
+          `${user.contactPersonOrganization.contactPerson.firstName} ${user.contactPersonOrganization.contactPerson.lastName}`
+        );
+      }
+      console.log('records: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'Index Users',
+        data: records,
       });
     } catch (e) {
       next(e);

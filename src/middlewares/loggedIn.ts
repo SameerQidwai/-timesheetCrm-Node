@@ -17,7 +17,7 @@ export let isLoggedIn = async (
         console.log(err);
         return res.status(200).json({
           success: false,
-          message: 'Not Authorized',
+          message: 'Authentication Expired or Invalid',
         });
       } else {
         res.locals.jwtPayload = decoded;
@@ -47,7 +47,7 @@ export let isLoggedIn = async (
   } else {
     return res.status(200).json({
       success: false,
-      message: 'Not Authorized',
+      message: 'Authorization Header is missing',
     });
   }
 
