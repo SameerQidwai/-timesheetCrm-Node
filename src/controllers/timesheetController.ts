@@ -23,6 +23,21 @@ export class TimesheetController {
       if (grantLevel.includes('ANY')) {
         record = await repository.getAnyTimesheet(startDate, endDate, userId);
       } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
+        if (user.id == userId) {
+          record = await repository.getOwnTimesheet(
+            startDate,
+            endDate,
+            userId,
+            parseInt(user.id)
+          );
+        } else {
+          record = await repository.getManageTimesheet(
+            startDate,
+            endDate,
+            userId,
+            parseInt(user.id)
+          );
+        }
       } else if (grantLevel.includes('MANAGE')) {
         record = await repository.getManageTimesheet(
           startDate,
@@ -57,8 +72,11 @@ export class TimesheetController {
       let endDate = req.params.endDate as string;
       let userId = parseInt(req.params.userId) as number;
 
-      // console.log(req.body);
+      const { user } = res.locals;
 
+      if (user.id != userId) {
+        throw new Error('Not Allowed');
+      }
       let record = await repository.addTimesheetEntry(
         startDate,
         endDate,
@@ -80,8 +98,6 @@ export class TimesheetController {
     try {
       const repository = getCustomRepository(TimesheetRepository);
       let entryId = parseInt(req.params.id);
-
-      // console.log(req.body);
 
       let record = await repository.editTimesheetEntry(entryId, req.body);
       console.log('record: ', record);
@@ -138,14 +154,28 @@ export class TimesheetController {
       let userId = parseInt(req.params.userId) as number;
       let projectEntryId = parseInt(req.params.id);
 
+      let record: any = [];
+      const { grantLevel } = res.locals;
+      const { user } = res.locals;
       // console.log(req.body);
 
-      let record = await repository.approveProjectTimesheetEntry(
-        startDate,
-        endDate,
-        userId,
-        projectEntryId
-      );
+      if (grantLevel.includes('ANY')) {
+        record = await repository.approveAnyProjectTimesheetEntry(
+          startDate,
+          endDate,
+          userId,
+          projectEntryId
+        );
+      } else if (grantLevel.includes('MANAGE')) {
+        record = await repository.approveManageProjectTimesheetEntry(
+          startDate,
+          endDate,
+          userId,
+          projectEntryId,
+          user.id
+        );
+      }
+
       console.log('record: ', record);
       res.status(200).json({
         success: true,
@@ -169,18 +199,32 @@ export class TimesheetController {
       let userId = parseInt(req.params.userId) as number;
       let projectEntryId = parseInt(req.params.id);
 
+      let record: any = [];
+      const { grantLevel } = res.locals;
+      const { user } = res.locals;
       // console.log(req.body);
 
-      let record = await repository.rejectProjectTimesheetEntry(
-        startDate,
-        endDate,
-        userId,
-        projectEntryId
-      );
+      if (grantLevel.includes('ANY')) {
+        record = await repository.rejectAnyProjectTimesheetEntry(
+          startDate,
+          endDate,
+          userId,
+          projectEntryId
+        );
+      } else if (grantLevel.includes('MANAGE')) {
+        record = await repository.rejectManageProjectTimesheetEntry(
+          startDate,
+          endDate,
+          userId,
+          projectEntryId,
+          user.id
+        );
+      }
+
       console.log('record: ', record);
       res.status(200).json({
         success: true,
-        message: 'Timesheet Rejected',
+        message: 'Timesheet Approved',
         data: record,
       });
     } catch (e) {

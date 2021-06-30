@@ -146,7 +146,6 @@ export class TimesheetRepository extends Repository<Timesheet> {
       if (
         projectEntry.project.accountDirectorId == AuthId ||
         projectEntry.project.accountManagerId == AuthId ||
-        projectEntry.project.opportunityManagerId == AuthId ||
         projectEntry.project.projectManagerId == AuthId
       ) {
         authHaveThisProject = 1;
@@ -311,7 +310,6 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
     let entry = await this.manager.transaction(
       async (transactionalEntityManager) => {
-        let flag_newTimesheet = 0;
         let timesheet: Timesheet | undefined;
         let projectEntry: TimesheetProjectEntry | undefined;
 
@@ -385,8 +383,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
         entry.breakHours = timesheetDTO.breakHours;
         entry.hours =
           Math.abs(
-            moment(timesheetDTO.startTime, 'HH:mm').diff(
-              moment(timesheetDTO.endTime, 'HH:mm'),
+            moment(timesheetDTO.endTime, 'HH:mm').diff(
+              moment(timesheetDTO.startTime, 'HH:mm'),
               'minutes'
             ) / 60
           ) - timesheetDTO.breakHours;
@@ -497,7 +495,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     // projectEntry.entries.map(entry => entry.submittedAt = )
   }
 
-  async approveProjectTimesheetEntry(
+  async approveAnyProjectTimesheetEntry(
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
@@ -551,7 +549,78 @@ export class TimesheetRepository extends Repository<Timesheet> {
     // projectEntry.entries.map(entry => entry.submittedAt = )
   }
 
-  async rejectProjectTimesheetEntry(
+  async approveManageProjectTimesheetEntry(
+    startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
+    endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
+    userId: number,
+    projectEntryId: number,
+    authId: number
+  ): Promise<any | undefined> {
+    let flagUserIsAllowed = 0;
+    let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
+      'YYYY-MM-DD HH:mm:ss'
+    );
+    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+
+    let projectEntry = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let timesheet = await this.findOne({
+          where: {
+            startDate: cStartDate,
+            endDate: cEndDate,
+            employeeId: userId,
+          },
+          relations: [
+            'projectEntries',
+            'projectEntries.project',
+            'projectEntries.entries',
+          ],
+        });
+
+        if (!timesheet) {
+          throw new Error('Timesheet not found!');
+        }
+
+        let projectEntry = timesheet.projectEntries.filter(
+          (entry) => entry.id === projectEntryId
+        )[0];
+
+        if (!projectEntry) {
+          throw new Error('Entry not found!');
+        }
+
+        let users: [] = await this.getManageProjectUsers(authId);
+
+        if (!users.length) {
+          throw new Error('No users to manage');
+        }
+        users.forEach((user: any) => {
+          if (user.value == userId) {
+            flagUserIsAllowed = 1;
+          }
+        });
+
+        if (flagUserIsAllowed == 0) {
+          throw new Error('User is not allowed to change');
+        }
+
+        projectEntry.entries.map((entry) => {
+          entry.approvedAt = moment().toDate();
+        });
+
+        await transactionalEntityManager.save(timesheet);
+
+        return timesheet.projectEntries.filter(
+          (entry) => entry.id === projectEntryId
+        );
+      }
+    );
+
+    return projectEntry;
+    // projectEntry.entries.map(entry => entry.submittedAt = )
+  }
+
+  async rejectAnyProjectTimesheetEntry(
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
@@ -587,6 +656,77 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
         if (!projectEntry) {
           throw new Error('Entry not found!');
+        }
+
+        projectEntry.entries.map((entry) => {
+          entry.rejectedAt = moment().toDate();
+        });
+
+        await transactionalEntityManager.save(timesheet);
+
+        return timesheet.projectEntries.filter(
+          (entry) => entry.id === projectEntryId
+        );
+      }
+    );
+
+    return projectEntry;
+    // projectEntry.entries.map(entry => entry.submittedAt = )
+  }
+
+  async rejectManageProjectTimesheetEntry(
+    startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
+    endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
+    userId: number,
+    projectEntryId: number,
+    authId: number
+  ): Promise<any | undefined> {
+    let flagUserIsAllowed = 0;
+    let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
+      'YYYY-MM-DD HH:mm:ss'
+    );
+    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+
+    let projectEntry = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let timesheet = await this.findOne({
+          where: {
+            startDate: cStartDate,
+            endDate: cEndDate,
+            employeeId: userId,
+          },
+          relations: [
+            'projectEntries',
+            'projectEntries.project',
+            'projectEntries.entries',
+          ],
+        });
+
+        if (!timesheet) {
+          throw new Error('Timesheet not found!');
+        }
+
+        let projectEntry = timesheet.projectEntries.filter(
+          (entry) => entry.id === projectEntryId
+        )[0];
+
+        if (!projectEntry) {
+          throw new Error('Entry not found!');
+        }
+
+        let users: [] = await this.getManageProjectUsers(authId);
+
+        if (!users.length) {
+          throw new Error('No users to manage');
+        }
+        users.forEach((user: any) => {
+          if (user.value == userId) {
+            flagUserIsAllowed = 1;
+          }
+        });
+
+        if (flagUserIsAllowed == 0) {
+          throw new Error('User is not allowed to change');
         }
 
         projectEntry.entries.map((entry) => {
@@ -691,15 +831,25 @@ export class TimesheetRepository extends Repository<Timesheet> {
         {
           status: 'P',
           accountDirectorId: userId,
+        },
+        {
+          status: 'P',
           accountManagerId: userId,
-          opportunityManagerId: userId,
+        },
+        {
+          status: 'P',
           projectManagerId: userId,
         },
         {
           status: 'C',
           accountDirectorId: userId,
+        },
+        {
+          status: 'C',
           accountManagerId: userId,
-          opportunityManagerId: userId,
+        },
+        {
+          status: 'C',
           projectManagerId: userId,
         },
       ],
@@ -715,10 +865,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     projects.map((project) => {
       project.opportunityResources.map((resource) => {
         resource.opportunityResourceAllocations.filter((allocation) => {
-          if (
-            allocation.contactPersonId === userId &&
-            allocation.isMarkedAsSelected
-          ) {
+          if (allocation.isMarkedAsSelected) {
             allocation.contactPerson.contactPersonOrganizations.forEach(
               (org) => {
                 if (
@@ -752,15 +899,25 @@ export class TimesheetRepository extends Repository<Timesheet> {
         {
           status: 'P',
           accountDirectorId: userId,
+        },
+        {
+          status: 'P',
           accountManagerId: userId,
-          opportunityManagerId: userId,
+        },
+        {
+          status: 'P',
           projectManagerId: userId,
         },
         {
           status: 'C',
           accountDirectorId: userId,
+        },
+        {
+          status: 'C',
           accountManagerId: userId,
-          opportunityManagerId: userId,
+        },
+        {
+          status: 'C',
           projectManagerId: userId,
         },
       ],
@@ -773,13 +930,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
       ],
     });
 
-    projects.map((project) => {
-      project.opportunityResources.map((resource) => {
-        resource.opportunityResourceAllocations.filter((allocation) => {
-          if (
-            allocation.contactPersonId === userId &&
-            allocation.isMarkedAsSelected
-          ) {
+    projects.forEach((project) => {
+      console.log('checking employee', project);
+      project.opportunityResources.forEach((resource) => {
+        resource.opportunityResourceAllocations.forEach((allocation) => {
+          if (allocation.isMarkedAsSelected) {
             allocation.contactPerson.contactPersonOrganizations.forEach(
               (org) => {
                 if (

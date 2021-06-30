@@ -657,15 +657,25 @@ export class ProjectRepository extends Repository<Opportunity> {
         {
           status: 'P',
           accountDirectorId: userId,
+        },
+        {
+          status: 'P',
           accountManagerId: userId,
-          opportunityManagerId: userId,
+        },
+        {
+          status: 'P',
           projectManagerId: userId,
         },
         {
           status: 'C',
           accountDirectorId: userId,
+        },
+        {
+          status: 'C',
           accountManagerId: userId,
-          opportunityManagerId: userId,
+        },
+        {
+          status: 'C',
           projectManagerId: userId,
         },
       ],
@@ -688,15 +698,25 @@ export class ProjectRepository extends Repository<Opportunity> {
         {
           status: 'P',
           accountDirectorId: userId,
+        },
+        {
+          status: 'P',
           accountManagerId: userId,
-          opportunityManagerId: userId,
+        },
+        {
+          status: 'P',
           projectManagerId: userId,
         },
         {
           status: 'C',
           accountDirectorId: userId,
+        },
+        {
+          status: 'C',
           accountManagerId: userId,
-          opportunityManagerId: userId,
+        },
+        {
+          status: 'C',
           projectManagerId: userId,
         },
       ],

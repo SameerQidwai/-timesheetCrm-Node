@@ -24,7 +24,10 @@ router
     [isLoggedIn, can(Action.READ, Resource.TIMESHEETS)],
     contr.getTimesheet.bind(contr)
   )
-  .post(contr.addTimesheetEntry.bind(contr));
+  .post(
+    [isLoggedIn, can(Action.ADD, Resource.TIMESHEETS)],
+    contr.addTimesheetEntry.bind(contr)
+  );
 
 router
   .route('/:startDate&:endDate&:userId/projectEntries/:id/submit')
@@ -32,11 +35,17 @@ router
 
 router
   .route('/:startDate&:endDate&:userId/projectEntries/:id/approve')
-  .post(contr.approveTimesheetProjectEntry.bind(contr));
+  .post(
+    [isLoggedIn, can(Action.APPROVAL, Resource.TIMESHEETS)],
+    contr.approveTimesheetProjectEntry.bind(contr)
+  );
 
 router
   .route('/:startDate&:endDate&:userId/projectEntries/:id/reject')
-  .post(contr.rejectTimesheetProjectEntry.bind(contr));
+  .post(
+    [isLoggedIn, can(Action.APPROVAL, Resource.TIMESHEETS)],
+    contr.rejectTimesheetProjectEntry.bind(contr)
+  );
 
 router.route('/entries/:id').put(contr.editTimesheetEntry.bind(contr));
 
