@@ -129,6 +129,11 @@ export class TimesheetController {
       let projectEntryId = parseInt(req.params.id);
 
       // console.log(req.body);
+      const { user } = res.locals;
+
+      if (user.id != userId) {
+        throw new Error('Not Allowed');
+      }
 
       let record = await repository.submitProjectTimesheetEntry(
         startDate,
@@ -229,7 +234,7 @@ export class TimesheetController {
       console.log('record: ', record);
       res.status(200).json({
         success: true,
-        message: 'Timesheet Approved',
+        message: 'Timesheet Rejected',
         data: record,
       });
     } catch (e) {

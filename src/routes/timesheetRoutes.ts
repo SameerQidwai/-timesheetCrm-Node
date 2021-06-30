@@ -31,7 +31,10 @@ router
 
 router
   .route('/:startDate&:endDate&:userId/projectEntries/:id/submit')
-  .post(contr.submitTimesheetProjectEntry.bind(contr));
+  .post(
+    [isLoggedIn, can(Action.ADD, Resource.TIMESHEETS)],
+    contr.submitTimesheetProjectEntry.bind(contr)
+  );
 
 router
   .route('/:startDate&:endDate&:userId/projectEntries/:id/approve')
