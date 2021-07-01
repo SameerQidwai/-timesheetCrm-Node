@@ -155,7 +155,7 @@ export class StandardSkillRepository extends Repository<StandardSkill> {
 
     skill[0].standardSkillStandardLevels.forEach((level) => {
       let Obj: any = {};
-      Obj.value = level.id;
+      Obj.value = level.standardLevel.id;
       Obj.label = level.standardLevel.label;
 
       response.push(Obj);

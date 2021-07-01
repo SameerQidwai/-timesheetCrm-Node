@@ -381,7 +381,6 @@ export class TimesheetRepository extends Repository<Timesheet> {
         }
 
         let entry = new TimesheetEntry();
-
         //--COMMENTED TIMEZONE LOGIC
         {
           // console.log(timesheetDTO.date, timesheetDTO.startTime);
@@ -407,13 +406,30 @@ export class TimesheetRepository extends Repository<Timesheet> {
         );
         entry.endTime = moment(timesheetDTO.endTime, 'HH:mm').format('HH:mm');
         entry.breakHours = timesheetDTO.breakHours;
-        entry.hours =
-          Math.abs(
-            moment(timesheetDTO.endTime, 'HH:mm').diff(
-              moment(timesheetDTO.startTime, 'HH:mm'),
-              'minutes'
-            ) / 60
-          ) - timesheetDTO.breakHours;
+        if (
+          moment(timesheetDTO.endTime, 'HH:mm').diff(
+            moment(timesheetDTO.startTime, 'HH:mm'),
+            'minutes'
+          ) /
+            60 <
+          0
+        ) {
+          entry.hours =
+            Math.abs(
+              moment(timesheetDTO.endTime, 'HH:mm')
+                .add(1, 'days')
+                .diff(moment(timesheetDTO.startTime, 'HH:mm'), 'minutes') / 60
+            ) - timesheetDTO.breakHours;
+        } else {
+          entry.hours =
+            Math.abs(
+              moment(timesheetDTO.endTime, 'HH:mm').diff(
+                moment(timesheetDTO.startTime, 'HH:mm'),
+                'minutes'
+              ) / 60
+            ) - timesheetDTO.breakHours;
+        }
+
         entry.projectEntryId = projectEntry.id;
         entry.notes = timesheetDTO.notes;
 

@@ -87,7 +87,7 @@ export class EmployeeRepository extends Repository<Employee> {
         generatedPassword,
         bcrypt.genSaltSync(8)
       );
-      console.log(employeeObj.password);
+      console.log(generatedPassword);
 
       employeeObj.nextOfKinName = employee.nextOfKinName;
       employeeObj.nextOfKinPhoneNumber = employee.nextOfKinPhoneNumber;
