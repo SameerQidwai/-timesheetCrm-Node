@@ -8,7 +8,7 @@ import { ContactPerson } from '../entities/contactPerson';
 import { Employee } from '../entities/employee';
 import { ContactPersonOrganization } from '../entities/contactPersonOrganization';
 import { EmploymentContract } from '../entities/employmentContract';
-// import { BankAccount } from '../entities/bankAccount';
+import { BankAccount } from '../entities/bankAccount';
 import { BusinessType, ClearanceLevel, Gender } from '../constants/constants';
 import { Action, Resource, Grant } from '../constants/authorization';
 import { GlobalSetting } from '../entities/globalSetting';
@@ -64,6 +64,7 @@ let rolesSeeder = async () => {
     let rolesPromises = rolesData.map(async (role) => {
       let obj = new Role();
       obj.label = role;
+      if (role == 'Admin') obj.isSystem = true;
       return obj;
     });
 
@@ -228,6 +229,9 @@ let organizationSeeder = async () => {
       plInsuranceExpiry: null,
       wcInsuranceExpiry: null,
       delegateContactPersonOrganizationId: null,
+      bankName: '',
+      bankAccountNo: '',
+      bankBsb: '',
     };
 
     await getManager().transaction(async (transactionalEntityManager) => {
@@ -270,14 +274,14 @@ let organizationSeeder = async () => {
       //   );
       obj = await transactionalEntityManager.save(obj);
 
-      // Bank Account
-      // let { bankName, bankAccountNo, bankBsb } = organizationData;
-      // let bankAccount = new BankAccount();
-      // bankAccount.accountNo = bankAccountNo;
-      // bankAccount.bsb = bankBsb;
-      // bankAccount.name = bankName;
-      // bankAccount.organizationId = obj.id;
-      // await transactionalEntityManager.save(bankAccount);
+      //Bank Account
+      let { bankName, bankAccountNo, bankBsb } = organizationData;
+      let bankAccount = new BankAccount();
+      bankAccount.accountNo = bankAccountNo;
+      bankAccount.bsb = bankBsb;
+      bankAccount.name = bankName;
+      bankAccount.organizationId = obj.id;
+      await transactionalEntityManager.save(bankAccount);
       return obj.id;
     });
 
@@ -436,6 +440,9 @@ let employeeSeeder = async () => {
       superannuationBankBsb: '',
       superannuationAddress: '',
       training: '',
+      bankName: '',
+      bankAccountNo: '',
+      bankBsb: '',
       roleId: 1,
       latestEmploymentContract: {
         payslipEmail: 'mustafa.syed@1lm.com.au',
@@ -571,6 +578,13 @@ let employeeSeeder = async () => {
       employmentContract.remunerationAmountPer = remunerationAmountPer;
       employmentContract.employeeId = employeeObj.id;
       await transactionalEntityManager.save(employmentContract);
+      let { bankName, bankAccountNo, bankBsb } = employeeData;
+      let bankAccount = new BankAccount();
+      bankAccount.accountNo = bankAccountNo;
+      bankAccount.bsb = bankBsb;
+      bankAccount.name = bankName;
+      bankAccount.employeeId = employeeObj.id;
+      await transactionalEntityManager.save(bankAccount);
 
       return 1;
     });
