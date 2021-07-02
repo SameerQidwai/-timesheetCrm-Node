@@ -6,7 +6,7 @@ import * as bodyParser from 'body-parser';
 import { createConnection } from 'typeorm';
 import allRoutes from './routes';
 
-import runSeeders from './utilities/seeders';
+// import runSeeders from './utilities/seeders';
 
 const corsOptions = {
   exposedHeaders: 'Authorization',
