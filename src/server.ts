@@ -6,7 +6,7 @@ import * as bodyParser from 'body-parser';
 import { createConnection } from 'typeorm';
 import allRoutes from './routes';
 
-// import runSeeders from './utilities/seeders';
+import runSeeders from './utilities/seeders';
 
 const corsOptions = {
   exposedHeaders: 'Authorization',
@@ -42,7 +42,7 @@ connection
   .then(() => {
     //register routes
     app.use('/api/v1', allRoutes);
-    // runSeeders();
+    runSeeders();
 
     // 404
     app.use((req: Request, res: Response) => {
