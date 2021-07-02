@@ -3,6 +3,7 @@ import { getCustomRepository } from 'typeorm';
 import { RoleRepository } from './../repositories/roleRepository';
 import { EmployeeRepository } from './../repositories/employeeRepository';
 import { StandardSkillRepository } from './../repositories/standardSkillRepository';
+import { OpportunityRepository } from './../repositories/opportunityRepository';
 
 export class HelperController {
   async helperGetAlContactPersons(
@@ -62,6 +63,28 @@ export class HelperController {
       res.status(200).json({
         success: true,
         message: 'Get All Roles',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async helperGetAllWork(req: Request, res: Response, next: NextFunction) {
+    let type = req.query.type?.toString() ?? '';
+    let employeeId = parseInt(req.query.employee?.toString() ?? '');
+    let organizationId = parseInt(req.query.organization?.toString() ?? '');
+
+    try {
+      const repository = getCustomRepository(OpportunityRepository);
+      let records = await repository.helperGetAllWork(
+        type,
+        employeeId,
+        organizationId
+      );
+      res.status(200).json({
+        success: true,
+        message: 'Get All Work',
         data: records,
       });
     } catch (e) {

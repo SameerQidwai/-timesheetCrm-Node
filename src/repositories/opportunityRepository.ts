@@ -873,4 +873,77 @@ export class OpportunityRepository extends Repository<Opportunity> {
     });
     return result;
   }
+
+  async helperGetAllWork(
+    type: string,
+    employeeId: number,
+    organizationId: number
+  ): Promise<any | undefined> {
+    let work: Opportunity[];
+    let data: any = [];
+    let haveOrganization = false;
+
+    if (!isNaN(organizationId) && organizationId != 0) {
+      haveOrganization = true;
+    }
+
+    if (type == 'O' || type == 'o') {
+      if (haveOrganization) {
+        work = await this.find({
+          where: [
+            { status: 'O', organizationId: organizationId },
+            { status: 'L', organizationId: organizationId },
+          ],
+        });
+      } else {
+        work = await this.find({
+          where: [{ status: 'O' }, { status: 'L' }],
+        });
+      }
+    } else if (type == 'P' || type == 'p') {
+      if (haveOrganization) {
+        work = await this.find({
+          where: [
+            { status: 'P', organizationId: organizationId },
+            { status: 'C', organizationId: organizationId },
+          ],
+        });
+      } else {
+        work = await this.find({
+          where: [{ status: 'P' }, { status: 'C' }],
+        });
+      }
+    } else {
+      if (haveOrganization) {
+        work = await this.find({
+          where: { organizationId: organizationId },
+        });
+      } else {
+        work = await this.find({});
+      }
+    }
+
+    if (!isNaN(employeeId) && employeeId != 0) {
+      work.forEach((project, index) => {
+        if (type == 'P' || 'p') {
+          let add_flag = 0;
+          project.opportunityResources.forEach((resource) => {
+            resource.opportunityResourceAllocations.forEach((allocation) => {
+              if (
+                allocation.contactPersonId === employeeId &&
+                allocation.isMarkedAsSelected
+              ) {
+                add_flag = 1;
+              }
+            });
+          });
+          if (add_flag === 1) data.push(project);
+        }
+      });
+    }
+
+    if (data.length > 0) return data;
+
+    return work;
+  }
 }

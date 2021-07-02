@@ -65,9 +65,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
         project: projectEntry.project.title,
         isManaged: authHaveThisProject,
         notes: projectEntry.notes,
+        totalHours: 0,
       };
 
       projectEntry.entries.map((entry: TimesheetEntry) => {
+        project.totalHours += entry.hours;
         project[moment(entry.date, 'DD-MM-YYYY').format('D/M')] = {
           entryId: entry.id,
           startTime: moment(entry.startTime, 'HH:mm').format('HH:mm'),
@@ -464,12 +466,31 @@ export class TimesheetRepository extends Repository<Timesheet> {
         );
         entry.endTime = moment(timesheetDTO.endTime, 'HH:mm').format('HH:mm');
         entry.breakHours = timesheetDTO.breakHours;
-        entry.hours = Math.abs(
-          moment(timesheetDTO.startTime, 'HH:mm').diff(
-            moment(timesheetDTO.endTime, 'HH:mm'),
+
+        if (
+          moment(timesheetDTO.endTime, 'HH:mm').diff(
+            moment(timesheetDTO.startTime, 'HH:mm'),
             'minutes'
-          ) / 60
-        );
+          ) /
+            60 <
+          0
+        ) {
+          entry.hours =
+            Math.abs(
+              moment(timesheetDTO.endTime, 'HH:mm')
+                .add(1, 'days')
+                .diff(moment(timesheetDTO.startTime, 'HH:mm'), 'minutes') / 60
+            ) - timesheetDTO.breakHours;
+        } else {
+          entry.hours =
+            Math.abs(
+              moment(timesheetDTO.endTime, 'HH:mm').diff(
+                moment(timesheetDTO.startTime, 'HH:mm'),
+                'minutes'
+              ) / 60
+            ) - timesheetDTO.breakHours;
+        }
+
         entry.projectEntryId = timesheetDTO.projectEntryId;
 
         entry = await transactionalEntityManager.save(entry);
