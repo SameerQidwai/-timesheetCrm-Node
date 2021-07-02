@@ -894,10 +894,18 @@ export class OpportunityRepository extends Repository<Opportunity> {
             { status: 'O', organizationId: organizationId },
             { status: 'L', organizationId: organizationId },
           ],
+          relations: [
+            'opportunityResources',
+            'opportunityResources.opportunityResourceAllocations',
+          ],
         });
       } else {
         work = await this.find({
           where: [{ status: 'O' }, { status: 'L' }],
+          relations: [
+            'opportunityResources',
+            'opportunityResources.opportunityResourceAllocations',
+          ],
         });
       }
     } else if (type == 'P' || type == 'p') {
@@ -907,16 +915,28 @@ export class OpportunityRepository extends Repository<Opportunity> {
             { status: 'P', organizationId: organizationId },
             { status: 'C', organizationId: organizationId },
           ],
+          relations: [
+            'opportunityResources',
+            'opportunityResources.opportunityResourceAllocations',
+          ],
         });
       } else {
         work = await this.find({
           where: [{ status: 'P' }, { status: 'C' }],
+          relations: [
+            'opportunityResources',
+            'opportunityResources.opportunityResourceAllocations',
+          ],
         });
       }
     } else {
       if (haveOrganization) {
         work = await this.find({
           where: { organizationId: organizationId },
+          relations: [
+            'opportunityResources',
+            'opportunityResources.opportunityResourceAllocations',
+          ],
         });
       } else {
         work = await this.find({});
