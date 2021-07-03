@@ -8,7 +8,10 @@
     "tsc": "tsc",
     "start": "ts-node src/server.ts",
     "start:watch": "nodemon src/server.ts",
-    "typeorm": "ts-node ./node_modules/typeorm/cli.js"
+    "typeorm": "ts-node ./node_modules/typeorm/cli.js",
+    "generateMigration": "ts-node ./node_modules/typeorm/cli.js migration:generate -n %npm_config_name%",
+    "runMigration": "ts-node --transpile-only ./node_modules/typeorm/cli.js migration:run",
+    "runSeeders": "ts-node src/seederScript.ts"
   },
   "author": "",
   "license": "ISC",

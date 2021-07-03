@@ -6,13 +6,13 @@ import { Role } from './role';
 @Entity("permissions") 
 export class Permission extends Base {
 
-   @Column({ name: "resource" })
+   @Column({ type: "varchar", length: "20", name: "resource" })
    resource: Resource;
    
-   @Column({ name: "action" })
+   @Column({ type: "varchar", length: "20", name: "action" })
    action: Action;
 
-   @Column({ name: "grant" })
+   @Column({ type: "varchar", length: "20", name: "grant" })
    grant: Grant;
 
    @Column({ name: 'role_id', nullable: true })

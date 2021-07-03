@@ -8,7 +8,7 @@ import { Employee } from './employee';
 export class Comment extends Base {
   @Column({ name: 'content' })
   content: string;
-  @Column({ name: 'target_type' })
+  @Column({ type: "varchar", length: "20", name: 'target_type' })
   targetType: EntityType;
   @Column({ name: 'target_id' })
   targetId: number;
