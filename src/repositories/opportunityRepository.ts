@@ -149,7 +149,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
     opportunity: OpportunityDTO
   ): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
-      let opportunityObj = await this.findOneCustom(id);
+      let opportunityObj: Opportunity = await this.findOneCustom(id);
 
       opportunityObj.title = opportunity.title;
       if (opportunity.startDate) {
@@ -207,6 +207,8 @@ export class OpportunityRepository extends Repository<Opportunity> {
           throw new Error('Contact Person not found');
         }
         opportunityObj.contactPersonId = contactPerson.id;
+      } else {
+        opportunityObj.contactPersonId = null;
       }
 
       let state: State | undefined;

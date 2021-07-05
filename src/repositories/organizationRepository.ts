@@ -45,6 +45,14 @@ export class OrganizationRepository extends Repository<Organization> {
         obj.parentOrganization = await this.findOne(
           organization.parentOrganizationId
         );
+      if (organization.delegateContactPersonId) {
+        let delegateContactPerson = await this.manager.findOne(
+          ContactPersonOrganization,
+          organization.delegateContactPersonId
+        );
+        if (delegateContactPerson)
+          obj.delegateContactPersonId = delegateContactPerson.id;
+      }
       obj = await transactionalEntityManager.save(obj);
       console.log('obj: ', obj);
 
@@ -65,7 +73,7 @@ export class OrganizationRepository extends Repository<Organization> {
     return this.find({
       relations: [
         'parentOrganization',
-        'delegateContactPersonOrganization',
+        'delegateContactPerson',
         'bankAccounts',
       ],
     });
@@ -119,14 +127,15 @@ export class OrganizationRepository extends Repository<Organization> {
         if (parentOrganization)
           obj.parentOrganizationId = parentOrganization.id;
       }
-      if (organization.delegateContactPersonOrganizationId) {
-        let delegateContactPersonOrganization = await this.manager.findOne(
+      if (organization.delegateContactPersonId) {
+        let delegateContactPerson = await this.manager.findOne(
           ContactPersonOrganization,
-          organization.delegateContactPersonOrganizationId
+          organization.delegateContactPersonId
         );
-        if (delegateContactPersonOrganization)
-          obj.delegateContactPersonOrganizationId =
-            delegateContactPersonOrganization.id;
+        if (delegateContactPerson)
+          obj.delegateContactPersonId = delegateContactPerson.id;
+      } else {
+        obj.delegateContactPersonId = null;
       }
       console.log('obj: ', obj);
       obj = await transactionalEntityManager.save(obj);
@@ -160,7 +169,7 @@ export class OrganizationRepository extends Repository<Organization> {
     return this.findOne(id, {
       relations: [
         'parentOrganization',
-        'delegateContactPersonOrganization',
+        'delegateContactPerson',
         'bankAccounts',
       ],
     });

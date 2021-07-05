@@ -124,7 +124,7 @@ export interface OrganizationDTO extends Base {
   plInsuranceExpiry: Date | null;
   wcInsuranceExpiry: Date | null;
   parentOrganizationId: number | null;
-  delegateContactPersonOrganizationId: number | null;
+  delegateContactPersonId: number | null;
   bankName: string;
   bankAccountNo: string;
   bankBsb: string;
