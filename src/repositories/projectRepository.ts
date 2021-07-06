@@ -154,7 +154,7 @@ export class ProjectRepository extends Repository<Opportunity> {
     project: ProjectDTO
   ): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
-      let projectObj = await this.findOneCustom(id);
+      let projectObj = await this.findOneCustomWithoutContactPerson(id);
 
       projectObj.title = project.title;
       if (project.startDate) {
@@ -265,6 +265,14 @@ export class ProjectRepository extends Repository<Opportunity> {
   }
 
   async findOneCustom(id: number): Promise<any | undefined> {
+    return this.findOne(id, {
+      relations: ['organization'],
+    });
+  }
+
+  async findOneCustomWithoutContactPerson(
+    id: number
+  ): Promise<any | undefined> {
     return this.findOne(id, {
       relations: ['organization'],
     });
