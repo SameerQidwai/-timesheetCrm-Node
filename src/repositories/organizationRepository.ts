@@ -45,14 +45,7 @@ export class OrganizationRepository extends Repository<Organization> {
         obj.parentOrganization = await this.findOne(
           organization.parentOrganizationId
         );
-      if (organization.delegateContactPersonId) {
-        let delegateContactPerson = await this.manager.findOne(
-          ContactPersonOrganization,
-          organization.delegateContactPersonId
-        );
-        if (delegateContactPerson)
-          obj.delegateContactPersonId = delegateContactPerson.id;
-      }
+      
       obj = await transactionalEntityManager.save(obj);
       console.log('obj: ', obj);
 
