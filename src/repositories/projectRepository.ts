@@ -198,7 +198,9 @@ export class ProjectRepository extends Repository<Opportunity> {
       }
 
       let contactPerson: ContactPerson | undefined;
-      if (project.contactPersonId) {
+      if (project.contactPersonId == null) {
+        projectObj.contactPersonId = null;
+      } else if (project.contactPersonId) {
         contactPerson = await this.manager.findOne(
           ContactPerson,
           project.contactPersonId
@@ -264,7 +266,7 @@ export class ProjectRepository extends Repository<Opportunity> {
 
   async findOneCustom(id: number): Promise<any | undefined> {
     return this.findOne(id, {
-      relations: ['organization', 'contactPerson'],
+      relations: ['organization'],
     });
   }
 

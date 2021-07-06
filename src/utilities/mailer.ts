@@ -14,8 +14,8 @@ export let sendMail = (
   let MAILER_HOST = 'smtp.gmail.com';
   let MAILER_PORT = 587;
   let MAILER_SSL = false;
-  let MAILER_USER = 'thedevshezzy@gmail.com';
-  let MAILER_PWD = 'rcvlylhhwyvrwaak';
+  let MAILER_USER = 'contact.1lm.au@gmail.com';
+  let MAILER_PWD = 'eiakgvsmqxoqvrnb';
 
   let transporter = nodemailer.createTransport({
     host: MAILER_HOST,
