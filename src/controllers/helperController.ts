@@ -4,6 +4,7 @@ import { RoleRepository } from './../repositories/roleRepository';
 import { EmployeeRepository } from './../repositories/employeeRepository';
 import { StandardSkillRepository } from './../repositories/standardSkillRepository';
 import { OpportunityRepository } from './../repositories/opportunityRepository';
+import { ProjectRepository } from './../repositories/projectRepository';
 
 export class HelperController {
   async helperGetAlContactPersons(
@@ -85,6 +86,25 @@ export class HelperController {
       res.status(200).json({
         success: true,
         message: 'Get All Work',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async helperGetProjectsByUserId(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    let employeeId = parseInt(req.query.userId?.toString() ?? '');
+    try {
+      const repository = getCustomRepository(ProjectRepository);
+      let records = repository.helperGetProjectsById(employeeId);
+      res.status(200).json({
+        success: true,
+        message: 'Get All Project By Id',
         data: records,
       });
     } catch (e) {
