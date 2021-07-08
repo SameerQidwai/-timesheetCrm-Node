@@ -772,7 +772,6 @@ export class ProjectRepository extends Repository<Opportunity> {
       ],
     });
 
-    console.log('this ran');
     result.map((project) => {
       let add_flag = 0;
       project.opportunityResources.map((resource) => {

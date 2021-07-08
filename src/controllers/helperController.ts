@@ -101,7 +101,7 @@ export class HelperController {
     let employeeId = parseInt(req.query.userId?.toString() ?? '');
     try {
       const repository = getCustomRepository(ProjectRepository);
-      let records = repository.helperGetProjectsById(employeeId);
+      let records = await repository.helperGetProjectsById(employeeId);
       res.status(200).json({
         success: true,
         message: 'Get All Project By Id',
