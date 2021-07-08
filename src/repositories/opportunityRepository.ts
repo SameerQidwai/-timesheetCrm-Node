@@ -149,7 +149,8 @@ export class OpportunityRepository extends Repository<Opportunity> {
     opportunity: OpportunityDTO
   ): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
-      let opportunityObj: Opportunity = await this.findOneCustomWithoutContactPerson(id);
+      let opportunityObj: Opportunity =
+        await this.findOneCustomWithoutContactPerson(id);
 
       opportunityObj.title = opportunity.title;
       if (opportunity.startDate) {
@@ -276,7 +277,9 @@ export class OpportunityRepository extends Repository<Opportunity> {
     });
   }
 
-  async findOneCustomWithoutContactPerson(id: number): Promise<any | undefined> {
+  async findOneCustomWithoutContactPerson(
+    id: number
+  ): Promise<any | undefined> {
     return this.findOne(id, {
       relations: ['organization'],
     });
@@ -952,13 +955,24 @@ export class OpportunityRepository extends Repository<Opportunity> {
     }
 
     if (!isNaN(employeeId) && employeeId != 0) {
+      let employee = await this.manager.findOne(Employee, employeeId, {
+        relations: [
+          'contactPersonOrganization',
+          'contactPersonOrganization.contactPerson',
+        ],
+      });
+      if (!employee) {
+        throw new Error('Employee not found');
+      }
+      let employeeContactPersonId =
+        employee.contactPersonOrganization.contactPerson.id;
       work.forEach((project, index) => {
         if (type == 'P' || 'p') {
           let add_flag = 0;
           project.opportunityResources.forEach((resource) => {
             resource.opportunityResourceAllocations.forEach((allocation) => {
               if (
-                allocation.contactPersonId === employeeId &&
+                allocation.contactPersonId === employeeContactPersonId &&
                 allocation.isMarkedAsSelected
               ) {
                 add_flag = 1;
@@ -970,7 +984,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
       });
     }
 
-    if (data.length > 0) return data;
+    if (!isNaN(employeeId) && employeeId != 0) return data;
 
     return work;
   }

@@ -99,9 +99,12 @@ export class HelperController {
     next: NextFunction
   ) {
     let employeeId = parseInt(req.query.userId?.toString() ?? '');
+    if (isNaN(employeeId) || employeeId == 0) {
+      throw new Error('Employee Id is required');
+    }
     try {
       const repository = getCustomRepository(ProjectRepository);
-      let records = await repository.helperGetProjectsById(employeeId);
+      let records = await repository.helperGetProjectsByUserId(employeeId);
       res.status(200).json({
         success: true,
         message: 'Get All Project By Id',

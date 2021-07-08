@@ -758,8 +758,21 @@ export class ProjectRepository extends Repository<Opportunity> {
     return await this.manager.softDelete(PurchaseOrder, deletedOrder);
   }
 
-  async helperGetProjectsById(employeeId: number) {
+  async helperGetProjectsByUserId(employeeId: number) {
     let response: any = [];
+
+    let employee = await this.manager.findOne(Employee, employeeId, {
+      relations: [
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+      ],
+    });
+
+    if (!employee) {
+      throw new Error('Employee not found');
+    }
+    let employeeContactPersonId =
+      employee.contactPersonOrganization.contactPerson.id;
 
     let result = await this.find({
       where: [{ status: 'P' }, { status: 'C' }],
@@ -772,12 +785,14 @@ export class ProjectRepository extends Repository<Opportunity> {
       ],
     });
 
+    // console.log('result', result);
+
     result.map((project) => {
       let add_flag = 0;
       project.opportunityResources.map((resource) => {
         resource.opportunityResourceAllocations.filter((allocation) => {
           if (
-            allocation.contactPersonId === employeeId &&
+            allocation.contactPersonId === employeeContactPersonId &&
             allocation.isMarkedAsSelected
           ) {
             add_flag = 1;
