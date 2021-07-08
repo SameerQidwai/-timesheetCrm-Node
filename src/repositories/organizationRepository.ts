@@ -122,11 +122,16 @@ export class OrganizationRepository extends Repository<Organization> {
       }
       if (organization.delegateContactPersonId) {
         let delegateContactPerson = await this.manager.findOne(
-          ContactPersonOrganization,
-          organization.delegateContactPersonId
+          ContactPersonOrganization, {
+            where: {
+              organizationId: id,
+              contactPersonId: organization.delegateContactPersonId
+            }
+          }
         );
         if (delegateContactPerson)
-          obj.delegateContactPersonId = delegateContactPerson.id;
+          console.log("delegateContactPerson: ", delegateContactPerson.designation);
+          obj.delegateContactPersonId = organization.delegateContactPersonId;
       } else {
         obj.delegateContactPersonId = null;
       }
