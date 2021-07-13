@@ -1,0 +1,691 @@
+::1 - - [12/Jul/2021:19:03:00 +0000] "GET /api/v1/helpers/contact-persons?associated=1&organizationId=1&active=1&label=1&employee=1 HTTP/1.1" 200 183 "-" "PostmanRuntime/7.28.1"
+::1 - - [12/Jul/2021:19:03:11 +0000] "GET /api/v1/helpers/contact-persons?associated=1&organizationId=1&active=1&label=1&employee=1 HTTP/1.1" 200 183 "-" "PostmanRuntime/7.28.1"
+[0mGET /api/v1/helpers/contact-persons?associated=1&organizationId=1&active=1&label=1&employee=1 [32m200[0m 30.117 ms - 183[0m
+GET /api/v1/helpers/contact-persons?associated=1&organizationId=1&active=1&label=1&employee=1 200 183 - 31.177 ms
+GET /api/v1/helpers/contact-persons?associated=1&organizationId=1&active=1&label=1&employee=1 200 183 - 29.033 ms function (req, res) {
+    return req.read();
+}
+GET /api/v1/helpers/contact-persons?associated=1&organizationId=1&active=1&label=1&employee=1 200 183 - 30.816 ms :read
+GET /api/v1/helpers/contact-persons?associated=1&organizationId=1&active=1&label=1&employee=1 200 183 - 25.641 ms 
+GET /api/v1/helpers/contact-persons?associated=1&organizationId=1&active=1&label=1&employee=1 200 183 - 25.207 ms {}
+GET /api/v1/helpers/contact-persons?associated=1&organizationId=1&active=1&label=1&employee=1 200 183 - 29.468 ms {}
+GET /api/v1/helpers/contact-persons?associated=1&organizationId=1&active=1&label=1&employee=1 404 21 - 2.559 ms {}
+GET /api/v1/helpers/contact-persons?associated=1&organizationId=1&active=1&label=1&employee=1 200 183 - 31.827 ms {}
+GET /api/v1/helpers/contact-persons?associated=1&organizationId=1&active=1&label=1&employee=1 200 183 - 11.924 ms {}
+GET /api/v1/helpers/contact-persons?associated=1&organizationId=1&active=1&label=1&employee=1 200 183 - 30.092 ms {} "{\"success\":true,\"message\":\"Get ALL\",\"data\":[{\"label\":\"Mustafa Syed-(Employee)\",\"value\":1},{\"label\":\"Troy Huckstepp-(Employee)\",\"value\":2},{\"label\":\"Saman Syed-(Employee)\",\"value\":7}]}"
+::1 - - [13/Jul/2021:07:35:02 +0000] "GET /api/v1/helpers/levels-by-skill?skill=1 HTTP/1.1" 200 132 "-" "PostmanRuntime/7.28.1"
+::1 - 
+    - [13/Jul/2021:07:36:13 +0000] "
+    GET 
+    /api/v1/helpers/levels-by-skill?skill=1 HTTP/1.1" 
+    200 
+    132 
+    "-" 
+    "PostmanRuntime/7.28.1"
+::1
+    -
+    13/Jul/2021:07:39:13 +0000
+    GET
+    /api/v1/helpers/levels-by-skill?skill=1
+    1.1
+    200
+    132
+    PostmanRuntime/7.28.1
+    
+------------------------------------------------------------------------------
+    ::1
+    -
+    13/Jul/2021:07:39:49 +0000
+    GET
+    /api/v1/helpers/levels-by-skill?skill=1
+    1.1
+    200
+    132
+    PostmanRuntime/7.28.1
+    
+------------------------------------------------------------------------------
+    13/Jul/2021:07:40:05 +0000
+    ::1
+    -
+    GET
+    /api/v1/helpers/levels-by-skill?skill=1
+    1.1
+    200
+    132
+    PostmanRuntime/7.28.1
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:07:41:25 +0000
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/helpers/levels-by-skill?skill=1
+    Http-Version: 1.1
+    Status Code: 200
+    Response Length: 132
+    User Agent: PostmanRuntime/7.28.1
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:07:41:51 +0000
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/helpers/levels-by-skill?skill=1
+    Http-Version: 1.1
+    Status Code: 200
+    Response Length: 132
+    User Agent: PostmanRuntime/7.28.1
+    Request Data {}
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:07:53:04 +0000
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/helpers/levels-by-skill?skill=1
+    Http-Version: 1.1
+    Status Code: 200
+    Response Length: 132
+    User Agent: PostmanRuntime/7.28.1
+    Request Data {}
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:07:53:56 +0000
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/helpers/levels-by-skill?skill=1
+    Http-Version: 1.1
+    Status Code: 200
+    Response Length: 132
+    User Agent: PostmanRuntime/7.28.1
+    Request Data {}
+    Response Data -
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:07:54:52 +0000
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/helpers/levels-by-skill?skill=1
+    Http-Version: 1.1
+    Status Code: 200
+    Response Length: 132
+    User Agent: PostmanRuntime/7.28.1
+    Request Data {}
+    Response Data "{\"success\":true,\"message\":\"Get ALL\",\"data\":[{\"value\":1,\"label\":\"Junior\"},{\"value\":2,\"label\":\"Senior\"},{\"value\":3,\"label\":\"Expert\"}]}"
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:07:56:37 +0000
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/helpers/levels-by-skill?skill=1
+    Http-Version: 1.1
+    Status Code: 200
+    Response Length: 132
+    User Agent: PostmanRuntime/7.28.1
+    Request Data {}
+    Response Data {"success":true,"message":"Get ALL","data":[{"value":1,"label":"Junior"},{"value":2,"label":"Senior"},{"value":3,"label":"Expert"}]}
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:07:58:08 +0000
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/helpers/levels-by-skill?skill=1
+    Http-Version: 1.1
+    Status Code: 200
+    Response Length: 132
+    User Agent: PostmanRuntime/7.28.1
+    Request Data [object Object]
+    Response Data {"success":true,"message":"Get ALL","data":[{"value":1,"label":"Junior"},{"value":2,"label":"Senior"},{"value":3,"label":"Expert"}]}
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:07:59:07 +0000
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/helpers/levels-by-skill?skill=1
+    Http-Version: 1.1
+    Status Code: 200
+    Response Length: 132
+    User Agent: PostmanRuntime/7.28.1
+    Request Data {}
+    Response Data {"success":true,"message":"Get ALL","data":[{"value":1,"label":"Junior"},{"value":2,"label":"Senior"},{"value":3,"label":"Expert"}]}
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:02:37 +0000
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/helpers/levels-by-skill?skill=1
+    Http-Version: 1.1
+    Status Code: 200
+    Response Length: 132
+    User Agent: PostmanRuntime/7.28.1
+    Query Params: {"skill":"1"}
+    Request Data {}
+    Response Data {"success":true,"message":"Get ALL","data":[{"value":1,"label":"Junior"},{"value":2,"label":"Senior"},{"value":3,"label":"Expert"}]}
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:03:12 +0000
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/helpers/levels-by-skill?skill=1
+    Http-Version: 1.1
+    Status Code: 200
+    Response Length: 132
+    User Agent: PostmanRuntime/7.28.1
+    Params: {}
+    Query Params: {"skill":"1"}
+    Request Data {}
+    Response Data {"success":true,"message":"Get ALL","data":[{"value":1,"label":"Junior"},{"value":2,"label":"Senior"},{"value":3,"label":"Expert"}]}
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:03:23 +0000
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Http-Version: 1.1
+    Status Code: 200
+    Response Length: 63
+    User Agent: PostmanRuntime/7.28.1
+    Params: {"startDate":"01-05-2021","endDate":"31-05-2021","userId":"6"}
+    Query Params: {}
+    Request Data {}
+    Response Data {"success":false,"message":"Authentication Expired or Invalid"}
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:03:28 +0000
+    Address: ::1
+    User: -
+    Method: POST
+    Route: /api/v1/login
+    Http-Version: 1.1
+    Status Code: 200
+    Response Length: 44
+    User Agent: PostmanRuntime/7.28.1
+    Params: {}
+    Query Params: {}
+    Request Data {"email":"thedevshezzy@gmail.com","password":"123123"}
+    Response Data {"success":false,"message":"User Not Found"}
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:04:29 +0000
+    Address: ::1
+    User: -
+    Method: POST
+    Route: /api/v1/login
+    Http-Version: 1.1
+    Status Code: 200
+    Response Length: 526
+    User Agent: PostmanRuntime/7.28.1
+    Params: {}
+    Query Params: {}
+    Request Data {"email":"thedevshezzy@gmail.com","password":"123123"}
+    Response Data {"success":true,"message":"Logged in","data":{"id":7,"email":"thedevshezzy@gmail.com","role":{"roleId":2,"role":"Employee","permissions":[{"resource":"TIMESHEETS","action":"ADD","grant":"OWN"},{"resource":"TIMESHEETS","action":"UPDATE","grant":"OWN"},{"resource":"TIMESHEETS","action":"READ","grant":"OWN"},{"resource":"PROFILE","action":"UPDATE","grant":"OWN"}]},"accessToken":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiaWF0IjoxNjI2MTYzNDY5LCJleHAiOjE2MjYxNjcwNjl9.Vz5hWgA_K3fID6m1IVqghbkU9O8j2zgkaga3OruY9oQ"}}
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:04:48 +0000
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Http-Version: 1.1
+    Status Code: 500
+    Response Length: 49
+    User Agent: PostmanRuntime/7.28.1
+    Params: {}
+    Query Params: {}
+    Request Data {}
+    Response Data [object Object]
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:06:02 +0000
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Http-Version: 1.1
+    Status Code: 500
+    Response Length: 49
+    User Agent: PostmanRuntime/7.28.1
+    Params: {}
+    Query Params: {}
+    Request Data {}
+    Response Data [object Object]
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:06:46 +0000
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Http-Version: 1.1
+    Status Code: 500
+    Response Length: 49
+    User Agent: PostmanRuntime/7.28.1
+    Params: {}
+    Query Params: {}
+    Request Data {}
+    Response Data {"success":false,"message":"Timesheet not found"}
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:07:20 +0000
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Http-Version: 1.1
+    Status Code: 500
+    Response Length: 49
+    User Agent: PostmanRuntime/7.28.1
+    Params: {}
+    Query Params: {}
+    Request Data {}
+    Response Data {"success":false,"message":"Timesheet not found"}
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:07:40 +0000
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Http-Version: 1.1
+    Status Code: 500
+    Response Length: 49
+    User Agent: PostmanRuntime/7.28.1
+    Params: -
+    Query Params: {}
+    Request Data {}
+    Response Data {"success":false,"message":"Timesheet not found"}
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:10:22 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/helpers/levels-by-skill?skill=1
+    Headers: {"user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"54dd50ba-340a-4a1c-8915-11eab4e2f1a0","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    User Agent: PostmanRuntime/7.28.1
+    Params: {}
+    Query Params: {"skill":"1"}
+    Status Code: 200
+    Request Data {}
+    Response Data "{\"success\":true,\"message\":\"Get ALL\",\"data\":[{\"value\":1,\"label\":\"Junior\"},{\"value\":2,\"label\":\"Senior\"},{\"value\":3,\"label\":\"Expert\"}]}"
+    Response Length: 132
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:10:46 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Headers: {"authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiaWF0IjoxNjI2MTYzNDY5LCJleHAiOjE2MjYxNjcwNjl9.Vz5hWgA_K3fID6m1IVqghbkU9O8j2zgkaga3OruY9oQ","user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"22937120-9f2b-4f3f-a114-c3ca2a2cfdfc","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    User Agent: PostmanRuntime/7.28.1
+    Params: {}
+    Query Params: {}
+    Status Code: 500
+    Request Data {}
+    Response Data {"success":false,"message":"Timesheet not found"}
+    Response Length: 49
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:12:09 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Headers: {"authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiaWF0IjoxNjI2MTYzNDY5LCJleHAiOjE2MjYxNjcwNjl9.Vz5hWgA_K3fID6m1IVqghbkU9O8j2zgkaga3OruY9oQ","user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"0994f9ad-cec3-4c8a-a7e0-130823126f49","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    User Agent: PostmanRuntime/7.28.1
+    Params: -
+    Query Params: {}
+    Status Code: 500
+    Request Data {}
+    Response Data {"success":false,"message":"Timesheet not found"}
+    Response Length: 49
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:12:32 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Headers: {"authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiaWF0IjoxNjI2MTYzNDY5LCJleHAiOjE2MjYxNjcwNjl9.Vz5hWgA_K3fID6m1IVqghbkU9O8j2zgkaga3OruY9oQ","user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"4d1df8ba-7ac3-4b87-904b-4c358c7779fa","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    User Agent: PostmanRuntime/7.28.1
+    Params: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Query Params: {}
+    Status Code: 500
+    Request Data {}
+    Response Data {"success":false,"message":"Timesheet not found"}
+    Response Length: 49
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:13:34 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Headers: {"authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiaWF0IjoxNjI2MTYzNDY5LCJleHAiOjE2MjYxNjcwNjl9.Vz5hWgA_K3fID6m1IVqghbkU9O8j2zgkaga3OruY9oQ","user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"c5c96ac7-cfd4-42d8-86ba-2d06fd8e0c8d","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    User Agent: PostmanRuntime/7.28.1
+    Params: false
+    Query Params: {}
+    Status Code: 500
+    Request Data {}
+    Response Data {"success":false,"message":"Timesheet not found"}
+    Response Length: 49
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:16:33 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Headers: {"authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiaWF0IjoxNjI2MTYzNDY5LCJleHAiOjE2MjYxNjcwNjl9.Vz5hWgA_K3fID6m1IVqghbkU9O8j2zgkaga3OruY9oQ","user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"85e40130-ec4e-498c-8c33-878634b5fd97","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    User Agent: PostmanRuntime/7.28.1
+    Query Params: {}
+    Request Data {}
+    Status Code: 500
+    Response Body {"success":false,"message":"Timesheet not found"}
+    Response Length: 49
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:16:44 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/helpers/levels-by-skill?skill=1
+    Headers: {"user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"69927f3f-1950-4164-b7b3-c1d261143dbe","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    User Agent: PostmanRuntime/7.28.1
+    Query Params: {"skill":"1"}
+    Request Data {}
+    Status Code: 200
+    Response Body "{\"success\":true,\"message\":\"Get ALL\",\"data\":[{\"value\":1,\"label\":\"Junior\"},{\"value\":2,\"label\":\"Senior\"},{\"value\":3,\"label\":\"Expert\"}]}"
+    Response Length: 132
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:16:56 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/helpers/levels-by-skill?skill=1
+    Headers: {"user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"0fd5361d-8a03-4665-821d-2698de1d38a5","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    User Agent: PostmanRuntime/7.28.1
+    Query Params: {"skill":"1"}
+    Request Data {}
+    Status Code: 200
+    Response Body "{\"success\":true,\"message\":\"Get ALL\",\"data\":[{\"value\":1,\"label\":\"Junior\"},{\"value\":2,\"label\":\"Senior\"},{\"value\":3,\"label\":\"Expert\"}]}"
+    Response Length: 132
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:17:11 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/helpers/levels-by-skill?skill=1
+    Headers: {"user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"afa1fc0c-7737-4c0b-aa95-37d7f633d970","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    User Agent: PostmanRuntime/7.28.1
+    Query Params: {"skill":"1"}
+    Request Data {}
+    Status Code: 200
+    Response Body "{\"success\":true,\"message\":\"Get ALL\",\"data\":[{\"value\":1,\"label\":\"Junior\"},{\"value\":2,\"label\":\"Senior\"},{\"value\":3,\"label\":\"Expert\"}]}"
+    Response Length: 132
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:17:35 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/helpers/levels-by-skill?skill=1
+    Headers: {"user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"6699b385-dd6b-417f-995f-c7744ef08069","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    User Agent: PostmanRuntime/7.28.1
+    Query Params: {"skill":"1"}
+    Request Data {}
+    Status Code: 200
+    Response Body "{\"success\":true,\"message\":\"Get ALL\",\"data\":[{\"value\":1,\"label\":\"Junior\"},{\"value\":2,\"label\":\"Senior\"},{\"value\":3,\"label\":\"Expert\"}]}"
+    Response Length: 132
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:18:21 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Headers: {"authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiaWF0IjoxNjI2MTYzNDY5LCJleHAiOjE2MjYxNjcwNjl9.Vz5hWgA_K3fID6m1IVqghbkU9O8j2zgkaga3OruY9oQ","user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"024eeae8-ec12-4cb2-a49a-f72fdf9f9e7c","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    User Agent: PostmanRuntime/7.28.1
+    Query Params: {}
+    Request Data {}
+    Status Code: 500
+    Response Body {"success":false,"message":"Timesheet not found"}
+    Response Length: 49
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:18:44 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Headers: {"authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiaWF0IjoxNjI2MTYzNDY5LCJleHAiOjE2MjYxNjcwNjl9.Vz5hWgA_K3fID6m1IVqghbkU9O8j2zgkaga3OruY9oQ","user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"22478c3f-f3c7-49f3-a273-1c0c5ad2193b","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    User Agent: PostmanRuntime/7.28.1
+    Query Params: {}
+    Status Code: 500
+    Request Data {}
+    Response Data {"success":false,"message":"Timesheet not found"}
+    Response Length: 49
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:18:53 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Headers: {"authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiaWF0IjoxNjI2MTYzNDY5LCJleHAiOjE2MjYxNjcwNjl9.Vz5hWgA_K3fID6m1IVqghbkU9O8j2zgkaga3OruY9oQ","user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"bd7bb35c-4b60-4045-8342-2bfe67c409b9","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    User Agent: PostmanRuntime/7.28.1
+    Query Params: {}
+    Status Code: 500
+    Request Data {}
+    Response Data {"success":false,"message":"Timesheet not found"}
+    Response Length: 49
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:19:33 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Headers: {"authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiaWF0IjoxNjI2MTYzNDY5LCJleHAiOjE2MjYxNjcwNjl9.Vz5hWgA_K3fID6m1IVqghbkU9O8j2zgkaga3OruY9oQ","user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"bd86bc7f-cf6e-4a88-9c93-e0e601903439","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    User Agent: PostmanRuntime/7.28.1
+    Params: {}
+    Query Params: {}
+    Status Code: 500
+    Request Data {}
+    Response Data {"success":false,"message":"Timesheet not found"}
+    Response Length: 49
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:20:52 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/helpers/levels-by-skill?skill=1
+    Headers: {"user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"020bc43a-6c65-4c79-b52e-4aa2318c3873","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    User Agent: PostmanRuntime/7.28.1
+    Params: {}
+    Query Params: {"skill":"1"}
+    Status Code: 200
+    Request Data {}
+    Response Data "{\"success\":true,\"message\":\"Get ALL\",\"data\":[{\"value\":1,\"label\":\"Junior\"},{\"value\":2,\"label\":\"Senior\"},{\"value\":3,\"label\":\"Expert\"}]}"
+    Response Length: 132
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:22:05 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Headers: {"authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiaWF0IjoxNjI2MTYzNDY5LCJleHAiOjE2MjYxNjcwNjl9.Vz5hWgA_K3fID6m1IVqghbkU9O8j2zgkaga3OruY9oQ","user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"e721d936-7144-40d3-9bf4-6b1a3ee50ac9","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    User Agent: PostmanRuntime/7.28.1
+    Params: {}
+    Query Params: {}
+    Status Code: 500
+    Request Data {}
+    Response Data {"success":false,"message":"Timesheet not found"}
+    Response Length: 49
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:23:21 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    User Agent: PostmanRuntime/7.28.1
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Headers: {"authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiaWF0IjoxNjI2MTYzNDY5LCJleHAiOjE2MjYxNjcwNjl9.Vz5hWgA_K3fID6m1IVqghbkU9O8j2zgkaga3OruY9oQ","user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"3a9fe510-e0dc-4827-a285-d7f943944124","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    Query Params: {}
+    Request Data {}
+    Status Code: 500
+    Response Data {"success":false,"message":"Timesheet not found"}
+    Response Length: 49
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:23:38 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    User Agent: PostmanRuntime/7.28.1
+    Method: GET
+    Route: /api/v1/helpers/levels-by-skill?skill=1
+    Headers: {"user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"0d62655e-78de-4046-b39c-d51d1163803d","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    Query Params: {"skill":"1"}
+    Request Data {}
+    Status Code: 200
+    Response Data "{\"success\":true,\"message\":\"Get ALL\",\"data\":[{\"value\":1,\"label\":\"Junior\"},{\"value\":2,\"label\":\"Senior\"},{\"value\":3,\"label\":\"Expert\"}]}"
+    Response Length: 132
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:24:16 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    User Agent: PostmanRuntime/7.28.1
+    Method: GET
+    Route: /api/v1/helpers/levels-by-skill?skill=1
+    Headers: {"user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"47c7ab5c-a4dd-4a47-9c66-86bec7a44e37","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    Query Params: {"skill":"1"}
+    Request Data {}
+    Status Code: 200
+    Response Data {"success":true,"message":"Get ALL","data":[{"value":1,"label":"Junior"},{"value":2,"label":"Senior"},{"value":3,"label":"Expert"}]}
+    Response Length: 132
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:24:22 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    User Agent: PostmanRuntime/7.28.1
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Headers: {"authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiaWF0IjoxNjI2MTYzNDY5LCJleHAiOjE2MjYxNjcwNjl9.Vz5hWgA_K3fID6m1IVqghbkU9O8j2zgkaga3OruY9oQ","user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"aafc1138-be66-4b57-92bd-9780d8c421c6","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    Query Params: {}
+    Request Data {}
+    Status Code: 500
+    Response Data [object Object]
+    Response Length: 49
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:25:04 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    User Agent: PostmanRuntime/7.28.1
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Headers: {"authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiaWF0IjoxNjI2MTYzNDY5LCJleHAiOjE2MjYxNjcwNjl9.Vz5hWgA_K3fID6m1IVqghbkU9O8j2zgkaga3OruY9oQ","user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"12df9e88-7ec5-4794-a266-5a99132c55b1","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    Query Params: {}
+    Request Data {}
+    Status Code: 500
+    Response Data {"success":false,"message":"Timesheet not found"}
+    Response Length: 49
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:08:26:32 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    User Agent: PostmanRuntime/7.28.1
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Headers: {"authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiaWF0IjoxNjI2MTYzNDY5LCJleHAiOjE2MjYxNjcwNjl9.Vz5hWgA_K3fID6m1IVqghbkU9O8j2zgkaga3OruY9oQ","user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"fa0c03af-da48-485d-a46d-b21382e9c78d","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    Query Params: {}
+    Request Data {}
+    Status Code: 500
+    Response Body {"success":false,"message":"Timesheet not found"}
+    Response Length: 49
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:09:12:40 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    User Agent: PostmanRuntime/7.28.1
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Headers: {"authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiaWF0IjoxNjI2MTYzNDY5LCJleHAiOjE2MjYxNjcwNjl9.Vz5hWgA_K3fID6m1IVqghbkU9O8j2zgkaga3OruY9oQ","user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"9154db23-b092-4cc1-93fa-f095fea68ff3","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    Query Params: {}
+    Request Body {}
+    Status Code: 200
+    Locals: {}
+    Response Body "{\"success\":false,\"message\":\"Authentication Expired or Invalid\"}"
+    Response Length: 63
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:09:12:45 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    User Agent: PostmanRuntime/7.28.1
+    Method: POST
+    Route: /api/v1/login
+    Headers: {"content-type":"application/json","user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"8e15e8e4-2239-4dc2-b6b1-7e0b539d0cff","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive","content-length":"70"}
+    Query Params: {}
+    Request Body {"email":"thedevshezzy@gmail.com","password":"123123"}
+    Status Code: 200
+    Locals: {}
+    Response Body "{\"success\":true,\"message\":\"Logged in\",\"data\":{\"id\":7,\"email\":\"thedevshezzy@gmail.com\",\"role\":{\"roleId\":2,\"role\":\"Employee\",\"permissions\":[{\"resource\":\"TIMESHEETS\",\"action\":\"ADD\",\"grant\":\"OWN\"},{\"resource\":\"TIMESHEETS\",\"action\":\"UPDATE\",\"grant\":\"OWN\"},{\"resource\":\"TIMESHEETS\",\"action\":\"READ\",\"grant\":\"OWN\"},{\"resource\":\"PROFILE\",\"action\":\"UPDATE\",\"grant\":\"OWN\"}]},\"accessToken\":\"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiaWF0IjoxNjI2MTY3NTY1LCJleHAiOjE2MjYxNzExNjV9.FNmcfsUlzWq5fTFemqxBaX9dAO06s6ZMOew79wKlcIQ\"}}"
+    Response Length: 526
+    
+------------------------------------------------------------------------------
+    Time: 13/Jul/2021:09:12:55 +0000
+    Http-Version: 1.1
+    Address: ::1
+    User: -
+    User Agent: PostmanRuntime/7.28.1
+    Method: GET
+    Route: /api/v1/timesheets/01-05-2021&31-05-2021&6
+    Headers: {"authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiaWF0IjoxNjI2MTY3NTY1LCJleHAiOjE2MjYxNzExNjV9.FNmcfsUlzWq5fTFemqxBaX9dAO06s6ZMOew79wKlcIQ","user-agent":"PostmanRuntime/7.28.1","accept":"*/*","postman-token":"89e1635f-16e5-4580-919b-811c7fcfcd1a","host":"localhost:3000","accept-encoding":"gzip, deflate, br","connection":"keep-alive"}
+    Query Params: {}
+    Request Body {}
+    Status Code: 500
+    Locals: {"jwtPayload":{"id":7,"iat":1626167565,"exp":1626171165},"user":{"id":7,"createdAt":"2021-07-04T14:13:42.607Z","updatedAt":"2021-07-13T08:04:26.848Z","deletedAt":null,"contactPersonOrganizationId":7,"username":"thedevshezzy@gmail.com","password":"$2y$10$.UuLwpNfIBiiwFUkC4zUye4DUftFXsNMlWcXkz0mJPLDzETLNs5/.","nextOfKinName":null,"nextOfKinPhoneNumber":null,"nextOfKinEmail":null,"nextOfKinRelation":null,"tfn":"","taxFreeThreshold":false,"helpHECS":false,"superannuationName":null,"superannuationType":null,"superannuationBankName":null,"superannuationBankAccountOrMembershipNumber":null,"superannuationAbnOrUsi":null,"superannuationBankBsb":null,"superannuationAddress":null,"training":null,"roleId":2,"role":{"id":2,"createdAt":"2021-07-02T19:28:42.896Z","updatedAt":"2021-07-02T19:28:42.896Z","deletedAt":null,"label":"Employee","isSystem":false,"permissions":[{"id":47,"createdAt":"2021-07-06T03:08:08.227Z","updatedAt":"2021-07-06T03:08:08.227Z","deletedAt":null,"resource":"TIMESHEETS","action":"ADD","grant":"OWN","roleId":2},{"id":48,"createdAt":"2021-07-06T03:08:08.295Z","updatedAt":"2021-07-06T03:08:08.295Z","deletedAt":null,"resource":"TIMESHEETS","action":"UPDATE","grant":"OWN","roleId":2},{"id":49,"createdAt":"2021-07-06T03:08:08.362Z","updatedAt":"2021-07-06T03:08:08.362Z","deletedAt":null,"resource":"TIMESHEETS","action":"READ","grant":"OWN","roleId":2},{"id":50,"createdAt":"2021-07-06T03:08:08.430Z","updatedAt":"2021-07-06T03:08:08.430Z","deletedAt":null,"resource":"PROFILE","action":"UPDATE","grant":"OWN","roleId":2}]},"contactPersonOrganization":{"id":7,"createdAt":"2021-07-04T14:11:22.038Z","updatedAt":"2021-07-04T14:13:42.000Z","deletedAt":null,"startDate":"2020-09-30T09:00:00.000Z","endDate":null,"designation":"IT","organizationId":1,"contactPersonId":10,"status":true,"contactPerson":{"id":10,"createdAt":"2021-07-04T14:11:21.933Z","updatedAt":"2021-07-04T14:11:21.933Z","deletedAt":null,"firstName":"Saman","lastName":"Syed","gender":"F","dateOfBirth":null,"phoneNumber":"","email":"saman.syed@1lm.com.au","address":"Pakistan","stateId":5,"clearanceLevel":null,"clearanceGrantedDate":null,"clearanceExpiryDate":null,"clearanceSponsorId":null}}},"grantLevel":"OWN"}
+    Response Body {"success":false,"message":"Timesheet not found"}
+    Response Length: 49
+    
