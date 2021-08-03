@@ -1,0 +1,17 @@
+// import { Entity, Column, ManyToOne } from 'typeorm'; 
+// import { Base } from './common/base';
+// import { ContactPerson } from './contactPerson';
+// import { StandardSkillStandardLevel } from './standardSkillStandardLevel';
+
+// @Entity("contact_person_standard_skill_standard_levels") 
+// export class ContactPersonStandardSkillStandardLevel extends Base { 
+
+//    @ManyToOne(() => ContactPerson)
+//    @Column({ name: "contact_person_id" })
+//    contactPerson: ContactPerson;
+
+//    @ManyToOne(() => StandardSkillStandardLevel)
+//    @Column({ name: "standard_skill_standard_level_id" })
+//    standardSkillStandardLevel: StandardSkillStandardLevel;
+
+// }

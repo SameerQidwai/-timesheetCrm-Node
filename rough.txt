@@ -1,0 +1,10 @@
+resource.sellingRate = opportunityResourceDTO.sellingRate;
+        resource.buyingRate = opportunityResourceDTO.buyingRate;
+        if (opportunityResourceDTO.userId) {
+            let resourceExists = opportunity.opportunityResources.filter(x => x.userId == opportunityResourceDTO.userId);
+            if(resourceExists.length) {
+                throw new Error("Cannot add resouce for same user again");
+            }
+        }
+        resource.userId = opportunityResourceDTO.userId;
+        
