@@ -782,6 +782,7 @@ export class ProjectRepository extends Repository<Opportunity> {
     let result = await this.find({
       where: [{ status: 'P' }, { status: 'C' }],
       relations: [
+        'organization ',
         'opportunityResources',
         'opportunityResources.panelSkill',
         'opportunityResources.panelSkillStandardLevel',
