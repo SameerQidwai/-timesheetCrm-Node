@@ -203,6 +203,7 @@ export interface EmploymentContractDTO extends Base {
   noOfHoursPer: Frequency;
   remunerationAmount: number;
   remunerationAmountPer: Frequency;
+  fileId: number;
 }
 
 export interface LeaseDTO extends Base {
@@ -255,6 +256,7 @@ export interface ContractDTO extends Base {
   noOfHoursPer: Frequency;
   remunerationAmount: number;
   remunerationAmountPer: Frequency;
+  fileId: number;
 }
 
 interface Work extends Base {

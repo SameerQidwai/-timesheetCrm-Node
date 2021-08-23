@@ -1,63 +1,68 @@
 import { EmploymentType, Frequency } from '../constants/constants';
-import { Entity, Column, JoinColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 import { Base } from './common/base';
 import { Employee } from './employee';
+import { File } from './file';
 
-@Entity("employment_contracts")
+@Entity('employment_contracts')
 export class EmploymentContract extends Base {
+  @Column({ name: 'payslip_email', nullable: true })
+  payslipEmail: String;
 
-   @Column({ name: "payslip_email", nullable: true })
-   payslipEmail: String;
+  @Column({ name: 'comments', nullable: true })
+  comments: String;
 
-   @Column({ name: "comments", nullable: true  })
-   comments: String;
+  @Column({
+    type: 'enum',
+    enum: Frequency,
+    name: 'pay_frequency',
+  })
+  payFrequency: Frequency;
 
-   @Column({
-      type: "enum",
-      enum: Frequency,
-      name: "pay_frequency"
-   })
-   payFrequency: Frequency;
+  @Column({ name: 'start_date' })
+  startDate: Date;
 
-   @Column({ name: "start_date" })
-   startDate: Date;
+  @Column({ name: 'end_date', nullable: true })
+  endDate: Date;
 
-   @Column({ name: "end_date", nullable: true }) 
-   endDate: Date;
+  @Column({
+    type: 'enum',
+    enum: EmploymentType,
+    name: 'type',
+  })
+  type: EmploymentType;
 
-   @Column({
-      type: "enum",
-      enum: EmploymentType,
-      name: "type"
-   })
-   type: EmploymentType;
+  @Column({ name: 'no_of_hours', nullable: true })
+  noOfHours: number;
 
-   @Column({ name: "no_of_hours", nullable: true }) 
-   noOfHours: number;
+  @Column({
+    type: 'enum',
+    enum: Frequency,
+    name: 'no_of_hours_per',
+  })
+  noOfHoursPer: Frequency;
 
-   @Column({
-      type: "enum",
-      enum: Frequency,
-      name: "no_of_hours_per"
-   })
-   noOfHoursPer: Frequency;
+  @Column({ name: 'remuneration_amount' })
+  remunerationAmount: number;
 
-   @Column({ name: "remuneration_amount" }) 
-   remunerationAmount: number;
+  @Column({
+    type: 'enum',
+    enum: Frequency,
+    name: 'remuneration_amount_per',
+  })
+  remunerationAmountPer: Frequency;
 
-   @Column({
-      type: "enum",
-      enum: Frequency,
-      name: "remuneration_amount_per"
-   })
-   remunerationAmountPer: Frequency;
+  @Column({ name: 'file_id', nullable: true })
+  fileId: number;
 
-   
-   @Column({ name: "employee_id", nullable: true }) 
-   employeeId: number;
+  @OneToOne(() => File)
+  @JoinColumn({ name: 'file_id' })
+  file: File;
 
-   @ManyToOne(() => Employee, employee => employee.employmentContracts)
-   @JoinColumn({ name: "employee_id" })
-   employee: Employee;
+  @Column({ name: 'employee_id', nullable: true })
+  employeeId: number;
 
+  @ManyToOne(() => Employee, (employee) => employee.employmentContracts)
+  @JoinColumn({ name: 'employee_id' })
+  employee: Employee;
 }

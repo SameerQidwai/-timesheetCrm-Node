@@ -45,6 +45,7 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
     obj.noOfHoursPer = contract.noOfHoursPer;
     obj.remunerationAmount = contract.remunerationAmount;
     obj.remunerationAmountPer = contract.remunerationAmountPer;
+    obj.fileId = contract.fileId;
     return await this.save(obj);
   }
 
@@ -110,6 +111,8 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
     employmentContractObj.remunerationAmount = contract.remunerationAmount;
     employmentContractObj.remunerationAmountPer =
       contract.remunerationAmountPer;
+    if (employmentContractObj.fileId)
+      employmentContractObj.fileId = contract.fileId;
 
     await this.update(id, employmentContractObj);
     return this.findOne(id);
