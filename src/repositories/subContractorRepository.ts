@@ -329,7 +329,6 @@ export class SubContractorRepository extends Repository<Employee> {
         'contactPersonOrganization.contactPerson',
         'contactPersonOrganization.organization',
         'employmentContracts',
-        'employementContracts.file',
       ],
     });
   }
