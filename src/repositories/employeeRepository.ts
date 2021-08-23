@@ -127,6 +127,7 @@ export class EmployeeRepository extends Repository<Employee> {
         noOfHoursPer,
         remunerationAmount,
         remunerationAmountPer,
+        fileId,
       } = employee.latestEmploymentContract;
 
       employmentContract.payslipEmail = payslipEmail;
@@ -142,6 +143,7 @@ export class EmployeeRepository extends Repository<Employee> {
       employmentContract.remunerationAmount = remunerationAmount;
       employmentContract.remunerationAmountPer = remunerationAmountPer;
       employmentContract.employeeId = employeeObj.id;
+      employmentContract.fileId = fileId;
       await transactionalEntityManager.save(employmentContract);
       let { bankName, bankAccountNo, bankBsb } = employee;
       let bankAccount = new BankAccount();
@@ -313,6 +315,7 @@ export class EmployeeRepository extends Repository<Employee> {
         noOfHoursPer,
         remunerationAmount,
         remunerationAmountPer,
+        fileId,
       } = employee.latestEmploymentContract;
 
       // find latest contract here
@@ -350,6 +353,7 @@ export class EmployeeRepository extends Repository<Employee> {
       employmentContract.remunerationAmount = remunerationAmount;
       employmentContract.remunerationAmountPer = remunerationAmountPer;
       employmentContract.employeeId = employeeObj.id;
+      if (fileId) employmentContract.fileId = fileId;
       await transactionalEntityManager.save(employmentContract);
       let { bankName, bankAccountNo, bankBsb } = employee;
       let bankAccount = await transactionalEntityManager
@@ -383,6 +387,7 @@ export class EmployeeRepository extends Repository<Employee> {
         'contactPersonOrganization.organization',
         'bankAccounts',
         'employmentContracts',
+        'employementContracts.file',
       ],
     });
   }

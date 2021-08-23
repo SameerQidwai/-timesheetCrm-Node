@@ -122,7 +122,7 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
     if (employmentContract.fileId)
       employmentContractObj.fileId = employmentContract.fileId;
     await this.update(id, employmentContractObj);
-    return this.findOne(id);
+    return this.findOneCustom(id);
   }
 
   async findOneCustom(id: number): Promise<any | undefined> {

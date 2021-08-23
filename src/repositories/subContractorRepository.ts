@@ -117,6 +117,7 @@ export class SubContractorRepository extends Repository<Employee> {
         comments,
         noOfHours,
         noOfHoursPer,
+        fileId,
       } = subContractor.latestContract;
 
       employmentContract.startDate = new Date(startDate);
@@ -129,6 +130,7 @@ export class SubContractorRepository extends Repository<Employee> {
       employmentContract.remunerationAmount = remunerationAmount;
       employmentContract.remunerationAmountPer = remunerationAmountPer;
       employmentContract.employeeId = employeeObj.id;
+      employmentContract.fileId = fileId;
       await transactionalEntityManager.save(employmentContract);
       return employeeObj.id;
     });
@@ -277,6 +279,7 @@ export class SubContractorRepository extends Repository<Employee> {
         comments,
         noOfHours,
         noOfHoursPer,
+        fileId,
       } = subContractor.latestContract;
 
       // find latest contract here
@@ -312,6 +315,7 @@ export class SubContractorRepository extends Repository<Employee> {
       subContractorContract.remunerationAmount = remunerationAmount;
       subContractorContract.remunerationAmountPer = remunerationAmountPer;
       subContractorContract.employeeId = subContractorObj.id;
+      if (fileId) subContractorContract.fileId = fileId;
       await transactionalEntityManager.save(subContractorContract);
       return subContractorObj.id;
     });
@@ -325,6 +329,7 @@ export class SubContractorRepository extends Repository<Employee> {
         'contactPersonOrganization.contactPerson',
         'contactPersonOrganization.organization',
         'employmentContracts',
+        'employementContracts.file',
       ],
     });
   }

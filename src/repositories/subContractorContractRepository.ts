@@ -115,11 +115,11 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
       employmentContractObj.fileId = contract.fileId;
 
     await this.update(id, employmentContractObj);
-    return this.findOne(id);
+    return this.findOneCustom(id);
   }
 
   async findOneCustom(id: number): Promise<any | undefined> {
-    return this.findOne(id);
+    return this.findOne(id, { relations: ['file'] });
   }
 
   async deleteCustom(id: number): Promise<any | undefined> {
