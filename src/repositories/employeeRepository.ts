@@ -182,6 +182,7 @@ export class EmployeeRepository extends Repository<Employee> {
         'contactPersonOrganization.organization',
         'bankAccounts',
         'employmentContracts',
+        'employmentContracts.file',
       ],
     });
 
@@ -387,6 +388,7 @@ export class EmployeeRepository extends Repository<Employee> {
         'contactPersonOrganization.organization',
         'bankAccounts',
         'employmentContracts',
+        'employmentContracts.file',
       ],
     });
   }

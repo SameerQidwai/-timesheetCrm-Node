@@ -159,6 +159,7 @@ export class SubContractorRepository extends Repository<Employee> {
         'contactPersonOrganization.contactPerson',
         'contactPersonOrganization.organization',
         'employmentContracts',
+        'employmentContracts.file',
       ],
     });
     return result.filter(
@@ -329,6 +330,7 @@ export class SubContractorRepository extends Repository<Employee> {
         'contactPersonOrganization.contactPerson',
         'contactPersonOrganization.organization',
         'employmentContracts',
+        'employmentContracts.file',
       ],
     });
   }
