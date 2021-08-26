@@ -906,6 +906,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
             { status: 'L', organizationId: organizationId },
           ],
           relations: [
+            'organization',
             'opportunityResources',
             'opportunityResources.opportunityResourceAllocations',
           ],
@@ -914,6 +915,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
         work = await this.find({
           where: [{ status: 'O' }, { status: 'L' }],
           relations: [
+            'organization',
             'opportunityResources',
             'opportunityResources.opportunityResourceAllocations',
           ],
@@ -927,6 +929,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
             { status: 'C', organizationId: organizationId },
           ],
           relations: [
+            'organization',
             'opportunityResources',
             'opportunityResources.opportunityResourceAllocations',
           ],
@@ -935,6 +938,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
         work = await this.find({
           where: [{ status: 'P' }, { status: 'C' }],
           relations: [
+            'organization',
             'opportunityResources',
             'opportunityResources.opportunityResourceAllocations',
           ],
@@ -945,6 +949,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
         work = await this.find({
           where: { organizationId: organizationId },
           relations: [
+            'organization',
             'opportunityResources',
             'opportunityResources.opportunityResourceAllocations',
           ],
