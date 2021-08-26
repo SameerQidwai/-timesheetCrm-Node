@@ -17,7 +17,7 @@ export class AuthController {
       let password: string = req.body.password;
       let user = await repository.findOne({
         where: { username: email },
-        relations: ['role', 'role.permissions'],
+        relations: ['contactPersonOrganization', 'role', 'role.permissions'],
       });
 
       let token: string;
@@ -35,6 +35,10 @@ export class AuthController {
         let role = {
           roleId: user.role.id,
           role: user.role.label,
+          type:
+            user.contactPersonOrganization.organizationId === 1
+              ? 'Employee'
+              : 'Sub Contractor',
           permissions: user.role.permissions.map((x) => {
             const { resource, action, grant } = x;
             return {
@@ -128,7 +132,7 @@ export class AuthController {
 
       res.status(200).json({
         success: true,
-        message: 'Password Updated Successfully',
+        message: 'User Setting Received Successfully',
         data: user,
       });
     } catch (e) {

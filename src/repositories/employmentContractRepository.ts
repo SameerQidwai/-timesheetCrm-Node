@@ -119,8 +119,7 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
       employmentContract.remunerationAmount;
     employmentContractObj.remunerationAmountPer =
       employmentContract.remunerationAmountPer;
-    if (employmentContract.fileId)
-      employmentContractObj.fileId = employmentContract.fileId;
+    employmentContractObj.fileId = employmentContract.fileId;
     await this.update(id, employmentContractObj);
     return this.findOneCustom(id);
   }
