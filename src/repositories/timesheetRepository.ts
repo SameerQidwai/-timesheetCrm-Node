@@ -1030,121 +1030,84 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return users;
   }
 
-  async getTimesheetPDF(
-    startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
-    endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
-    userId: number,
-    authId: number
-  ): Promise<any | undefined> {
-    let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
-      'YYYY-MM-DD HH:mm:ss'
+  async getTimesheetPDF(projectEntryId: number): Promise<any | undefined> {
+    // console.log(cStartDate, cEndDate);
+    let projectEntry = await this.manager.findOne(
+      TimesheetProjectEntry,
+      projectEntryId,
+      {
+        relations: [
+          'timesheet',
+          'timesheet.employee',
+          'timesheet.employee.contactPersonOrganization',
+          'timesheet.employee.contactPersonOrganization.organization',
+          'timesheet.employee.contactPersonOrganization.contactPerson',
+          'project',
+          'project.organization',
+          'project.organization.delegateContactPerson',
+          'entries',
+        ],
+      }
     );
-    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
 
-    console.log(cStartDate, cEndDate);
-    let timesheet = await this.findOne({
-      where: { startDate: cStartDate, endDate: cEndDate, employeeId: userId },
-      relations: [
-        'projectEntries',
-        'projectEntries.project',
-        'projectEntries.project.organization',
-        'projectEntries.project.organization.delegateContactPerson',
-        'projectEntries.entries',
-        'employee',
-        'employee.contactPersonOrganization',
-        'employee.contactPersonOrganization.organization',
-      ],
-    });
-
-    if (!timesheet) {
-      throw new Error('Timesheet not found');
+    if (!projectEntry) {
+      throw new Error('Project Entry not found');
     }
 
     //-- START OF MODIFIED RESPSONSE FOR FRONTEND
-
-    let projects: any = [];
-    let projectStatuses: any = [];
 
     interface Any {
       [key: string]: any;
     }
 
-    timesheet.projectEntries.map((projectEntry: TimesheetProjectEntry) => {
-      let status: TimesheetStatus = TimesheetStatus.SAVED;
+    let cStartDate = moment(
+      projectEntry.timesheet.startDate,
+      'DD-MM-YYYY'
+    ).format('DD/MM/YYYY');
+    let cEndDate = moment(projectEntry.timesheet.endDate, 'DD-MM-YYYY').format(
+      'DD/MM/YYYY'
+    );
 
-      let authHaveThisProject = false;
-      if (
-        projectEntry.project.accountDirectorId == authId ||
-        projectEntry.project.accountManagerId == authId ||
-        projectEntry.project.projectManagerId == authId
-      ) {
-        authHaveThisProject = true;
-      }
+    let project: Any = {
+      projectEntryId: projectEntry.id,
+      projectId: projectEntry.projectId,
+      name: projectEntry.project.title,
+      client: projectEntry.project.organization.name,
+      contact:
+        projectEntry.project.organization.delegateContactPerson?.firstName ??
+        '-',
+      notes: projectEntry.notes,
+      totalHours: 0,
+      invoicedDays: projectEntry.entries.length,
+      entries: [],
+    };
 
-      projectEntry.project.accountDirectorId;
-
-      let project: Any = {
-        projectEntryId: projectEntry.id,
-        projectId: projectEntry.projectId,
-        project: projectEntry.project.title,
-        client: projectEntry.project.organization.name,
-        contact:
-          projectEntry.project.organization.delegateContactPerson?.firstName ??
-          '-',
-        entries: [],
-        isManaged: authHaveThisProject,
-        notes: projectEntry.notes,
-        totalHours: 0,
-        invoicedDays: projectEntry.entries.length,
-      };
-
-      projectEntry.entries.map((entry: TimesheetEntry) => {
-        project.totalHours += entry.hours;
-        project.entries.push({
-          entryId: entry.id,
-          date: moment(entry.date, 'DD-MM-YYYY').format('D/M/Y'),
-          day: moment(entry.date, 'DD-MM-YYYY').format('dddd'),
-          startTime: moment(entry.startTime, 'HH:mm').format('HH:mm'),
-          endTime: moment(entry.endTime, 'HH:mm').format('HH:mm'),
-          minutes: moment(entry.endTime, 'HH:mm').diff(
-            moment(entry.startTime, 'HH:mm'),
-            'minutes'
-          ),
-          breakHours: entry.breakHours,
-          actualHours: entry.hours,
-          notes: entry.notes,
-        });
-
-        if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
-        else if (entry.approvedAt !== null) status = TimesheetStatus.APPROVED;
-        else if (entry.submittedAt !== null) status = TimesheetStatus.SUBMITTED;
+    projectEntry.entries.map((entry: TimesheetEntry) => {
+      project.totalHours += entry.hours;
+      project.entries.push({
+        entryId: entry.id,
+        date: moment(entry.date, 'DD-MM-YYYY').format('D/M/Y'),
+        day: moment(entry.date, 'DD-MM-YYYY').format('dddd'),
+        startTime: moment(entry.startTime, 'HH:mm').format('HH:mm'),
+        endTime: moment(entry.endTime, 'HH:mm').format('HH:mm'),
+        breakHours: entry.breakHours,
+        breakMinutes: entry.breakHours * 60,
+        actualHours: entry.hours,
+        notes: entry.notes,
       });
-
-      project.status = status;
-      projectStatuses.push(status);
-
-      projects.push(project);
     });
 
-    console.log(projectStatuses);
-    let timesheetStatus: TimesheetStatus = projectStatuses.includes(
-      TimesheetStatus.REJECTED
-    )
-      ? TimesheetStatus.REJECTED
-      : projectStatuses.includes(TimesheetStatus.SAVED)
-      ? TimesheetStatus.SAVED
-      : projectStatuses.includes(TimesheetStatus.SUBMITTED)
-      ? TimesheetStatus.SUBMITTED
-      : projectStatuses.includes(TimesheetStatus.APPROVED)
-      ? TimesheetStatus.APPROVED
-      : TimesheetStatus.SAVED;
-
     let response = {
-      id: timesheet.id,
-      company: timesheet.employee.contactPersonOrganization.organization.name,
-      status: timesheetStatus,
-      notes: timesheet.notes,
-      projects: projects,
+      id: projectEntry.id,
+      company:
+        projectEntry.timesheet.employee.contactPersonOrganization.organization
+          .name,
+      employee:
+        projectEntry.timesheet.employee.contactPersonOrganization.contactPerson
+          .firstName,
+      period: `${cStartDate} - ${cEndDate}`,
+      notes: projectEntry.timesheet.notes,
+      project: project,
     };
 
     return response;

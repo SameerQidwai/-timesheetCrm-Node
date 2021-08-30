@@ -325,20 +325,13 @@ export class TimesheetController {
   async getTimesheetPDF(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(TimesheetRepository);
-      let startDate = req.params.startDate as string;
-      let endDate = req.params.endDate as string;
-      let userId = parseInt(req.params.userId) as number;
+      let projectEntryId = parseInt(req.params.projectEntryId) as number;
 
       let record: any = [];
       const { grantLevel } = res.locals;
       const { user } = res.locals;
 
-      record = await repository.getTimesheetPDF(
-        startDate,
-        endDate,
-        userId,
-        user.id
-      );
+      record = await repository.getTimesheetPDF(projectEntryId);
 
       res.status(200).json({
         success: true,
