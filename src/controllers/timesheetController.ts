@@ -321,4 +321,33 @@ export class TimesheetController {
       next(e);
     }
   }
+
+  async getTimesheetPDF(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(TimesheetRepository);
+      let startDate = req.params.startDate as string;
+      let endDate = req.params.endDate as string;
+      let userId = parseInt(req.params.userId) as number;
+
+      let record: any = [];
+      const { grantLevel } = res.locals;
+      const { user } = res.locals;
+
+      record = await repository.getTimesheetPDF(
+        startDate,
+        endDate,
+        userId,
+        user.id
+      );
+
+      res.status(200).json({
+        success: true,
+        // message: `Win Opportunity ${req.params.id}`,
+        message: 'Specific Timesheet by Date',
+        data: record,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

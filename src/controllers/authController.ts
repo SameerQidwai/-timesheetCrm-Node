@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { EmployeeRepository } from './../repositories/employeeRepository';
-import { getCustomRepository } from 'typeorm';
+import { Any, getCustomRepository } from 'typeorm';
 import { EntityType } from '../constants/constants';
 import { secret } from '../utilities/configs';
 import bcrypt from 'bcryptjs';
@@ -119,7 +119,7 @@ export class AuthController {
       //Get userId from JWT
       const userId = res.locals.jwtPayload.id;
 
-      let user = await repository.findOne({
+      let user: any = await repository.findOne({
         where: { id: userId },
         relations: [
           'contactPersonOrganization',
@@ -129,6 +129,11 @@ export class AuthController {
           'employmentContracts',
         ],
       });
+      if (user) {
+        user.contactPersonOrganization.organizationId != 1
+          ? delete user['employmentContracts']
+          : '';
+      }
 
       res.status(200).json({
         success: true,

@@ -54,4 +54,11 @@ router.route('/entries/:id').put(contr.editTimesheetEntry.bind(contr));
 
 router.route('/entries/:id').delete(contr.deleteTimesheetEntry.bind(contr));
 
+router
+  .route('/print/:startDate&:endDate&:userId')
+  .get(
+    [isLoggedIn, can(Action.READ, Resource.TIMESHEETS)],
+    contr.getTimesheetPDF.bind(contr)
+  );
+
 export default router;
