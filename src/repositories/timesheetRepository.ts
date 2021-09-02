@@ -1060,6 +1060,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
       [key: string]: any;
     }
 
+    let startDate = moment(projectEntry.timesheet.startDate, 'DD-MM-YYYY');
     let cStartDate = moment(
       projectEntry.timesheet.startDate,
       'DD-MM-YYYY'
@@ -1067,6 +1068,13 @@ export class TimesheetRepository extends Repository<Timesheet> {
     let cEndDate = moment(projectEntry.timesheet.endDate, 'DD-MM-YYYY').format(
       'DD/MM/YYYY'
     );
+
+    let cMonthDays = moment(
+      projectEntry.timesheet.startDate,
+      'DD-MM-YYYY'
+    ).daysInMonth();
+
+    console.log(cMonthDays);
 
     let project: Any = {
       projectEntryId: projectEntry.id,
@@ -1082,20 +1090,50 @@ export class TimesheetRepository extends Repository<Timesheet> {
       entries: [],
     };
 
-    projectEntry.entries.map((entry: TimesheetEntry) => {
-      project.totalHours += entry.hours;
-      project.entries.push({
-        entryId: entry.id,
-        date: moment(entry.date, 'DD-MM-YYYY').format('D/M/Y'),
-        day: moment(entry.date, 'DD-MM-YYYY').format('dddd'),
-        startTime: moment(entry.startTime, 'HH:mm').format('HH:mm'),
-        endTime: moment(entry.endTime, 'HH:mm').format('HH:mm'),
-        breakHours: entry.breakHours,
-        breakMinutes: entry.breakHours * 60,
-        actualHours: entry.hours,
-        notes: entry.notes,
+    for (let i = 1; i <= cMonthDays; i++) {
+      let _flagFound = 0;
+      let _foundEntry: TimesheetEntry | undefined;
+      projectEntry.entries.map((entry: TimesheetEntry) => {
+        if (parseInt(entry.date.substring(0, 2)) == i) {
+          _flagFound = 1;
+          _foundEntry = entry;
+        }
       });
-    });
+      if (_flagFound == 1 && _foundEntry != undefined) {
+        project.totalHours += _foundEntry.hours;
+        project.entries.push({
+          entryId: _foundEntry.id,
+          date: moment(_foundEntry.date, 'DD-MM-YYYY').format('D/M/Y'),
+          day: moment(_foundEntry.date, 'DD-MM-YYYY').format('dddd'),
+          startTime: moment(_foundEntry.startTime, 'HH:mm').format('HH:mm'),
+          endTime: moment(_foundEntry.endTime, 'HH:mm').format('HH:mm'),
+          breakHours: _foundEntry.breakHours,
+          breakMinutes: _foundEntry.breakHours * 60,
+          actualHours: _foundEntry.hours,
+          notes: _foundEntry.notes,
+        });
+      } else {
+        console.log(`${i}-${startDate.month()}-${startDate.year()}`);
+        project.totalHours += 0;
+        project.entries.push({
+          entryId: '-',
+          date: moment(
+            `${i}-${startDate.month() + 1}-${startDate.year()}`,
+            'DD-MM-YYYY'
+          ).format('D/M/Y'),
+          day: moment(
+            `${i}-${startDate.month() + 1}-${startDate.year()}`,
+            'DD-MM-YYYY'
+          ).format('dddd'),
+          startTime: '-',
+          endTime: '-',
+          breakHours: '-',
+          breakMinutes: '-',
+          actualHours: '-',
+          notes: '-',
+        });
+      }
+    }
 
     let response = {
       id: projectEntry.id,
