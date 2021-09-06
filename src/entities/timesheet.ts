@@ -1,4 +1,11 @@
-import { Entity, Column, OneToMany, OneToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  OneToMany,
+  OneToOne,
+  JoinColumn,
+  ManyToOne,
+} from 'typeorm';
 import { Base } from './common/base';
 import { TimesheetProjectEntry } from './timesheetProjectEntry';
 import { TimesheetEntry } from './timesheetEntry';
@@ -13,10 +20,10 @@ export class Timesheet extends Base {
   @Column({ name: 'end_date' })
   endDate: Date;
 
-  @Column({ name: 'employee_id' })
+  @Column({ name: 'employee_id', unique: false })
   employeeId: number;
 
-  @OneToOne(() => Employee)
+  @ManyToOne(() => Employee)
   @JoinColumn({ name: 'employee_id' })
   employee: Employee;
 
