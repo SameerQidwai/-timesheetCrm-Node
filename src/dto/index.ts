@@ -393,3 +393,10 @@ export interface PermissionDTO extends Base {
 export interface RoleDTO extends Base {
   label: string;
 }
+
+export interface GlobalVariableValueDTO extends Base {
+  globalVariableId: number;
+  value: number;
+  startDate: Date;
+  endDate: Date;
+}

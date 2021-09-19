@@ -12,17 +12,19 @@ import { BankAccount } from '../entities/bankAccount';
 import { BusinessType, ClearanceLevel, Gender } from '../constants/constants';
 import { Action, Resource, Grant } from '../constants/authorization';
 import { GlobalSetting } from '../entities/globalSetting';
+import { GlobalVariableLabel } from '../entities/globalVariableLabel';
 import { GlobalSettingDTO } from '../dto';
 
 let runSeeders = async () => {
   console.log('running seeders');
-  await statesSeeder();
-  await rolesSeeder();
-  await permissionsSeeder();
-  await globalSettingsSeeder();
-  await organizationSeeder();
-  await contactPersonSeeder();
-  await employeeSeeder();
+  // await statesSeeder();
+  // await rolesSeeder();
+  // await permissionsSeeder();
+  // await globalSettingsSeeder();
+  // await organizationSeeder();
+  // await contactPersonSeeder();
+  // await employeeSeeder();
+  globalVariableLabelSeeder();
   console.log('seeders stopped');
 };
 
@@ -588,6 +590,37 @@ let employeeSeeder = async () => {
 
       return 1;
     });
+    return true;
+  }
+  return false;
+};
+
+let globalVariableLabelSeeder = async () => {
+  let globalVariableLabelsCount = (await getManager().find(GlobalVariableLabel))
+    .length;
+  console.log(globalVariableLabelsCount);
+  if (globalVariableLabelsCount == 0) {
+    let labels = [
+      'GST',
+      'Superannuation',
+      'Payroll Tax',
+      'TaxVIC',
+      'TaxSA',
+      'TaxQLD',
+      'TaxWA',
+      'TaxACT',
+      'TaxTAS',
+      'TaxNSW',
+      'TaxNT',
+    ];
+    let rowsPromises = labels.map(async (label, index) => {
+      let record = new GlobalVariableLabel();
+      record.name = label;
+      record.stateId = index + 1;
+      return record;
+    });
+    let rows = await Promise.all(rowsPromises);
+    await getManager().save(rows);
     return true;
   }
   return false;
