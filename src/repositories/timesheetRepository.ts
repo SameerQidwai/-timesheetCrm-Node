@@ -492,6 +492,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         }
 
         entry.projectEntryId = timesheetDTO.projectEntryId;
+        entry.notes = timesheetDTO.notes;
 
         entry = await transactionalEntityManager.save(entry);
 
