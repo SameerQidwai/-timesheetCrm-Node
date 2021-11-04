@@ -482,6 +482,10 @@ export class OpportunityRepository extends Repository<Opportunity> {
     resourceAllocation.endDate = opportunityResourceAllocationDTO.endDate;
     resourceAllocation.effortRate = opportunityResourceAllocationDTO.effortRate;
 
+    if (opportunityResource.opportunityResourceAllocations.length == 0) {
+      resourceAllocation.isMarkedAsSelected = true;
+    }
+
     resourceAllocation = await this.manager.save(resourceAllocation);
     return this.findOneCustomResourceAllocation(
       opportunityId,
