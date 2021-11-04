@@ -507,14 +507,14 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    projectEntryId: number
+    projectEntryIds: Array<number>
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
       'YYYY-MM-DD HH:mm:ss'
     );
     let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
 
-    let projectEntry = await this.manager.transaction(
+    let projectEntries = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let timesheet = await this.findOne({
           where: {
@@ -529,33 +529,37 @@ export class TimesheetRepository extends Repository<Timesheet> {
           ],
         });
 
-        if (!timesheet) {
-          throw new Error('Timesheet not found!');
-        }
+        let updatedEntries: any = [];
 
-        let projectEntry = timesheet.projectEntries.filter(
-          (entry) => entry.id === projectEntryId
-        )[0];
+        projectEntryIds.forEach(async (projectEntryId) => {
+          if (!timesheet) {
+            throw new Error('Timesheet not found!');
+          }
 
-        if (!projectEntry) {
-          throw new Error('Entry not found!');
-        }
+          let projectEntry = timesheet.projectEntries.filter(
+            (entry) => entry.id === projectEntryId
+          )[0];
 
-        projectEntry.entries.map((entry) => {
-          entry.submittedAt = moment().toDate();
-          entry.approvedAt = null;
-          entry.rejectedAt = null;
+          if (!projectEntry) {
+            throw new Error('Entry not found!');
+          }
+
+          projectEntry.entries.map((entry) => {
+            entry.submittedAt = moment().toDate();
+            entry.approvedAt = null;
+            entry.rejectedAt = null;
+          });
+
+          await transactionalEntityManager.save(timesheet);
+          updatedEntries.push(projectEntry);
         });
 
-        await transactionalEntityManager.save(timesheet);
-
-        return timesheet.projectEntries.filter(
-          (entry) => entry.id === projectEntryId
-        );
+        return updatedEntries;
       }
     );
 
-    return projectEntry;
+    return projectEntries;
+
     // projectEntry.entries.map(entry => entry.submittedAt = )
   }
 
@@ -1147,6 +1151,123 @@ export class TimesheetRepository extends Repository<Timesheet> {
       period: `${cStartDate} - ${cEndDate}`,
       notes: projectEntry.timesheet.notes,
       project: project,
+    };
+
+    return response;
+
+    //-- END OF MODIFIED RESPONSE FOR FRONTEND
+  }
+
+  async getAnyTimesheetByProject(
+    startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
+    endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
+    projectId: number,
+    authId: number
+  ): Promise<any | undefined> {
+    let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
+      'YYYY-MM-DD HH:mm:ss'
+    );
+    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+
+    console.log(cStartDate, cEndDate);
+    let timesheets = await this.find({
+      where: { startDate: cStartDate, endDate: cEndDate },
+      relations: [
+        'employee',
+        'employee.contactPersonOrganization',
+        'employee.contactPersonOrganization.contactPerson',
+        'projectEntries',
+        'projectEntries.project',
+        'projectEntries.entries',
+      ],
+    });
+
+    if (!timesheets) {
+      throw new Error('Timesheet not found');
+    }
+
+    //-- START OF MODIFIED RESPSONSE FOR FRONTEND
+
+    let resTimesheets: any = [];
+
+    interface Any {
+      [key: string]: any;
+    }
+
+    timesheets.forEach((timesheet) => {
+      let resTimesheet: any = {
+        user: timesheet.employee.contactPersonOrganization.contactPerson
+          .firstName,
+        projects: [],
+        projectStatuses: [],
+        timesheetStatus: TimesheetStatus,
+      };
+      timesheet.projectEntries.map((projectEntry: TimesheetProjectEntry) => {
+        console.log('GOING THROUGH PROJECTS', projectEntry.projectId);
+        if (projectEntry.projectId == projectId) {
+          let status: TimesheetStatus = TimesheetStatus.SAVED;
+
+          let authHaveThisProject = false;
+          if (
+            projectEntry.project.accountDirectorId == authId ||
+            projectEntry.project.accountManagerId == authId ||
+            projectEntry.project.projectManagerId == authId
+          ) {
+            authHaveThisProject = true;
+          }
+
+          projectEntry.project.accountDirectorId;
+
+          let project: Any = {
+            projectEntryId: projectEntry.id,
+            projectId: projectEntry.projectId,
+            project: projectEntry.project.title,
+            isManaged: authHaveThisProject,
+            notes: projectEntry.notes,
+            totalHours: 0,
+          };
+
+          projectEntry.entries.map((entry: TimesheetEntry) => {
+            project.totalHours += entry.hours;
+            project[moment(entry.date, 'DD-MM-YYYY').format('D/M')] = {
+              entryId: entry.id,
+              startTime: moment(entry.startTime, 'HH:mm').format('HH:mm'),
+              endTime: moment(entry.endTime, 'HH:mm').format('HH:mm'),
+              breakHours: entry.breakHours,
+              actualHours: entry.hours,
+              notes: entry.notes,
+            };
+
+            if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
+            else if (entry.approvedAt !== null)
+              status = TimesheetStatus.APPROVED;
+            else if (entry.submittedAt !== null)
+              status = TimesheetStatus.SUBMITTED;
+          });
+
+          project.status = status;
+          resTimesheet.projectStatuses.push(status);
+          resTimesheet.projects.push(project);
+        }
+      });
+
+      resTimesheet.timesheetStatus = resTimesheet.projectStatuses.includes(
+        TimesheetStatus.REJECTED
+      )
+        ? TimesheetStatus.REJECTED
+        : resTimesheet.projectStatuses.includes(TimesheetStatus.SAVED)
+        ? TimesheetStatus.SAVED
+        : resTimesheet.projectStatuses.includes(TimesheetStatus.SUBMITTED)
+        ? TimesheetStatus.SUBMITTED
+        : resTimesheet.projectStatuses.includes(TimesheetStatus.APPROVED)
+        ? TimesheetStatus.APPROVED
+        : TimesheetStatus.SAVED;
+
+      resTimesheets.push(resTimesheet);
+    });
+
+    let response = {
+      timesheets: resTimesheets,
     };
 
     return response;

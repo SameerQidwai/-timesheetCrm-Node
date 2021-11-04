@@ -38,4 +38,19 @@ export class ProjectController extends BaseController<
       next(e);
     }
   }
+
+  async projectMilestones(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(ProjectRepository);
+      let records = await repository.getMilestones(parseInt(req.params.id));
+      console.log('records: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'Index Project Milestones',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

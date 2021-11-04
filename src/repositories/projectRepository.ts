@@ -811,4 +811,15 @@ export class ProjectRepository extends Repository<Opportunity> {
 
     return response;
   }
+
+  async getMilestones(projectId: number): Promise<any | undefined> {
+    let project = await this.findOne(projectId, {
+      relations: ['milestones'],
+    });
+    if (!project) {
+      throw new Error('Project not found!');
+    }
+
+    return project.milestones;
+  }
 }

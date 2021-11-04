@@ -343,4 +343,32 @@ export class TimesheetController {
       next(e);
     }
   }
+
+  async getTimesheetByProject(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(TimesheetRepository);
+      let startDate = req.params.startDate as string;
+      let endDate = req.params.endDate as string;
+      let projectId = parseInt(req.params.projectId) as number;
+
+      const { grantLevel } = res.locals;
+      const { user } = res.locals;
+
+      console.log('PROJECT => ', projectId);
+      let record = await repository.getAnyTimesheetByProject(
+        startDate,
+        endDate,
+        projectId,
+        user.id
+      );
+      res.status(200).json({
+        success: true,
+        // message: `Win Opportunity ${req.params.id}`,
+        message: 'Specific Timesheet by Date (Project)',
+        data: record,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

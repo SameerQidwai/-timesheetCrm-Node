@@ -19,6 +19,13 @@ router
   .patch(contr.updateTimesheetProjectEntryNote.bind(contr));
 
 router
+  .route('/project/:startDate&:endDate&:projectId')
+  .get(
+    [isLoggedIn, can(Action.READ, Resource.TIMESHEETS)],
+    contr.getTimesheetByProject.bind(contr)
+  );
+
+router
   .route('/:startDate&:endDate&:userId')
   .get(
     [isLoggedIn, can(Action.READ, Resource.TIMESHEETS)],
