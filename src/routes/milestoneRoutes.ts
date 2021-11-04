@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { isLoggedIn } from '../middlewares/loggedIn';
 import { MilestoneController } from '../controllers/milestoneController';
+import { isLoggedIn } from '../middlewares/loggedIn';
 
 const router = Router();
 const contr = new MilestoneController();

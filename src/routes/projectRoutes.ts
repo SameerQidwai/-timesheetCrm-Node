@@ -46,23 +46,23 @@ router
   );
 router
   .route('/:projectId/resources')
-  .get(resourceContr.index.bind(resourceContr))
-  .post(resourceContr.create.bind(resourceContr));
+  .get([isLoggedIn], resourceContr.index.bind(resourceContr))
+  .post([isLoggedIn], resourceContr.create.bind(resourceContr));
 
 router
   .route('/:projectId/resources/:id')
-  .get(resourceContr.get.bind(resourceContr))
-  .put(resourceContr.update.bind(resourceContr))
-  .delete(resourceContr.delete.bind(resourceContr));
+  .get([isLoggedIn], resourceContr.get.bind(resourceContr))
+  .put([isLoggedIn], resourceContr.update.bind(resourceContr))
+  .delete([isLoggedIn], resourceContr.delete.bind(resourceContr));
 
 router
   .route('/:projectId/purchaseOrders')
-  .get(orderContr.index.bind(orderContr))
-  .post(orderContr.create.bind(orderContr));
+  .get([isLoggedIn], orderContr.index.bind(orderContr))
+  .post([isLoggedIn], orderContr.create.bind(orderContr));
 
 router
   .route('/:projectId/purchaseOrders/:id')
-  .put(orderContr.update.bind(orderContr))
-  .get(orderContr.get.bind(orderContr))
-  .delete(orderContr.delete.bind(orderContr));
+  .put([isLoggedIn], orderContr.update.bind(orderContr))
+  .get([isLoggedIn], orderContr.get.bind(orderContr))
+  .delete([isLoggedIn], orderContr.delete.bind(orderContr));
 export default router;

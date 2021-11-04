@@ -57,9 +57,13 @@ router
     contr.rejectTimesheetProjectEntry.bind(contr)
   );
 
-router.route('/entries/:id').put(contr.editTimesheetEntry.bind(contr));
+router
+  .route('/entries/:id')
+  .put([isLoggedIn], contr.editTimesheetEntry.bind(contr));
 
-router.route('/entries/:id').delete(contr.deleteTimesheetEntry.bind(contr));
+router
+  .route('/entries/:id')
+  .delete([isLoggedIn], contr.deleteTimesheetEntry.bind(contr));
 
 router
   .route('/print/:projectEntryId')

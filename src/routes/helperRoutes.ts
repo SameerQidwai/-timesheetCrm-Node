@@ -9,13 +9,17 @@ const router = Router();
 let contr = new HelperController();
 router
   .route('/contact-persons')
-  .get(contr.helperGetAlContactPersons.bind(contr));
+  .get([isLoggedIn], contr.helperGetAlContactPersons.bind(contr));
 
-router.route('/levels-by-skill').get(contr.helperGetLevelsBySkill.bind(contr));
+router
+  .route('/levels-by-skill')
+  .get([isLoggedIn], contr.helperGetLevelsBySkill.bind(contr));
 
-router.route('/roles').get(contr.helperGetAllRoles.bind(contr));
-router.route('/work').get(contr.helperGetAllWork.bind(contr));
-router.route('/projects').get(contr.helperGetProjectsByUserId.bind(contr));
+router.route('/roles').get([isLoggedIn], contr.helperGetAllRoles.bind(contr));
+router.route('/work').get([isLoggedIn], contr.helperGetAllWork.bind(contr));
+router
+  .route('/projects')
+  .get([isLoggedIn], contr.helperGetProjectsByUserId.bind(contr));
 router
   .route('/refresh-token')
   .get([isLoggedIn], (req: Request, res: Response, next: NextFunction) => {
