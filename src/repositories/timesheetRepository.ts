@@ -507,14 +507,14 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    projectEntryIds: Array<number>
+    projectEntryId: number
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
       'YYYY-MM-DD HH:mm:ss'
     );
     let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
 
-    let projectEntries = await this.manager.transaction(
+    let projectEntry = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let timesheet = await this.findOne({
           where: {
@@ -529,37 +529,33 @@ export class TimesheetRepository extends Repository<Timesheet> {
           ],
         });
 
-        let updatedEntries: any = [];
+        if (!timesheet) {
+          throw new Error('Timesheet not found!');
+        }
 
-        projectEntryIds.forEach(async (projectEntryId) => {
-          if (!timesheet) {
-            throw new Error('Timesheet not found!');
-          }
+        let projectEntry = timesheet.projectEntries.filter(
+          (entry) => entry.id === projectEntryId
+        )[0];
 
-          let projectEntry = timesheet.projectEntries.filter(
-            (entry) => entry.id === projectEntryId
-          )[0];
+        if (!projectEntry) {
+          throw new Error('Entry not found!');
+        }
 
-          if (!projectEntry) {
-            throw new Error('Entry not found!');
-          }
-
-          projectEntry.entries.map((entry) => {
-            entry.submittedAt = moment().toDate();
-            entry.approvedAt = null;
-            entry.rejectedAt = null;
-          });
-
-          await transactionalEntityManager.save(timesheet);
-          updatedEntries.push(projectEntry);
+        projectEntry.entries.map((entry) => {
+          entry.submittedAt = moment().toDate();
+          entry.approvedAt = null;
+          entry.rejectedAt = null;
         });
 
-        return updatedEntries;
+        await transactionalEntityManager.save(timesheet);
+
+        return timesheet.projectEntries.filter(
+          (entry) => entry.id === projectEntryId
+        );
       }
     );
 
-    return projectEntries;
-
+    return projectEntry;
     // projectEntry.entries.map(entry => entry.submittedAt = )
   }
 
