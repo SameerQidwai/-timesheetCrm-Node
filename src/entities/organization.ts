@@ -3,6 +3,7 @@ import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { BankAccount } from './bankAccount';
 import { Base } from './common/base';
 import { ContactPersonOrganization } from './contactPersonOrganization';
+import { ContactPerson } from './contactPerson';
 
 @Entity('organizations')
 export class Organization extends Base {
@@ -123,16 +124,16 @@ export class Organization extends Base {
   @Column({ name: 'parent_organization_id', nullable: true })
   parentOrganizationId: number;
 
-  @Column({ name: 'delegate_contact_person_organization_id', nullable: true })
-  delegateContactPersonOrganizationId: number;
+  @Column({ name: 'delegate_contact_person_id', nullable: true })
+  delegateContactPersonId: number | null;
 
   @ManyToOne(() => Organization)
   @JoinColumn({ name: 'parent_organization_id' })
   parentOrganization?: Organization;
 
-  @ManyToOne(() => ContactPersonOrganization)
-  @JoinColumn({ name: 'delegate_contact_person_organization_id' })
-  delegateContactPersonOrganization?: ContactPersonOrganization;
+  @ManyToOne(() => ContactPerson)
+  @JoinColumn({ name: 'delegate_contact_person_id' })
+  delegateContactPerson?: ContactPerson;
 
   @OneToMany(() => BankAccount, (bankAccount) => bankAccount.organization, {
     cascade: true,

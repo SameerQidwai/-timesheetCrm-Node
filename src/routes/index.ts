@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import authRoutes from './authRoutes';
 import sampleRoutes from './sample';
 import timeOffTypeRoutes from './timeOffTypeRoutes';
 import timeOffPolicyRoutes from './timeOffPolicyRoutes';
@@ -23,10 +24,15 @@ import timesheetRoutes from './timesheetRoutes';
 import fileRoutes from './fileRoutes';
 import attachmentRoutes from './attachmentRoutes';
 import commentRoutes from './commentRoutes';
+import helperRoutes from './helperRoutes';
+import roleRoutes from './roleRoutes';
+import globalRoutes from './globalRoutes';
+import milestoneRoutes from './milestoneRoutes';
 import opportunityResourceRoutes from './opportunityResourceRoutes';
 import { getCustomRepository } from 'typeorm';
 
 const router: Router = Router();
+router.use('', authRoutes);
 router.use('/samples', sampleRoutes);
 router.use('/time-off-types', timeOffTypeRoutes);
 router.use('/time-off-policies', timeOffPolicyRoutes);
@@ -50,19 +56,12 @@ router.use('/timesheets', timesheetRoutes);
 router.use('/files', fileRoutes);
 router.use('/attachments', attachmentRoutes);
 router.use('/comments', commentRoutes);
+router.use('/helpers', helperRoutes);
+router.use('/roles', roleRoutes);
+router.use('/global-setting', globalRoutes);
+router.use('/milestones', milestoneRoutes);
 // router.use("/opportunity-resources", opportunityResourceRoutes);
-router.post('/global-setting', async (req, res) => {
-  let data = await getCustomRepository(GlobalSettingRepository).createAndSave({
-    fromEmail: 'tst',
-    recordsPerPage: '15',
-    timeZone: 'gmt+5',
-  });
-  res.status(200).json({
-    success: true,
-    message: `POST test`,
-    data: data,
-  });
-});
+
 // console.log("router: ", router);
 
 export default router;

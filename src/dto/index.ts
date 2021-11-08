@@ -1,3 +1,4 @@
+import { Action, Grant, Resource } from './../constants/authorization';
 import {
   EmploymentType,
   Gender,
@@ -91,6 +92,7 @@ export interface PanelSkillDTO extends Base {
 
 export interface GlobalSettingDTO {
   fromEmail: string;
+  displayEmail: string;
   recordsPerPage: string;
   timeZone: string;
 }
@@ -122,7 +124,7 @@ export interface OrganizationDTO extends Base {
   plInsuranceExpiry: Date | null;
   wcInsuranceExpiry: Date | null;
   parentOrganizationId: number | null;
-  delegateContactPersonOrganizationId: number | null;
+  delegateContactPersonId: number | null;
   bankName: string;
   bankAccountNo: string;
   bankBsb: string;
@@ -186,6 +188,7 @@ export interface EmployeeDTO extends Base {
   bankName: string;
   bankAccountNo: string;
   bankBsb: string;
+  roleId: number;
 }
 
 export interface EmploymentContractDTO extends Base {
@@ -200,6 +203,7 @@ export interface EmploymentContractDTO extends Base {
   noOfHoursPer: Frequency;
   remunerationAmount: number;
   remunerationAmountPer: Frequency;
+  fileId: number;
 }
 
 export interface LeaseDTO extends Base {
@@ -240,6 +244,7 @@ export interface SubContractorDTO extends Base {
   nextOfKinEmail: string;
   nextOfKinRelation: string;
   latestContract: ContractDTO;
+  roleId: number;
 }
 
 export interface ContractDTO extends Base {
@@ -251,6 +256,7 @@ export interface ContractDTO extends Base {
   noOfHoursPer: Frequency;
   remunerationAmount: number;
   remunerationAmountPer: Frequency;
+  fileId: number;
 }
 
 interface Work extends Base {
@@ -347,13 +353,60 @@ export interface FileDTO extends Base {
 
 export interface AttachmentDTO extends Base {
   files: number[];
-  type: EntityType;
+  targetType: EntityType;
   target: number;
 }
 
 export interface CommentDTO extends Base {
-  type: EntityType;
+  targetType: EntityType;
   target: number;
   content: string;
   attachments: number[] | [];
+}
+
+export interface Settings extends Base {
+  nextOfKinName: string;
+  nextOfKinPhoneNumber: string;
+  nextOfKinEmail: string;
+  nextOfKinRelation: string;
+  tfn: string;
+  taxFreeThreshold: boolean | null;
+  helpHECS: boolean | null;
+  superannuationName: string;
+  superannuationType: SuperannuationType | null;
+  superannuationBankName: string;
+  superannuationBankAccountOrMembershipNumber: string;
+  superannuationAbnOrUsi: string;
+  superannuationBankBsb: string;
+  superannuationAddress: string;
+  training: string;
+  // bankName: string; //! NOT USING BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
+  // bankAccountNo: string; //! NOT USING BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
+  // bankBsb: string; //! NOT USING BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
+}
+export interface PermissionDTO extends Base {
+  action: Action;
+  resource: Resource;
+  grant: Grant;
+}
+
+export interface RoleDTO extends Base {
+  label: string;
+}
+
+export interface GlobalVariableValueDTO extends Base {
+  globalVariableId: number;
+  value: number;
+  startDate: Date;
+  endDate: Date;
+}
+
+export interface MilestoneDTO extends Base {
+  title: string;
+  description: string;
+  dueDate: Date;
+  amount: number;
+  progress: number;
+  isApproved: Boolean;
+  projectId: number;
 }

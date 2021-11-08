@@ -4,8 +4,8 @@ import { File } from './../entities/file';
 
 @EntityRepository(File)
 export class FileRepository extends Repository<File> {
-  async createAndSave(files: any): Promise<any> {
-    let ids = [];
+  async createAndSave(files: any, userId: number): Promise<any> {
+    let resFiles = [];
     for (const file of files) {
       let obj = new File();
       obj.originalName = file.originalname;
@@ -13,9 +13,10 @@ export class FileRepository extends Repository<File> {
       obj.type =
         file.originalname.split('.')[file.originalname.split('.').length - 1];
       obj.uniqueName = file.filename;
+      obj.userId = userId;
       let dbFile = await this.save(obj);
-      ids.push(dbFile.id);
+      resFiles.push(dbFile);
     }
-    return ids;
+    return resFiles;
   }
 }

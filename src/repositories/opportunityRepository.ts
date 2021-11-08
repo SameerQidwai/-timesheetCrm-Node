@@ -101,13 +101,14 @@ export class OpportunityRepository extends Repository<Opportunity> {
       }
 
       let accountManager: Employee | undefined;
+
       if (opportunity.accountManagerId) {
         accountManager = await this.manager.findOne(
           Employee,
           opportunity.accountManagerId
         );
         if (!accountManager) {
-          throw new Error('Account Manager not found');
+          throw new Error('Account Director not found');
         }
         opportunityObj.accountManagerId = accountManager.id;
         // opportunityObj.accountManagerId = 1;
@@ -120,8 +121,9 @@ export class OpportunityRepository extends Repository<Opportunity> {
           opportunity.opportunityManagerId
         );
         if (!opportunityManager) {
-          throw new Error('Opportunity Manager not found');
+          throw new Error('Account Director not found');
         }
+
         opportunityObj.opportunityManagerId = opportunityManager.id;
         // opportunityObj.opportunityManagerId = 1;
       }
@@ -147,7 +149,8 @@ export class OpportunityRepository extends Repository<Opportunity> {
     opportunity: OpportunityDTO
   ): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
-      let opportunityObj = await this.findOneCustom(id);
+      let opportunityObj: Opportunity =
+        await this.findOneCustomWithoutContactPerson(id);
 
       opportunityObj.title = opportunity.title;
       if (opportunity.startDate) {
@@ -196,7 +199,9 @@ export class OpportunityRepository extends Repository<Opportunity> {
       }
 
       let contactPerson: ContactPerson | undefined;
-      if (opportunity.contactPersonId) {
+      if (opportunity.contactPersonId == null) {
+        opportunityObj.contactPersonId = null;
+      } else if (opportunity.contactPersonId) {
         contactPerson = await this.manager.findOne(
           ContactPerson,
           opportunity.contactPersonId
@@ -269,6 +274,14 @@ export class OpportunityRepository extends Repository<Opportunity> {
   async findOneCustom(id: number): Promise<any | undefined> {
     return this.findOne(id, {
       relations: ['organization', 'contactPerson'],
+    });
+  }
+
+  async findOneCustomWithoutContactPerson(
+    id: number
+  ): Promise<any | undefined> {
+    return this.findOne(id, {
+      relations: ['organization'],
     });
   }
 
@@ -404,6 +417,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
     if (!opportunity) {
       throw new Error('Opportunity not found!');
     }
+
     opportunity.opportunityResources = opportunity.opportunityResources.filter(
       (x) => x.id !== id
     );
@@ -468,6 +482,10 @@ export class OpportunityRepository extends Repository<Opportunity> {
     resourceAllocation.endDate = opportunityResourceAllocationDTO.endDate;
     resourceAllocation.effortRate = opportunityResourceAllocationDTO.effortRate;
 
+    if (opportunityResource.opportunityResourceAllocations.length == 0) {
+      resourceAllocation.isMarkedAsSelected = true;
+    }
+
     resourceAllocation = await this.manager.save(resourceAllocation);
     return this.findOneCustomResourceAllocation(
       opportunityId,
@@ -509,9 +527,10 @@ export class OpportunityRepository extends Repository<Opportunity> {
       throw new Error('Opportunity Resource not found!');
     }
 
-    let resourceAllocation = opportunityResource.opportunityResourceAllocations.filter(
-      (x) => x.id == id
-    )[0];
+    let resourceAllocation =
+      opportunityResource.opportunityResourceAllocations.filter(
+        (x) => x.id == id
+      )[0];
     if (!resourceAllocation) {
       throw new Error('Resource Allocation not found!');
     }
@@ -537,6 +556,9 @@ export class OpportunityRepository extends Repository<Opportunity> {
       resourceAllocation.contactPersonId =
         opportunityResourceAllocationDTO.contactPersonId;
     }
+    resourceAllocation.startDate = opportunityResourceAllocationDTO.startDate;
+    resourceAllocation.endDate = opportunityResourceAllocationDTO.endDate;
+    resourceAllocation.effortRate = opportunityResourceAllocationDTO.effortRate;
     resourceAllocation.opportunityResourceId = opportunityResourceId;
     await this.manager.save(resourceAllocation);
     return this.findOneCustomResourceAllocation(
@@ -579,9 +601,10 @@ export class OpportunityRepository extends Repository<Opportunity> {
       throw new Error('Opportunity Resource not found!');
     }
 
-    let resourceAllocation = opportunityResource.opportunityResourceAllocations.filter(
-      (x) => x.id == id
-    )[0];
+    let resourceAllocation =
+      opportunityResource.opportunityResourceAllocations.filter(
+        (x) => x.id == id
+      )[0];
     if (!resourceAllocation) {
       throw new Error('Resource Allocation not found!');
     }
@@ -831,5 +854,147 @@ export class OpportunityRepository extends Repository<Opportunity> {
       await transactionalEntityManager.save(opportunityObj);
     });
     return this.findOneCustom(id);
+  }
+
+  async getManageActive(userId: number): Promise<any[]> {
+    let result = await this.find({
+      where: [
+        {
+          status: 'O',
+          accountDirectorId: userId,
+        },
+        {
+          status: 'O',
+          accountManagerId: userId,
+        },
+        {
+          status: 'O',
+          opportunityManagerId: userId,
+        },
+        {
+          status: 'L',
+          accountDirectorId: userId,
+        },
+        {
+          status: 'L',
+          accountManagerId: userId,
+        },
+        {
+          status: 'L',
+          opportunityManagerId: userId,
+        },
+      ],
+      relations: ['organization'],
+    });
+    return result;
+  }
+
+  async helperGetAllWork(
+    type: string,
+    employeeId: number,
+    organizationId: number
+  ): Promise<any | undefined> {
+    let work: Opportunity[];
+    let data: any = [];
+    let haveOrganization = false;
+
+    if (!isNaN(organizationId) && organizationId != 0) {
+      haveOrganization = true;
+    }
+
+    if (type == 'O' || type == 'o') {
+      if (haveOrganization) {
+        work = await this.find({
+          where: [
+            { status: 'O', organizationId: organizationId },
+            { status: 'L', organizationId: organizationId },
+          ],
+          relations: [
+            'organization',
+            'opportunityResources',
+            'opportunityResources.opportunityResourceAllocations',
+          ],
+        });
+      } else {
+        work = await this.find({
+          where: [{ status: 'O' }, { status: 'L' }],
+          relations: [
+            'organization',
+            'opportunityResources',
+            'opportunityResources.opportunityResourceAllocations',
+          ],
+        });
+      }
+    } else if (type == 'P' || type == 'p') {
+      if (haveOrganization) {
+        work = await this.find({
+          where: [
+            { status: 'P', organizationId: organizationId },
+            { status: 'C', organizationId: organizationId },
+          ],
+          relations: [
+            'organization',
+            'opportunityResources',
+            'opportunityResources.opportunityResourceAllocations',
+          ],
+        });
+      } else {
+        work = await this.find({
+          where: [{ status: 'P' }, { status: 'C' }],
+          relations: [
+            'organization',
+            'opportunityResources',
+            'opportunityResources.opportunityResourceAllocations',
+          ],
+        });
+      }
+    } else {
+      if (haveOrganization) {
+        work = await this.find({
+          where: { organizationId: organizationId },
+          relations: [
+            'organization',
+            'opportunityResources',
+            'opportunityResources.opportunityResourceAllocations',
+          ],
+        });
+      } else {
+        work = await this.find({});
+      }
+    }
+
+    if (!isNaN(employeeId) && employeeId != 0) {
+      let employee = await this.manager.findOne(Employee, employeeId, {
+        relations: [
+          'contactPersonOrganization',
+          'contactPersonOrganization.contactPerson',
+        ],
+      });
+      if (!employee) {
+        throw new Error('Employee not found');
+      }
+      let employeeContactPersonId =
+        employee.contactPersonOrganization.contactPerson.id;
+      work.forEach((project, index) => {
+        if (type == 'P' || 'p') {
+          let add_flag = 0;
+          project.opportunityResources.forEach((resource) => {
+            resource.opportunityResourceAllocations.forEach((allocation) => {
+              if (
+                allocation.contactPersonId === employeeContactPersonId &&
+                allocation.isMarkedAsSelected
+              ) {
+                add_flag = 1;
+              }
+            });
+          });
+          if (add_flag === 1) data.push(project);
+        }
+      });
+    }
+
+    if (!isNaN(employeeId) && employeeId != 0) return data;
+
+    return work;
   }
 }

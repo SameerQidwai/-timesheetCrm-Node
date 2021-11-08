@@ -18,6 +18,7 @@ import { Panel } from './panel';
 import { OpportunityResource } from './opportunityResource';
 import { PurchaseOrder } from './purchaseOrder';
 import { Employee } from './employee';
+import { Milestone } from './milestone';
 
 @Entity('opportunities')
 export class Opportunity extends Base {
@@ -82,7 +83,7 @@ export class Opportunity extends Base {
   panel: Panel;
 
   @Column({ name: 'contact_person_id', nullable: true })
-  contactPersonId: number;
+  contactPersonId: number | null;
 
   @ManyToOne(() => ContactPerson)
   @JoinColumn({ name: 'contact_person_id' })
@@ -92,16 +93,16 @@ export class Opportunity extends Base {
   stateId: number;
 
   @Column({ name: 'account_director_id', nullable: true })
-  accountDirectorId: number;
+  accountDirectorId: number | null;
 
   @Column({ name: 'account_manager_id', nullable: true })
-  accountManagerId: number;
+  accountManagerId: number | null;
 
   @Column({ name: 'opportunity_manager_id', nullable: true })
-  opportunityManagerId: number;
+  opportunityManagerId: number | null;
 
   @Column({ name: 'project_manager_id', nullable: true })
-  projectManagerId: number;
+  projectManagerId: number | null;
 
   @Column({ name: 'won_date', nullable: true })
   wonDate: Date;
@@ -149,4 +150,9 @@ export class Opportunity extends Base {
     cascade: true,
   })
   purchaseOrders: PurchaseOrder[];
+
+  @OneToMany(() => Milestone, (milestone) => milestone.project, {
+    cascade: true,
+  })
+  milestones: Milestone[];
 }

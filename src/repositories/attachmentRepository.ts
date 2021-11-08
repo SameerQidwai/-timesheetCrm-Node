@@ -5,13 +5,17 @@ import { EntityType } from 'src/constants/constants';
 
 @EntityRepository(Attachment)
 export class AttachmentRepository extends Repository<Attachment> {
-  async createAndSave(attachments: AttachmentDTO): Promise<any> {
+  async createAndSave(
+    attachments: AttachmentDTO,
+    userId: number
+  ): Promise<any> {
     let responseAttachments = [];
     for (const file of attachments.files) {
       let obj = new Attachment();
       obj.fileId = file;
       obj.targetId = attachments.target;
-      obj.type = attachments.type;
+      obj.targetType = attachments.targetType;
+      obj.userId = userId;
       let dbAttachment = await this.save(obj);
       let attachment = await this.findOne(dbAttachment.id, {
         relations: ['file'],
@@ -23,9 +27,9 @@ export class AttachmentRepository extends Repository<Attachment> {
     return responseAttachments;
   }
 
-  async getTargetAttachments(type: EntityType, id: number): Promise<any> {
+  async getTargetAttachments(targetType: EntityType, id: number): Promise<any> {
     let result = await this.find({
-      where: { type: type, targetId: id },
+      where: { targetType: targetType, targetId: id },
       relations: ['file'],
     });
 

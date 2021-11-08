@@ -132,12 +132,13 @@ export class ProjectRepository extends Repository<Opportunity> {
     return await this.findOneCustom(id);
   }
 
-  async getAllActive(params: any): Promise<any[]> {
+  async getAllActive(): Promise<any[]> {
     let response: any = [];
 
     let result = await this.find({
       where: [{ status: 'P' }, { status: 'C' }],
       relations: [
+        'organization',
         'opportunityResources',
         'opportunityResources.panelSkill',
         'opportunityResources.panelSkillStandardLevel',
@@ -146,25 +147,138 @@ export class ProjectRepository extends Repository<Opportunity> {
       ],
     });
 
-    if (params.userId) {
-      console.log('this ran');
-      result.map((project, index) => {
-        let add_flag = 0;
-        project.opportunityResources.map((resource) => {
-          resource.opportunityResourceAllocations.filter((allocation) => {
-            if (
-              allocation.contactPersonId === parseInt(params.userId) &&
-              allocation.isMarkedAsSelected
-            ) {
-              add_flag = 1;
-            }
-          });
+    return result;
+  }
+
+  async getOwnActive(userId: number): Promise<any[]> {
+    let response: any = [];
+
+    let result = await this.find({
+      where: [{ status: 'P' }, { status: 'C' }],
+      relations: [
+        'organization',
+        'opportunityResources',
+        'opportunityResources.panelSkill',
+        'opportunityResources.panelSkillStandardLevel',
+        'opportunityResources.opportunityResourceAllocations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
+    });
+
+    console.log('this ran');
+    result.map((project, index) => {
+      let add_flag = 0;
+      project.opportunityResources.map((resource) => {
+        resource.opportunityResourceAllocations.filter((allocation) => {
+          if (
+            allocation.contactPersonId === userId &&
+            allocation.isMarkedAsSelected
+          ) {
+            add_flag = 1;
+          }
         });
-        if (add_flag === 1) response.push(project);
       });
-    } else {
-      return result;
-    }
+      if (add_flag === 1) response.push(project);
+    });
+
+    return response;
+  }
+
+  async getManageActive(userId: number): Promise<any[]> {
+    let result = await this.find({
+      where: [
+        {
+          status: 'P',
+          accountDirectorId: userId,
+        },
+        {
+          status: 'P',
+          accountManagerId: userId,
+        },
+        {
+          status: 'P',
+          projectManagerId: userId,
+        },
+        {
+          status: 'C',
+          accountDirectorId: userId,
+        },
+        {
+          status: 'C',
+          accountManagerId: userId,
+        },
+        {
+          status: 'C',
+          projectManagerId: userId,
+        },
+      ],
+      relations: [
+        'organization',
+        'opportunityResources',
+        'opportunityResources.panelSkill',
+        'opportunityResources.panelSkillStandardLevel',
+        'opportunityResources.opportunityResourceAllocations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
+    });
+
+    return result;
+  }
+
+  async getOwnAndManageActive(userId: number): Promise<any[]> {
+    let response: any = [];
+    let result = await this.find({
+      where: [
+        {
+          status: 'P',
+          accountDirectorId: userId,
+        },
+        {
+          status: 'P',
+          accountManagerId: userId,
+        },
+        {
+          status: 'P',
+          projectManagerId: userId,
+        },
+        {
+          status: 'C',
+          accountDirectorId: userId,
+        },
+        {
+          status: 'C',
+          accountManagerId: userId,
+        },
+        {
+          status: 'C',
+          projectManagerId: userId,
+        },
+      ],
+      relations: [
+        'organization',
+        'opportunityResources',
+        'opportunityResources.panelSkill',
+        'opportunityResources.panelSkillStandardLevel',
+        'opportunityResources.opportunityResourceAllocations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
+    });
+
+    console.log('this ran');
+    result.map((project, index) => {
+      let add_flag = 0;
+      project.opportunityResources.map((resource) => {
+        resource.opportunityResourceAllocations.filter((allocation) => {
+          if (
+            allocation.contactPersonId === userId &&
+            allocation.isMarkedAsSelected
+          ) {
+            add_flag = 1;
+          }
+        });
+      });
+      if (add_flag === 1) response.push(project);
+    });
 
     return response;
   }
@@ -174,7 +288,7 @@ export class ProjectRepository extends Repository<Opportunity> {
     project: ProjectDTO
   ): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
-      let projectObj = await this.findOneCustom(id);
+      let projectObj = await this.findOneCustomWithoutContactPerson(id);
 
       projectObj.title = project.title;
       if (project.startDate) {
@@ -218,7 +332,9 @@ export class ProjectRepository extends Repository<Opportunity> {
       }
 
       let contactPerson: ContactPerson | undefined;
-      if (project.contactPersonId) {
+      if (project.contactPersonId == null) {
+        projectObj.contactPersonId = null;
+      } else if (project.contactPersonId) {
         contactPerson = await this.manager.findOne(
           ContactPerson,
           project.contactPersonId
@@ -284,7 +400,15 @@ export class ProjectRepository extends Repository<Opportunity> {
 
   async findOneCustom(id: number): Promise<any | undefined> {
     return this.findOne(id, {
-      relations: ['organization', 'contactPerson'],
+      relations: ['organization'],
+    });
+  }
+
+  async findOneCustomWithoutContactPerson(
+    id: number
+  ): Promise<any | undefined> {
+    return this.findOne(id, {
+      relations: ['organization'],
     });
   }
 
@@ -298,6 +422,7 @@ export class ProjectRepository extends Repository<Opportunity> {
     }
     let project = await this.findOne(projectId, {
       relations: [
+        'organization',
         'opportunityResources',
         'opportunityResources.panelSkill',
         'opportunityResources.panelSkillStandardLevel',
@@ -636,5 +761,65 @@ export class ProjectRepository extends Repository<Opportunity> {
 
     let deletedOrder = project.purchaseOrders.filter((x) => x.id === id);
     return await this.manager.softDelete(PurchaseOrder, deletedOrder);
+  }
+
+  async helperGetProjectsByUserId(employeeId: number) {
+    let response: any = [];
+
+    let employee = await this.manager.findOne(Employee, employeeId, {
+      relations: [
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+      ],
+    });
+
+    if (!employee) {
+      throw new Error('Employee not found');
+    }
+    let employeeContactPersonId =
+      employee.contactPersonOrganization.contactPerson.id;
+
+    let result = await this.find({
+      where: [{ status: 'P' }, { status: 'C' }],
+      relations: [
+        'organization',
+        'opportunityResources',
+        'opportunityResources.panelSkill',
+        'opportunityResources.panelSkillStandardLevel',
+        'opportunityResources.opportunityResourceAllocations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
+    });
+
+    // console.log('result', result);
+
+    result.map((project) => {
+      let add_flag = 0;
+      project.opportunityResources.map((resource) => {
+        resource.opportunityResourceAllocations.filter((allocation) => {
+          if (
+            allocation.contactPersonId === employeeContactPersonId &&
+            allocation.isMarkedAsSelected
+          ) {
+            add_flag = 1;
+          }
+        });
+      });
+      if (add_flag === 1)
+        response.push({ value: project.id, label: project.title });
+    });
+
+    return response;
+  }
+
+  async getMilestones(projectId: number): Promise<any | undefined> {
+    let project = await this.findOne(projectId, {
+      relations: ['milestones'],
+    });
+    if (!project) {
+      throw new Error('Project not found!');
+    }
+
+    return project.milestones;
   }
 }

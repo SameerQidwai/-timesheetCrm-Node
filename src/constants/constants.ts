@@ -38,6 +38,7 @@ export enum ClearanceLevel {
   NEGATIVE_VETTING_1 = 'NV1',
   NEGATIVE_VETTING_2 = 'NV2',
   POSITIVE_VETTING = 'PV',
+  NO_CLEARANCE = 'NC',
 }
 
 export enum BusinessType {
