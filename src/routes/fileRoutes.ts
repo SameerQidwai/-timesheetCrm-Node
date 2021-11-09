@@ -19,7 +19,7 @@ let storage = multer.diskStorage({
 });
 let upload = multer({ storage: storage });
 let contr = new FileController();
-router.route('/:name').get([isLoggedIn], contr.show.bind(contr));
+router.route('/:name').get(contr.show.bind(contr)); //! NO AUTHENTICATION CHECK CAUSE OF FRONTEND
 router
   .route('/')
   .post([isLoggedIn], upload.array('files'), contr.create.bind(contr));

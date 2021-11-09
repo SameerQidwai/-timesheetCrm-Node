@@ -1083,7 +1083,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
       name: projectEntry.project.title,
       client: projectEntry.project.organization.name,
       contact:
-        projectEntry.project.organization.delegateContactPerson?.firstName ??
+        `${projectEntry.project.organization.delegateContactPerson?.firstName} ${projectEntry.project.organization.delegateContactPerson?.lastName}` ??
         '-',
       notes: projectEntry.notes,
       totalHours: 0,
