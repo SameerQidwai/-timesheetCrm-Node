@@ -1141,9 +1141,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
       company:
         projectEntry.timesheet.employee.contactPersonOrganization.organization
           .name,
-      employee:
-        projectEntry.timesheet.employee.contactPersonOrganization.contactPerson
-          .firstName,
+      employee: `${projectEntry.timesheet.employee.contactPersonOrganization.contactPerson.firstName} ${projectEntry.timesheet.employee.contactPersonOrganization.contactPerson.lastName}`,
       period: `${cStartDate} - ${cEndDate}`,
       notes: projectEntry.timesheet.notes,
       project: project,
