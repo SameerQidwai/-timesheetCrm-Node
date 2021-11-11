@@ -269,11 +269,13 @@ export class TimesheetController {
     try {
       const repository = getCustomRepository(TimesheetRepository);
       let projectEntryId = parseInt(req.params.id);
+      const { user } = res.locals;
 
       let record = await repository.updateTimesheetProjectEntryNote(
         projectEntryId,
         req.body.note,
-        req.body.attachments
+        req.body.attachments,
+        user.id
       );
       console.log('record: ', record);
       res.status(200).json({

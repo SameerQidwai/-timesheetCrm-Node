@@ -823,7 +823,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
   async updateTimesheetProjectEntryNote(
     projectEntryId: number,
     notes: string,
-    attachments: []
+    attachments: [],
+    userId: number
   ): Promise<any | undefined> {
     let entry = await this.manager.transaction(
       async (transactionalEntityManager) => {
@@ -852,6 +853,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
             attachmentObj.fileId = file;
             attachmentObj.targetId = projectEntry.id;
             attachmentObj.targetType = EntityType.PROJECT_ENTRY;
+            attachmentObj.userId = userId;
             let attachment = await transactionalEntityManager.save(
               attachmentObj
             );
