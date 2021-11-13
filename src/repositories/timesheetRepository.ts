@@ -166,6 +166,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         project: projectEntry.project.title,
         isManaged: authHaveThisProject,
         notes: projectEntry.notes,
+        totalHours: 0,
       };
 
       console.log({
@@ -176,6 +177,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
       if (authHaveThisProject) {
         projectEntry.entries.map((entry: TimesheetEntry) => {
+          project.totalHours += entry.hours;
           project[moment(entry.date, 'DD-MM-YYYY').format('D/M')] = {
             entryId: entry.id,
             startTime: moment(entry.startTime, 'HH:mm').format('HH:mm'),
@@ -275,9 +277,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
           project: projectEntry.project.title,
           isManaged: authHaveThisProject,
           notes: projectEntry.notes,
+          totalHours: 0,
         };
 
         projectEntry.entries.map((entry: TimesheetEntry) => {
+          project.totalHours += entry.hours;
           project[moment(entry.date, 'DD-MM-YYYY').format('D/M')] = {
             entryId: entry.id,
             startTime: moment(entry.startTime, 'HH:mm').format('HH:mm'),

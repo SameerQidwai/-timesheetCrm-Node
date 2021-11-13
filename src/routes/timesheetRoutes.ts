@@ -16,7 +16,7 @@ router
 
 router
   .route('/projectEntries/:id')
-  .patch(contr.updateTimesheetProjectEntryNote.bind(contr));
+  .patch([isLoggedIn], contr.updateTimesheetProjectEntryNote.bind(contr));
 
 router
   .route('/project/:startDate&:endDate&:projectId')
