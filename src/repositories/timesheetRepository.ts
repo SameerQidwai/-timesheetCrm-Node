@@ -850,7 +850,9 @@ export class TimesheetRepository extends Repository<Timesheet> {
             select: ['id'],
             where: { targetId: projectEntry.id, targetType: 'PEN' },
           });
-          await this.manager.softDelete(Attachment, oldAttachments);
+
+          if (oldAttachments.length > 0)
+            await this.manager.softDelete(Attachment, oldAttachments);
 
           for (const file of attachments) {
             let attachmentObj = new Attachment();
