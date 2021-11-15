@@ -16,6 +16,7 @@ import { OpportunityResource } from './../entities/opportunityResource';
 import { OpportunityResourceAllocation } from '../entities/opportunityResourceAllocation';
 import { Employee } from '../entities/employee';
 import { PurchaseOrder } from '../entities/purchaseOrder';
+import { Milestone } from '../entities/milestone';
 
 @EntityRepository(Opportunity)
 export class ProjectRepository extends Repository<Opportunity> {
@@ -813,13 +814,9 @@ export class ProjectRepository extends Repository<Opportunity> {
   }
 
   async getMilestones(projectId: number): Promise<any | undefined> {
-    let project = await this.findOne(projectId, {
-      relations: ['milestones'],
+    let results = await this.manager.find(Milestone, {
+      where: { projectId: projectId },
     });
-    if (!project) {
-      throw new Error('Project not found!');
-    }
-
-    return project.milestones;
+    return results;
   }
 }

@@ -404,8 +404,8 @@ export interface GlobalVariableValueDTO extends Base {
 export interface MilestoneDTO extends Base {
   title: string;
   description: string;
-  dueDate: Date;
-  amount: number;
+  startDate: Date;
+  endDate: Date;
   progress: number;
   isApproved: Boolean;
   projectId: number;

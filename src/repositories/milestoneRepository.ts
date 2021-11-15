@@ -15,8 +15,8 @@ export class MilestoneRepository extends Repository<Milestone> {
     let milestone = new Milestone();
     milestone.title = milestoneDTO.title;
     milestone.description = milestoneDTO.description;
-    milestone.dueDate = new Date(milestoneDTO.dueDate);
-    milestone.amount = milestoneDTO.amount;
+    milestone.startDate = new Date(milestoneDTO.startDate);
+    milestone.endDate = new Date(milestoneDTO.endDate);
     milestone.isApproved = milestoneDTO.isApproved;
     milestone.projectId = milestoneDTO.projectId;
     milestone.createdBy = userId;
@@ -35,8 +35,8 @@ export class MilestoneRepository extends Repository<Milestone> {
     }
     milestone.title = milestoneDTO.title;
     milestone.description = milestoneDTO.description;
-    milestone.dueDate = new Date(milestoneDTO.dueDate);
-    milestone.amount = milestoneDTO.amount;
+    milestone.startDate = new Date(milestoneDTO.startDate);
+    milestone.endDate = new Date(milestoneDTO.endDate);
     milestone.isApproved = milestoneDTO.isApproved;
     milestone.projectId = milestoneDTO.projectId;
     milestone.updatedBy = userId;

@@ -10,8 +10,11 @@ export class Milestone extends Base {
   @Column({ name: 'description' })
   description: string;
 
-  @Column({ name: 'due_date' })
-  dueDate: Date;
+  @Column({ name: 'start_date' })
+  startDate: Date;
+
+  @Column({ name: 'end_date' })
+  endDate: Date;
 
   @Column({ name: 'amount' })
   amount: number;

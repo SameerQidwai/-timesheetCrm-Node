@@ -13,6 +13,7 @@ import { ContactPerson } from './../entities/contactPerson';
 import { OpportunityResource } from './../entities/opportunityResource';
 import { OpportunityResourceAllocation } from '../entities/opportunityResourceAllocation';
 import { Employee } from '../entities/employee';
+import { Milestone } from '../entities/milestone';
 
 @EntityRepository(Opportunity)
 export class OpportunityRepository extends Repository<Opportunity> {
@@ -996,5 +997,12 @@ export class OpportunityRepository extends Repository<Opportunity> {
     if (!isNaN(employeeId) && employeeId != 0) return data;
 
     return work;
+  }
+
+  async getMilestones(opportunityId: number): Promise<any | undefined> {
+    let results = await this.manager.find(Milestone, {
+      where: { projectId: opportunityId },
+    });
+    return results;
   }
 }

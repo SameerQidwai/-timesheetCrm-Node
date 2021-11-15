@@ -39,14 +39,22 @@ export class ProjectController extends BaseController<
     }
   }
 
-  async projectMilestones(req: Request, res: Response, next: NextFunction) {
+  async getMilestones(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(ProjectRepository);
-      let records = await repository.getMilestones(parseInt(req.params.id));
-      console.log('records: ', records);
+      let records: any = [];
+      const { grantLevel } = res.locals;
+      if (grantLevel.includes('ANY')) {
+      } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
+        // Call repo function that returns both
+      } else if (grantLevel.includes('MANAGE')) {
+      } else if (grantLevel.includes('OWN')) {
+      }
+
+      records = await repository.getMilestones(parseInt(req.params.projectId));
       res.status(200).json({
         success: true,
-        message: 'Index Project Milestones',
+        message: 'Opportunity Milestones',
         data: records,
       });
     } catch (e) {

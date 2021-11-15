@@ -78,4 +78,11 @@ router
   )
   .patch([isLoggedIn], allocationContr.markAsSelected.bind(allocationContr));
 
+router
+  .route('/:opportunityId/milestones')
+  .get(
+    [isLoggedIn, can(Action.READ, Resource.OPPORTUNITIES, 'id')],
+    contr.getMilestones.bind(contr)
+  );
+
 export default router;

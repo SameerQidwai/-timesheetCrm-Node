@@ -39,12 +39,6 @@ router
   );
 
 router
-  .route('/:id/milestones')
-  .get(
-    [isLoggedIn, can(Action.READ, Resource.PROJECTS, 'id')],
-    contr.projectMilestones.bind(contr)
-  );
-router
   .route('/:projectId/resources')
   .get([isLoggedIn], resourceContr.index.bind(resourceContr))
   .post([isLoggedIn], resourceContr.create.bind(resourceContr));
@@ -65,4 +59,12 @@ router
   .put([isLoggedIn], orderContr.update.bind(orderContr))
   .get([isLoggedIn], orderContr.get.bind(orderContr))
   .delete([isLoggedIn], orderContr.delete.bind(orderContr));
+
+router
+  .route('/:projectId/milestones')
+  .get(
+    [isLoggedIn, can(Action.READ, Resource.PROJECTS, 'id')],
+    contr.getMilestones.bind(contr)
+  );
+
 export default router;
