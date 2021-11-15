@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "ea771061-ad18-41a5-9e0c-991042b4552d",
+		"_postman_id": "681186a3-1964-4161-9b68-cc197173d4be",
 		"name": "OneLM",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -608,7 +608,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"firstName\": \"Sohail\",\r\n    \"lastName\": \"Rauf\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"sohail@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"clearanceLevel\": \"BV\",\r\n    \"clearanceGrantedDate\": 1608512778651,\r\n    \"clearanceExpiryDate\": 1608512878651,\r\n    \"clearanceSponsorId\": 3,\r\n    \"standardSkillStandardLevelIds\": [2],\r\n    \"contactPersonOrganizations\": [{\r\n        \"startDate\": 1608512778651,\r\n        \"designation\": \"Developer\",\r\n        \"organizationId\": 2\r\n    }]\r\n}",
+							"raw": "{\r\n    \"firstName\": \"No Association Contact Person\",\r\n    \"lastName\": \"N A C P\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"sohail@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"clearanceLevel\": \"BV\",\r\n    \"clearanceGrantedDate\": 1608512778651,\r\n    \"clearanceExpiryDate\": 1608512878651,\r\n    \"clearanceSponsorId\": 1,\r\n    \"standardSkillStandardLevelIds\": [2],\r\n    \"contactPersonOrganizations\": [\r\n        \r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -795,12 +795,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Endpoint}}/employees",
+							"raw": "{{Endpoint}}/employees/1",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
-								"employees"
+								"employees",
+								"1"
 							]
 						}
 					},
@@ -813,7 +814,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"contactPersonId\": 3,\r\n    \"firstName\": \"Mursal as employee\",\r\n    \"lastName\": \"Khan\",\r\n    \"username\": \"thedevshezzy@gmail.com\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"mursal@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"saad\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"saad@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"tfn\": \"\",\r\n    \"superannuationName\": \"Jubilee\",\r\n    \"superannuationBankName\": \"\",\r\n    \"superannuationBankAccountOrMembershipNumber\": \"1111-2222-3\",\r\n    \"superannuationAbnOrUsi\": \"12345\",\r\n    \"superannuationBankBsb\": \"\",\r\n    \"superannuationAddress\": \"\",\r\n    \"training\": \"need more\",\r\n    \"bankName\": \"HBL\",\r\n    \"bankAccountNo\": \"234353453453534534\",\r\n    \"bankBsb\": \"12qwe\",\r\n    \"latestEmploymentContract\": {\r\n        \"payslipEmail\": \"pay@live.com\",\r\n        \"payFrequency\": 1,\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n    \r\n}",
+							"raw": "{\r\n    \"contactPersonId\": 4,\r\n    \"firstName\": \"Mursal as subcontractor testing\",\r\n    \"lastName\": \"Khan\",\r\n    \"username\": \"thedevshezzy@gmail.com\",\r\n    \"gender\": \"M\",\r\n    \"dateOfBirth\": null,\r\n    \"phoneNumber\": \"+923132322323\",\r\n    \"email\": \"mursal@live.com\",\r\n    \"address\": \"test address\",\r\n    \"stateId\": 1,\r\n    \"nextOfKinName\": \"saad\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"saad@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"tfn\": \"\",\r\n    \"superannuationName\": \"Jubilee\",\r\n    \"superannuationBankName\": \"\",\r\n    \"superannuationBankAccountOrMembershipNumber\": \"1111-2222-3\",\r\n    \"superannuationAbnOrUsi\": \"12345\",\r\n    \"superannuationBankBsb\": \"\",\r\n    \"superannuationAddress\": \"\",\r\n    \"training\": \"need more\",\r\n    \"bankName\": \"HBL\",\r\n    \"bankAccountNo\": \"234353453453534534\",\r\n    \"bankBsb\": \"12qwe\",\r\n    \"latestEmploymentContract\": {\r\n        \"payslipEmail\": \"pay@live.com\",\r\n        \"payFrequency\": 1,\r\n        \"startDate\": 1608512778351,\r\n        \"endDate\": null,\r\n        \"type\": 1,\r\n        \"noOfHours\": 8,\r\n        \"noOfHoursPer\": 2,\r\n        \"remunerationAmount\": 1200,\r\n        \"remunerationAmountPer\": 3,\r\n        \"comments\": \"\"\r\n    }\r\n    \r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -884,7 +885,21 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": ""
+							"raw": "{{Endpoint}}/employees/get/by-skills?psslId=6",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"employees",
+								"get",
+								"by-skills"
+							],
+							"query": [
+								{
+									"key": "psslId",
+									"value": "6"
+								}
+							]
 						}
 					},
 					"response": []
@@ -895,7 +910,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": ""
+							"raw": "{{Endpoint}}/users",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"users"
+							]
 						}
 					},
 					"response": []
@@ -926,10 +947,16 @@
 					"name": "Create",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNjI1NDkxNDc3LCJleHAiOjE2MjU0OTUwNzd9.LVmUDJfUqx31K4wvOgzhNbKa9WZIs1cJIXlBanSICVY",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website\",\r\n    \"value\": 20000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"hoursPerDay\": 8,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"opportunityManagerId\": null,\r\n    \"status\": 0\r\n}",
+							"raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Testing Opportunity 101\",\r\n    \"value\": 20000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"hoursPerDay\": 8,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"opportunityManagerId\": null,\r\n    \"contactPersonId\": 1,\r\n    \"status\": 0\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -937,12 +964,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{Endpoint}}/opportunities",
+							"raw": "{{Endpoint}}/employees",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
-								"opportunities"
+								"employees"
 							]
 						}
 					},
@@ -952,10 +979,16 @@
 					"name": "Put",
 					"request": {
 						"method": "PUT",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNjI1NDkxNDc3LCJleHAiOjE2MjU0OTUwNzd9.LVmUDJfUqx31K4wvOgzhNbKa9WZIs1cJIXlBanSICVY",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website updated\",\r\n    \"value\": 20000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"tenderValue\": 25000,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"opportunityManagerId\": null\r\n}",
+							"raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Testing Contact Person 102\",\r\n    \"value\": 20000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"tenderValue\": 25000,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"opportunityManagerId\": null,\r\n    \"contactPersonId\": 2\r\n\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1049,6 +1082,25 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get Milestones",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/opportunities/6/milestones",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities",
+								"6",
+								"milestones"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"event": [
@@ -1136,6 +1188,26 @@
 								}
 							}
 						},
+						"url": {
+							"raw": "{{Endpoint}}/opportunities/1/resources/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities",
+								"1",
+								"resources",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
 						"url": {
 							"raw": "{{Endpoint}}/opportunities/1/resources/1",
 							"host": [
@@ -1418,21 +1490,17 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3301/api/v1/sub-contractors-contracts?subContractorId=3",
-							"protocol": "http",
+							"raw": "{{Endpoint}}/sub-contractors-contracts?subContractorId=2",
 							"host": [
-								"localhost"
+								"{{Endpoint}}"
 							],
-							"port": "3301",
 							"path": [
-								"api",
-								"v1",
 								"sub-contractors-contracts"
 							],
 							"query": [
 								{
 									"key": "subContractorId",
-									"value": "3"
+									"value": "2"
 								}
 							]
 						}
@@ -1576,7 +1644,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"employeeId\": \"1\",\r\n    \"payslipEmail\": \"paynew@live.com\",\r\n    \"payFrequency\": 1,\r\n    \"startDate\": 1608512778351,\r\n    \"endDate\": null,\r\n    \"type\": 1,\r\n    \"noOfHours\": 4,\r\n    \"noOfHoursPer\": 1,\r\n    \"remunerationAmount\": 1200,\r\n    \"remunerationAmountPer\": 1,\r\n    \"comments\": \"\"\r\n}",
+							"raw": "{\r\n    \"employeeId\": \"8\",\r\n    \"payslipEmail\": \"paynew@live.com\",\r\n    \"payFrequency\": 1,\r\n    \"startDate\": 1629725176,\r\n    \"endDate\": null,\r\n    \"type\": 1,\r\n    \"noOfHours\": 4,\r\n    \"noOfHoursPer\": 1,\r\n    \"remunerationAmount\": 1200,\r\n    \"remunerationAmountPer\": 1,\r\n    \"comments\": \"\",\r\n    \"fileId\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2166,6 +2234,42 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get Milestones",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjM2OTM2MTQxLCJleHAiOjE2MzY5Mzk3NDF9.873F9NzvFSfLXOWXYcPFLTvT-8yYQZLudVFcyKpPRRQ",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjMyNTgxNjg4LCJleHAiOjE2MzI1ODUyODh9.EIZctpJGuZmYgekt_MZv8w3Uc8jA3lBv75fAREQVaHo",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{Endpoint}}/projects/1/milestones",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projects",
+								"1",
+								"milestones"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -2269,7 +2373,15 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": ""
+							"raw": "{{Endpoint}}/projects/1/purchaseOrders",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"projects",
+								"1",
+								"purchaseOrders"
+							]
 						}
 					},
 					"response": []
@@ -2283,15 +2395,21 @@
 					"name": "Get timesheet by date",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjMyNTkzOTkwLCJleHAiOjE2MzI1OTc1OTB9.WwYcU5bXCMsGtENkDZA06sh0p7jYrqf9vur26e4_xqA",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{Endpoint}}/timesheets/01-06-2021&30-06-2021&2",
+							"raw": "{{Endpoint}}/timesheets/01-07-2021&31-07-2021&1",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"timesheets",
-								"01-06-2021&30-06-2021&2"
+								"01-07-2021&31-07-2021&1"
 							]
 						}
 					},
@@ -2301,10 +2419,16 @@
 					"name": "Add Entry",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNjI1MDk2NDgxLCJleHAiOjE2MjUxMDAwODF9.iHL-tKodDsU7ISVEOn85l59VtJiE1E8lSRjDcug3WgE",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"date\": \"06-05-2021\",\r\n    \"startTime\": \"22:02\",\r\n    \"endTime\": \"23:02\",\r\n    \"breakHours\": \"2\",\r\n    \"notes\": \"sameer\",\r\n    \"projectId\": 1\r\n}",
+							"raw": "{\r\n    \"date\": \"07-07-2021\",\r\n    \"startTime\": \"23:00\",\r\n    \"endTime\": \"01:00\",\r\n    \"breakHours\": \"0\",\r\n    \"notes\": \"sameer\",\r\n    \"projectId\": 4\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2312,13 +2436,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{Endpoint}}/timesheets/01-05-2021&31-05-2021&1",
+							"raw": "{{Endpoint}}/timesheets/01-07-2021&31-07-2021&6",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"timesheets",
-								"01-05-2021&31-05-2021&1"
+								"01-07-2021&31-07-2021&6"
 							]
 						}
 					},
@@ -2330,15 +2454,15 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{Endpoint}}/timesheets/01-06-2021&30-06-2021&2/projectEntries/7/submit",
+							"raw": "{{Endpoint}}/timesheets/01-05-2021&31-05-2021&6/projectEntries/3/submit",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"timesheets",
-								"01-06-2021&30-06-2021&2",
+								"01-05-2021&31-05-2021&6",
 								"projectEntries",
-								"7",
+								"3",
 								"submit"
 							]
 						}
@@ -2349,17 +2473,23 @@
 					"name": "Approve Project Entry",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNjI1MDg0Njc0LCJleHAiOjE2MjUwODgyNzR9.FyJEm0YxmMQSHdVmz2gg93fFwA-MCvDpAn03BZ1_4VM",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{Endpoint}}/timesheets/01-06-2021&30-06-2021&2/projectEntries/7/approve",
+							"raw": "{{Endpoint}}/timesheets/01-05-2021&31-05-2021&6/projectEntries/3/approve",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"timesheets",
-								"01-06-2021&30-06-2021&2",
+								"01-05-2021&31-05-2021&6",
 								"projectEntries",
-								"7",
+								"3",
 								"approve"
 							]
 						}
@@ -2392,8 +2522,25 @@
 					"request": {
 						"method": "PATCH",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"note\": \"heyyy whatsuppp duudeeeeeeeeee\",\r\n    \"attachments\": [27,28]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": ""
+							"raw": "{{Endpoint}}/timesheets/projectEntries/31",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"timesheets",
+								"projectEntries",
+								"31"
+							]
 						}
 					},
 					"response": []
@@ -2418,7 +2565,7 @@
 					"response": []
 				},
 				{
-					"name": "New Request",
+					"name": "Update Entry",
 					"request": {
 						"method": "PATCH",
 						"header": [],
@@ -2443,6 +2590,87 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get Timesheet User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNjI1MDg0Njc0LCJleHAiOjE2MjUwODgyNzR9.FyJEm0YxmMQSHdVmz2gg93fFwA-MCvDpAn03BZ1_4VM",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{Endpoint}}/timesheets/users",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"timesheets",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PDF Timesheet Project Entry",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjMwNDM5NTg4LCJleHAiOjE2MzA0NDMxODh9.0rTJ0cvbd-Cvc2J5_hnYHvC8PDruIIxmfOOnnyYh72Q",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{Endpoint}}/timesheets/print/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"timesheets",
+								"print",
+								"1"
+							],
+							"query": [
+								{
+									"key": "Authorization",
+									"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjMwMzMyMTA5LCJleHAiOjE2MzAzMzU3MDl9.lNI0nT2b3MeJlSsLupDltKacR1sbVWhvYxDPfKYOgbU",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Timesheet by Date (project)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjMyNTkzOTkwLCJleHAiOjE2MzI1OTc1OTB9.WwYcU5bXCMsGtENkDZA06sh0p7jYrqf9vur26e4_xqA",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{Endpoint}}/timesheets/project/01-07-2021&31-07-2021&3",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"timesheets",
+								"project",
+								"01-07-2021&31-07-2021&3"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -2452,6 +2680,16 @@
 				{
 					"name": "Create",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjM2OTA3MTk4LCJleHAiOjE2MzY5MTA3OTh9.GOGHiv6VJqU1U30DoWTO8quuDaw-QbHHyrZ4nif59Fo",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -2462,8 +2700,9 @@
 							},
 							{
 								"key": "Authorization",
-								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTMsImlhdCI6MTYyMzAyNDM0NiwiZXhwIjoxNjIzMDI3OTQ2fQ.fj75fyVdXjaiuKseIXMIJ5w2Bgrko7lknK2EM8i7EQw",
-								"type": "text"
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNjI0NjM2ODUyLCJleHAiOjE2MjQ2NDA0NTJ9.F9MgnAbJt46R2_gt6SIrxx2WtDsn1SOFld84iB6XLJE",
+								"type": "text",
+								"disabled": true
 							}
 						],
 						"body": {
@@ -2596,16 +2835,22 @@
 					"name": "Get",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNjI0NjM2ODUyLCJleHAiOjE2MjQ2NDA0NTJ9.F9MgnAbJt46R2_gt6SIrxx2WtDsn1SOFld84iB6XLJE",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{Endpoint}}/comments/ASD/1",
+							"raw": "{{Endpoint}}/comments/CAR/2",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"comments",
-								"ASD",
-								"1"
+								"CAR",
+								"2"
 							]
 						}
 					},
@@ -2615,10 +2860,16 @@
 					"name": "Create",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNjI0NjM2ODUyLCJleHAiOjE2MjQ2NDA0NTJ9.F9MgnAbJt46R2_gt6SIrxx2WtDsn1SOFld84iB6XLJE",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"content\":\"QWERTYUIOP\",\r\n    \"attachments\": [\r\n        75,76\r\n    ]\r\n}",
+							"raw": "{\r\n    \"content\":\"2\",\r\n    \"attachments\": [\r\n        2,3\r\n    ]\r\n\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2626,14 +2877,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{Endpoint}}/comments/ASD/1",
+							"raw": "{{Endpoint}}/comments/CAR/2",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"comments",
-								"ASD",
-								"1"
+								"CAR",
+								"2"
 							]
 						}
 					},
@@ -2660,130 +2911,7 @@
 			]
 		},
 		{
-			"name": "Roles",
-			"item": [
-				{
-					"name": "List",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{Endpoint}}/roles",
-							"host": [
-								"{{Endpoint}}"
-							],
-							"path": [
-								"roles"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"label\": \"Workforce\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{Endpoint}}/roles",
-							"host": [
-								"{{Endpoint}}"
-							],
-							"path": [
-								"roles"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update",
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"label\": \"Workforce\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{Endpoint}}/roles/2",
-							"host": [
-								"{{Endpoint}}"
-							],
-							"path": [
-								"roles",
-								"2"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Permissions",
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "[\r\n    {\r\n        \"resource\": \"CONTACT_PERSONS\",\r\n        \"action\": \"ADD\",\r\n        \"grant\": \"OWN\"\r\n    },\r\n    {\r\n        \"resource\": \"CONTACT_PERSONS\",\r\n        \"action\": \"UPDATE\",\r\n        \"grant\": \"OWN\"\r\n    }\r\n]",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{Endpoint}}/roles/1/update-permissions",
-							"host": [
-								"{{Endpoint}}"
-							],
-							"path": [
-								"roles",
-								"1",
-								"update-permissions"
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"type": "text/javascript",
-						"exec": [
-							""
-						]
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"type": "text/javascript",
-						"exec": [
-							""
-						]
-					}
-				}
-			]
-		},
-		{
-			"name": "Authentication",
+			"name": "Auth",
 			"item": [
 				{
 					"name": "Login",
@@ -2792,7 +2920,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"email\": \"mursal@onelm.com\",\r\n    \"password\": \"test123\"\r\n}",
+							"raw": "{\r\n    \"email\": \"mustafa.syed@1lm.com.au\",\r\n    \"password\": \"123123\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2810,10 +2938,442 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Middleware check",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiaWF0IjoxNjIyNDIzODI5LCJleHAiOjE2MjUwMTU4Mjl9.ZUY8nNbV5qssvdCZasX_ERybzcAVolgwahewlmXic4s",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{Endpoint}}/webtokencheck",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"webtokencheck"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Password",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNjI0NzUxNDg3LCJleHAiOjE2MjQ3NTUwODd9.pzpyEgCOweh_l0ozpjo0RxIV5fPmErhaiwDiUASLFv8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"oldPassword\": \"om01kcx8c\",\r\n    \"newPassword\": \"123123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/password",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Updated Settings",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTMsImlhdCI6MTYyMzAyMzkzOCwiZXhwIjoxNjIzMDI3NTM4fQ.euY9NBnuZdX6-Mginmtx-sJ3g6FVhZRVJ3yvXJVQHJE",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nextOfKinName\": \"usman\",\r\n    \"nextOfKinPhoneNumber\": \"3232424\",\r\n    \"nextOfKinEmail\": \"saad@livecom\",\r\n    \"nextOfKinRelation\": \"Sibling\",\r\n    \"tfn\": \"\",\r\n    \"taxFreeThreshold\": false,\r\n    \"helpHECS\": false,\r\n    \"superannuationName\": \"Jubilee\",\r\n    \"superannuationType\": null,\r\n    \"superannuationBankName\": \"\",\r\n    \"superannuationBankAccountOrMembershipNumber\": \"1111-2222-3\",\r\n    \"superannuationAbnOrUsi\": \"12345\",\r\n    \"superannuationBankBsb\": \"\",\r\n    \"superannuationAddress\": \"\",\r\n    \"training\": \"need more\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/settings",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"settings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": null
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Helpers",
+			"item": [
+				{
+					"name": "Get Contact Persons",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/helpers/contact-persons?associated=1&organizationId=1&active=1&label=1&employee=1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"helpers",
+								"contact-persons"
+							],
+							"query": [
+								{
+									"key": "associated",
+									"value": "1"
+								},
+								{
+									"key": "organizationId",
+									"value": "1"
+								},
+								{
+									"key": "active",
+									"value": "1"
+								},
+								{
+									"key": "label",
+									"value": "1"
+								},
+								{
+									"key": "employee",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Levels by Skill",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/helpers/levels-by-skill?skill=1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"helpers",
+								"levels-by-skill"
+							],
+							"query": [
+								{
+									"key": "skill",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Roles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/helpers/roles",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"helpers",
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Work",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/helpers/work?type=P&employee=8",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"helpers",
+								"work"
+							],
+							"query": [
+								{
+									"key": "organization",
+									"value": "2",
+									"disabled": true
+								},
+								{
+									"key": "type",
+									"value": "P"
+								},
+								{
+									"key": "employee",
+									"value": "8"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Projects",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/helpers/projects?userId=8",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"helpers",
+								"projects"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "8"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": null
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Global Settings",
+			"item": [
+				{
+					"name": "Post",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"fromEmail\": \"tst\",\r\n        \"recordsPerPage\": \"10\",\r\n        \"timeZone\": \"gmt+5\"\r\n      }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/global-setting",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"global-setting"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjMwMTcxOTE5LCJleHAiOjE2MzAxNzU1MTl9.4W1P73wsTRxhIwTKDy1udaGNjHcdX5_EdKqjBKuFZlk",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{Endpoint}}/settings",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"settings"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Milestones",
+			"item": [
+				{
+					"name": "create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjMyNTc4MDgyLCJleHAiOjE2MzI1ODE2ODJ9.c2Tn3aDjMYIyvXDi6enmgsVK7qdk6o-MArbNT9Yu2zg",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\" : \"First milestone\",\r\n    \"description\": \"description\",\r\n    \"startDate\": \"2021-09-25\",\r\n    \"endDate\": \"2021-09-29\",\r\n    \"isApproved\": 0,\r\n    \"projectId\": 6\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/milestones",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"milestones"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "index",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjMyNTc4MDgyLCJleHAiOjE2MzI1ODE2ODJ9.c2Tn3aDjMYIyvXDi6enmgsVK7qdk6o-MArbNT9Yu2zg",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{Endpoint}}/milestones",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"milestones"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "show",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjMyNTgxNjg4LCJleHAiOjE2MzI1ODUyODh9.EIZctpJGuZmYgekt_MZv8w3Uc8jA3lBv75fAREQVaHo",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{Endpoint}}/milestones/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"milestones",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjMyNTgxNjg4LCJleHAiOjE2MzI1ODUyODh9.EIZctpJGuZmYgekt_MZv8w3Uc8jA3lBv75fAREQVaHo",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\" : \"First milestone\",\r\n    \"description\": \"description\",\r\n    \"dueDate\": \"2021-09-25\",\r\n    \"amount\": 3000,\r\n    \"isApproved\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/milestones/1",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"milestones",
+								"1"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
 	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
 	"event": [
 		{
 			"listen": "prerequest",
@@ -2838,6 +3398,10 @@
 		{
 			"key": "Endpoint",
 			"value": "http://localhost:3000/api/v1"
+		},
+		{
+			"key": "token",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjM2OTg0MTkyLCJleHAiOjE2MzY5ODc3OTJ9.Jxyem6uaYhk4vf6-KcmfxYhx7YJDpKElOzZ7WAKYG9I"
 		}
 	]
 }
