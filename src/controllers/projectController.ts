@@ -54,7 +54,7 @@ export class ProjectController extends BaseController<
       records = await repository.getMilestones(parseInt(req.params.projectId));
       res.status(200).json({
         success: true,
-        message: 'Opportunity Milestones',
+        message: 'Project Milestones',
         data: records,
       });
     } catch (e) {
