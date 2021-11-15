@@ -16,9 +16,6 @@ export class Milestone extends Base {
   @Column({ name: 'end_date' })
   endDate: Date;
 
-  @Column({ name: 'amount' })
-  amount: number;
-
   @Column({ name: '%completed', default: 0 })
   progress: number;
 

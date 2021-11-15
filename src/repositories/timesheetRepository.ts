@@ -846,13 +846,18 @@ export class TimesheetRepository extends Repository<Timesheet> {
         projectEntry = await transactionalEntityManager.save(projectEntry);
 
         if (attachments) {
-          let oldAttachments = await this.manager.find(Attachment, {
-            select: ['id'],
-            where: { targetId: projectEntry.id, targetType: 'PEN' },
-          });
+          let oldAttachments = await transactionalEntityManager.find(
+            Attachment,
+            {
+              select: ['id'],
+              where: { targetId: projectEntry.id, targetType: 'PEN' },
+            }
+          );
 
           if (oldAttachments.length > 0)
-            await this.manager.softDelete(Attachment, oldAttachments);
+            // await this.manager.softDelete(Attachment, oldAttachments);
+            await transactionalEntityManager.remove(Attachment, oldAttachments);
+          //! HARD DELETING BECAUSE DELETED AT IS FIGHTING WITH FOREIGN KEY
 
           for (const file of attachments) {
             let attachmentObj = new Attachment();
