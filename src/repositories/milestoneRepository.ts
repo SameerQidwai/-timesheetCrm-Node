@@ -19,6 +19,7 @@ export class MilestoneRepository extends Repository<Milestone> {
     milestone.endDate = new Date(milestoneDTO.endDate);
     milestone.isApproved = milestoneDTO.isApproved;
     milestone.projectId = milestoneDTO.projectId;
+    milestone.progress = milestoneDTO.progress;
     milestone.createdBy = userId;
 
     return this.manager.save(milestone);
@@ -37,6 +38,7 @@ export class MilestoneRepository extends Repository<Milestone> {
     milestone.description = milestoneDTO.description;
     milestone.startDate = new Date(milestoneDTO.startDate);
     milestone.endDate = new Date(milestoneDTO.endDate);
+    milestone.progress = milestoneDTO.progress;
     milestone.isApproved = milestoneDTO.isApproved;
     milestone.projectId = milestoneDTO.projectId;
     milestone.updatedBy = userId;
