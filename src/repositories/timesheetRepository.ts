@@ -846,20 +846,42 @@ export class TimesheetRepository extends Repository<Timesheet> {
         projectEntry = await transactionalEntityManager.save(projectEntry);
 
         if (attachments) {
+          let deleteableAttachments: Attachment[] = [];
+          let newAttachments = attachments;
           let oldAttachments = await transactionalEntityManager.find(
             Attachment,
             {
-              select: ['id'],
               where: { targetId: projectEntry.id, targetType: 'PEN' },
             }
           );
 
-          if (oldAttachments.length > 0)
-            // await this.manager.softDelete(Attachment, oldAttachments);
-            await transactionalEntityManager.remove(Attachment, oldAttachments);
-          //! HARD DELETING BECAUSE DELETED AT IS FIGHTING WITH FOREIGN KEY
+          if (oldAttachments.length > 0) {
+            oldAttachments.forEach((oldAttachment) => {
+              let flag_found = false;
+              attachments.forEach((attachment) => {
+                let _indexOf = newAttachments.indexOf(attachment);
+                if (oldAttachment.fileId === attachment) {
+                  flag_found = true;
+                  if (_indexOf > -1) {
+                    newAttachments.splice(_indexOf, 1);
+                  }
+                } else {
+                  if (_indexOf <= -1) {
+                    newAttachments.push(attachment);
+                  }
+                }
+              });
+              if (!flag_found) {
+                deleteableAttachments.push(oldAttachment);
+              }
+            });
+            await this.manager.remove(Attachment, deleteableAttachments);
+          }
 
-          for (const file of attachments) {
+          console.log('NEW', newAttachments);
+          console.log('DELETE', deleteableAttachments);
+
+          for (const file of newAttachments) {
             let attachmentObj = new Attachment();
             attachmentObj.fileId = file;
             attachmentObj.targetId = projectEntry.id;
