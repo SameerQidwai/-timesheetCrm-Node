@@ -858,6 +858,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
           if (oldAttachments.length > 0) {
             oldAttachments.forEach((oldAttachment) => {
               let flag_found = false;
+
               attachments.forEach((attachment) => {
                 let _indexOf = newAttachments.indexOf(attachment);
                 if (oldAttachment.fileId === attachment) {
