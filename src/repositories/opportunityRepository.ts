@@ -131,9 +131,30 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
       opportunityObj.status = 'O';
 
-      await transactionalEntityManager.save(opportunityObj);
-      return opportunityObj.id;
+      let newOpportunity = await transactionalEntityManager.save(
+        opportunityObj
+      );
+
+      if (newOpportunity.type === 1) {
+        //CREATING BASE MILESTONE
+        let milestoneObj = new Milestone();
+        milestoneObj.title = 'Milestone 1';
+        milestoneObj.description = '-';
+        milestoneObj.startDate = newOpportunity.startDate;
+        milestoneObj.endDate = newOpportunity.startDate;
+        milestoneObj.isApproved = false;
+        milestoneObj.projectId = newOpportunity.id;
+        milestoneObj.progress = 0;
+
+        let newMilestone = await transactionalEntityManager.save(
+          Milestone,
+          milestoneObj
+        );
+      }
+
+      return newOpportunity.id;
     });
+
     return await this.findOneCustom(id);
   }
 

@@ -28,10 +28,4 @@ export class Milestone extends Base {
   @ManyToOne(() => Opportunity)
   @JoinColumn({ name: 'project_id' })
   project: Opportunity;
-
-  @Column({ name: 'created_by' })
-  createdBy: number;
-
-  @Column({ name: 'updated_by', nullable: true })
-  updatedBy: number;
 }

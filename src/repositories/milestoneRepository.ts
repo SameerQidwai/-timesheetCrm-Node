@@ -8,10 +8,7 @@ export class MilestoneRepository extends Repository<Milestone> {
     return await this.find({});
   }
 
-  async createAndSave(
-    milestoneDTO: MilestoneDTO,
-    userId: number
-  ): Promise<any> {
+  async createAndSave(milestoneDTO: MilestoneDTO): Promise<any> {
     let milestone = new Milestone();
     milestone.title = milestoneDTO.title;
     milestone.description = milestoneDTO.description;
@@ -20,15 +17,12 @@ export class MilestoneRepository extends Repository<Milestone> {
     milestone.isApproved = milestoneDTO.isApproved;
     milestone.projectId = milestoneDTO.projectId;
     milestone.progress = milestoneDTO.progress;
-    milestone.createdBy = userId;
-
     return this.manager.save(milestone);
   }
 
   async updateAndReturn(
     milestoneId: number,
-    milestoneDTO: MilestoneDTO,
-    userId: number
+    milestoneDTO: MilestoneDTO
   ): Promise<any> {
     let milestone = await this.findOne(milestoneId);
     if (!milestone) {
@@ -41,7 +35,6 @@ export class MilestoneRepository extends Repository<Milestone> {
     milestone.progress = milestoneDTO.progress;
     milestone.isApproved = milestoneDTO.isApproved;
     milestone.projectId = milestoneDTO.projectId;
-    milestone.updatedBy = userId;
 
     return this.manager.save(milestone);
   }

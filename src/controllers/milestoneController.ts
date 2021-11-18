@@ -24,8 +24,7 @@ export class MilestoneController {
   async create(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(MilestoneRepository);
-      let userId = res.locals.jwtPayload.id;
-      let response = await repository.createAndSave(req.body, userId);
+      let response = await repository.createAndSave(req.body);
 
       // if no timesheet found
       return res.status(200).json({
@@ -58,11 +57,9 @@ export class MilestoneController {
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(MilestoneRepository);
-      let userId = res.locals.jwtPayload.id;
       let response = await repository.updateAndReturn(
         parseInt(req.params.id),
-        req.body,
-        userId
+        req.body
       );
 
       // if no timesheet found
