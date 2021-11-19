@@ -11,8 +11,10 @@ export class OpportunityResourceController {
       console.log('controller - index: ', this);
       const repository = getCustomRepository(OpportunityRepository);
       let opportunityId = req.params.opportunityId;
+      let milestoneId = req.params.milestoneId;
       let records = await repository.getAllActiveResources(
-        parseInt(opportunityId)
+        parseInt(opportunityId),
+        parseInt(milestoneId)
       );
       console.log('records: ', records);
       res.status(200).json({
@@ -29,8 +31,10 @@ export class OpportunityResourceController {
     try {
       const repository = getCustomRepository(OpportunityRepository);
       let opportunityId = req.params.opportunityId;
+      let milestoneId = req.params.milestoneId;
       let record = await repository.addResource(
         parseInt(opportunityId),
+        parseInt(milestoneId),
         req.body
       );
       console.log('record: ', record);
@@ -49,8 +53,10 @@ export class OpportunityResourceController {
       const repository = getCustomRepository(OpportunityRepository);
       let id = req.params.id;
       let opportunityId = req.params.opportunityId;
+      let milestoneId = req.params.milestoneId;
       let record = await repository.updateResource(
         parseInt(opportunityId),
+        parseInt(milestoneId),
         parseInt(id),
         req.body
       );
@@ -69,8 +75,10 @@ export class OpportunityResourceController {
       const repository = getCustomRepository(OpportunityRepository);
       let id = req.params.id;
       let opportunityId = req.params.opportunityId;
+      let milestoneId = req.params.milestoneId;
       let record = await repository.findOneCustomResource(
         parseInt(opportunityId),
+        parseInt(milestoneId),
         parseInt(id)
       );
       if (!record) throw new Error('not found');
@@ -89,8 +97,10 @@ export class OpportunityResourceController {
       const repository = getCustomRepository(OpportunityRepository);
       let id = req.params.id;
       let opportunityId = req.params.opportunityId;
+      let milestoneId = req.params.milestoneId;
       let record = await repository.deleteCustomResource(
         parseInt(opportunityId),
+        parseInt(milestoneId),
         parseInt(id)
       );
       res.status(200).json({

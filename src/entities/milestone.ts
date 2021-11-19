@@ -1,6 +1,7 @@
 import { Entity, Column, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { Base } from './common/base';
 import { Opportunity } from './opportunity';
+import { OpportunityResource } from './opportunityResource';
 
 @Entity('milestones')
 export class Milestone extends Base {
@@ -28,4 +29,13 @@ export class Milestone extends Base {
   @ManyToOne(() => Opportunity)
   @JoinColumn({ name: 'project_id' })
   project: Opportunity;
+
+  @OneToMany(
+    () => OpportunityResource,
+    (opportunityResource) => opportunityResource.milestone,
+    {
+      cascade: true,
+    }
+  )
+  opportunityResources: OpportunityResource[];
 }

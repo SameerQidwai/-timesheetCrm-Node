@@ -5,6 +5,7 @@ import { PanelSkillStandardLevel } from './panelSkillStandardLevel';
 import { Opportunity } from './opportunity';
 import { Employee } from './employee';
 import { OpportunityResourceAllocation } from './opportunityResourceAllocation';
+import { Milestone } from './milestone';
 
 @Entity('opportunity_resources')
 export class OpportunityResource extends Base {
@@ -31,6 +32,13 @@ export class OpportunityResource extends Base {
   @ManyToOne(() => Opportunity)
   @JoinColumn({ name: 'opportunity_id' })
   opportunity: Opportunity;
+
+  @Column({ name: 'milestone_id' })
+  milestoneId: number;
+
+  @ManyToOne(() => Milestone)
+  @JoinColumn({ name: 'milestone_id' })
+  milestone: Milestone;
 
   @OneToMany(
     () => OpportunityResourceAllocation,

@@ -1,5 +1,6 @@
 import {
   OpportunityDTO,
+  MilestoneDTO,
   OpportunityResourceAllocationDTO,
   OpportunityResourceDTO,
   ProjectDTO,
@@ -311,42 +312,159 @@ export class OpportunityRepository extends Repository<Opportunity> {
     return this.softDelete(id);
   }
 
-  async getAllActiveResources(opportunityId: number) {
+  async getAllActiveMilestones(
+    opportunityId: number
+  ): Promise<any | undefined> {
+    let results = await this.manager.find(Milestone, {
+      where: { projectId: opportunityId },
+    });
+    return results;
+  }
+
+  async addMilestone(
+    opportunityId: number,
+    milestoneDTO: MilestoneDTO
+  ): Promise<any> {
+    let milestone = new Milestone();
+    milestone.title = milestoneDTO.title;
+    milestone.description = milestoneDTO.description;
+    milestone.startDate = new Date(milestoneDTO.startDate);
+    milestone.endDate = new Date(milestoneDTO.endDate);
+    milestone.isApproved = milestoneDTO.isApproved;
+    milestone.projectId = opportunityId;
+    milestone.progress = milestoneDTO.progress;
+    return this.manager.save(milestone);
+  }
+
+  async findOneCustomMilestone(
+    opportunityId: number,
+    milestoneId: number
+  ): Promise<any | undefined> {
     if (!opportunityId) {
-      throw new Error('This Opportunity not found!');
+      throw new Error('Opportunity not found!');
+    }
+    if (!milestoneId) {
+      throw new Error('Milestone not found!');
     }
     let opportunity = await this.findOne(opportunityId, {
       relations: [
-        'opportunityResources',
-        'opportunityResources.panelSkill',
-        'opportunityResources.panelSkillStandardLevel',
-        'opportunityResources.opportunityResourceAllocations',
-        'opportunityResources.opportunityResourceAllocations.contactPerson',
+        'milestones',
+        'milestones.opportunityResources',
+        'milestones.opportunityResources.panelSkill',
+        'milestones.opportunityResources.panelSkillStandardLevel',
+        'milestones.opportunityResources.opportunityResourceAllocations',
+        'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
       ],
     });
     if (!opportunity) {
       throw new Error('Opportunity not found!');
     }
-    return opportunity.opportunityResources;
+    let milestone = opportunity.milestones.filter((x) => x.id === milestoneId);
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+    return milestone;
+  }
+
+  async updateMilestone(
+    opportunityId: number,
+    milestoneId: number,
+    milestoneDTO: MilestoneDTO
+  ) {
+    if (!opportunityId) {
+      throw new Error('Opportunity not found!');
+    }
+
+    if (!milestoneId) {
+      throw new Error('Milestone not found!');
+    }
+
+    let opportunity = await this.findOne(opportunityId, {
+      relations: ['milestones'],
+    });
+
+    if (!opportunity) {
+      throw new Error('Opportunity not found!');
+    }
+
+    let milestone = opportunity.milestones.filter(
+      (x) => x.id == milestoneId
+    )[0];
+    if (!milestone) {
+      throw new Error('Milestone not found!');
+    }
+    milestone.title = milestoneDTO.title;
+    milestone.description = milestoneDTO.description;
+    milestone.startDate = new Date(milestoneDTO.startDate);
+    milestone.endDate = new Date(milestoneDTO.endDate);
+    milestone.isApproved = milestoneDTO.isApproved;
+    milestone.projectId = opportunityId;
+    milestone.progress = milestoneDTO.progress;
+    await this.manager.save(milestone);
+    return this.findOneCustomMilestone(opportunityId, milestoneId);
+  }
+
+  async getAllActiveResources(opportunityId: number, milestoneId: number) {
+    if (!opportunityId) {
+      throw new Error('This Opportunity not found!');
+    }
+    if (!milestoneId) {
+      throw new Error('This Milestone not found!');
+    }
+    let opportunity = await this.findOne(opportunityId, {
+      relations: [
+        'milestones',
+        'milestones.opportunityResources',
+        'milestones.opportunityResources.panelSkill',
+        'milestones.opportunityResources.panelSkillStandardLevel',
+        'milestones.opportunityResources.opportunityResourceAllocations',
+        'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
+    });
+    if (!opportunity) {
+      throw new Error('Opportunity not found!');
+    }
+
+    let milestone = opportunity.milestones.filter(
+      (x) => x.id === milestoneId
+    )[0];
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    return milestone.opportunityResources;
   }
 
   async addResource(
     opportunityId: number,
+    milestoneId: number,
     opportunityResourceDTO: OpportunityResourceDTO
   ) {
     if (!opportunityId) {
       throw new Error('Opportunity Id not found!');
     }
 
+    if (!milestoneId) {
+      throw new Error('This Milestone not found!');
+    }
     let opportunity = await this.findOne(opportunityId, {
       relations: [
-        'opportunityResources',
-        'opportunityResources.panelSkill',
-        'opportunityResources.panelSkillStandardLevel',
+        'milestones',
+        'milestones.opportunityResources',
+        'milestones.opportunityResources.panelSkill',
+        'milestones.opportunityResources.panelSkillStandardLevel',
       ],
     });
     if (!opportunity) {
       throw new Error('Opportunity not found!');
+    }
+
+    let milestone = opportunity.milestones.filter(
+      (x) => x.id === milestoneId
+    )[0];
+
+    if (!milestone) {
+      throw new Error('Milestone not found');
     }
 
     let resource = new OpportunityResource();
@@ -357,21 +475,24 @@ export class OpportunityRepository extends Repository<Opportunity> {
     resource.opportunityId = opportunityId;
     console.log(opportunityId);
     resource = await this.manager.save(resource);
-    return this.findOneCustomResource(opportunityId, resource.id);
+    return this.findOneCustomResource(opportunityId, milestoneId, resource.id);
   }
 
   async updateResource(
     opportunityId: number,
+    milestoneId: number,
     id: number,
     opportunityResourceDTO: OpportunityResourceDTO
   ) {
-    console.log({ opportunityId }, { id }, 'sQidwai');
-
     if (!opportunityId) {
       throw new Error('Opportunity not found!');
     }
+    if (!milestoneId) {
+      throw new Error('This Milestone not found!');
+    }
+
     let opportunity = await this.findOne(opportunityId, {
-      relations: ['opportunityResources'],
+      relations: ['milestones', 'milestones.opportunityResources'],
     });
     console.log(opportunity);
 
@@ -379,9 +500,14 @@ export class OpportunityRepository extends Repository<Opportunity> {
       throw new Error('Opportunity not found!');
     }
 
-    let resource = opportunity.opportunityResources.filter(
-      (x) => x.id == id
+    let milestone = opportunity.milestones.filter(
+      (x) => x.id === milestoneId
     )[0];
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    let resource = milestone.opportunityResources.filter((x) => x.id == id)[0];
     if (!resource) {
       throw new Error('Resource not found!');
     }
@@ -391,29 +517,43 @@ export class OpportunityRepository extends Repository<Opportunity> {
     resource.billableHours = opportunityResourceDTO.billableHours;
     resource.opportunityId = opportunityId;
     await this.manager.save(resource);
-    return this.findOneCustomResource(opportunityId, id);
+    return this.findOneCustomResource(opportunityId, milestoneId, id);
   }
 
   async findOneCustomResource(
     opportunityId: number,
+    milestoneId: number,
     id: number
   ): Promise<any | undefined> {
     if (!opportunityId) {
       throw new Error('Opportunity not found!');
     }
+
+    if (!milestoneId) {
+      throw new Error('This Milestone not found!');
+    }
     let opportunity = await this.findOne(opportunityId, {
       relations: [
-        'opportunityResources',
-        'opportunityResources.panelSkill',
-        'opportunityResources.panelSkillStandardLevel',
-        'opportunityResources.opportunityResourceAllocations',
-        'opportunityResources.opportunityResourceAllocations.contactPerson',
+        'milestones',
+        'milestones.opportunityResources',
+        'milestones.opportunityResources.panelSkill',
+        'milestones.opportunityResources.panelSkillStandardLevel',
+        'milestones.opportunityResources.opportunityResourceAllocations',
+        'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
       ],
     });
     if (!opportunity) {
       throw new Error('Opportunity not found!');
     }
-    let resource = opportunity.opportunityResources.filter((x) => x.id === id);
+
+    let milestone = opportunity.milestones.filter(
+      (x) => x.id === milestoneId
+    )[0];
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    let resource = milestone.opportunityResources.filter((x) => x.id === id);
     if (!resource) {
       throw new Error('Resource not found');
     }
@@ -422,25 +562,38 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
   async deleteCustomResource(
     opportunityId: number,
+    milestoneId: number,
     id: number
   ): Promise<any | undefined> {
     if (!opportunityId) {
       throw new Error('Opportunity not found!');
     }
+    if (!milestoneId) {
+      throw new Error('This Milestone not found!');
+    }
     let opportunity = await this.findOne(opportunityId, {
       relations: [
-        'opportunityResources',
-        'opportunityResources.panelSkill',
-        'opportunityResources.panelSkillStandardLevel',
-        'opportunityResources.opportunityResourceAllocations',
-        'opportunityResources.opportunityResourceAllocations.contactPerson',
+        'milestones',
+        'milestones.opportunityResources',
+        'milestones.opportunityResources.panelSkill',
+        'milestones.opportunityResources.panelSkillStandardLevel',
+        'milestones.opportunityResources.opportunityResourceAllocations',
+        'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
       ],
     });
+
     if (!opportunity) {
       throw new Error('Opportunity not found!');
     }
 
-    opportunity.opportunityResources = opportunity.opportunityResources.filter(
+    let milestone = opportunity.milestones.filter(
+      (x) => x.id === milestoneId
+    )[0];
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    milestone.opportunityResources = milestone.opportunityResources.filter(
       (x) => x.id !== id
     );
     return await this.manager.save(opportunity);
@@ -448,11 +601,16 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
   async addResourceAllocation(
     opportunityId: number,
+    milestoneId: number,
     opportunityResourceId: number,
     opportunityResourceAllocationDTO: OpportunityResourceAllocationDTO
   ) {
     if (!opportunityId) {
       throw new Error('Opportunity Id not found!');
+    }
+
+    if (!milestoneId) {
+      throw new Error('This Milestone not found!');
     }
 
     if (!opportunityResourceId) {
@@ -461,8 +619,9 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
     let opportunity = await this.findOne(opportunityId, {
       relations: [
-        'opportunityResources',
-        'opportunityResources.opportunityResourceAllocations',
+        'milestones',
+        'milestones.opportunityResources',
+        'milestones.opportunityResources.opportunityResourceAllocations',
       ],
     });
 
@@ -470,7 +629,11 @@ export class OpportunityRepository extends Repository<Opportunity> {
       throw new Error('Opportunity not found!');
     }
 
-    let opportunityResource = opportunity.opportunityResources.filter(
+    let milestone = opportunity.milestones.filter(
+      (x) => x.id == milestoneId
+    )[0];
+
+    let opportunityResource = milestone.opportunityResources.filter(
       (x) => x.id == opportunityResourceId
     )[0];
 
@@ -511,6 +674,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
     resourceAllocation = await this.manager.save(resourceAllocation);
     return this.findOneCustomResourceAllocation(
       opportunityId,
+      milestoneId,
       opportunityResourceId,
       resourceAllocation.id
     );
@@ -518,6 +682,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
   async updateResourceAllocation(
     opportunityId: number,
+    milestoneId: number,
     opportunityResourceId: number,
     id: number,
     opportunityResourceAllocationDTO: OpportunityResourceAllocationDTO
@@ -525,15 +690,18 @@ export class OpportunityRepository extends Repository<Opportunity> {
     if (!opportunityId) {
       throw new Error('Opportunity Id not found!');
     }
-
+    if (!milestoneId) {
+      throw new Error('This Milestone not found!');
+    }
     if (!opportunityResourceId) {
       throw new Error('Opportunity Resource Id not found!');
     }
 
     let opportunity = await this.findOne(opportunityId, {
       relations: [
-        'opportunityResources',
-        'opportunityResources.opportunityResourceAllocations',
+        'milestones',
+        'milestones.opportunityResources',
+        'milestones.opportunityResources.opportunityResourceAllocations',
       ],
     });
 
@@ -541,7 +709,11 @@ export class OpportunityRepository extends Repository<Opportunity> {
       throw new Error('Opportunity not found!');
     }
 
-    let opportunityResource = opportunity.opportunityResources.filter(
+    let milestone = opportunity.milestones.filter(
+      (x) => x.id == milestoneId
+    )[0];
+
+    let opportunityResource = milestone.opportunityResources.filter(
       (x) => x.id == opportunityResourceId
     )[0];
 
@@ -585,6 +757,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
     await this.manager.save(resourceAllocation);
     return this.findOneCustomResourceAllocation(
       opportunityId,
+      milestoneId,
       opportunityResourceId,
       id
     );
@@ -592,11 +765,16 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
   async findOneCustomResourceAllocation(
     opportunityId: number,
+    milestoneId: number,
     opportunityResourceId: number,
     id: number
   ): Promise<any | undefined> {
     if (!opportunityId) {
       throw new Error('Opportunity Id not found!');
+    }
+
+    if (!milestoneId) {
+      throw new Error('This Milestone not found!');
     }
 
     if (!opportunityResourceId) {
@@ -605,9 +783,10 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
     let opportunity = await this.findOne(opportunityId, {
       relations: [
-        'opportunityResources',
-        'opportunityResources.opportunityResourceAllocations',
-        'opportunityResources.opportunityResourceAllocations.contactPerson',
+        'milestones',
+        'milestones.opportunityResources',
+        'milestones.opportunityResources.opportunityResourceAllocations',
+        'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
       ],
     });
 
@@ -615,7 +794,11 @@ export class OpportunityRepository extends Repository<Opportunity> {
       throw new Error('Opportunity not found!');
     }
 
-    let opportunityResource = opportunity.opportunityResources.filter(
+    let milestone = opportunity.milestones.filter(
+      (x) => x.id == milestoneId
+    )[0];
+
+    let opportunityResource = milestone.opportunityResources.filter(
       (x) => x.id == opportunityResourceId
     )[0];
 
@@ -635,11 +818,16 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
   async deleteCustomResourceAllocation(
     opportunityId: number,
+    milestoneId: number,
     opportunityResourceId: number,
     id: number
   ): Promise<any | undefined> {
     if (!opportunityId) {
       throw new Error('Opportunity Id not found!');
+    }
+
+    if (!milestoneId) {
+      throw new Error('This Milestone not found!');
     }
 
     if (!opportunityResourceId) {
@@ -648,9 +836,10 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
     let opportunity = await this.findOne(opportunityId, {
       relations: [
-        'opportunityResources',
-        'opportunityResources.opportunityResourceAllocations',
-        'opportunityResources.opportunityResourceAllocations.contactPerson',
+        'milestones',
+        'milestones.opportunityResources',
+        'milestones.opportunityResources.opportunityResourceAllocations',
+        'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
       ],
     });
 
@@ -658,7 +847,11 @@ export class OpportunityRepository extends Repository<Opportunity> {
       throw new Error('Opportunity not found!');
     }
 
-    let opportunityResource = opportunity.opportunityResources.filter(
+    let milestone = opportunity.milestones.filter(
+      (x) => x.id == milestoneId
+    )[0];
+
+    let opportunityResource = milestone.opportunityResources.filter(
       (x) => x.id == opportunityResourceId
     )[0];
 
@@ -681,11 +874,16 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
   async markResourceAllocationAsSelected(
     opportunityId: number,
+    milestoneId: number,
     opportunityResourceId: number,
     id: number
   ) {
     if (!opportunityId) {
       throw new Error('Opportunity Id not found!');
+    }
+
+    if (!milestoneId) {
+      throw new Error('This Milestone not found!');
     }
 
     if (!opportunityResourceId) {
@@ -694,9 +892,10 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
     let opportunity = await this.findOne(opportunityId, {
       relations: [
-        'opportunityResources',
-        'opportunityResources.opportunityResourceAllocations',
-        'opportunityResources.opportunityResourceAllocations.contactPerson',
+        'milestones',
+        'milestones.opportunityResources',
+        'milestones.opportunityResources.opportunityResourceAllocations',
+        'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
       ],
     });
 
@@ -704,7 +903,11 @@ export class OpportunityRepository extends Repository<Opportunity> {
       throw new Error('Opportunity not found!');
     }
 
-    let opportunityResource = opportunity.opportunityResources.filter(
+    let milestone = opportunity.milestones.filter(
+      (x) => x.id == milestoneId
+    )[0];
+
+    let opportunityResource = milestone.opportunityResources.filter(
       (x) => x.id == opportunityResourceId
     )[0];
 
@@ -1018,12 +1221,5 @@ export class OpportunityRepository extends Repository<Opportunity> {
     if (!isNaN(employeeId) && employeeId != 0) return data;
 
     return work;
-  }
-
-  async getMilestones(opportunityId: number): Promise<any | undefined> {
-    let results = await this.manager.find(Milestone, {
-      where: { projectId: opportunityId },
-    });
-    return results;
   }
 }

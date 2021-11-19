@@ -10,9 +10,11 @@ export class OpportunityResourceAllocationController {
     try {
       const repository = getCustomRepository(OpportunityRepository);
       let opportunityId = req.params.opportunityId;
+      let milestoneId = req.params.milestoneId;
       let opportunityResourceId = req.params.opportunityResourceId;
       let record = await repository.addResourceAllocation(
         parseInt(opportunityId),
+        parseInt(milestoneId),
         parseInt(opportunityResourceId),
         req.body
       );
@@ -32,9 +34,11 @@ export class OpportunityResourceAllocationController {
       const repository = getCustomRepository(OpportunityRepository);
       let id = req.params.id;
       let opportunityId = req.params.opportunityId;
+      let milestoneId = req.params.milestoneId;
       let opportunityResourceId = req.params.opportunityResourceId;
       let record = await repository.updateResourceAllocation(
         parseInt(opportunityId),
+        parseInt(milestoneId),
         parseInt(opportunityResourceId),
         parseInt(id),
         req.body
@@ -54,9 +58,11 @@ export class OpportunityResourceAllocationController {
       const repository = getCustomRepository(OpportunityRepository);
       let id = req.params.id;
       let opportunityId = req.params.opportunityId;
+      let milestoneId = req.params.milestoneId;
       let opportunityResourceId = req.params.opportunityResourceId;
       let record = await repository.findOneCustomResourceAllocation(
         parseInt(opportunityId),
+        parseInt(milestoneId),
         parseInt(opportunityResourceId),
         parseInt(id)
       );
@@ -76,9 +82,11 @@ export class OpportunityResourceAllocationController {
       const repository = getCustomRepository(OpportunityRepository);
       let id = req.params.id;
       let opportunityId = req.params.opportunityId;
+      let milestoneId = req.params.milestoneId;
       let opportunityResourceId = req.params.opportunityResourceId;
       let record = await repository.deleteCustomResourceAllocation(
         parseInt(opportunityId),
+        parseInt(milestoneId),
         parseInt(opportunityResourceId),
         parseInt(id)
       );
@@ -97,9 +105,11 @@ export class OpportunityResourceAllocationController {
       const repository = getCustomRepository(OpportunityRepository);
       let id = req.params.id;
       let opportunityId = req.params.opportunityId;
+      let milestoneId = req.params.milestoneId;
       let opportunityResourceId = req.params.opportunityResourceId;
       let record = await repository.markResourceAllocationAsSelected(
         parseInt(opportunityId),
+        parseInt(milestoneId),
         parseInt(opportunityResourceId),
         parseInt(id)
       );

@@ -11,7 +11,7 @@ router
 
 router
   .route('/:id')
-  .get([isLoggedIn], contr.show.bind(contr))
+  .get([isLoggedIn], contr.get.bind(contr))
   .patch([isLoggedIn], contr.update.bind(contr));
 
 export default router;
