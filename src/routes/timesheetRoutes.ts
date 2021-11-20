@@ -11,18 +11,18 @@ router
   .route('/users')
   .get(
     [isLoggedIn, can(Action.READ, Resource.TIMESHEETS)],
-    contr.getTimesheetProjectUsers.bind(contr)
+    contr.getTimesheetMilestoneUsers.bind(contr)
   );
 
 router
-  .route('/projectEntries/:id')
-  .patch([isLoggedIn], contr.updateTimesheetProjectEntryNote.bind(contr));
+  .route('/milestoneEntries/:id')
+  .patch([isLoggedIn], contr.updateTimesheetMilestoneEntryNote.bind(contr));
 
 router
   .route('/project/:startDate&:endDate&:projectId')
   .get(
     [isLoggedIn, can(Action.READ, Resource.TIMESHEETS)],
-    contr.getTimesheetByProject.bind(contr)
+    contr.getTimesheetByMilestone.bind(contr)
   );
 
 router
@@ -37,24 +37,24 @@ router
   );
 
 router
-  .route('/:startDate&:endDate&:userId/projectEntries/:id/submit')
+  .route('/:startDate&:endDate&:userId/milestoneEntries/:id/submit')
   .post(
     [isLoggedIn, can(Action.ADD, Resource.TIMESHEETS)],
-    contr.submitTimesheetProjectEntry.bind(contr)
+    contr.submitTimesheetMilestoneEntry.bind(contr)
   );
 
 router
-  .route('/:startDate&:endDate&:userId/projectEntries/:id/approve')
+  .route('/:startDate&:endDate&:userId/milestoneEntries/:id/approve')
   .post(
     [isLoggedIn, can(Action.APPROVAL, Resource.TIMESHEETS)],
-    contr.approveTimesheetProjectEntry.bind(contr)
+    contr.approveTimesheetMilestoneEntry.bind(contr)
   );
 
 router
-  .route('/:startDate&:endDate&:userId/projectEntries/:id/reject')
+  .route('/:startDate&:endDate&:userId/milestoneEntries/:id/reject')
   .post(
     [isLoggedIn, can(Action.APPROVAL, Resource.TIMESHEETS)],
-    contr.rejectTimesheetProjectEntry.bind(contr)
+    contr.rejectTimesheetMilestoneEntry.bind(contr)
   );
 
 router

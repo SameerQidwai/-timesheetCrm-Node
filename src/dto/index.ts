@@ -334,13 +334,13 @@ export interface TimesheetDTO extends Base {
   date: string;
   startTime: string;
   endTime: string;
-  projectId: number;
-  projectEntryId: number;
+  milestoneId: number;
+  milestoneEntryId: number;
   notes: string;
   breakHours: number;
 }
 
-export interface TimesheetProjectNoteDTO extends Base {
+export interface TimesheetMilestoneNoteDTO extends Base {
   note: string;
   attachments: number[];
 }

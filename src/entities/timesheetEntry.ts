@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Base } from './common/base';
 import { Employee } from './employee';
-import { TimesheetProjectEntry } from './timesheetProjectEntry';
+import { TimesheetMilestoneEntry } from './timesheetMilestoneEntry';
 
 @Entity('timesheet_entries')
 export class TimesheetEntry extends Base {
@@ -53,10 +53,10 @@ export class TimesheetEntry extends Base {
   @JoinColumn({ name: 'rejected_by' })
   rejecter: Employee;
 
-  @Column({ name: 'project_entry_id' })
-  projectEntryId: number;
+  @Column({ name: 'milestone_entry_id' })
+  milestoneEntryId: number;
 
-  @ManyToOne(() => TimesheetProjectEntry)
-  @JoinColumn({ name: 'project_entry_id' })
-  projectEntry: TimesheetProjectEntry;
+  @ManyToOne(() => TimesheetMilestoneEntry)
+  @JoinColumn({ name: 'milestone_entry_id' })
+  milestoneEntry: TimesheetMilestoneEntry;
 }

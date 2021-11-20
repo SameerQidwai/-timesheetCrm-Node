@@ -1,11 +1,12 @@
 import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { Base } from './common/base';
 import { Opportunity } from './opportunity';
+import { Milestone } from './milestone';
 import { Timesheet } from './timesheet';
 import { TimesheetEntry } from './timesheetEntry';
 
 @Entity('timesheet_project_entries')
-export class TimesheetProjectEntry extends Base {
+export class TimesheetMilestoneEntry extends Base {
   @Column({ name: 'timesheet_id' })
   timesheetId: number;
 
@@ -13,12 +14,12 @@ export class TimesheetProjectEntry extends Base {
   @JoinColumn({ name: 'timesheet_id' })
   timesheet: Timesheet;
 
-  @Column({ name: 'project_id' })
-  projectId: number;
+  @Column({ name: 'milestone_id' })
+  milestoneId: number;
 
-  @ManyToOne(() => Opportunity)
-  @JoinColumn({ name: 'project_id' })
-  project: Opportunity;
+  @ManyToOne(() => Milestone)
+  @JoinColumn({ name: 'milestone_id' })
+  milestone: Milestone;
 
   @Column({ name: 'notes', nullable: true })
   notes: string;
@@ -28,7 +29,7 @@ export class TimesheetProjectEntry extends Base {
 
   @OneToMany(
     () => TimesheetEntry,
-    (timesheetEntries) => timesheetEntries.projectEntry,
+    (timesheetEntries) => timesheetEntries.milestoneEntry,
     {
       cascade: true,
     }

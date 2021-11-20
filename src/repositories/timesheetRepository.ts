@@ -2,7 +2,7 @@ import { TimesheetDTO } from '../dto';
 import { EntityRepository, Repository, MoreThan } from 'typeorm';
 import moment from 'moment';
 import { Timesheet } from '../entities/timesheet';
-import { TimesheetProjectEntry } from '../entities/timesheetProjectEntry';
+import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
 import { TimesheetEntry } from '../entities/timesheetEntry';
 import { Attachment } from '../entities/attachment';
 import { TimesheetStatus, EntityType } from '../constants/constants';
@@ -26,9 +26,10 @@ export class TimesheetRepository extends Repository<Timesheet> {
     let timesheet = await this.findOne({
       where: { startDate: cStartDate, endDate: cEndDate, employeeId: userId },
       relations: [
-        'projectEntries',
-        'projectEntries.project',
-        'projectEntries.entries',
+        'milestoneEntries',
+        'milestoneEntries.milestone',
+        'milestoneEntries.milestone.project',
+        'milestoneEntries.entries',
       ],
     });
 
@@ -38,68 +39,71 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
     //-- START OF MODIFIED RESPSONSE FOR FRONTEND
 
-    let projects: any = [];
-    let projectStatuses: any = [];
+    let milestones: any = [];
+    let milestoneStatuses: any = [];
 
     interface Any {
       [key: string]: any;
     }
 
-    timesheet.projectEntries.map((projectEntry: TimesheetProjectEntry) => {
-      let status: TimesheetStatus = TimesheetStatus.SAVED;
+    timesheet.milestoneEntries.map(
+      (milestoneEntry: TimesheetMilestoneEntry) => {
+        let status: TimesheetStatus = TimesheetStatus.SAVED;
 
-      let authHaveThisProject = false;
-      if (
-        projectEntry.project.accountDirectorId == authId ||
-        projectEntry.project.accountManagerId == authId ||
-        projectEntry.project.projectManagerId == authId
-      ) {
-        authHaveThisProject = true;
-      }
+        let authHaveThisMilestone = false;
+        if (
+          milestoneEntry.milestone.project.accountDirectorId == authId ||
+          milestoneEntry.milestone.project.accountManagerId == authId ||
+          milestoneEntry.milestone.project.projectManagerId == authId
+        ) {
+          authHaveThisMilestone = true;
+        }
 
-      projectEntry.project.accountDirectorId;
+        milestoneEntry.milestone.project.accountDirectorId;
 
-      let project: Any = {
-        projectEntryId: projectEntry.id,
-        projectId: projectEntry.projectId,
-        project: projectEntry.project.title,
-        isManaged: authHaveThisProject,
-        notes: projectEntry.notes,
-        totalHours: 0,
-      };
-
-      projectEntry.entries.map((entry: TimesheetEntry) => {
-        project.totalHours += entry.hours;
-        project[moment(entry.date, 'DD-MM-YYYY').format('D/M')] = {
-          entryId: entry.id,
-          startTime: moment(entry.startTime, 'HH:mm').format('HH:mm'),
-          endTime: moment(entry.endTime, 'HH:mm').format('HH:mm'),
-          breakHours: entry.breakHours,
-          actualHours: entry.hours,
-          notes: entry.notes,
+        let milestone: Any = {
+          milestoneEntryId: milestoneEntry.id,
+          milestoneId: milestoneEntry.milestoneId,
+          milestone: milestoneEntry.milestone.title,
+          isManaged: authHaveThisMilestone,
+          notes: milestoneEntry.notes,
+          totalHours: 0,
         };
 
-        if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
-        else if (entry.approvedAt !== null) status = TimesheetStatus.APPROVED;
-        else if (entry.submittedAt !== null) status = TimesheetStatus.SUBMITTED;
-      });
+        milestoneEntry.entries.map((entry: TimesheetEntry) => {
+          milestone.totalHours += entry.hours;
+          milestone[moment(entry.date, 'DD-MM-YYYY').format('D/M')] = {
+            entryId: entry.id,
+            startTime: moment(entry.startTime, 'HH:mm').format('HH:mm'),
+            endTime: moment(entry.endTime, 'HH:mm').format('HH:mm'),
+            breakHours: entry.breakHours,
+            actualHours: entry.hours,
+            notes: entry.notes,
+          };
 
-      project.status = status;
-      projectStatuses.push(status);
+          if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
+          else if (entry.approvedAt !== null) status = TimesheetStatus.APPROVED;
+          else if (entry.submittedAt !== null)
+            status = TimesheetStatus.SUBMITTED;
+        });
 
-      projects.push(project);
-    });
+        milestone.status = status;
+        milestoneStatuses.push(status);
 
-    console.log(projectStatuses);
-    let timesheetStatus: TimesheetStatus = projectStatuses.includes(
+        milestones.push(milestone);
+      }
+    );
+
+    console.log(milestoneStatuses);
+    let timesheetStatus: TimesheetStatus = milestoneStatuses.includes(
       TimesheetStatus.REJECTED
     )
       ? TimesheetStatus.REJECTED
-      : projectStatuses.includes(TimesheetStatus.SAVED)
+      : milestoneStatuses.includes(TimesheetStatus.SAVED)
       ? TimesheetStatus.SAVED
-      : projectStatuses.includes(TimesheetStatus.SUBMITTED)
+      : milestoneStatuses.includes(TimesheetStatus.SUBMITTED)
       ? TimesheetStatus.SUBMITTED
-      : projectStatuses.includes(TimesheetStatus.APPROVED)
+      : milestoneStatuses.includes(TimesheetStatus.APPROVED)
       ? TimesheetStatus.APPROVED
       : TimesheetStatus.SAVED;
 
@@ -107,7 +111,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
       id: timesheet.id,
       status: timesheetStatus,
       notes: timesheet.notes,
-      projects: projects,
+      milestones: milestones,
     };
 
     return response;
@@ -129,9 +133,10 @@ export class TimesheetRepository extends Repository<Timesheet> {
     let timesheet = await this.findOne({
       where: { startDate: cStartDate, endDate: cEndDate, employeeId: userId },
       relations: [
-        'projectEntries',
-        'projectEntries.project',
-        'projectEntries.entries',
+        'milestoneEntries',
+        'milestoneEntries.milestone',
+        'milestoneEntries.milestone.project',
+        'milestoneEntries.entries',
       ],
     });
 
@@ -141,75 +146,72 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
     //-- START OF MODIFIED RESPSONSE FOR FRONTEND
 
-    let projects: any = [];
-    let projectStatuses: any = [];
+    let milestones: any = [];
+    let milestoneStatuses: any = [];
 
     interface Any {
       [key: string]: any;
     }
 
-    timesheet.projectEntries.map((projectEntry: TimesheetProjectEntry) => {
-      let status: TimesheetStatus = TimesheetStatus.SAVED;
+    timesheet.milestoneEntries.map(
+      (milestoneEntry: TimesheetMilestoneEntry) => {
+        let status: TimesheetStatus = TimesheetStatus.SAVED;
 
-      let authHaveThisProject = false;
-      if (
-        projectEntry.project.accountDirectorId == authId ||
-        projectEntry.project.accountManagerId == authId ||
-        projectEntry.project.projectManagerId == authId
-      ) {
-        authHaveThisProject = true;
+        let authHaveThisMilestone = false;
+        if (
+          milestoneEntry.milestone.project.accountDirectorId == authId ||
+          milestoneEntry.milestone.project.accountManagerId == authId ||
+          milestoneEntry.milestone.project.projectManagerId == authId
+        ) {
+          authHaveThisMilestone = true;
+        }
+
+        let milestone: Any = {
+          milestoneEntryId: milestoneEntry.id,
+          milestoneId: milestoneEntry.milestoneId,
+          milestone: milestoneEntry.milestone.title,
+          isManaged: authHaveThisMilestone,
+          notes: milestoneEntry.notes,
+          totalHours: 0,
+        };
+
+        if (authHaveThisMilestone) {
+          milestoneEntry.entries.map((entry: TimesheetEntry) => {
+            milestone.totalHours += entry.hours;
+            milestone[moment(entry.date, 'DD-MM-YYYY').format('D/M')] = {
+              entryId: entry.id,
+              startTime: moment(entry.startTime, 'HH:mm').format('HH:mm'),
+              endTime: moment(entry.endTime, 'HH:mm').format('HH:mm'),
+              breakHours: entry.breakHours,
+              actualHours: entry.hours,
+              notes: entry.notes,
+            };
+
+            if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
+            else if (entry.approvedAt !== null)
+              status = TimesheetStatus.APPROVED;
+            else if (entry.submittedAt !== null)
+              status = TimesheetStatus.SUBMITTED;
+          });
+
+          milestone.status = status;
+          milestoneStatuses.push(status);
+
+          milestones.push(milestone);
+        }
       }
+    );
 
-      let project: Any = {
-        projectEntryId: projectEntry.id,
-        projectId: projectEntry.projectId,
-        project: projectEntry.project.title,
-        isManaged: authHaveThisProject,
-        notes: projectEntry.notes,
-        totalHours: 0,
-      };
-
-      console.log({
-        gotProject: authHaveThisProject,
-        authId: authId,
-        comparingWith: projectEntry.project.accountDirectorId,
-      });
-
-      if (authHaveThisProject) {
-        projectEntry.entries.map((entry: TimesheetEntry) => {
-          project.totalHours += entry.hours;
-          project[moment(entry.date, 'DD-MM-YYYY').format('D/M')] = {
-            entryId: entry.id,
-            startTime: moment(entry.startTime, 'HH:mm').format('HH:mm'),
-            endTime: moment(entry.endTime, 'HH:mm').format('HH:mm'),
-            breakHours: entry.breakHours,
-            actualHours: entry.hours,
-            notes: entry.notes,
-          };
-
-          if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
-          else if (entry.approvedAt !== null) status = TimesheetStatus.APPROVED;
-          else if (entry.submittedAt !== null)
-            status = TimesheetStatus.SUBMITTED;
-        });
-
-        project.status = status;
-        projectStatuses.push(status);
-
-        projects.push(project);
-      }
-    });
-
-    console.log(projectStatuses);
-    let timesheetStatus: TimesheetStatus = projectStatuses.includes(
+    console.log(milestoneStatuses);
+    let timesheetStatus: TimesheetStatus = milestoneStatuses.includes(
       TimesheetStatus.REJECTED
     )
       ? TimesheetStatus.REJECTED
-      : projectStatuses.includes(TimesheetStatus.SAVED)
+      : milestoneStatuses.includes(TimesheetStatus.SAVED)
       ? TimesheetStatus.SAVED
-      : projectStatuses.includes(TimesheetStatus.SUBMITTED)
+      : milestoneStatuses.includes(TimesheetStatus.SUBMITTED)
       ? TimesheetStatus.SUBMITTED
-      : projectStatuses.includes(TimesheetStatus.APPROVED)
+      : milestoneStatuses.includes(TimesheetStatus.APPROVED)
       ? TimesheetStatus.APPROVED
       : TimesheetStatus.SAVED;
 
@@ -217,7 +219,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
       id: timesheet.id,
       status: timesheetStatus,
       notes: timesheet.notes,
-      projects: projects,
+      milestones: milestones,
     };
 
     return response;
@@ -239,9 +241,9 @@ export class TimesheetRepository extends Repository<Timesheet> {
     let timesheet = await this.findOne({
       where: { startDate: cStartDate, endDate: cEndDate, employeeId: userId },
       relations: [
-        'projectEntries',
-        'projectEntries.project',
-        'projectEntries.entries',
+        'milestoneEntries',
+        'milestoneEntries.milestone',
+        'milestoneEntries.entries',
       ],
     });
 
@@ -251,69 +253,72 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
     //-- START OF MODIFIED RESPSONSE FOR FRONTEND
 
-    let projects: any = [];
-    let projectStatuses: any = [];
+    let milestones: any = [];
+    let milestoneStatuses: any = [];
 
     interface Any {
       [key: string]: any;
     }
 
     if (timesheet.employeeId == authId) {
-      timesheet.projectEntries.map((projectEntry: TimesheetProjectEntry) => {
-        let status: TimesheetStatus = TimesheetStatus.SAVED;
+      timesheet.milestoneEntries.map(
+        (milestoneEntry: TimesheetMilestoneEntry) => {
+          let status: TimesheetStatus = TimesheetStatus.SAVED;
 
-        let authHaveThisProject = false;
-        if (
-          projectEntry.project.accountDirectorId == authId ||
-          projectEntry.project.accountManagerId == authId ||
-          projectEntry.project.projectManagerId == authId
-        ) {
-          authHaveThisProject = true;
-        }
+          let authHaveThisMilestone = false;
+          if (
+            milestoneEntry.milestone.project.accountDirectorId == authId ||
+            milestoneEntry.milestone.project.accountManagerId == authId ||
+            milestoneEntry.milestone.project.projectManagerId == authId
+          ) {
+            authHaveThisMilestone = true;
+          }
 
-        let project: Any = {
-          projectEntryId: projectEntry.id,
-          projectId: projectEntry.projectId,
-          project: projectEntry.project.title,
-          isManaged: authHaveThisProject,
-          notes: projectEntry.notes,
-          totalHours: 0,
-        };
-
-        projectEntry.entries.map((entry: TimesheetEntry) => {
-          project.totalHours += entry.hours;
-          project[moment(entry.date, 'DD-MM-YYYY').format('D/M')] = {
-            entryId: entry.id,
-            startTime: moment(entry.startTime, 'HH:mm').format('HH:mm'),
-            endTime: moment(entry.endTime, 'HH:mm').format('HH:mm'),
-            breakHours: entry.breakHours,
-            actualHours: entry.hours,
-            notes: entry.notes,
+          let milestone: Any = {
+            milestoneEntryId: milestoneEntry.id,
+            milestoneId: milestoneEntry.milestoneId,
+            milestone: milestoneEntry.milestone.title,
+            isManaged: authHaveThisMilestone,
+            notes: milestoneEntry.notes,
+            totalHours: 0,
           };
 
-          if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
-          else if (entry.approvedAt !== null) status = TimesheetStatus.APPROVED;
-          else if (entry.submittedAt !== null)
-            status = TimesheetStatus.SUBMITTED;
-        });
+          milestoneEntry.entries.map((entry: TimesheetEntry) => {
+            milestone.totalHours += entry.hours;
+            milestone[moment(entry.date, 'DD-MM-YYYY').format('D/M')] = {
+              entryId: entry.id,
+              startTime: moment(entry.startTime, 'HH:mm').format('HH:mm'),
+              endTime: moment(entry.endTime, 'HH:mm').format('HH:mm'),
+              breakHours: entry.breakHours,
+              actualHours: entry.hours,
+              notes: entry.notes,
+            };
 
-        project.status = status;
-        projectStatuses.push(status);
+            if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
+            else if (entry.approvedAt !== null)
+              status = TimesheetStatus.APPROVED;
+            else if (entry.submittedAt !== null)
+              status = TimesheetStatus.SUBMITTED;
+          });
 
-        projects.push(project);
-      });
+          milestone.status = status;
+          milestoneStatuses.push(status);
+
+          milestones.push(milestone);
+        }
+      );
     }
 
-    console.log(projectStatuses);
-    let timesheetStatus: TimesheetStatus = projectStatuses.includes(
+    console.log(milestoneStatuses);
+    let timesheetStatus: TimesheetStatus = milestoneStatuses.includes(
       TimesheetStatus.REJECTED
     )
       ? TimesheetStatus.REJECTED
-      : projectStatuses.includes(TimesheetStatus.SAVED)
+      : milestoneStatuses.includes(TimesheetStatus.SAVED)
       ? TimesheetStatus.SAVED
-      : projectStatuses.includes(TimesheetStatus.SUBMITTED)
+      : milestoneStatuses.includes(TimesheetStatus.SUBMITTED)
       ? TimesheetStatus.SUBMITTED
-      : projectStatuses.includes(TimesheetStatus.APPROVED)
+      : milestoneStatuses.includes(TimesheetStatus.APPROVED)
       ? TimesheetStatus.APPROVED
       : TimesheetStatus.SAVED;
 
@@ -321,7 +326,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
       id: timesheet.id,
       status: timesheetStatus,
       notes: timesheet.notes,
-      projects: projects,
+      milestones: milestones,
     };
 
     return response;
@@ -343,7 +348,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     let entry = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let timesheet: Timesheet | undefined;
-        let projectEntry: TimesheetProjectEntry | undefined;
+        let milestoneEntry: TimesheetMilestoneEntry | undefined;
 
         timesheet = await this.manager.findOne(Timesheet, {
           where: {
@@ -369,21 +374,23 @@ export class TimesheetRepository extends Repository<Timesheet> {
           timesheet = await transactionalEntityManager.save(timesheet);
         }
 
-        projectEntry = await this.manager.findOne(TimesheetProjectEntry, {
+        milestoneEntry = await this.manager.findOne(TimesheetMilestoneEntry, {
           where: {
-            projectId: timesheetDTO.projectId,
+            milestoneId: timesheetDTO.milestoneId,
             timesheetId: timesheet.id,
           },
         });
 
-        if (!projectEntry) {
+        if (!milestoneEntry) {
           console.log(' I RANN');
-          projectEntry = new TimesheetProjectEntry();
+          milestoneEntry = new TimesheetMilestoneEntry();
 
-          projectEntry.timesheetId = timesheet.id;
-          projectEntry.projectId = timesheetDTO.projectId;
+          milestoneEntry.timesheetId = timesheet.id;
+          milestoneEntry.milestoneId = timesheetDTO.milestoneId;
 
-          projectEntry = await transactionalEntityManager.save(projectEntry);
+          milestoneEntry = await transactionalEntityManager.save(
+            milestoneEntry
+          );
         }
 
         let entry = new TimesheetEntry();
@@ -436,7 +443,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
             ) - timesheetDTO.breakHours;
         }
 
-        entry.projectEntryId = projectEntry.id;
+        entry.milestoneEntryId = milestoneEntry.id;
         entry.notes = timesheetDTO.notes;
 
         entry = await transactionalEntityManager.save(entry);
@@ -495,7 +502,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
             ) - timesheetDTO.breakHours;
         }
 
-        entry.projectEntryId = timesheetDTO.projectEntryId;
+        entry.milestoneEntryId = timesheetDTO.milestoneEntryId;
         entry.notes = timesheetDTO.notes;
 
         entry = await transactionalEntityManager.save(entry);
@@ -507,18 +514,18 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return entry;
   }
 
-  async submitProjectTimesheetEntry(
+  async submitMilestoneTimesheetEntry(
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    projectEntryId: number
+    milestoneEntryId: number
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
       'YYYY-MM-DD HH:mm:ss'
     );
     let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
 
-    let projectEntry = await this.manager.transaction(
+    let milestoneEntry = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let timesheet = await this.findOne({
           where: {
@@ -527,9 +534,9 @@ export class TimesheetRepository extends Repository<Timesheet> {
             employeeId: userId,
           },
           relations: [
-            'projectEntries',
-            'projectEntries.project',
-            'projectEntries.entries',
+            'milestoneEntries',
+            'milestoneEntries.milestone',
+            'milestoneEntries.entries',
           ],
         });
 
@@ -537,15 +544,15 @@ export class TimesheetRepository extends Repository<Timesheet> {
           throw new Error('Timesheet not found!');
         }
 
-        let projectEntry = timesheet.projectEntries.filter(
-          (entry) => entry.id === projectEntryId
+        let milestoneEntry = timesheet.milestoneEntries.filter(
+          (entry) => entry.id === milestoneEntryId
         )[0];
 
-        if (!projectEntry) {
+        if (!milestoneEntry) {
           throw new Error('Entry not found!');
         }
 
-        projectEntry.entries.map((entry) => {
+        milestoneEntry.entries.map((entry) => {
           entry.submittedAt = moment().toDate();
           entry.approvedAt = null;
           entry.rejectedAt = null;
@@ -553,28 +560,28 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
         await transactionalEntityManager.save(timesheet);
 
-        return timesheet.projectEntries.filter(
-          (entry) => entry.id === projectEntryId
+        return timesheet.milestoneEntries.filter(
+          (entry) => entry.id === milestoneEntryId
         );
       }
     );
 
-    return projectEntry;
-    // projectEntry.entries.map(entry => entry.submittedAt = )
+    return milestoneEntry;
+    // milestoneEntry.entries.map(entry => entry.submittedAt = )
   }
 
-  async approveAnyProjectTimesheetEntry(
+  async approveAnyMilestoneTimesheetEntry(
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    projectEntryId: number
+    milestoneEntryId: number
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
       'YYYY-MM-DD HH:mm:ss'
     );
     let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
 
-    let projectEntry = await this.manager.transaction(
+    let milestoneEntry = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let timesheet = await this.findOne({
           where: {
@@ -583,9 +590,9 @@ export class TimesheetRepository extends Repository<Timesheet> {
             employeeId: userId,
           },
           relations: [
-            'projectEntries',
-            'projectEntries.project',
-            'projectEntries.entries',
+            'milestoneEntries',
+            'milestoneEntries.milestone',
+            'milestoneEntries.entries',
           ],
         });
 
@@ -593,35 +600,35 @@ export class TimesheetRepository extends Repository<Timesheet> {
           throw new Error('Timesheet not found!');
         }
 
-        let projectEntry = timesheet.projectEntries.filter(
-          (entry) => entry.id === projectEntryId
+        let milestoneEntry = timesheet.milestoneEntries.filter(
+          (entry) => entry.id === milestoneEntryId
         )[0];
 
-        if (!projectEntry) {
+        if (!milestoneEntry) {
           throw new Error('Entry not found!');
         }
 
-        projectEntry.entries.map((entry) => {
+        milestoneEntry.entries.map((entry) => {
           entry.approvedAt = moment().toDate();
         });
 
         await transactionalEntityManager.save(timesheet);
 
-        return timesheet.projectEntries.filter(
-          (entry) => entry.id === projectEntryId
+        return timesheet.milestoneEntries.filter(
+          (entry) => entry.id === milestoneEntryId
         );
       }
     );
 
-    return projectEntry;
-    // projectEntry.entries.map(entry => entry.submittedAt = )
+    return milestoneEntry;
+    // milestoneEntry.entries.map(entry => entry.submittedAt = )
   }
 
-  async approveManageProjectTimesheetEntry(
+  async approveManageMilestoneTimesheetEntry(
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    projectEntryId: number,
+    milestoneEntryId: number,
     authId: number
   ): Promise<any | undefined> {
     let flagUserIsAllowed = 0;
@@ -630,7 +637,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     );
     let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
 
-    let projectEntry = await this.manager.transaction(
+    let milestoneEntry = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let timesheet = await this.findOne({
           where: {
@@ -639,9 +646,9 @@ export class TimesheetRepository extends Repository<Timesheet> {
             employeeId: userId,
           },
           relations: [
-            'projectEntries',
-            'projectEntries.project',
-            'projectEntries.entries',
+            'milestoneEntries',
+            'milestoneEntries.milestone',
+            'milestoneEntries.entries',
           ],
         });
 
@@ -649,15 +656,15 @@ export class TimesheetRepository extends Repository<Timesheet> {
           throw new Error('Timesheet not found!');
         }
 
-        let projectEntry = timesheet.projectEntries.filter(
-          (entry) => entry.id === projectEntryId
+        let milestoneEntry = timesheet.milestoneEntries.filter(
+          (entry) => entry.id === milestoneEntryId
         )[0];
 
-        if (!projectEntry) {
+        if (!milestoneEntry) {
           throw new Error('Entry not found!');
         }
 
-        let users: [] = await this.getManageProjectUsers(authId);
+        let users: [] = await this.getManageMilestoneUsers(authId);
 
         if (!users.length) {
           throw new Error('No users to manage');
@@ -672,34 +679,34 @@ export class TimesheetRepository extends Repository<Timesheet> {
           throw new Error('User is not allowed to change');
         }
 
-        projectEntry.entries.map((entry) => {
+        milestoneEntry.entries.map((entry) => {
           entry.approvedAt = moment().toDate();
         });
 
         await transactionalEntityManager.save(timesheet);
 
-        return timesheet.projectEntries.filter(
-          (entry) => entry.id === projectEntryId
+        return timesheet.milestoneEntries.filter(
+          (entry) => entry.id === milestoneEntryId
         );
       }
     );
 
-    return projectEntry;
-    // projectEntry.entries.map(entry => entry.submittedAt = )
+    return milestoneEntry;
+    // milestoneEntry.entries.map(entry => entry.submittedAt = )
   }
 
-  async rejectAnyProjectTimesheetEntry(
+  async rejectAnyMilestoneTimesheetEntry(
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    projectEntryId: number
+    milestoneEntryId: number
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
       'YYYY-MM-DD HH:mm:ss'
     );
     let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
 
-    let projectEntry = await this.manager.transaction(
+    let milestoneEntry = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let timesheet = await this.findOne({
           where: {
@@ -708,9 +715,9 @@ export class TimesheetRepository extends Repository<Timesheet> {
             employeeId: userId,
           },
           relations: [
-            'projectEntries',
-            'projectEntries.project',
-            'projectEntries.entries',
+            'milestoneEntries',
+            'milestoneEntries.milestone',
+            'milestoneEntries.entries',
           ],
         });
 
@@ -718,35 +725,35 @@ export class TimesheetRepository extends Repository<Timesheet> {
           throw new Error('Timesheet not found!');
         }
 
-        let projectEntry = timesheet.projectEntries.filter(
-          (entry) => entry.id === projectEntryId
+        let milestoneEntry = timesheet.milestoneEntries.filter(
+          (entry) => entry.id === milestoneEntryId
         )[0];
 
-        if (!projectEntry) {
+        if (!milestoneEntry) {
           throw new Error('Entry not found!');
         }
 
-        projectEntry.entries.map((entry) => {
+        milestoneEntry.entries.map((entry) => {
           entry.rejectedAt = moment().toDate();
         });
 
         await transactionalEntityManager.save(timesheet);
 
-        return timesheet.projectEntries.filter(
-          (entry) => entry.id === projectEntryId
+        return timesheet.milestoneEntries.filter(
+          (entry) => entry.id === milestoneEntryId
         );
       }
     );
 
-    return projectEntry;
-    // projectEntry.entries.map(entry => entry.submittedAt = )
+    return milestoneEntry;
+    // milestoneEntry.entries.map(entry => entry.submittedAt = )
   }
 
-  async rejectManageProjectTimesheetEntry(
+  async rejectManageMilestoneTimesheetEntry(
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    projectEntryId: number,
+    milestoneEntryId: number,
     authId: number
   ): Promise<any | undefined> {
     let flagUserIsAllowed = 0;
@@ -755,7 +762,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     );
     let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
 
-    let projectEntry = await this.manager.transaction(
+    let milestoneEntry = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let timesheet = await this.findOne({
           where: {
@@ -764,9 +771,9 @@ export class TimesheetRepository extends Repository<Timesheet> {
             employeeId: userId,
           },
           relations: [
-            'projectEntries',
-            'projectEntries.project',
-            'projectEntries.entries',
+            'milestoneEntries',
+            'milestoneEntries.milestone',
+            'milestoneEntries.entries',
           ],
         });
 
@@ -774,15 +781,15 @@ export class TimesheetRepository extends Repository<Timesheet> {
           throw new Error('Timesheet not found!');
         }
 
-        let projectEntry = timesheet.projectEntries.filter(
-          (entry) => entry.id === projectEntryId
+        let milestoneEntry = timesheet.milestoneEntries.filter(
+          (entry) => entry.id === milestoneEntryId
         )[0];
 
-        if (!projectEntry) {
+        if (!milestoneEntry) {
           throw new Error('Entry not found!');
         }
 
-        let users: [] = await this.getManageProjectUsers(authId);
+        let users: [] = await this.getManageMilestoneUsers(authId);
 
         if (!users.length) {
           throw new Error('No users to manage');
@@ -797,20 +804,20 @@ export class TimesheetRepository extends Repository<Timesheet> {
           throw new Error('User is not allowed to change');
         }
 
-        projectEntry.entries.map((entry) => {
+        milestoneEntry.entries.map((entry) => {
           entry.rejectedAt = moment().toDate();
         });
 
         await transactionalEntityManager.save(timesheet);
 
-        return timesheet.projectEntries.filter(
-          (entry) => entry.id === projectEntryId
+        return timesheet.milestoneEntries.filter(
+          (entry) => entry.id === milestoneEntryId
         );
       }
     );
 
-    return projectEntry;
-    // projectEntry.entries.map(entry => entry.submittedAt = )
+    return milestoneEntry;
+    // milestoneEntry.entries.map(entry => entry.submittedAt = )
   }
 
   async deleteTimesheetEntry(entryId: number): Promise<any | undefined> {
@@ -824,26 +831,26 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return await this.manager.delete(TimesheetEntry, entry.id);
   }
 
-  async updateTimesheetProjectEntryNote(
-    projectEntryId: number,
+  async updateTimesheetMilestoneEntryNote(
+    milestoneEntryId: number,
     notes: string,
     attachments: [],
     userId: number
   ): Promise<any | undefined> {
     let entry = await this.manager.transaction(
       async (transactionalEntityManager) => {
-        let projectEntry: TimesheetProjectEntry | undefined;
-        projectEntry = await this.manager.findOne(
-          TimesheetProjectEntry,
-          projectEntryId
+        let milestoneEntry: TimesheetMilestoneEntry | undefined;
+        milestoneEntry = await this.manager.findOne(
+          TimesheetMilestoneEntry,
+          milestoneEntryId
         );
 
-        if (!projectEntry) {
-          throw new Error('Project Entry not found');
+        if (!milestoneEntry) {
+          throw new Error('Milestone Entry not found');
         }
-        projectEntry.notes = notes;
+        milestoneEntry.notes = notes;
 
-        projectEntry = await transactionalEntityManager.save(projectEntry);
+        milestoneEntry = await transactionalEntityManager.save(milestoneEntry);
 
         if (attachments) {
           let deleteableAttachments: Attachment[] = [];
@@ -851,7 +858,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
           let oldAttachments = await transactionalEntityManager.find(
             Attachment,
             {
-              where: { targetId: projectEntry.id, targetType: 'PEN' },
+              where: { targetId: milestoneEntry.id, targetType: 'PEN' },
             }
           );
 
@@ -885,7 +892,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
           for (const file of newAttachments) {
             let attachmentObj = new Attachment();
             attachmentObj.fileId = file;
-            attachmentObj.targetId = projectEntry.id;
+            attachmentObj.targetId = milestoneEntry.id;
             attachmentObj.targetType = EntityType.PROJECT_ENTRY;
             attachmentObj.userId = userId;
             let attachment = await transactionalEntityManager.save(
@@ -894,14 +901,14 @@ export class TimesheetRepository extends Repository<Timesheet> {
           }
         }
 
-        return projectEntry;
+        return milestoneEntry;
       }
     );
 
     return entry;
   }
 
-  async getAnyProjectUsers(): Promise<any | undefined> {
+  async getAnyMilestoneUsers(): Promise<any | undefined> {
     let users: any = [];
     let records = await this.manager.find(Employee, {
       relations: [
@@ -920,13 +927,13 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return users;
   }
 
-  async getManageAndOwnProjectUsers(
+  async getManageAndOwnMilestoneUsers(
     userId: number,
     userName: string
   ): Promise<any | undefined> {
     let users: any = [];
     let added: any = [];
-    let projects = await this.manager.find(Opportunity, {
+    let milestones = await this.manager.find(Opportunity, {
       where: [
         {
           status: 'P',
@@ -938,7 +945,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         },
         {
           status: 'P',
-          projectManagerId: userId,
+          milestoneManagerId: userId,
         },
         {
           status: 'C',
@@ -950,7 +957,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         },
         {
           status: 'C',
-          projectManagerId: userId,
+          milestoneManagerId: userId,
         },
       ],
       relations: [
@@ -962,8 +969,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
       ],
     });
 
-    projects.map((project) => {
-      project.opportunityResources.map((resource) => {
+    milestones.map((milestone) => {
+      milestone.opportunityResources.map((resource) => {
         resource.opportunityResourceAllocations.filter((allocation) => {
           if (allocation.isMarkedAsSelected) {
             allocation.contactPerson.contactPersonOrganizations.forEach(
@@ -991,10 +998,10 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return users;
   }
 
-  async getManageProjectUsers(userId: number): Promise<any | undefined> {
+  async getManageMilestoneUsers(userId: number): Promise<any | undefined> {
     let users: any = [];
     let added: any = [];
-    let projects = await this.manager.find(Opportunity, {
+    let milestones = await this.manager.find(Opportunity, {
       where: [
         {
           status: 'P',
@@ -1006,7 +1013,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         },
         {
           status: 'P',
-          projectManagerId: userId,
+          milestoneManagerId: userId,
         },
         {
           status: 'C',
@@ -1018,7 +1025,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         },
         {
           status: 'C',
-          projectManagerId: userId,
+          milestoneManagerId: userId,
         },
       ],
       relations: [
@@ -1030,9 +1037,9 @@ export class TimesheetRepository extends Repository<Timesheet> {
       ],
     });
 
-    projects.forEach((project) => {
-      console.log('checking employee', project);
-      project.opportunityResources.forEach((resource) => {
+    milestones.forEach((milestone) => {
+      console.log('checking employee', milestone);
+      milestone.opportunityResources.forEach((resource) => {
         resource.opportunityResourceAllocations.forEach((allocation) => {
           if (allocation.isMarkedAsSelected) {
             allocation.contactPerson.contactPersonOrganizations.forEach(
@@ -1057,7 +1064,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return users;
   }
 
-  async getOwnProjectUsers(
+  async getOwnMilestoneUsers(
     userId: number,
     userName: string
   ): Promise<any | undefined> {
@@ -1067,11 +1074,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return users;
   }
 
-  async getTimesheetPDF(projectEntryId: number): Promise<any | undefined> {
+  async getTimesheetPDF(milestoneEntryId: number): Promise<any | undefined> {
     // console.log(cStartDate, cEndDate);
-    let projectEntry = await this.manager.findOne(
-      TimesheetProjectEntry,
-      projectEntryId,
+    let milestoneEntry = await this.manager.findOne(
+      TimesheetMilestoneEntry,
+      milestoneEntryId,
       {
         relations: [
           'timesheet',
@@ -1079,16 +1086,16 @@ export class TimesheetRepository extends Repository<Timesheet> {
           'timesheet.employee.contactPersonOrganization',
           'timesheet.employee.contactPersonOrganization.organization',
           'timesheet.employee.contactPersonOrganization.contactPerson',
-          'project',
-          'project.organization',
-          'project.organization.delegateContactPerson',
+          'milestone',
+          'milestone.project.organization',
+          'milestone.project.organization.delegateContactPerson',
           'entries',
         ],
       }
     );
 
-    if (!projectEntry) {
-      throw new Error('Project Entry not found');
+    if (!milestoneEntry) {
+      throw new Error('Milestone Entry not found');
     }
 
     //-- START OF MODIFIED RESPSONSE FOR FRONTEND
@@ -1097,48 +1104,49 @@ export class TimesheetRepository extends Repository<Timesheet> {
       [key: string]: any;
     }
 
-    let startDate = moment(projectEntry.timesheet.startDate, 'DD-MM-YYYY');
+    let startDate = moment(milestoneEntry.timesheet.startDate, 'DD-MM-YYYY');
     let cStartDate = moment(
-      projectEntry.timesheet.startDate,
+      milestoneEntry.timesheet.startDate,
       'DD-MM-YYYY'
     ).format('DD/MM/YYYY');
-    let cEndDate = moment(projectEntry.timesheet.endDate, 'DD-MM-YYYY').format(
-      'DD/MM/YYYY'
-    );
+    let cEndDate = moment(
+      milestoneEntry.timesheet.endDate,
+      'DD-MM-YYYY'
+    ).format('DD/MM/YYYY');
 
     let cMonthDays = moment(
-      projectEntry.timesheet.startDate,
+      milestoneEntry.timesheet.startDate,
       'DD-MM-YYYY'
     ).daysInMonth();
 
     console.log(cMonthDays);
 
-    let project: Any = {
-      projectEntryId: projectEntry.id,
-      projectId: projectEntry.projectId,
-      name: projectEntry.project.title,
-      client: projectEntry.project.organization.name,
+    let milestone: Any = {
+      milestoneEntryId: milestoneEntry.id,
+      milestoneId: milestoneEntry.milestoneId,
+      name: milestoneEntry.milestone.title,
+      client: milestoneEntry.milestone.project.organization.name,
       contact:
-        `${projectEntry.project.organization.delegateContactPerson?.firstName} ${projectEntry.project.organization.delegateContactPerson?.lastName}` ??
+        `${milestoneEntry.milestone.project.organization.delegateContactPerson?.firstName} ${milestoneEntry.milestone.project.organization.delegateContactPerson?.lastName}` ??
         '-',
-      notes: projectEntry.notes,
+      notes: milestoneEntry.notes,
       totalHours: 0,
-      invoicedDays: projectEntry.entries.length,
+      invoicedDays: milestoneEntry.entries.length,
       entries: [],
     };
 
     for (let i = 1; i <= cMonthDays; i++) {
       let _flagFound = 0;
       let _foundEntry: TimesheetEntry | undefined;
-      projectEntry.entries.map((entry: TimesheetEntry) => {
+      milestoneEntry.entries.map((entry: TimesheetEntry) => {
         if (parseInt(entry.date.substring(0, 2)) == i) {
           _flagFound = 1;
           _foundEntry = entry;
         }
       });
       if (_flagFound == 1 && _foundEntry != undefined) {
-        project.totalHours += _foundEntry.hours;
-        project.entries.push({
+        milestone.totalHours += _foundEntry.hours;
+        milestone.entries.push({
           entryId: _foundEntry.id,
           date: moment(_foundEntry.date, 'DD-MM-YYYY').format('D/M/Y'),
           day: moment(_foundEntry.date, 'DD-MM-YYYY').format('dddd'),
@@ -1151,8 +1159,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
         });
       } else {
         console.log(`${i}-${startDate.month()}-${startDate.year()}`);
-        project.totalHours += 0;
-        project.entries.push({
+        milestone.totalHours += 0;
+        milestone.entries.push({
           entryId: '-',
           date: moment(
             `${i}-${startDate.month() + 1}-${startDate.year()}`,
@@ -1173,14 +1181,14 @@ export class TimesheetRepository extends Repository<Timesheet> {
     }
 
     let response = {
-      id: projectEntry.id,
+      id: milestoneEntry.id,
       company:
-        projectEntry.timesheet.employee.contactPersonOrganization.organization
+        milestoneEntry.timesheet.employee.contactPersonOrganization.organization
           .name,
-      employee: `${projectEntry.timesheet.employee.contactPersonOrganization.contactPerson.firstName} ${projectEntry.timesheet.employee.contactPersonOrganization.contactPerson.lastName}`,
+      employee: `${milestoneEntry.timesheet.employee.contactPersonOrganization.contactPerson.firstName} ${milestoneEntry.timesheet.employee.contactPersonOrganization.contactPerson.lastName}`,
       period: `${cStartDate} - ${cEndDate}`,
-      notes: projectEntry.timesheet.notes,
-      project: project,
+      notes: milestoneEntry.timesheet.notes,
+      milestone: milestone,
     };
 
     return response;
@@ -1188,10 +1196,10 @@ export class TimesheetRepository extends Repository<Timesheet> {
     //-- END OF MODIFIED RESPONSE FOR FRONTEND
   }
 
-  async getAnyTimesheetByProject(
+  async getAnyTimesheetByMilestone(
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
-    projectId: number,
+    milestoneId: number,
     authId: number
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
@@ -1206,9 +1214,10 @@ export class TimesheetRepository extends Repository<Timesheet> {
         'employee',
         'employee.contactPersonOrganization',
         'employee.contactPersonOrganization.contactPerson',
-        'projectEntries',
-        'projectEntries.project',
-        'projectEntries.entries',
+        'milestoneEntries',
+        'milestoneEntries.milestone',
+        'milestoneEntries.milestone.project',
+        'milestoneEntries.entries',
       ],
     });
 
@@ -1228,68 +1237,68 @@ export class TimesheetRepository extends Repository<Timesheet> {
       let resTimesheet: any = {
         user: timesheet.employee.contactPersonOrganization.contactPerson
           .firstName,
-        projects: [],
-        projectStatuses: [],
+        milestones: [],
+        milestoneStatuses: [],
         timesheetStatus: TimesheetStatus,
       };
-      timesheet.projectEntries.map((projectEntry: TimesheetProjectEntry) => {
-        console.log('GOING THROUGH PROJECTS', projectEntry.projectId);
-        if (projectEntry.projectId == projectId) {
-          let status: TimesheetStatus = TimesheetStatus.SAVED;
+      timesheet.milestoneEntries.map(
+        (milestoneEntry: TimesheetMilestoneEntry) => {
+          console.log('GOING THROUGH PROJECTS', milestoneEntry.milestoneId);
+          if (milestoneEntry.milestoneId == milestoneId) {
+            let status: TimesheetStatus = TimesheetStatus.SAVED;
 
-          let authHaveThisProject = false;
-          if (
-            projectEntry.project.accountDirectorId == authId ||
-            projectEntry.project.accountManagerId == authId ||
-            projectEntry.project.projectManagerId == authId
-          ) {
-            authHaveThisProject = true;
-          }
+            let authHaveThisMilestone = false;
+            if (
+              milestoneEntry.milestone.project.accountDirectorId == authId ||
+              milestoneEntry.milestone.project.accountManagerId == authId ||
+              milestoneEntry.milestone.project.projectManagerId == authId
+            ) {
+              authHaveThisMilestone = true;
+            }
 
-          projectEntry.project.accountDirectorId;
-
-          let project: Any = {
-            projectEntryId: projectEntry.id,
-            projectId: projectEntry.projectId,
-            project: projectEntry.project.title,
-            isManaged: authHaveThisProject,
-            notes: projectEntry.notes,
-            totalHours: 0,
-          };
-
-          projectEntry.entries.map((entry: TimesheetEntry) => {
-            project.totalHours += entry.hours;
-            project[moment(entry.date, 'DD-MM-YYYY').format('D/M')] = {
-              entryId: entry.id,
-              startTime: moment(entry.startTime, 'HH:mm').format('HH:mm'),
-              endTime: moment(entry.endTime, 'HH:mm').format('HH:mm'),
-              breakHours: entry.breakHours,
-              actualHours: entry.hours,
-              notes: entry.notes,
+            let milestone: Any = {
+              milestoneEntryId: milestoneEntry.id,
+              milestoneId: milestoneEntry.milestoneId,
+              milestone: milestoneEntry.milestone.title,
+              isManaged: authHaveThisMilestone,
+              notes: milestoneEntry.notes,
+              totalHours: 0,
             };
 
-            if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
-            else if (entry.approvedAt !== null)
-              status = TimesheetStatus.APPROVED;
-            else if (entry.submittedAt !== null)
-              status = TimesheetStatus.SUBMITTED;
-          });
+            milestoneEntry.entries.map((entry: TimesheetEntry) => {
+              milestone.totalHours += entry.hours;
+              milestone[moment(entry.date, 'DD-MM-YYYY').format('D/M')] = {
+                entryId: entry.id,
+                startTime: moment(entry.startTime, 'HH:mm').format('HH:mm'),
+                endTime: moment(entry.endTime, 'HH:mm').format('HH:mm'),
+                breakHours: entry.breakHours,
+                actualHours: entry.hours,
+                notes: entry.notes,
+              };
 
-          project.status = status;
-          resTimesheet.projectStatuses.push(status);
-          resTimesheet.projects.push(project);
+              if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
+              else if (entry.approvedAt !== null)
+                status = TimesheetStatus.APPROVED;
+              else if (entry.submittedAt !== null)
+                status = TimesheetStatus.SUBMITTED;
+            });
+
+            milestone.status = status;
+            resTimesheet.milestoneStatuses.push(status);
+            resTimesheet.milestones.push(milestone);
+          }
         }
-      });
+      );
 
-      resTimesheet.timesheetStatus = resTimesheet.projectStatuses.includes(
+      resTimesheet.timesheetStatus = resTimesheet.milestoneStatuses.includes(
         TimesheetStatus.REJECTED
       )
         ? TimesheetStatus.REJECTED
-        : resTimesheet.projectStatuses.includes(TimesheetStatus.SAVED)
+        : resTimesheet.milestoneStatuses.includes(TimesheetStatus.SAVED)
         ? TimesheetStatus.SAVED
-        : resTimesheet.projectStatuses.includes(TimesheetStatus.SUBMITTED)
+        : resTimesheet.milestoneStatuses.includes(TimesheetStatus.SUBMITTED)
         ? TimesheetStatus.SUBMITTED
-        : resTimesheet.projectStatuses.includes(TimesheetStatus.APPROVED)
+        : resTimesheet.milestoneStatuses.includes(TimesheetStatus.APPROVED)
         ? TimesheetStatus.APPROVED
         : TimesheetStatus.SAVED;
 

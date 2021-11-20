@@ -7,7 +7,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { Base } from './common/base';
-import { TimesheetProjectEntry } from './timesheetProjectEntry';
+import { TimesheetMilestoneEntry } from './timesheetMilestoneEntry';
 import { TimesheetEntry } from './timesheetEntry';
 import { TimesheetStatus } from '../constants/constants';
 import { Employee } from './employee';
@@ -31,11 +31,11 @@ export class Timesheet extends Base {
   notes: string;
 
   @OneToMany(
-    () => TimesheetProjectEntry,
-    (timesheetProjectEntry) => timesheetProjectEntry.timesheet,
+    () => TimesheetMilestoneEntry,
+    (timesheetMilestoneEntry) => timesheetMilestoneEntry.timesheet,
     {
       cascade: true,
     }
   )
-  projectEntries: TimesheetProjectEntry[];
+  milestoneEntries: TimesheetMilestoneEntry[];
 }
