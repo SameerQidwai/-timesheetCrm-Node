@@ -136,22 +136,20 @@ export class OpportunityRepository extends Repository<Opportunity> {
         opportunityObj
       );
 
-      if (newOpportunity.type === 1) {
-        //CREATING BASE MILESTONE
-        let milestoneObj = new Milestone();
-        milestoneObj.title = 'Milestone 1';
-        milestoneObj.description = '-';
-        milestoneObj.startDate = newOpportunity.startDate;
-        milestoneObj.endDate = newOpportunity.startDate;
-        milestoneObj.isApproved = false;
-        milestoneObj.projectId = newOpportunity.id;
-        milestoneObj.progress = 0;
+      //CREATING BASE MILESTONE
+      let milestoneObj = new Milestone();
+      milestoneObj.title = 'Milestone 1';
+      milestoneObj.description = '-';
+      milestoneObj.startDate = newOpportunity.startDate;
+      milestoneObj.endDate = newOpportunity.startDate;
+      milestoneObj.isApproved = false;
+      milestoneObj.projectId = newOpportunity.id;
+      milestoneObj.progress = 0;
 
-        let newMilestone = await transactionalEntityManager.save(
-          Milestone,
-          milestoneObj
-        );
-      }
+      let newMilestone = await transactionalEntityManager.save(
+        Milestone,
+        milestoneObj
+      );
 
       return newOpportunity.id;
     });
@@ -162,8 +160,9 @@ export class OpportunityRepository extends Repository<Opportunity> {
   async getAllActive(): Promise<any[]> {
     let result = await this.find({
       where: [{ status: 'O' }, { status: 'L' }],
-      relations: ['organization'],
+      relations: ['organization', 'milestones'],
     });
+
     return result;
   }
 
