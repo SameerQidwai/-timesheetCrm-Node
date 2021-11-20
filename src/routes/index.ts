@@ -27,7 +27,6 @@ import commentRoutes from './commentRoutes';
 import helperRoutes from './helperRoutes';
 import roleRoutes from './roleRoutes';
 import globalRoutes from './globalRoutes';
-import milestoneRoutes from './milestoneRoutes';
 import opportunityResourceRoutes from './opportunityResourceRoutes';
 import { getCustomRepository } from 'typeorm';
 
@@ -59,7 +58,6 @@ router.use('/comments', commentRoutes);
 router.use('/helpers', helperRoutes);
 router.use('/roles', roleRoutes);
 router.use('/global-setting', globalRoutes);
-router.use('/milestones', milestoneRoutes);
 // router.use("/opportunity-resources", opportunityResourceRoutes);
 
 // console.log("router: ", router);

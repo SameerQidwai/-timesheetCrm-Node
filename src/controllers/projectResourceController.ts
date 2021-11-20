@@ -21,7 +21,11 @@ export class ProjectResourceController {
       console.log('controller - index: ', this);
       const repository = getCustomRepository(ProjectRepository);
       let projectId = req.params.projectId;
-      let records = await repository.getSelectedResources(parseInt(projectId));
+      let milestoneId = req.params.milestoneId;
+      let records = await repository.getSelectedResources(
+        parseInt(projectId),
+        parseInt(milestoneId)
+      );
       console.log('records: ', records);
       res.status(200).json({
         success: true,
@@ -37,7 +41,12 @@ export class ProjectResourceController {
     try {
       const repository = getCustomRepository(ProjectRepository);
       let projectId = req.params.projectId;
-      let record = await repository.addResource(parseInt(projectId), req.body);
+      let milestoneId = req.params.milestoneId;
+      let record = await repository.addResource(
+        parseInt(projectId),
+        parseInt(milestoneId),
+        req.body
+      );
       console.log('record: ', record);
       res.status(200).json({
         success: true,
@@ -54,8 +63,10 @@ export class ProjectResourceController {
       const repository = getCustomRepository(ProjectRepository);
       let id = req.params.id;
       let projectId = req.params.projectId;
+      let milestoneId = req.params.milestoneId;
       let record = await repository.updateResource(
         parseInt(projectId),
+        parseInt(milestoneId),
         parseInt(id),
         req.body
       );
@@ -74,8 +85,10 @@ export class ProjectResourceController {
       const repository = getCustomRepository(ProjectRepository);
       let id = req.params.id;
       let projectId = req.params.projectId;
+      let milestoneId = req.params.milestoneId;
       let record = await repository.findOneCustomResource(
         parseInt(projectId),
+        parseInt(milestoneId),
         parseInt(id)
       );
       if (!record) throw new Error('not found');
@@ -94,8 +107,10 @@ export class ProjectResourceController {
       const repository = getCustomRepository(ProjectRepository);
       let id = req.params.id;
       let projectId = req.params.projectId;
+      let milestoneId = req.params.milestoneId;
       let record = await repository.deleteCustomResource(
         parseInt(projectId),
+        parseInt(milestoneId),
         parseInt(id)
       );
       res.status(200).json({
