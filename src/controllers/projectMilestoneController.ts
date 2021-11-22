@@ -18,7 +18,7 @@ export class ProjectMilestoneController {
       // }
 
       records = await repository.getAllActiveMilestones(
-        parseInt(req.params.opportunityId)
+        parseInt(req.params.projectId)
       );
       res.status(200).json({
         success: true,
@@ -32,9 +32,9 @@ export class ProjectMilestoneController {
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      let opportunityId = parseInt(req.params.opportunityId);
+      let projectId = parseInt(req.params.projectId);
       const repository = getCustomRepository(OpportunityRepository);
-      let response = await repository.addMilestone(opportunityId, req.body);
+      let response = await repository.addMilestone(projectId, req.body);
 
       // if no timesheet found
       return res.status(200).json({
@@ -52,7 +52,7 @@ export class ProjectMilestoneController {
     try {
       const repository = getCustomRepository(OpportunityRepository);
       let response = await repository.findOneCustomMilestone(
-        parseInt(req.params.opportunityId),
+        parseInt(req.params.projectId),
         parseInt(req.params.id)
       );
       // if no timesheet found
@@ -71,7 +71,7 @@ export class ProjectMilestoneController {
     try {
       const repository = getCustomRepository(OpportunityRepository);
       let response = await repository.updateMilestone(
-        parseInt(req.params.opportunityId),
+        parseInt(req.params.projectId),
         parseInt(req.params.id),
         req.body
       );
