@@ -10,12 +10,12 @@ export class ProjectMilestoneController {
       const repository = getCustomRepository(OpportunityRepository);
       let records: any = [];
       const { grantLevel } = res.locals;
-      if (grantLevel.includes('ANY')) {
-      } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
-        // Call repo function that returns both
-      } else if (grantLevel.includes('MANAGE')) {
-      } else if (grantLevel.includes('OWN')) {
-      }
+      // if (grantLevel.includes('ANY')) {
+      // } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
+      //   // Call repo function that returns both
+      // } else if (grantLevel.includes('MANAGE')) {
+      // } else if (grantLevel.includes('OWN')) {
+      // }
 
       records = await repository.getAllActiveMilestones(
         parseInt(req.params.opportunityId)
