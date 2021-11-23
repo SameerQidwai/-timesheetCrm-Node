@@ -753,6 +753,7 @@ export class ProjectRepository extends Repository<Opportunity> {
     }
     let project = await this.findOne(projectId, {
       relations: [
+        'milestones',
         'milestones.opportunityResources',
         'milestones.opportunityResources.panelSkill',
         'milestones.opportunityResources.panelSkillStandardLevel',
