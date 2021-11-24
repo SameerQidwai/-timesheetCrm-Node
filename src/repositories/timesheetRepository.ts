@@ -518,14 +518,14 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    milestoneEntryId: number
+    requestEntries: Array<number>
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
       'YYYY-MM-DD HH:mm:ss'
     );
     let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
 
-    let milestoneEntry = await this.manager.transaction(
+    let milestoneEntries = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let timesheet = await this.findOne({
           where: {
@@ -544,29 +544,33 @@ export class TimesheetRepository extends Repository<Timesheet> {
           throw new Error('Timesheet not found!');
         }
 
-        let milestoneEntry = timesheet.milestoneEntries.filter(
-          (entry) => entry.id === milestoneEntryId
-        )[0];
+        let responseEntries: TimesheetMilestoneEntry[] = [];
 
-        if (!milestoneEntry) {
-          throw new Error('Entry not found!');
+        for (const requestEntry of requestEntries) {
+          let milestoneEntry = timesheet.milestoneEntries.filter(
+            (entry) => entry.id === requestEntry
+          )[0];
+
+          if (!milestoneEntry) {
+            throw new Error('Entry not found!');
+          }
+
+          milestoneEntry.entries.map((entry) => {
+            entry.submittedAt = moment().toDate();
+            entry.approvedAt = null;
+            entry.rejectedAt = null;
+          });
+
+          responseEntries.push(milestoneEntry);
         }
-
-        milestoneEntry.entries.map((entry) => {
-          entry.submittedAt = moment().toDate();
-          entry.approvedAt = null;
-          entry.rejectedAt = null;
-        });
 
         await transactionalEntityManager.save(timesheet);
 
-        return timesheet.milestoneEntries.filter(
-          (entry) => entry.id === milestoneEntryId
-        );
+        return responseEntries;
       }
     );
 
-    return milestoneEntry;
+    return milestoneEntries;
     // milestoneEntry.entries.map(entry => entry.submittedAt = )
   }
 
@@ -574,14 +578,14 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    milestoneEntryId: number
+    requestEntries: Array<number>
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
       'YYYY-MM-DD HH:mm:ss'
     );
     let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
 
-    let milestoneEntry = await this.manager.transaction(
+    let milestoneEntries = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let timesheet = await this.findOne({
           where: {
@@ -600,27 +604,31 @@ export class TimesheetRepository extends Repository<Timesheet> {
           throw new Error('Timesheet not found!');
         }
 
-        let milestoneEntry = timesheet.milestoneEntries.filter(
-          (entry) => entry.id === milestoneEntryId
-        )[0];
+        let responseEntries: TimesheetMilestoneEntry[] = [];
 
-        if (!milestoneEntry) {
-          throw new Error('Entry not found!');
+        for (const requestEntry of requestEntries) {
+          let milestoneEntry = timesheet.milestoneEntries.filter(
+            (entry) => entry.id === requestEntry
+          )[0];
+
+          if (!milestoneEntry) {
+            throw new Error('Entry not found!');
+          }
+
+          milestoneEntry.entries.map((entry) => {
+            entry.approvedAt = moment().toDate();
+          });
+
+          responseEntries.push(milestoneEntry);
         }
-
-        milestoneEntry.entries.map((entry) => {
-          entry.approvedAt = moment().toDate();
-        });
 
         await transactionalEntityManager.save(timesheet);
 
-        return timesheet.milestoneEntries.filter(
-          (entry) => entry.id === milestoneEntryId
-        );
+        return responseEntries;
       }
     );
 
-    return milestoneEntry;
+    return milestoneEntries;
     // milestoneEntry.entries.map(entry => entry.submittedAt = )
   }
 
@@ -628,7 +636,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    milestoneEntryId: number,
+    requestEntries: Array<number>,
     authId: number
   ): Promise<any | undefined> {
     let flagUserIsAllowed = 0;
@@ -637,7 +645,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     );
     let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
 
-    let milestoneEntry = await this.manager.transaction(
+    let milestoneEntries = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let timesheet = await this.findOne({
           where: {
@@ -656,42 +664,44 @@ export class TimesheetRepository extends Repository<Timesheet> {
           throw new Error('Timesheet not found!');
         }
 
-        let milestoneEntry = timesheet.milestoneEntries.filter(
-          (entry) => entry.id === milestoneEntryId
-        )[0];
+        let responseEntries: TimesheetMilestoneEntry[] = [];
 
-        if (!milestoneEntry) {
-          throw new Error('Entry not found!');
-        }
+        for (const requestEntry of requestEntries) {
+          let milestoneEntry = timesheet.milestoneEntries.filter(
+            (entry) => entry.id === requestEntry
+          )[0];
 
-        let users: [] = await this.getManageMilestoneUsers(authId);
-
-        if (!users.length) {
-          throw new Error('No users to manage');
-        }
-        users.forEach((user: any) => {
-          if (user.value == userId) {
-            flagUserIsAllowed = 1;
+          if (!milestoneEntry) {
+            throw new Error('Entry not found!');
           }
-        });
+          let users: [] = await this.getManageProjectUsers(authId);
 
-        if (flagUserIsAllowed == 0) {
-          throw new Error('User is not allowed to change');
+          if (!users.length) {
+            throw new Error('No users to manage');
+          }
+          users.forEach((user: any) => {
+            if (user.value == userId) {
+              flagUserIsAllowed = 1;
+            }
+          });
+
+          if (flagUserIsAllowed == 0) {
+            throw new Error('User is not allowed to change');
+          }
+
+          milestoneEntry.entries.map((entry) => {
+            entry.approvedAt = moment().toDate();
+          });
+          responseEntries.push(milestoneEntry);
         }
-
-        milestoneEntry.entries.map((entry) => {
-          entry.approvedAt = moment().toDate();
-        });
 
         await transactionalEntityManager.save(timesheet);
 
-        return timesheet.milestoneEntries.filter(
-          (entry) => entry.id === milestoneEntryId
-        );
+        return responseEntries;
       }
     );
 
-    return milestoneEntry;
+    return milestoneEntries;
     // milestoneEntry.entries.map(entry => entry.submittedAt = )
   }
 
@@ -699,14 +709,14 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    milestoneEntryId: number
+    requestEntries: Array<number>
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
       'YYYY-MM-DD HH:mm:ss'
     );
     let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
 
-    let milestoneEntry = await this.manager.transaction(
+    let milestoneEntries = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let timesheet = await this.findOne({
           where: {
@@ -725,27 +735,30 @@ export class TimesheetRepository extends Repository<Timesheet> {
           throw new Error('Timesheet not found!');
         }
 
-        let milestoneEntry = timesheet.milestoneEntries.filter(
-          (entry) => entry.id === milestoneEntryId
-        )[0];
+        let responseEntries: TimesheetMilestoneEntry[] = [];
 
-        if (!milestoneEntry) {
-          throw new Error('Entry not found!');
+        for (const requestEntry of requestEntries) {
+          let milestoneEntry = timesheet.milestoneEntries.filter(
+            (entry) => entry.id === requestEntry
+          )[0];
+
+          if (!milestoneEntry) {
+            throw new Error('Entry not found!');
+          }
+
+          milestoneEntry.entries.map((entry) => {
+            entry.rejectedAt = moment().toDate();
+          });
+
+          responseEntries.push(milestoneEntry);
         }
-
-        milestoneEntry.entries.map((entry) => {
-          entry.rejectedAt = moment().toDate();
-        });
-
         await transactionalEntityManager.save(timesheet);
 
-        return timesheet.milestoneEntries.filter(
-          (entry) => entry.id === milestoneEntryId
-        );
+        return responseEntries;
       }
     );
 
-    return milestoneEntry;
+    return milestoneEntries;
     // milestoneEntry.entries.map(entry => entry.submittedAt = )
   }
 
@@ -753,7 +766,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    milestoneEntryId: number,
+    requestEntries: Array<number>,
     authId: number
   ): Promise<any | undefined> {
     let flagUserIsAllowed = 0;
@@ -762,7 +775,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     );
     let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
 
-    let milestoneEntry = await this.manager.transaction(
+    let milestoneEntries = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let timesheet = await this.findOne({
           where: {
@@ -781,42 +794,45 @@ export class TimesheetRepository extends Repository<Timesheet> {
           throw new Error('Timesheet not found!');
         }
 
-        let milestoneEntry = timesheet.milestoneEntries.filter(
-          (entry) => entry.id === milestoneEntryId
-        )[0];
+        let responseEntries: TimesheetMilestoneEntry[] = [];
 
-        if (!milestoneEntry) {
-          throw new Error('Entry not found!');
-        }
+        for (const requestEntry of requestEntries) {
+          let milestoneEntry = timesheet.milestoneEntries.filter(
+            (entry) => entry.id === requestEntry
+          )[0];
 
-        let users: [] = await this.getManageMilestoneUsers(authId);
-
-        if (!users.length) {
-          throw new Error('No users to manage');
-        }
-        users.forEach((user: any) => {
-          if (user.value == userId) {
-            flagUserIsAllowed = 1;
+          if (!milestoneEntry) {
+            throw new Error('Entry not found!');
           }
-        });
 
-        if (flagUserIsAllowed == 0) {
-          throw new Error('User is not allowed to change');
+          let users: [] = await this.getManageProjectUsers(authId);
+
+          if (!users.length) {
+            throw new Error('No users to manage');
+          }
+          users.forEach((user: any) => {
+            if (user.value == userId) {
+              flagUserIsAllowed = 1;
+            }
+          });
+
+          if (flagUserIsAllowed == 0) {
+            throw new Error('User is not allowed to change');
+          }
+
+          milestoneEntry.entries.map((entry) => {
+            entry.rejectedAt = moment().toDate();
+          });
+
+          responseEntries.push(milestoneEntry);
         }
-
-        milestoneEntry.entries.map((entry) => {
-          entry.rejectedAt = moment().toDate();
-        });
-
         await transactionalEntityManager.save(timesheet);
 
-        return timesheet.milestoneEntries.filter(
-          (entry) => entry.id === milestoneEntryId
-        );
+        return responseEntries;
       }
     );
 
-    return milestoneEntry;
+    return milestoneEntries;
     // milestoneEntry.entries.map(entry => entry.submittedAt = )
   }
 
@@ -908,7 +924,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return entry;
   }
 
-  async getAnyMilestoneUsers(): Promise<any | undefined> {
+  async getAnyProjectUsers(): Promise<any | undefined> {
     let users: any = [];
     let records = await this.manager.find(Employee, {
       relations: [
@@ -927,13 +943,13 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return users;
   }
 
-  async getManageAndOwnMilestoneUsers(
+  async getManageAndOwnProjectUsers(
     userId: number,
     userName: string
   ): Promise<any | undefined> {
     let users: any = [];
     let added: any = [];
-    let milestones = await this.manager.find(Opportunity, {
+    let projects = await this.manager.find(Opportunity, {
       where: [
         {
           status: 'P',
@@ -945,7 +961,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         },
         {
           status: 'P',
-          milestoneManagerId: userId,
+          projectManagerId: userId,
         },
         {
           status: 'C',
@@ -957,7 +973,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         },
         {
           status: 'C',
-          milestoneManagerId: userId,
+          projectManagerId: userId,
         },
       ],
       relations: [
@@ -969,8 +985,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
       ],
     });
 
-    milestones.map((milestone) => {
-      milestone.opportunityResources.map((resource) => {
+    projects.map((project) => {
+      project.opportunityResources.map((resource) => {
         resource.opportunityResourceAllocations.filter((allocation) => {
           if (allocation.isMarkedAsSelected) {
             allocation.contactPerson.contactPersonOrganizations.forEach(
@@ -998,10 +1014,10 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return users;
   }
 
-  async getManageMilestoneUsers(userId: number): Promise<any | undefined> {
+  async getManageProjectUsers(userId: number): Promise<any | undefined> {
     let users: any = [];
     let added: any = [];
-    let milestones = await this.manager.find(Opportunity, {
+    let projects = await this.manager.find(Opportunity, {
       where: [
         {
           status: 'P',
@@ -1013,7 +1029,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         },
         {
           status: 'P',
-          milestoneManagerId: userId,
+          projectManagerId: userId,
         },
         {
           status: 'C',
@@ -1025,7 +1041,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         },
         {
           status: 'C',
-          milestoneManagerId: userId,
+          projectManagerId: userId,
         },
       ],
       relations: [
@@ -1037,9 +1053,9 @@ export class TimesheetRepository extends Repository<Timesheet> {
       ],
     });
 
-    milestones.forEach((milestone) => {
-      console.log('checking employee', milestone);
-      milestone.opportunityResources.forEach((resource) => {
+    projects.forEach((project) => {
+      console.log('checking employee', project);
+      project.opportunityResources.forEach((resource) => {
         resource.opportunityResourceAllocations.forEach((allocation) => {
           if (allocation.isMarkedAsSelected) {
             allocation.contactPerson.contactPersonOrganizations.forEach(
@@ -1064,7 +1080,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return users;
   }
 
-  async getOwnMilestoneUsers(
+  async getOwnProjectUsers(
     userId: number,
     userName: string
   ): Promise<any | undefined> {

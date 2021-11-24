@@ -11,7 +11,7 @@ router
   .route('/users')
   .get(
     [isLoggedIn, can(Action.READ, Resource.TIMESHEETS)],
-    contr.getTimesheetMilestoneUsers.bind(contr)
+    contr.getTimesheetProjectUsers.bind(contr)
   );
 
 router
@@ -19,7 +19,7 @@ router
   .patch([isLoggedIn], contr.updateTimesheetMilestoneEntryNote.bind(contr));
 
 router
-  .route('/project/:startDate&:endDate&:projectId')
+  .route('/milestone/:startDate&:endDate&:milestoneId')
   .get(
     [isLoggedIn, can(Action.READ, Resource.TIMESHEETS)],
     contr.getTimesheetByMilestone.bind(contr)
@@ -37,7 +37,7 @@ router
   );
 
 router
-  .route('/:startDate&:endDate&:userId/milestoneEntries/:id/submit')
+  .route('/:startDate&:endDate&:userId/milestoneEntriesSubmit/')
   .post(
     [isLoggedIn, can(Action.ADD, Resource.TIMESHEETS)],
     contr.submitTimesheetMilestoneEntry.bind(contr)

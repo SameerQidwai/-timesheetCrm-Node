@@ -126,7 +126,6 @@ export class TimesheetController {
       let startDate = req.params.startDate as string;
       let endDate = req.params.endDate as string;
       let userId = parseInt(req.params.userId) as number;
-      let milestoneEntryId = parseInt(req.params.id);
 
       // console.log(req.body);
       const { user } = res.locals;
@@ -139,7 +138,7 @@ export class TimesheetController {
         startDate,
         endDate,
         userId,
-        milestoneEntryId
+        req.body.milestoneEntries
       );
       console.log('record: ', record);
       res.status(200).json({
@@ -162,7 +161,6 @@ export class TimesheetController {
       let startDate = req.params.startDate as string;
       let endDate = req.params.endDate as string;
       let userId = parseInt(req.params.userId) as number;
-      let milestoneEntryId = parseInt(req.params.id);
 
       let record: any = [];
       const { grantLevel } = res.locals;
@@ -174,14 +172,14 @@ export class TimesheetController {
           startDate,
           endDate,
           userId,
-          milestoneEntryId
+          req.body.milestoneEntries
         );
       } else if (grantLevel.includes('MANAGE')) {
         record = await repository.approveManageMilestoneTimesheetEntry(
           startDate,
           endDate,
           userId,
-          milestoneEntryId,
+          req.body.milestoneEntries,
           user.id
         );
       }
@@ -207,7 +205,6 @@ export class TimesheetController {
       let startDate = req.params.startDate as string;
       let endDate = req.params.endDate as string;
       let userId = parseInt(req.params.userId) as number;
-      let milestoneEntryId = parseInt(req.params.id);
 
       let record: any = [];
       const { grantLevel } = res.locals;
@@ -219,14 +216,14 @@ export class TimesheetController {
           startDate,
           endDate,
           userId,
-          milestoneEntryId
+          req.body.milestoneEntries
         );
       } else if (grantLevel.includes('MANAGE')) {
         record = await repository.rejectManageMilestoneTimesheetEntry(
           startDate,
           endDate,
           userId,
-          milestoneEntryId,
+          req.body.milestoneEntries,
           user.id
         );
       }
@@ -288,7 +285,7 @@ export class TimesheetController {
     }
   }
 
-  async getTimesheetMilestoneUsers(
+  async getTimesheetProjectUsers(
     req: Request,
     res: Response,
     next: NextFunction
@@ -299,16 +296,16 @@ export class TimesheetController {
       const { grantLevel } = res.locals;
       const { user } = res.locals;
       if (grantLevel.includes('ANY')) {
-        records = await repository.getAnyMilestoneUsers();
+        records = await repository.getAnyProjectUsers();
       } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
-        records = await repository.getManageAndOwnMilestoneUsers(
+        records = await repository.getManageAndOwnProjectUsers(
           user.id,
           `${user.contactPersonOrganization.contactPerson.firstName} ${user.contactPersonOrganization.contactPerson.lastName}`
         );
       } else if (grantLevel.includes('MANAGE')) {
-        records = await repository.getManageMilestoneUsers(user.id);
+        records = await repository.getManageProjectUsers(user.id);
       } else if (grantLevel.includes('OWN')) {
-        records = await repository.getOwnMilestoneUsers(
+        records = await repository.getOwnProjectUsers(
           user.id,
           `${user.contactPersonOrganization.contactPerson.firstName} ${user.contactPersonOrganization.contactPerson.lastName}`
         );
@@ -355,16 +352,16 @@ export class TimesheetController {
       const repository = getCustomRepository(TimesheetRepository);
       let startDate = req.params.startDate as string;
       let endDate = req.params.endDate as string;
-      let mileStone = parseInt(req.params.mileStone) as number;
+      let milestoneId = parseInt(req.params.milestoneId) as number;
 
       const { grantLevel } = res.locals;
       const { user } = res.locals;
 
-      console.log('PROJECT => ', mileStone);
+      console.log('PROJECT => ', milestoneId);
       let record = await repository.getAnyTimesheetByMilestone(
         startDate,
         endDate,
-        mileStone,
+        milestoneId,
         user.id
       );
       res.status(200).json({
