@@ -955,4 +955,56 @@ export class ProjectRepository extends Repository<Opportunity> {
 
     return response;
   }
+
+  async helperGetMilestonesByUserId(employeeId: number) {
+    let response: any = [];
+
+    let employee = await this.manager.findOne(Employee, employeeId, {
+      relations: [
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+      ],
+    });
+
+    if (!employee) {
+      throw new Error('Employee not found');
+    }
+    let employeeContactPersonId =
+      employee.contactPersonOrganization.contactPerson.id;
+
+    let result = await this.find({
+      where: [{ status: 'P' }, { status: 'C' }],
+      relations: [
+        'milestones',
+        'organization',
+        'milestones.opportunityResources',
+        'milestones.opportunityResources.panelSkill',
+        'milestones.opportunityResources.panelSkillStandardLevel',
+        'milestones.opportunityResources.opportunityResourceAllocations',
+        'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
+    });
+
+    // console.log('result', result);
+
+    result.forEach((project) => {
+      project.milestones.forEach((milestone) => {
+        let add_flag = 0;
+        milestone.opportunityResources.forEach((resource) => {
+          resource.opportunityResourceAllocations.forEach((allocation) => {
+            if (
+              allocation.contactPersonId === employeeContactPersonId &&
+              allocation.isMarkedAsSelected
+            ) {
+              add_flag = 1;
+            }
+          });
+        });
+        if (add_flag === 1)
+          response.push({ value: milestone.id, label: milestone.title });
+      });
+    });
+
+    return response;
+  }
 }
