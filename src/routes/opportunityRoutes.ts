@@ -90,7 +90,7 @@ router
 
 router
   .route(
-    '/:opportunityId/resources/milestones/:milestoneId/:opportunityResourceId/allocations/:id/mark-as-selected'
+    '/:opportunityId/milestones/:milestoneId/resources/:opportunityResourceId/allocations/:id/mark-as-selected'
   )
   .patch([isLoggedIn], allocationContr.markAsSelected.bind(allocationContr));
 
