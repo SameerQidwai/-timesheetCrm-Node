@@ -17,9 +17,15 @@ router
 
 router.route('/roles').get([isLoggedIn], contr.helperGetAllRoles.bind(contr));
 router.route('/work').get([isLoggedIn], contr.helperGetAllWork.bind(contr));
+
 router
   .route('/projects')
   .get([isLoggedIn], contr.helperGetProjectsByUserId.bind(contr));
+
+router
+  .route('/milestones')
+  .get([isLoggedIn], contr.helperGetMilestonesByUserId.bind(contr));
+
 router
   .route('/refresh-token')
   .get([isLoggedIn], (req: Request, res: Response, next: NextFunction) => {

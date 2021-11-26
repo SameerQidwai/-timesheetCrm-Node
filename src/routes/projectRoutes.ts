@@ -60,11 +60,4 @@ router
   .get([isLoggedIn], orderContr.get.bind(orderContr))
   .delete([isLoggedIn], orderContr.delete.bind(orderContr));
 
-router
-  .route('/:projectId/milestones')
-  .get(
-    [isLoggedIn, can(Action.READ, Resource.PROJECTS, 'id')],
-    contr.getMilestones.bind(contr)
-  );
-
 export default router;

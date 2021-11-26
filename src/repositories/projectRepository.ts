@@ -812,11 +812,55 @@ export class ProjectRepository extends Repository<Opportunity> {
 
     return response;
   }
+  async helperGetMilestonesByUserId(employeeId: number) {
+    let response: any = [];
 
-  async getMilestones(projectId: number): Promise<any | undefined> {
-    let results = await this.manager.find(Milestone, {
-      where: { projectId: projectId },
+    let employee = await this.manager.findOne(Employee, employeeId, {
+      relations: [
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+      ],
     });
-    return results;
+
+    if (!employee) {
+      throw new Error('Employee not found');
+    }
+    let employeeContactPersonId =
+      employee.contactPersonOrganization.contactPerson.id;
+
+    let result = await this.find({
+      where: [{ status: 'P' }, { status: 'C' }],
+      relations: [
+        'organization',
+        'milestones',
+        'milestones.opportunityResources',
+        'milestones.opportunityResources.panelSkill',
+        'milestones.opportunityResources.panelSkillStandardLevel',
+        'milestones.opportunityResources.opportunityResourceAllocations',
+        'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
+    });
+
+    // console.log('result', result);
+
+    result.map((project) => {
+      project.milestones.map((milestone) => {
+        let add_flag = 0;
+        milestone.opportunityResources.map((resource) => {
+          resource.opportunityResourceAllocations.filter((allocation) => {
+            if (
+              allocation.contactPersonId === employeeContactPersonId &&
+              allocation.isMarkedAsSelected
+            ) {
+              add_flag = 1;
+            }
+          });
+        });
+        if (add_flag === 1)
+          response.push({ value: milestone.id, label: milestone.title });
+      });
+    });
+
+    return response;
   }
 }

@@ -64,6 +64,9 @@ export class TimesheetRepository extends Repository<Timesheet> {
         let milestone: Any = {
           milestoneEntryId: milestoneEntry.id,
           milestoneId: milestoneEntry.milestoneId,
+          projectId: milestoneEntry.milestone.projectId,
+          projectType: milestoneEntry.milestone.project.type,
+          project: milestoneEntry.milestone.project.title,
           milestone: milestoneEntry.milestone.title,
           isManaged: authHaveThisMilestone,
           notes: milestoneEntry.notes,

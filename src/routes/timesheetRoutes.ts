@@ -44,14 +44,14 @@ router
   );
 
 router
-  .route('/:startDate&:endDate&:userId/milestoneEntries/:id/approve')
+  .route('/:startDate&:endDate&:userId/milestoneEntriesApprove/')
   .post(
     [isLoggedIn, can(Action.APPROVAL, Resource.TIMESHEETS)],
     contr.approveTimesheetMilestoneEntry.bind(contr)
   );
 
 router
-  .route('/:startDate&:endDate&:userId/milestoneEntries/:id/reject')
+  .route('/:startDate&:endDate&:userId/milestoneEntriesReject/')
   .post(
     [isLoggedIn, can(Action.APPROVAL, Resource.TIMESHEETS)],
     contr.rejectTimesheetMilestoneEntry.bind(contr)

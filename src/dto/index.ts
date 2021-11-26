@@ -410,3 +410,7 @@ export interface MilestoneDTO extends Base {
   isApproved: Boolean;
   projectId: number;
 }
+
+//PROJECT TYPE
+// 1 MILESTONE
+// 2 TM
