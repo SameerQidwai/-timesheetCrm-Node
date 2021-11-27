@@ -120,6 +120,16 @@ export class Opportunity extends Base {
   @Column({ name: 'completed_date', nullable: true })
   completedDate: Date;
 
+  @Column({ name: 'winning_price', nullable: true })
+  winningPrice: number;
+
+  @Column({ name: 'won_by_id', nullable: true })
+  wonById: number;
+
+  @ManyToOne(() => Organization)
+  @JoinColumn({ name: 'won_by_id' })
+  wonBy: Organization;
+
   @Column({ name: 'status', default: 'O' })
   status: string;
   //{L = Lost: //NB = Not Bid //DNP = Did Not Proceed} //O = Opportunity //P = Project //C = Completed

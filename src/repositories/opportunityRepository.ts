@@ -1075,11 +1075,22 @@ export class OpportunityRepository extends Repository<Opportunity> {
     await this.manager.transaction(async (transactionalEntityManager) => {
       let opportunityObj = await this.findOneCustom(id);
 
-      let type = typeof opportunityLostDTO.reason;
-      let reason = 'ABC';
+      let typeOfReason = typeof opportunityLostDTO.reason;
+      let reason = '';
+      let reasonArray = [];
+      console.log('Type of Reason', typeOfReason);
+      if (typeOfReason == 'string')
+        reason = opportunityLostDTO.reason.toString();
+      else if (typeOfReason == 'object') {
+        reasonArray = opportunityLostDTO.reason as Array<string>;
+        reasonArray.forEach((aReason) => {
+          reason += `${aReason}^^`;
+        });
+      }
       opportunityObj.reason = reason;
       opportunityObj.status = opportunityLostDTO.status ?? 'L';
       opportunityObj.feedback = opportunityLostDTO.feedback;
+      opportunityObj.wonById = opportunityObj.wonById;
       // opportunityObj.opportunityManagerId = 1;
       opportunityObj.lostDate = new Date()
         .toISOString()

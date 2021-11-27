@@ -415,8 +415,10 @@ export interface MilestoneDTO extends Base {
 
 export interface OpportunityLostDTO {
   status: string;
-  reason: Array<string> | string;
+  reason: string[] | [] | string;
   feedback: string;
+  wonById: number | null;
+  winningPrice: number | null;
 }
 //PROJECT TYPE
 // 1 MILESTONE
