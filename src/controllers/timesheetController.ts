@@ -134,16 +134,62 @@ export class TimesheetController {
         throw new Error('Not Allowed');
       }
 
+      let requestEntries = req.body.milestoneEntries;
+
+      if (!requestEntries || requestEntries.length == 0) {
+        throw new Error('Entries not foun');
+      }
+
       let record = await repository.submitMilestoneTimesheetEntry(
         startDate,
         endDate,
         userId,
-        req.body.milestoneEntries
+        requestEntries
       );
       console.log('record: ', record);
       res.status(200).json({
         success: true,
         message: 'Timesheet Submitted',
+        data: record,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async deleteTimesheetMilestoneEntry(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const repository = getCustomRepository(TimesheetRepository);
+      let startDate = req.params.startDate as string;
+      let endDate = req.params.endDate as string;
+      let userId = parseInt(req.params.userId) as number;
+
+      let record: any = [];
+      const { grantLevel } = res.locals;
+      const { user } = res.locals;
+      // console.log(req.body);
+
+      let requestEntries = req.body.milestoneEntries;
+
+      if (!requestEntries || requestEntries.length == 0) {
+        throw new Error('Entries not foun');
+      }
+
+      record = await repository.deleteAnyMilestoneTimesheetEntry(
+        startDate,
+        endDate,
+        userId,
+        requestEntries
+      );
+
+      console.log('record: ', record);
+      res.status(200).json({
+        success: true,
+        message: 'Timesheet Deleted',
         data: record,
       });
     } catch (e) {
@@ -167,19 +213,25 @@ export class TimesheetController {
       const { user } = res.locals;
       // console.log(req.body);
 
+      let requestEntries = req.body.milestoneEntries;
+
+      if (!requestEntries || requestEntries.length == 0) {
+        throw new Error('Entries not foun');
+      }
+
       if (grantLevel.includes('ANY')) {
         record = await repository.approveAnyMilestoneTimesheetEntry(
           startDate,
           endDate,
           userId,
-          req.body.milestoneEntries
+          requestEntries
         );
       } else if (grantLevel.includes('MANAGE')) {
         record = await repository.approveManageMilestoneTimesheetEntry(
           startDate,
           endDate,
           userId,
-          req.body.milestoneEntries,
+          requestEntries,
           user.id
         );
       }
@@ -211,19 +263,25 @@ export class TimesheetController {
       const { user } = res.locals;
       // console.log(req.body);
 
+      let requestEntries = req.body.milestoneEntries;
+
+      if (!requestEntries || requestEntries.length == 0) {
+        throw new Error('Entries not foun');
+      }
+
       if (grantLevel.includes('ANY')) {
         record = await repository.rejectAnyMilestoneTimesheetEntry(
           startDate,
           endDate,
           userId,
-          req.body.milestoneEntries
+          requestEntries
         );
       } else if (grantLevel.includes('MANAGE')) {
         record = await repository.rejectManageMilestoneTimesheetEntry(
           startDate,
           endDate,
           userId,
-          req.body.milestoneEntries,
+          requestEntries,
           user.id
         );
       }

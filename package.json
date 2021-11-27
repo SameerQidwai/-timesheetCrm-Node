@@ -12,7 +12,8 @@
     "generateMigration": "ts-node ./node_modules/typeorm/cli.js migration:generate -n Onelm",
     "runMigration": "ts-node --transpile-only ./node_modules/typeorm/cli.js migration:run",
     "runSeeders": "ts-node src/seederScript.ts",
-    "createMilestones": "ts-node src/milestoneScript.ts"
+    "createMilestones": "ts-node src/milestoneScript.ts",
+    "updateResources": "ts-node src/resourcesScript.ts"
   },
   "author": "",
   "license": "ISC",

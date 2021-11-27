@@ -6,9 +6,11 @@ import { PurchaseOrderController } from './../controllers/purchaseOrderControlle
 import { Action, Resource } from './../constants/authorization';
 import { isLoggedIn } from './../middlewares/loggedIn';
 import { can } from './../middlewares/can';
+import { ProjectMilestoneController } from '../controllers/projectMilestoneController';
 
 const router = Router();
 let contr = new ProjectController(ProjectRepository);
+let milestoneContr = new ProjectMilestoneController();
 let resourceContr = new ProjectResourceController();
 let orderContr = new PurchaseOrderController();
 
@@ -39,12 +41,22 @@ router
   );
 
 router
-  .route('/:projectId/resources')
+  .route('/:projectId/milestones')
+  .get([isLoggedIn], milestoneContr.index.bind(milestoneContr))
+  .post([isLoggedIn], milestoneContr.create.bind(milestoneContr));
+
+router
+  .route('/:projectId/milestones/:id')
+  .get([isLoggedIn], milestoneContr.get.bind(milestoneContr))
+  .put([isLoggedIn], milestoneContr.update.bind(milestoneContr));
+
+router
+  .route('/:projectId/milestones/:milestoneId/resources')
   .get([isLoggedIn], resourceContr.index.bind(resourceContr))
   .post([isLoggedIn], resourceContr.create.bind(resourceContr));
 
 router
-  .route('/:projectId/resources/:id')
+  .route('/:projectId/milestones/:milestoneId/resources/:id')
   .get([isLoggedIn], resourceContr.get.bind(resourceContr))
   .put([isLoggedIn], resourceContr.update.bind(resourceContr))
   .delete([isLoggedIn], resourceContr.delete.bind(resourceContr));

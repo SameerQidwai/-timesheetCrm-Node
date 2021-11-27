@@ -136,22 +136,20 @@ export class OpportunityRepository extends Repository<Opportunity> {
         opportunityObj
       );
 
-      if (newOpportunity.type === 1) {
-        //CREATING BASE MILESTONE
-        let milestoneObj = new Milestone();
-        milestoneObj.title = 'Milestone 1';
-        milestoneObj.description = '-';
-        milestoneObj.startDate = newOpportunity.startDate;
-        milestoneObj.endDate = newOpportunity.startDate;
-        milestoneObj.isApproved = false;
-        milestoneObj.projectId = newOpportunity.id;
-        milestoneObj.progress = 0;
+      //CREATING BASE MILESTONE
+      let milestoneObj = new Milestone();
+      milestoneObj.title = 'Milestone 1';
+      milestoneObj.description = '-';
+      milestoneObj.startDate = newOpportunity.startDate;
+      milestoneObj.endDate = newOpportunity.startDate;
+      milestoneObj.isApproved = false;
+      milestoneObj.projectId = newOpportunity.id;
+      milestoneObj.progress = 0;
 
-        let newMilestone = await transactionalEntityManager.save(
-          Milestone,
-          milestoneObj
-        );
-      }
+      let newMilestone = await transactionalEntityManager.save(
+        Milestone,
+        milestoneObj
+      );
 
       return newOpportunity.id;
     });
@@ -162,8 +160,9 @@ export class OpportunityRepository extends Repository<Opportunity> {
   async getAllActive(): Promise<any[]> {
     let result = await this.find({
       where: [{ status: 'O' }, { status: 'L' }],
-      relations: ['organization'],
+      relations: ['organization', 'milestones'],
     });
+
     return result;
   }
 
@@ -398,7 +397,6 @@ export class OpportunityRepository extends Repository<Opportunity> {
     milestone.startDate = new Date(milestoneDTO.startDate);
     milestone.endDate = new Date(milestoneDTO.endDate);
     milestone.isApproved = milestoneDTO.isApproved;
-    milestone.projectId = opportunityId;
     milestone.progress = milestoneDTO.progress;
     await this.manager.save(milestone);
     return this.findOneCustomMilestone(opportunityId, milestoneId);
@@ -473,6 +471,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
       opportunityResourceDTO.panelSkillStandardLevelId;
     resource.billableHours = opportunityResourceDTO.billableHours;
     resource.opportunityId = opportunityId;
+    resource.milestoneId = milestoneId;
     console.log(opportunityId);
     resource = await this.manager.save(resource);
     return this.findOneCustomResource(opportunityId, milestoneId, resource.id);
@@ -515,7 +514,6 @@ export class OpportunityRepository extends Repository<Opportunity> {
     resource.panelSkillStandardLevelId =
       opportunityResourceDTO.panelSkillStandardLevelId;
     resource.billableHours = opportunityResourceDTO.billableHours;
-    resource.opportunityId = opportunityId;
     await this.manager.save(resource);
     return this.findOneCustomResource(opportunityId, milestoneId, id);
   }
@@ -859,13 +857,13 @@ export class OpportunityRepository extends Repository<Opportunity> {
       throw new Error('Opportunity Resource not found!');
     }
 
-    let opportunityResourceIndex = opportunity.opportunityResources.findIndex(
+    let opportunityResourceIndex = milestone.opportunityResources.findIndex(
       (x) => x.id == opportunityResourceId
     );
 
-    opportunity.opportunityResources[
+    milestone.opportunityResources[
       opportunityResourceIndex
-    ].opportunityResourceAllocations = opportunity.opportunityResources[
+    ].opportunityResourceAllocations = milestone.opportunityResources[
       opportunityResourceIndex
     ].opportunityResourceAllocations.filter((x) => x.id !== id);
     await this.manager.save(opportunity);
@@ -915,13 +913,13 @@ export class OpportunityRepository extends Repository<Opportunity> {
       throw new Error('Opportunity Resource not found!');
     }
 
-    let opportunityResourceIndex = opportunity.opportunityResources.findIndex(
+    let opportunityResourceIndex = milestone.opportunityResources.findIndex(
       (x) => x.id == opportunityResourceId
     );
 
-    opportunity.opportunityResources[
+    milestone.opportunityResources[
       opportunityResourceIndex
-    ].opportunityResourceAllocations = opportunity.opportunityResources[
+    ].opportunityResourceAllocations = milestone.opportunityResources[
       opportunityResourceIndex
     ].opportunityResourceAllocations.map((x) => {
       if (x.id == id) {

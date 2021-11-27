@@ -64,10 +64,10 @@ export class TimesheetRepository extends Repository<Timesheet> {
         let milestone: Any = {
           milestoneEntryId: milestoneEntry.id,
           milestoneId: milestoneEntry.milestoneId,
+          milestone: milestoneEntry.milestone.title,
           projectId: milestoneEntry.milestone.projectId,
           projectType: milestoneEntry.milestone.project.type,
           project: milestoneEntry.milestone.project.title,
-          milestone: milestoneEntry.milestone.title,
           isManaged: authHaveThisMilestone,
           notes: milestoneEntry.notes,
           totalHours: 0,
@@ -173,6 +173,9 @@ export class TimesheetRepository extends Repository<Timesheet> {
           milestoneEntryId: milestoneEntry.id,
           milestoneId: milestoneEntry.milestoneId,
           milestone: milestoneEntry.milestone.title,
+          projectId: milestoneEntry.milestone.projectId,
+          projectType: milestoneEntry.milestone.project.type,
+          project: milestoneEntry.milestone.project.title,
           isManaged: authHaveThisMilestone,
           notes: milestoneEntry.notes,
           totalHours: 0,
@@ -281,6 +284,9 @@ export class TimesheetRepository extends Repository<Timesheet> {
             milestoneEntryId: milestoneEntry.id,
             milestoneId: milestoneEntry.milestoneId,
             milestone: milestoneEntry.milestone.title,
+            projectId: milestoneEntry.milestone.projectId,
+            projectType: milestoneEntry.milestone.project.type,
+            project: milestoneEntry.milestone.project.title,
             isManaged: authHaveThisMilestone,
             notes: milestoneEntry.notes,
             totalHours: 0,
@@ -839,15 +845,103 @@ export class TimesheetRepository extends Repository<Timesheet> {
     // milestoneEntry.entries.map(entry => entry.submittedAt = )
   }
 
+  async deleteAnyMilestoneTimesheetEntry(
+    startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
+    endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
+    userId: number,
+    requestEntries: Array<number>
+  ): Promise<any | undefined> {
+    let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
+      'YYYY-MM-DD HH:mm:ss'
+    );
+    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+
+    let milestoneEntries = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let timesheet = await this.findOne({
+          where: {
+            startDate: cStartDate,
+            endDate: cEndDate,
+            employeeId: userId,
+          },
+          relations: [
+            'milestoneEntries',
+            'milestoneEntries.milestone',
+            'milestoneEntries.entries',
+          ],
+        });
+
+        if (!timesheet) {
+          throw new Error('Timesheet not found!');
+        }
+
+        let responseEntries: TimesheetMilestoneEntry[] = [];
+
+        for (const requestEntry of requestEntries) {
+          let milestoneEntry = timesheet.milestoneEntries.filter(
+            (entry) => entry.id === requestEntry
+          )[0];
+
+          if (!milestoneEntry) {
+            throw new Error('Entry not found!');
+          }
+
+          if (milestoneEntry.entries.length > 0)
+            await transactionalEntityManager.delete(
+              TimesheetEntry,
+              milestoneEntry.entries
+            );
+
+          responseEntries.push(milestoneEntry);
+        }
+
+        await transactionalEntityManager.delete(
+          TimesheetMilestoneEntry,
+          requestEntries
+        );
+
+        return responseEntries;
+      }
+    );
+
+    return milestoneEntries;
+    // milestoneEntry.entries.map(entry => entry.submittedAt = )
+  }
+
   async deleteTimesheetEntry(entryId: number): Promise<any | undefined> {
     // console.log(timesheetDTO);
     let entry: TimesheetEntry | undefined;
-    entry = await this.manager.findOne(TimesheetEntry, entryId);
-    if (!entry) {
-      throw new Error('Entry not found');
-    }
+    let flag_delete = false;
 
-    return await this.manager.delete(TimesheetEntry, entry.id);
+    let response = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        entry = await transactionalEntityManager.findOne(
+          TimesheetEntry,
+          entryId,
+          { relations: ['milestoneEntry', 'milestoneEntry.entries'] }
+        );
+
+        if (!entry) {
+          throw new Error('Entry not found');
+        }
+
+        let deletedEntry = await transactionalEntityManager.delete(
+          TimesheetEntry,
+          entry.id
+        );
+
+        if (entry.milestoneEntry.entries.length == 1) {
+          await transactionalEntityManager.delete(
+            TimesheetMilestoneEntry,
+            entry.milestoneEntryId
+          );
+        }
+
+        return deletedEntry;
+      }
+    );
+
+    return response;
   }
 
   async updateTimesheetMilestoneEntryNote(
@@ -1279,6 +1373,9 @@ export class TimesheetRepository extends Repository<Timesheet> {
               milestoneEntryId: milestoneEntry.id,
               milestoneId: milestoneEntry.milestoneId,
               milestone: milestoneEntry.milestone.title,
+              projectId: milestoneEntry.milestone.projectId,
+              projectType: milestoneEntry.milestone.project.type,
+              project: milestoneEntry.milestone.project.title,
               isManaged: authHaveThisMilestone,
               notes: milestoneEntry.notes,
               totalHours: 0,

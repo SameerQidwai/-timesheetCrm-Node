@@ -1,21 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
-import { OpportunityRepository } from './../repositories/opportunityRepository';
-import { MilestoneRepository } from './../repositories/milestoneRepository';
+import { OpportunityRepository } from '../repositories/opportunityRepository';
+import { MilestoneRepository } from '../repositories/milestoneRepository';
 import { getCustomRepository } from 'typeorm';
 import path from 'path';
 
-export class MilestoneController {
+export class OpportunityMilestoneController {
   async index(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(OpportunityRepository);
       let records: any = [];
-      const { grantLevel } = res.locals;
-      if (grantLevel.includes('ANY')) {
-      } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
-        // Call repo function that returns both
-      } else if (grantLevel.includes('MANAGE')) {
-      } else if (grantLevel.includes('OWN')) {
-      }
+      // const { grantLevel } = res.locals;
+      // if (grantLevel.includes('ANY')) {
+      // } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
+      //   // Call repo function that returns both
+      // } else if (grantLevel.includes('MANAGE')) {
+      // } else if (grantLevel.includes('OWN')) {
+      // }
 
       records = await repository.getAllActiveMilestones(
         parseInt(req.params.opportunityId)

@@ -58,6 +58,10 @@ router
   );
 
 router
+  .route('/:startDate&:endDate&:userId/milestoneEntriesDelete/')
+  .post([isLoggedIn], contr.deleteTimesheetMilestoneEntry.bind(contr));
+
+router
   .route('/entries/:id')
   .put([isLoggedIn], contr.editTimesheetEntry.bind(contr));
 

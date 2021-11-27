@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { OpportunityRepository } from './../repositories/opportunityRepository';
 import { OpportunityController } from './../controllers/opportunityController';
-import { MilestoneController } from './../controllers/milestoneController';
+import { OpportunityMilestoneController } from '../controllers/opportunityMilestoneController';
 import { OpportunityResourceController } from './../controllers/opportunityResourceController';
 import { OpportunityResourceAllocationController } from './../controllers/opportunityResourceAllocationController';
 import { can } from './../middlewares/can';
@@ -10,7 +10,7 @@ import { isLoggedIn } from './../middlewares/loggedIn';
 
 const router = Router();
 let contr = new OpportunityController(OpportunityRepository);
-let milestoneContr = new MilestoneController();
+let milestoneContr = new OpportunityMilestoneController();
 let resourceContr = new OpportunityResourceController();
 let allocationContr = new OpportunityResourceAllocationController();
 
@@ -90,7 +90,7 @@ router
 
 router
   .route(
-    '/:opportunityId/resources/milestones/:milestoneId/:opportunityResourceId/allocations/:id/mark-as-selected'
+    '/:opportunityId/milestones/:milestoneId/resources/:opportunityResourceId/allocations/:id/mark-as-selected'
   )
   .patch([isLoggedIn], allocationContr.markAsSelected.bind(allocationContr));
 
