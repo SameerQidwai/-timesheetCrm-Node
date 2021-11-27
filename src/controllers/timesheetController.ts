@@ -432,4 +432,23 @@ export class TimesheetController {
       next(e);
     }
   }
+
+  async getTimesheetUserMilestones(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const repository = getCustomRepository(TimesheetRepository);
+      let records = await repository.getAnyUserMilestones();
+      console.log('records: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'Index Users',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

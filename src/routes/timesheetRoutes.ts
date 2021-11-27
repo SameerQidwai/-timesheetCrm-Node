@@ -15,6 +15,10 @@ router
   );
 
 router
+  .route('/milestones')
+  .get([isLoggedIn], contr.getTimesheetUserMilestones.bind(contr));
+
+router
   .route('/milestoneEntries/:id')
   .patch([isLoggedIn], contr.updateTimesheetMilestoneEntryNote.bind(contr));
 
