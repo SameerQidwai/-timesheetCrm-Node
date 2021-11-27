@@ -277,6 +277,8 @@ interface Work extends Base {
   getPercentage: number | number; // ONLY IN OPPORTUNITY
   panelId: number;
   contactPersonId: number | null;
+  stage: string;
+  linkedWorkId: number;
   stateId: number | null;
   // wonDate: Date | null;
   // lostDate: Date | null;
@@ -411,6 +413,11 @@ export interface MilestoneDTO extends Base {
   projectId: number;
 }
 
+export interface OpportunityLostDTO {
+  status: string;
+  reason: Array<string> | string;
+  feedback: string;
+}
 //PROJECT TYPE
 // 1 MILESTONE
 // 2 TM

@@ -68,6 +68,13 @@ export class Opportunity extends Base {
   @Column({ name: 'hours_per_day', nullable: true })
   hoursPerDay: number;
 
+  @Column({ name: 'linked_work_id', nullable: true })
+  linkedWorkId: number | null;
+
+  @ManyToOne(() => Opportunity)
+  @JoinColumn({ name: 'linked_work_id' })
+  linkedWork: Opportunity;
+
   @Column({ name: 'organization_id', nullable: true })
   organizationId: number;
 
@@ -115,7 +122,17 @@ export class Opportunity extends Base {
 
   @Column({ name: 'status', default: 'O' })
   status: string;
-  //L = Lost //O = Opportunity //P = Project //C = Completed
+  //{L = Lost: //NB = Not Bid //DNP = Did Not Proceed} //O = Opportunity //P = Project //C = Completed
+
+  @Column({ name: 'stage', nullable: true })
+  stage: string;
+  //L = Lead // TR = Tender Released //BS = Bid Submitted
+
+  @Column({ name: 'reason', nullable: true })
+  reason: string;
+
+  @Column({ name: 'feedback', nullable: true })
+  feedback: string;
 
   @ManyToOne(() => State)
   @JoinColumn({ name: 'state_id' })

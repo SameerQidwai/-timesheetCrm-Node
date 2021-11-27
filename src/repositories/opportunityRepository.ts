@@ -4,6 +4,7 @@ import {
   OpportunityResourceAllocationDTO,
   OpportunityResourceDTO,
   ProjectDTO,
+  OpportunityLostDTO,
 } from '../dto';
 import { EntityRepository, Repository } from 'typeorm';
 import { Organization } from './../entities/organization';
@@ -44,6 +45,8 @@ export class OpportunityRepository extends Repository<Opportunity> {
       opportunityObj.cmPercentage = opportunity.cmPercentage;
       opportunityObj.goPercentage = opportunity.goPercentage;
       opportunityObj.getPercentage = opportunity.getPercentage;
+      opportunityObj.stage = opportunity.stage;
+      opportunityObj.linkedWorkId = opportunity.linkedWorkId;
 
       // validate organization
       let organization: Organization | undefined;
@@ -196,6 +199,8 @@ export class OpportunityRepository extends Repository<Opportunity> {
       opportunityObj.cmPercentage = opportunity.cmPercentage;
       opportunityObj.goPercentage = opportunity.goPercentage;
       opportunityObj.getPercentage = opportunity.getPercentage;
+      opportunityObj.stage = opportunity.stage;
+      opportunityObj.linkedWorkId = opportunity.linkedWorkId;
 
       // validate organization
       let organization: Organization | undefined;
@@ -1063,11 +1068,18 @@ export class OpportunityRepository extends Repository<Opportunity> {
     return this.findOneCustom(id);
   }
 
-  async markOpportunityAsLost(id: number): Promise<any | undefined> {
+  async markOpportunityAsLost(
+    id: number,
+    opportunityLostDTO: OpportunityLostDTO
+  ): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
       let opportunityObj = await this.findOneCustom(id);
 
-      opportunityObj.status = 'L';
+      let type = typeof opportunityLostDTO.reason;
+      let reason = 'ABC';
+      opportunityObj.reason = reason;
+      opportunityObj.status = opportunityLostDTO.status ?? 'L';
+      opportunityObj.feedback = opportunityLostDTO.feedback;
       // opportunityObj.opportunityManagerId = 1;
       opportunityObj.lostDate = new Date()
         .toISOString()
