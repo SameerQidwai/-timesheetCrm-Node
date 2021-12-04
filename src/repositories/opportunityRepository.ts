@@ -141,7 +141,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
       //CREATING BASE MILESTONE
       let milestoneObj = new Milestone();
-      milestoneObj.title = 'Milestone 1';
+      milestoneObj.title = 'Default Milestone';
       milestoneObj.description = '-';
       milestoneObj.startDate = newOpportunity.startDate;
       milestoneObj.endDate = newOpportunity.startDate;

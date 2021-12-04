@@ -131,8 +131,24 @@ export class ProjectRepository extends Repository<Opportunity> {
 
       projectObj.status = 'P';
 
-      await transactionalEntityManager.save(projectObj);
-      return projectObj.id;
+      let newProject = await transactionalEntityManager.save(projectObj);
+
+      //CREATING BASE MILESTONE
+      let milestoneObj = new Milestone();
+      milestoneObj.title = 'Default Milestone';
+      milestoneObj.description = '-';
+      milestoneObj.startDate = newProject.startDate;
+      milestoneObj.endDate = newProject.startDate;
+      milestoneObj.isApproved = false;
+      milestoneObj.projectId = newProject.id;
+      milestoneObj.progress = 0;
+
+      let newMilestone = await transactionalEntityManager.save(
+        Milestone,
+        milestoneObj
+      );
+
+      return newProject.id;
     });
     return await this.findOneCustom(id);
   }
