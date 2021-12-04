@@ -13,7 +13,8 @@
     "runMigration": "ts-node --transpile-only ./node_modules/typeorm/cli.js migration:run",
     "runSeeders": "ts-node src/seederScript.ts",
     "createMilestones": "ts-node src/milestoneScript.ts",
-    "updateResources": "ts-node src/resourcesScript.ts"
+    "updateResourcesMilestones": "ts-node src/resourcesMilestoneScript.ts",
+    "updateResourcesDates": "ts-node src/resourcesDateScript.ts"
   },
   "author": "",
   "license": "ISC",

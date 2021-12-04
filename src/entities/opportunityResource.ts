@@ -9,6 +9,9 @@ import { Milestone } from './milestone';
 
 @Entity('opportunity_resources')
 export class OpportunityResource extends Base {
+  @Column({ name: 'title', nullable: true })
+  title: string;
+
   @Column({ name: 'panel_skill_id' })
   panelSkillId: number;
 
@@ -25,6 +28,12 @@ export class OpportunityResource extends Base {
 
   @Column({ type: 'decimal', precision: 10, scale: 3, name: 'billable_hours' })
   billableHours: number;
+
+  @Column({ name: 'start_date', nullable: true })
+  startDate: Date;
+
+  @Column({ name: 'end_date', nullable: true })
+  endDate: Date;
 
   @Column({ name: 'opportunity_id' })
   opportunityId: number;

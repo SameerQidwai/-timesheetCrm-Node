@@ -48,12 +48,19 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
     for (const milestoneEntry of timesheet.milestoneEntries) {
       let status: TimesheetStatus = TimesheetStatus.SAVED;
-      (milestoneEntry as any).attachments = await this.manager.find(
-        Attachment,
-        {
-          where: { targetType: 'PEN', targetId: milestoneEntry.id },
-        }
-      );
+
+      let attachments = await this.manager.find(Attachment, {
+        where: { targetType: 'PEN', targetId: milestoneEntry.id },
+        relations: ['file'],
+      });
+
+      let attachment: Attachment | null =
+        attachments.length > 0 ? attachments[0] : null;
+      if (attachment) {
+        (attachment as any).uid = attachment.file.uniqueName;
+        (attachment as any).name = attachment.file.originalName;
+        (attachment as any).type = attachment.file.type;
+      }
 
       let authHaveThisMilestone = false;
       if (
@@ -75,6 +82,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         project: milestoneEntry.milestone.project.title,
         isManaged: authHaveThisMilestone,
         notes: milestoneEntry.notes,
+        attachment: attachment,
         totalHours: 0,
       };
 
@@ -161,12 +169,19 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
     for (const milestoneEntry of timesheet.milestoneEntries) {
       let status: TimesheetStatus = TimesheetStatus.SAVED;
-      (milestoneEntry as any).attachments = await this.manager.find(
-        Attachment,
-        {
-          where: { targetType: 'PEN', targetId: milestoneEntry.id },
-        }
-      );
+
+      let attachments = await this.manager.find(Attachment, {
+        where: { targetType: 'PEN', targetId: milestoneEntry.id },
+        relations: ['file'],
+      });
+
+      let attachment: Attachment | null =
+        attachments.length > 0 ? attachments[0] : null;
+      if (attachment) {
+        (attachment as any).uid = attachment.file.uniqueName;
+        (attachment as any).name = attachment.file.originalName;
+        (attachment as any).type = attachment.file.type;
+      }
 
       let authHaveThisMilestone = false;
       if (
@@ -186,6 +201,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         project: milestoneEntry.milestone.project.title,
         isManaged: authHaveThisMilestone,
         notes: milestoneEntry.notes,
+        attachment: attachment,
         totalHours: 0,
       };
 
@@ -275,12 +291,19 @@ export class TimesheetRepository extends Repository<Timesheet> {
     if (timesheet.employeeId == authId) {
       for (const milestoneEntry of timesheet.milestoneEntries) {
         let status: TimesheetStatus = TimesheetStatus.SAVED;
-        (milestoneEntry as any).attachments = await this.manager.find(
-          Attachment,
-          {
-            where: { targetType: 'PEN', targetId: milestoneEntry.id },
-          }
-        );
+
+        let attachments = await this.manager.find(Attachment, {
+          where: { targetType: 'PEN', targetId: milestoneEntry.id },
+          relations: ['file'],
+        });
+
+        let attachment: Attachment | null =
+          attachments.length > 0 ? attachments[0] : null;
+        if (attachment) {
+          (attachment as any).uid = attachment.file.uniqueName;
+          (attachment as any).name = attachment.file.originalName;
+          (attachment as any).type = attachment.file.type;
+        }
 
         let authHaveThisMilestone = false;
         if (
@@ -300,6 +323,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
           project: milestoneEntry.milestone.project.title,
           isManaged: authHaveThisMilestone,
           notes: milestoneEntry.notes,
+          attachment: attachment,
           totalHours: 0,
         };
 

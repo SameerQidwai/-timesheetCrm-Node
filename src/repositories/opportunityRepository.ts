@@ -475,6 +475,9 @@ export class OpportunityRepository extends Repository<Opportunity> {
     resource.panelSkillStandardLevelId =
       opportunityResourceDTO.panelSkillStandardLevelId;
     resource.billableHours = opportunityResourceDTO.billableHours;
+    resource.title = opportunityResourceDTO.title;
+    resource.startDate = opportunityResourceDTO.startDate;
+    resource.endDate = opportunityResourceDTO.endDate;
     resource.opportunityId = opportunityId;
     resource.milestoneId = milestoneId;
     console.log(opportunityId);
@@ -519,6 +522,9 @@ export class OpportunityRepository extends Repository<Opportunity> {
     resource.panelSkillStandardLevelId =
       opportunityResourceDTO.panelSkillStandardLevelId;
     resource.billableHours = opportunityResourceDTO.billableHours;
+    resource.title = opportunityResourceDTO.title;
+    resource.startDate = opportunityResourceDTO.startDate;
+    resource.endDate = opportunityResourceDTO.endDate;
     await this.manager.save(resource);
     return this.findOneCustomResource(opportunityId, milestoneId, id);
   }
@@ -666,8 +672,8 @@ export class OpportunityRepository extends Repository<Opportunity> {
     }
 
     resourceAllocation.opportunityResourceId = opportunityResourceId;
-    resourceAllocation.startDate = opportunityResourceAllocationDTO.startDate;
-    resourceAllocation.endDate = opportunityResourceAllocationDTO.endDate;
+    // resourceAllocation.startDate = opportunityResourceAllocationDTO.startDate;
+    // resourceAllocation.endDate = opportunityResourceAllocationDTO.endDate;
     resourceAllocation.effortRate = opportunityResourceAllocationDTO.effortRate;
 
     if (opportunityResource.opportunityResourceAllocations.length == 0) {
@@ -753,8 +759,8 @@ export class OpportunityRepository extends Repository<Opportunity> {
       resourceAllocation.contactPersonId =
         opportunityResourceAllocationDTO.contactPersonId;
     }
-    resourceAllocation.startDate = opportunityResourceAllocationDTO.startDate;
-    resourceAllocation.endDate = opportunityResourceAllocationDTO.endDate;
+    // resourceAllocation.startDate = opportunityResourceAllocationDTO.startDate;
+    // resourceAllocation.endDate = opportunityResourceAllocationDTO.endDate;
     resourceAllocation.effortRate = opportunityResourceAllocationDTO.effortRate;
     resourceAllocation.opportunityResourceId = opportunityResourceId;
     await this.manager.save(resourceAllocation);

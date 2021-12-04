@@ -295,6 +295,9 @@ export interface OpportunityResourceDTO extends Base {
   panelSkillId: number;
   panelSkillStandardLevelId: number;
   billableHours: number;
+  title: string;
+  startDate: Date;
+  endDate: Date;
 }
 
 export interface OpportunityResourceAllocationDTO extends Base {
