@@ -998,7 +998,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     let entry = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let milestoneEntry: TimesheetMilestoneEntry | undefined;
-        milestoneEntry = await this.manager.findOne(
+        milestoneEntry = await transactionalEntityManager.findOne(
           TimesheetMilestoneEntry,
           milestoneEntryId
         );
@@ -1041,7 +1041,10 @@ export class TimesheetRepository extends Repository<Timesheet> {
                 deleteableAttachments.push(oldAttachment);
               }
             });
-            await this.manager.remove(Attachment, deleteableAttachments);
+            await transactionalEntityManager.remove(
+              Attachment,
+              deleteableAttachments
+            );
           }
 
           console.log('NEW', newAttachments);
@@ -1062,6 +1065,20 @@ export class TimesheetRepository extends Repository<Timesheet> {
         return milestoneEntry;
       }
     );
+
+    let entryAttachments = await this.manager.find(Attachment, {
+      where: { targetType: 'PEN', targetId: entry.id },
+      relations: ['file'],
+    });
+
+    let entryAttachment: Attachment | null =
+      entryAttachments.length > 0 ? entryAttachments[0] : null;
+    if (entryAttachment) {
+      (entryAttachment as any).uid = entryAttachment.file.uniqueName;
+      (entryAttachment as any).name = entryAttachment.file.originalName;
+      (entryAttachment as any).type = entryAttachment.file.type;
+    }
+    (entry as any).attachment = entryAttachment;
 
     return entry;
   }
@@ -1234,6 +1251,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
   async getTimesheetPDF(milestoneEntryId: number): Promise<any | undefined> {
     // console.log(cStartDate, cEndDate);
+    console.log('MILESTONEENTRYID', milestoneEntryId);
     let milestoneEntry = await this.manager.findOne(
       TimesheetMilestoneEntry,
       milestoneEntryId,
@@ -1245,6 +1263,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
           'timesheet.employee.contactPersonOrganization.organization',
           'timesheet.employee.contactPersonOrganization.contactPerson',
           'milestone',
+          'milestone.project',
           'milestone.project.organization',
           'milestone.project.organization.delegateContactPerson',
           'entries',
@@ -1277,16 +1296,24 @@ export class TimesheetRepository extends Repository<Timesheet> {
       'DD-MM-YYYY'
     ).daysInMonth();
 
-    console.log(cMonthDays);
+    ``;
 
     let milestone: Any = {
       milestoneEntryId: milestoneEntry.id,
       milestoneId: milestoneEntry.milestoneId,
-      name: milestoneEntry.milestone.title,
+      name:
+        milestoneEntry.milestone.project.type == 1
+          ? `${milestoneEntry.milestone.project.title} - (${milestoneEntry.milestone.title})`
+          : `${milestoneEntry.milestone.project.title}`,
       client: milestoneEntry.milestone.project.organization.name,
       contact:
-        `${milestoneEntry.milestone.project.organization.delegateContactPerson?.firstName} ${milestoneEntry.milestone.project.organization.delegateContactPerson?.lastName}` ??
-        '-',
+        `${
+          milestoneEntry.milestone.project.organization.delegateContactPerson
+            ?.firstName ?? '-'
+        } ${
+          milestoneEntry.milestone.project.organization.delegateContactPerson
+            ?.lastName ?? '-'
+        }` ?? '-',
       notes: milestoneEntry.notes,
       totalHours: 0,
       invoicedDays: milestoneEntry.entries.length,
@@ -1340,6 +1367,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
     let response = {
       id: milestoneEntry.id,
+      project: milestoneEntry.milestone.project.title,
       company:
         milestoneEntry.timesheet.employee.contactPersonOrganization.organization
           .name,

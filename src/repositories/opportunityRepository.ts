@@ -966,7 +966,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
     opportunity: ProjectDTO
   ): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
-      let opportunityObj = await this.findOneCustom(id);
+      let opportunityObj = await this.findOneCustomWithoutContactPerson(id);
 
       opportunityObj.title = opportunity.title;
       if (opportunity.startDate) {

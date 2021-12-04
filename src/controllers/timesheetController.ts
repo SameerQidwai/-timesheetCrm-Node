@@ -382,7 +382,7 @@ export class TimesheetController {
   async getTimesheetPDF(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(TimesheetRepository);
-      let milestoneEntryId = parseInt(req.params.milestoneEntryId) as number;
+      let milestoneEntryId = parseInt(req.params.milestoneEntryId);
 
       let record: any = [];
       const { grantLevel } = res.locals;
