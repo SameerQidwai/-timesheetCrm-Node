@@ -1,6 +1,5 @@
 import { TimesheetDTO } from '../dto';
 import { EntityRepository, Repository, MoreThan } from 'typeorm';
-import moment from 'moment';
 import { Timesheet } from '../entities/timesheet';
 import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
 import { TimesheetEntry } from '../entities/timesheetEntry';
@@ -8,6 +7,8 @@ import { Attachment } from '../entities/attachment';
 import { TimesheetStatus, EntityType } from '../constants/constants';
 import { Employee } from '../entities/employee';
 import { Opportunity } from '../entities/opportunity';
+import { OpportunityResourceAllocation } from '../entities/opportunityResourceAllocation';
+import moment from 'moment';
 
 @EntityRepository(Timesheet)
 export class TimesheetRepository extends Repository<Timesheet> {
@@ -721,7 +722,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
           if (!milestoneEntry) {
             throw new Error('Entry not found!');
           }
-          let users: [] = await this.getManageProjectUsers(authId);
+          let users: [] = await this.getUserManageUsers(authId);
 
           if (!users.length) {
             throw new Error('No users to manage');
@@ -858,7 +859,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
             throw new Error('Entry not found!');
           }
 
-          let users: [] = await this.getManageProjectUsers(authId);
+          let users: [] = await this.getUserManageUsers(authId);
 
           if (!users.length) {
             throw new Error('No users to manage');
@@ -1065,7 +1066,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return entry;
   }
 
-  async getAnyProjectUsers(): Promise<any | undefined> {
+  async getUserAnyUsers(): Promise<any | undefined> {
     let users: any = [];
     let records = await this.manager.find(Employee, {
       relations: [
@@ -1084,7 +1085,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return users;
   }
 
-  async getManageAndOwnProjectUsers(
+  async getUserManageAndOwnUsers(
     userId: number,
     userName: string
   ): Promise<any | undefined> {
@@ -1155,7 +1156,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return users;
   }
 
-  async getManageProjectUsers(userId: number): Promise<any | undefined> {
+  async getUserManageUsers(userId: number): Promise<any | undefined> {
     let users: any = [];
     let added: any = [];
     let projects = await this.manager.find(Opportunity, {
@@ -1221,7 +1222,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return users;
   }
 
-  async getOwnProjectUsers(
+  async getUserOwnUsers(
     userId: number,
     userName: string
   ): Promise<any | undefined> {
@@ -1490,5 +1491,46 @@ export class TimesheetRepository extends Repository<Timesheet> {
     });
 
     return milestones;
+  }
+
+  async getUserDummyUsersByDate(): Promise<any | undefined> {
+    let users: any = [];
+    let records = await this.manager.find(Employee, {
+      relations: [
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+      ],
+    });
+
+    let startDate = moment().startOf('month').toDate();
+    let endDate = moment().endOf('month').toDate();
+
+    records.forEach(async (record) => {
+      let contactPerson = record.contactPersonOrganization.contactPerson;
+      let allocations = await this.manager.find(OpportunityResourceAllocation, {
+        where: { contactPersonId: contactPerson.id },
+        relations: ['opportunityResource'],
+      });
+
+      let _flagFound = false;
+
+      allocations.forEach((allocation) => {
+        if (
+          startDate >= allocation.opportunityResource.startDate &&
+          endDate <= allocation.opportunityResource.endDate
+        ) {
+          _flagFound = true;
+        }
+      });
+
+      if (_flagFound) {
+        let Obj: any = {};
+        Obj.label = `${contactPerson.firstName} ${contactPerson.lastName}`;
+        Obj.value = record.id;
+        users.push(Obj);
+      }
+    });
+
+    return users;
   }
 }

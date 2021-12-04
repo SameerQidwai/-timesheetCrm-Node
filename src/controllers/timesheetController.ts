@@ -354,16 +354,16 @@ export class TimesheetController {
       const { grantLevel } = res.locals;
       const { user } = res.locals;
       if (grantLevel.includes('ANY')) {
-        records = await repository.getAnyProjectUsers();
+        records = await repository.getUserAnyUsers();
       } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
-        records = await repository.getManageAndOwnProjectUsers(
+        records = await repository.getUserManageAndOwnUsers(
           user.id,
           `${user.contactPersonOrganization.contactPerson.firstName} ${user.contactPersonOrganization.contactPerson.lastName}`
         );
       } else if (grantLevel.includes('MANAGE')) {
-        records = await repository.getManageProjectUsers(user.id);
+        records = await repository.getUserManageUsers(user.id);
       } else if (grantLevel.includes('OWN')) {
-        records = await repository.getOwnProjectUsers(
+        records = await repository.getUserOwnUsers(
           user.id,
           `${user.contactPersonOrganization.contactPerson.firstName} ${user.contactPersonOrganization.contactPerson.lastName}`
         );
