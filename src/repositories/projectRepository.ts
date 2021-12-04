@@ -43,6 +43,8 @@ export class ProjectRepository extends Repository<Opportunity> {
       projectObj.tenderNumber = project.tenderNumber;
       projectObj.hoursPerDay = project.hoursPerDay;
       projectObj.cmPercentage = project.cmPercentage;
+      projectObj.stage = project.stage;
+      projectObj.linkedWorkId = project.linkedWorkId;
 
       // validate organization
       let organization: Organization | undefined;
@@ -311,6 +313,8 @@ export class ProjectRepository extends Repository<Opportunity> {
       projectObj.tenderNumber = project.tenderNumber;
       projectObj.hoursPerDay = project.hoursPerDay;
       projectObj.cmPercentage = project.cmPercentage;
+      projectObj.stage = project.stage;
+      projectObj.linkedWorkId = project.linkedWorkId;
 
       // validate organization
       let organization: Organization | undefined;
@@ -956,6 +960,7 @@ export class ProjectRepository extends Repository<Opportunity> {
 
     return response;
   }
+
   async helperGetMilestonesByUserId(employeeId: number) {
     let response: any = [];
 
