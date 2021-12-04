@@ -8,7 +8,7 @@ export class Milestone extends Base {
   @Column({ name: 'title' })
   title: string;
 
-  @Column({ name: 'description' })
+  @Column({ name: 'description', nullable: true })
   description: string;
 
   @Column({ name: 'start_date', nullable: true })

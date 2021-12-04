@@ -70,3 +70,11 @@ export enum EntityType {
   COMMENT = 'COM',
   PROJECT_ENTRY = 'PEN',
 }
+
+export enum OpportunityStatus {
+  LOST = 'L',
+  NOT_BID = 'NB',
+  DID_NOT_PROCEED = 'DNP',
+  OPPORTUNITY = 'O',
+  WON = 'P',
+}

@@ -304,8 +304,8 @@ export interface OpportunityResourceAllocationDTO extends Base {
   buyingRate: number;
   sellingRate: number;
   contactPersonId: number | null;
-  startDate: Date;
-  endDate: Date;
+  startDate: Date | null;
+  endDate: Date | null;
   effortRate: number;
 }
 

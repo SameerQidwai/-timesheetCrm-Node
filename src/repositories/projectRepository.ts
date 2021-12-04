@@ -408,7 +408,7 @@ export class ProjectRepository extends Repository<Opportunity> {
 
   async findOneCustom(id: number): Promise<any | undefined> {
     return this.findOne(id, {
-      relations: ['organization'],
+      relations: ['organization', 'contactPerson', 'milestones'],
     });
   }
 
@@ -574,16 +574,17 @@ export class ProjectRepository extends Repository<Opportunity> {
         resource.billableHours = projectResourceDTO.billableHours ?? 0;
         resource.opportunityId = projectId;
         resource.milestoneId = milestoneId;
+
+        if (projectResourceDTO.startDate) {
+          resource.startDate = new Date(projectResourceDTO.startDate);
+        }
+        if (projectResourceDTO.endDate) {
+          resource.endDate = new Date(projectResourceDTO.endDate);
+        }
+
         resource = await transactionalEntityManager.save(resource);
 
         let resourceAllocation = new OpportunityResourceAllocation();
-
-        if (projectResourceDTO.startDate) {
-          resourceAllocation.startDate = new Date(projectResourceDTO.startDate);
-        }
-        if (projectResourceDTO.endDate) {
-          resourceAllocation.endDate = new Date(projectResourceDTO.endDate);
-        }
 
         resourceAllocation.buyingRate = projectResourceDTO.buyingRate;
         resourceAllocation.sellingRate = projectResourceDTO.sellingRate;
@@ -644,20 +645,16 @@ export class ProjectRepository extends Repository<Opportunity> {
       }
       resource.billableHours = projectResourceDTO.billableHours;
 
+      if (projectResourceDTO.startDate) {
+        resource.startDate = new Date(projectResourceDTO.startDate);
+      }
+      if (projectResourceDTO.endDate) {
+        resource.endDate = new Date(projectResourceDTO.endDate);
+      }
+
       let index = resource.opportunityResourceAllocations.findIndex(
         (x) => x.isMarkedAsSelected == true
       );
-
-      if (projectResourceDTO.startDate) {
-        resource.opportunityResourceAllocations[index].startDate = new Date(
-          projectResourceDTO.startDate
-        );
-      }
-      if (projectResourceDTO.endDate) {
-        resource.opportunityResourceAllocations[index].endDate = new Date(
-          projectResourceDTO.endDate
-        );
-      }
 
       resource.opportunityResourceAllocations[index].buyingRate =
         projectResourceDTO.buyingRate;

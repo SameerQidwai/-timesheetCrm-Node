@@ -162,7 +162,12 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
   async getAllActive(): Promise<any[]> {
     let result = await this.find({
-      where: [{ status: 'O' }, { status: 'L' }],
+      where: [
+        { status: 'O' },
+        { status: 'L' },
+        { status: 'NB' },
+        { status: 'DNP' },
+      ],
       relations: ['organization', 'milestones'],
     });
 
@@ -300,7 +305,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
   async findOneCustom(id: number): Promise<any | undefined> {
     return this.findOne(id, {
-      relations: ['organization', 'contactPerson'],
+      relations: ['organization', 'contactPerson', 'milestones'],
     });
   }
 
@@ -476,8 +481,14 @@ export class OpportunityRepository extends Repository<Opportunity> {
       opportunityResourceDTO.panelSkillStandardLevelId;
     resource.billableHours = opportunityResourceDTO.billableHours;
     resource.title = opportunityResourceDTO.title;
-    resource.startDate = opportunityResourceDTO.startDate;
-    resource.endDate = opportunityResourceDTO.endDate;
+    if (opportunityResourceDTO.startDate) {
+      resource.startDate = new Date(opportunityResourceDTO.startDate);
+    }
+    if (opportunityResourceDTO.endDate) {
+      resource.endDate = new Date(opportunityResourceDTO.endDate);
+    }
+    // resource.startDate = opportunityResourceDTO.startDate;
+    // resource.endDate = opportunityResourceDTO.endDate;
     resource.opportunityId = opportunityId;
     resource.milestoneId = milestoneId;
     console.log(opportunityId);
@@ -523,8 +534,14 @@ export class OpportunityRepository extends Repository<Opportunity> {
       opportunityResourceDTO.panelSkillStandardLevelId;
     resource.billableHours = opportunityResourceDTO.billableHours;
     resource.title = opportunityResourceDTO.title;
-    resource.startDate = opportunityResourceDTO.startDate;
-    resource.endDate = opportunityResourceDTO.endDate;
+    if (opportunityResourceDTO.startDate) {
+      resource.startDate = new Date(opportunityResourceDTO.startDate);
+    }
+    if (opportunityResourceDTO.endDate) {
+      resource.endDate = new Date(opportunityResourceDTO.endDate);
+    }
+    // resource.startDate = opportunityResourceDTO.startDate;
+    // resource.endDate = opportunityResourceDTO.endDate;
     await this.manager.save(resource);
     return this.findOneCustomResource(opportunityId, milestoneId, id);
   }
@@ -1135,6 +1152,30 @@ export class OpportunityRepository extends Repository<Opportunity> {
           status: 'L',
           opportunityManagerId: userId,
         },
+        {
+          status: 'NB',
+          accountDirectorId: userId,
+        },
+        {
+          status: 'NB',
+          accountManagerId: userId,
+        },
+        {
+          status: 'NB',
+          opportunityManagerId: userId,
+        },
+        {
+          status: 'DNP',
+          accountDirectorId: userId,
+        },
+        {
+          status: 'DNP',
+          accountManagerId: userId,
+        },
+        {
+          status: 'DNP',
+          opportunityManagerId: userId,
+        },
       ],
       relations: ['organization'],
     });
@@ -1160,6 +1201,8 @@ export class OpportunityRepository extends Repository<Opportunity> {
           where: [
             { status: 'O', organizationId: organizationId },
             { status: 'L', organizationId: organizationId },
+            { status: 'NB', organizationId: organizationId },
+            { status: 'DNP', organizationId: organizationId },
           ],
           relations: [
             'organization',
@@ -1169,7 +1212,12 @@ export class OpportunityRepository extends Repository<Opportunity> {
         });
       } else {
         work = await this.find({
-          where: [{ status: 'O' }, { status: 'L' }],
+          where: [
+            { status: 'O' },
+            { status: 'L' },
+            { status: 'NB' },
+            { status: 'DNP' },
+          ],
           relations: [
             'organization',
             'opportunityResources',

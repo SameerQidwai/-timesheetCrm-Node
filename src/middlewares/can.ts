@@ -63,6 +63,14 @@ export const where = async (
             id: resourceId,
             status: 'L',
           },
+          {
+            id: resourceId,
+            status: 'NB',
+          },
+          {
+            id: resourceId,
+            status: 'DNP',
+          },
         ],
       });
       if (!opportunity.length) {
