@@ -74,7 +74,7 @@ router
   .delete([isLoggedIn], contr.deleteTimesheetEntry.bind(contr));
 
 router
-  .route('/print/:milestoneEntryId')
+  .route('/print/milestoneEntries')
   .get(
     [isLoggedIn, can(Action.READ, Resource.TIMESHEETS)],
     contr.getTimesheetPDF.bind(contr)
