@@ -423,6 +423,10 @@ export interface OpportunityLostDTO {
   wonById: number | null;
   winningPrice: number | null;
 }
+
+export interface MilestoneEntriesPrintDTO {
+  milestoneEntryIds: Array<number>;
+}
 //PROJECT TYPE
 // 1 MILESTONE
 // 2 TM

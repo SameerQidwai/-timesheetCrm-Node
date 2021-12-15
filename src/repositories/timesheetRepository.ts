@@ -1,4 +1,4 @@
-import { TimesheetDTO } from '../dto';
+import { MilestoneEntriesPrintDTO, TimesheetDTO } from '../dto';
 import { EntityRepository, Repository, MoreThan } from 'typeorm';
 import { Timesheet } from '../entities/timesheet';
 import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
@@ -1249,29 +1249,28 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return users;
   }
 
-  async getTimesheetPDF(milestoneEntryId: number): Promise<any | undefined> {
+  async getTimesheetPDF(
+    milestoneEntryPrintDTO: MilestoneEntriesPrintDTO
+  ): Promise<any | undefined> {
     // console.log(cStartDate, cEndDate);
-    console.log('MILESTONEENTRYID', milestoneEntryId);
-    let milestoneEntry = await this.manager.findOne(
-      TimesheetMilestoneEntry,
-      milestoneEntryId,
-      {
-        relations: [
-          'timesheet',
-          'timesheet.employee',
-          'timesheet.employee.contactPersonOrganization',
-          'timesheet.employee.contactPersonOrganization.organization',
-          'timesheet.employee.contactPersonOrganization.contactPerson',
-          'milestone',
-          'milestone.project',
-          'milestone.project.organization',
-          'milestone.project.organization.delegateContactPerson',
-          'entries',
-        ],
-      }
-    );
+    console.log('MILESTONEENTRYID', milestoneEntryPrintDTO.milestoneEntryIds);
+    let milestoneEntries = await this.manager.find(TimesheetMilestoneEntry, {
+      where: { id: milestoneEntryPrintDTO.milestoneEntryIds },
+      relations: [
+        'timesheet',
+        'timesheet.employee',
+        'timesheet.employee.contactPersonOrganization',
+        'timesheet.employee.contactPersonOrganization.organization',
+        'timesheet.employee.contactPersonOrganization.contactPerson',
+        'milestone',
+        'milestone.project',
+        'milestone.project.organization',
+        'milestone.project.organization.delegateContactPerson',
+        'entries',
+      ],
+    });
 
-    if (!milestoneEntry) {
+    if (!milestoneEntries) {
       throw new Error('Milestone Entry not found');
     }
 
@@ -1281,102 +1280,107 @@ export class TimesheetRepository extends Repository<Timesheet> {
       [key: string]: any;
     }
 
-    let startDate = moment(milestoneEntry.timesheet.startDate, 'DD-MM-YYYY');
-    let cStartDate = moment(
-      milestoneEntry.timesheet.startDate,
-      'DD-MM-YYYY'
-    ).format('DD/MM/YYYY');
-    let cEndDate = moment(
-      milestoneEntry.timesheet.endDate,
-      'DD-MM-YYYY'
-    ).format('DD/MM/YYYY');
+    let response: Any = [];
 
-    let cMonthDays = moment(
-      milestoneEntry.timesheet.startDate,
-      'DD-MM-YYYY'
-    ).daysInMonth();
+    milestoneEntries.forEach((milestoneEntry) => {
+      let startDate = moment(milestoneEntry.timesheet.startDate, 'DD-MM-YYYY');
+      let cStartDate = moment(
+        milestoneEntry.timesheet.startDate,
+        'DD-MM-YYYY'
+      ).format('DD/MM/YYYY');
+      let cEndDate = moment(
+        milestoneEntry.timesheet.endDate,
+        'DD-MM-YYYY'
+      ).format('DD/MM/YYYY');
 
-    ``;
+      let cMonthDays = moment(
+        milestoneEntry.timesheet.startDate,
+        'DD-MM-YYYY'
+      ).daysInMonth();
 
-    let milestone: Any = {
-      milestoneEntryId: milestoneEntry.id,
-      milestoneId: milestoneEntry.milestoneId,
-      name:
-        milestoneEntry.milestone.project.type == 1
-          ? `${milestoneEntry.milestone.project.title} - (${milestoneEntry.milestone.title})`
-          : `${milestoneEntry.milestone.project.title}`,
-      client: milestoneEntry.milestone.project.organization.name,
-      contact:
-        `${
-          milestoneEntry.milestone.project.organization.delegateContactPerson
-            ?.firstName ?? '-'
-        } ${
-          milestoneEntry.milestone.project.organization.delegateContactPerson
-            ?.lastName ?? '-'
-        }` ?? '-',
-      notes: milestoneEntry.notes,
-      totalHours: 0,
-      invoicedDays: milestoneEntry.entries.length,
-      entries: [],
-    };
+      ``;
 
-    for (let i = 1; i <= cMonthDays; i++) {
-      let _flagFound = 0;
-      let _foundEntry: TimesheetEntry | undefined;
-      milestoneEntry.entries.map((entry: TimesheetEntry) => {
-        if (parseInt(entry.date.substring(0, 2)) == i) {
-          _flagFound = 1;
-          _foundEntry = entry;
+      let milestone: Any = {
+        milestoneEntryId: milestoneEntry.id,
+        milestoneId: milestoneEntry.milestoneId,
+        name:
+          milestoneEntry.milestone.project.type == 1
+            ? `${milestoneEntry.milestone.project.title} - (${milestoneEntry.milestone.title})`
+            : `${milestoneEntry.milestone.project.title}`,
+        client: milestoneEntry.milestone.project.organization.name,
+        contact:
+          `${
+            milestoneEntry.milestone.project.organization.delegateContactPerson
+              ?.firstName ?? '-'
+          } ${
+            milestoneEntry.milestone.project.organization.delegateContactPerson
+              ?.lastName ?? '-'
+          }` ?? '-',
+        notes: milestoneEntry.notes,
+        totalHours: 0,
+        invoicedDays: milestoneEntry.entries.length,
+        entries: [],
+      };
+
+      for (let i = 1; i <= cMonthDays; i++) {
+        let _flagFound = 0;
+        let _foundEntry: TimesheetEntry | undefined;
+        milestoneEntry.entries.map((entry: TimesheetEntry) => {
+          if (parseInt(entry.date.substring(0, 2)) == i) {
+            _flagFound = 1;
+            _foundEntry = entry;
+          }
+        });
+        if (_flagFound == 1 && _foundEntry != undefined) {
+          milestone.totalHours += _foundEntry.hours;
+          milestone.entries.push({
+            entryId: _foundEntry.id,
+            date: moment(_foundEntry.date, 'DD-MM-YYYY').format('D/M/Y'),
+            day: moment(_foundEntry.date, 'DD-MM-YYYY').format('dddd'),
+            startTime: moment(_foundEntry.startTime, 'HH:mm').format('HH:mm'),
+            endTime: moment(_foundEntry.endTime, 'HH:mm').format('HH:mm'),
+            breakHours: _foundEntry.breakHours,
+            breakMinutes: _foundEntry.breakHours * 60,
+            actualHours: _foundEntry.hours,
+            notes: _foundEntry.notes,
+          });
+        } else {
+          console.log(`${i}-${startDate.month()}-${startDate.year()}`);
+          milestone.totalHours += 0;
+          milestone.entries.push({
+            entryId: '-',
+            date: moment(
+              `${i}-${startDate.month() + 1}-${startDate.year()}`,
+              'DD-MM-YYYY'
+            ).format('D/M/Y'),
+            day: moment(
+              `${i}-${startDate.month() + 1}-${startDate.year()}`,
+              'DD-MM-YYYY'
+            ).format('dddd'),
+            startTime: '-',
+            endTime: '-',
+            breakHours: '-',
+            breakMinutes: '-',
+            actualHours: '-',
+            notes: '-',
+          });
         }
-      });
-      if (_flagFound == 1 && _foundEntry != undefined) {
-        milestone.totalHours += _foundEntry.hours;
-        milestone.entries.push({
-          entryId: _foundEntry.id,
-          date: moment(_foundEntry.date, 'DD-MM-YYYY').format('D/M/Y'),
-          day: moment(_foundEntry.date, 'DD-MM-YYYY').format('dddd'),
-          startTime: moment(_foundEntry.startTime, 'HH:mm').format('HH:mm'),
-          endTime: moment(_foundEntry.endTime, 'HH:mm').format('HH:mm'),
-          breakHours: _foundEntry.breakHours,
-          breakMinutes: _foundEntry.breakHours * 60,
-          actualHours: _foundEntry.hours,
-          notes: _foundEntry.notes,
-        });
-      } else {
-        console.log(`${i}-${startDate.month()}-${startDate.year()}`);
-        milestone.totalHours += 0;
-        milestone.entries.push({
-          entryId: '-',
-          date: moment(
-            `${i}-${startDate.month() + 1}-${startDate.year()}`,
-            'DD-MM-YYYY'
-          ).format('D/M/Y'),
-          day: moment(
-            `${i}-${startDate.month() + 1}-${startDate.year()}`,
-            'DD-MM-YYYY'
-          ).format('dddd'),
-          startTime: '-',
-          endTime: '-',
-          breakHours: '-',
-          breakMinutes: '-',
-          actualHours: '-',
-          notes: '-',
-        });
       }
-    }
 
-    let response = {
-      id: milestoneEntry.id,
-      project: milestoneEntry.milestone.project.title,
-      company:
-        milestoneEntry.timesheet.employee.contactPersonOrganization.organization
-          .name,
-      employee: `${milestoneEntry.timesheet.employee.contactPersonOrganization.contactPerson.firstName} ${milestoneEntry.timesheet.employee.contactPersonOrganization.contactPerson.lastName}`,
-      period: `${cStartDate} - ${cEndDate}`,
-      notes: milestoneEntry.timesheet.notes,
-      milestone: milestone,
-    };
+      let entry = {
+        id: milestoneEntry.id,
+        project: milestoneEntry.milestone.project.title,
+        company:
+          milestoneEntry.timesheet.employee.contactPersonOrganization
+            .organization.name,
+        employee: `${milestoneEntry.timesheet.employee.contactPersonOrganization.contactPerson.firstName} ${milestoneEntry.timesheet.employee.contactPersonOrganization.contactPerson.lastName}`,
+        period: `${cStartDate} - ${cEndDate}`,
+        notes: milestoneEntry.timesheet.notes,
+        milestone: milestone,
+      };
 
+      response.push(entry);
+    });
     return response;
 
     //-- END OF MODIFIED RESPONSE FOR FRONTEND
