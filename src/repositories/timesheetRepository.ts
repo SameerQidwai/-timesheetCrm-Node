@@ -3,7 +3,7 @@ import {
   MilestoneEntriesUpdateDTO,
   TimesheetDTO,
 } from '../dto';
-import { EntityRepository, Repository, MoreThan } from 'typeorm';
+import { EntityRepository, Repository, MoreThan, In } from 'typeorm';
 import { Timesheet } from '../entities/timesheet';
 import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
 import { TimesheetEntry } from '../entities/timesheetEntry';
@@ -1001,7 +1001,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
       async (transactionalEntityManager) => {
         let milestoneEntries = await transactionalEntityManager.find(
           TimesheetMilestoneEntry,
-          { where: { id: milestoneEntriesUpdateDTO.milestoneEntryIds } }
+          { where: { id: In(milestoneEntriesUpdateDTO.milestoneEntryIds) } }
         );
 
         if (milestoneEntries.length < 1) {
