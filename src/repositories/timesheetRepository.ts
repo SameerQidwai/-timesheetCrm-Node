@@ -1093,8 +1093,6 @@ export class TimesheetRepository extends Repository<Timesheet> {
     });
 
     if (entriesAttachments.length > 0) {
-      entriesAttachments.forEach((entryAttachment) => {});
-
       for (let entryAttachment of entriesAttachments) {
         (entryAttachment as any).uid = entryAttachment.file.uniqueName;
         (entryAttachment as any).name = entryAttachment.file.originalName;
