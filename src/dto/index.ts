@@ -424,6 +424,12 @@ export interface OpportunityLostDTO {
   winningPrice: number | null;
 }
 
+export interface MilestoneEntriesUpdateDTO {
+  milestoneEntryIds: Array<number>;
+  note: string;
+  attachments: Array<number>;
+}
+
 export interface MilestoneEntriesPrintDTO {
   milestoneEntryIds: Array<number>;
 }

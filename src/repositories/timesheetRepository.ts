@@ -1,4 +1,8 @@
-import { MilestoneEntriesPrintDTO, TimesheetDTO } from '../dto';
+import {
+  MilestoneEntriesPrintDTO,
+  MilestoneEntriesUpdateDTO,
+  TimesheetDTO,
+} from '../dto';
 import { EntityRepository, Repository, MoreThan } from 'typeorm';
 import { Timesheet } from '../entities/timesheet';
 import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
@@ -990,97 +994,108 @@ export class TimesheetRepository extends Repository<Timesheet> {
   }
 
   async updateTimesheetMilestoneEntryNote(
-    milestoneEntryId: number,
-    notes: string,
-    attachments: [],
+    milestoneEntriesUpdateDTO: MilestoneEntriesUpdateDTO,
     userId: number
   ): Promise<any | undefined> {
-    let entry = await this.manager.transaction(
+    let entries = await this.manager.transaction(
       async (transactionalEntityManager) => {
-        let milestoneEntry: TimesheetMilestoneEntry | undefined;
-        milestoneEntry = await transactionalEntityManager.findOne(
+        let milestoneEntries = await transactionalEntityManager.find(
           TimesheetMilestoneEntry,
-          milestoneEntryId
+          { where: { id: milestoneEntriesUpdateDTO.milestoneEntryIds } }
         );
 
-        if (!milestoneEntry) {
-          throw new Error('Milestone Entry not found');
+        if (milestoneEntries.length < 1) {
+          throw new Error('Milestone Entries not found');
         }
-        milestoneEntry.notes = notes;
 
-        milestoneEntry = await transactionalEntityManager.save(milestoneEntry);
+        let response: any = [];
 
-        if (attachments) {
-          let deleteableAttachments: Attachment[] = [];
-          let newAttachments = attachments;
-          let oldAttachments = await transactionalEntityManager.find(
-            Attachment,
-            {
-              where: { targetId: milestoneEntry.id, targetType: 'PEN' },
-            }
+        for (let milestoneEntry of milestoneEntries) {
+          milestoneEntry.notes = milestoneEntriesUpdateDTO.note;
+
+          milestoneEntry = await transactionalEntityManager.save(
+            milestoneEntry
           );
 
-          if (oldAttachments.length > 0) {
-            oldAttachments.forEach((oldAttachment) => {
-              let flag_found = false;
+          if (milestoneEntriesUpdateDTO.attachments) {
+            let deleteableAttachments: Attachment[] = [];
+            let newAttachments = milestoneEntriesUpdateDTO.attachments;
+            let oldAttachments = await transactionalEntityManager.find(
+              Attachment,
+              {
+                where: { targetId: milestoneEntry.id, targetType: 'PEN' },
+              }
+            );
 
-              attachments.forEach((attachment) => {
-                let _indexOf = newAttachments.indexOf(attachment);
-                if (oldAttachment.fileId === attachment) {
-                  flag_found = true;
-                  if (_indexOf > -1) {
-                    newAttachments.splice(_indexOf, 1);
+            if (oldAttachments.length > 0) {
+              oldAttachments.forEach((oldAttachment) => {
+                let flag_found = false;
+
+                milestoneEntriesUpdateDTO.attachments.forEach((attachment) => {
+                  let _indexOf = newAttachments.indexOf(attachment);
+                  if (oldAttachment.fileId === attachment) {
+                    flag_found = true;
+                    if (_indexOf > -1) {
+                      newAttachments.splice(_indexOf, 1);
+                    }
+                  } else {
+                    if (_indexOf <= -1) {
+                      newAttachments.push(attachment);
+                    }
                   }
-                } else {
-                  if (_indexOf <= -1) {
-                    newAttachments.push(attachment);
-                  }
+                });
+                if (!flag_found) {
+                  deleteableAttachments.push(oldAttachment);
                 }
               });
-              if (!flag_found) {
-                deleteableAttachments.push(oldAttachment);
-              }
-            });
-            await transactionalEntityManager.remove(
-              Attachment,
-              deleteableAttachments
-            );
+              await transactionalEntityManager.remove(
+                Attachment,
+                deleteableAttachments
+              );
+            }
+
+            console.log('NEW', newAttachments);
+            console.log('DELETE', deleteableAttachments);
+
+            for (const file of newAttachments) {
+              let attachmentObj = new Attachment();
+              attachmentObj.fileId = file;
+              attachmentObj.targetId = milestoneEntry.id;
+              attachmentObj.targetType = EntityType.PROJECT_ENTRY;
+              attachmentObj.userId = userId;
+              let attachment = await transactionalEntityManager.save(
+                attachmentObj
+              );
+            }
           }
 
-          console.log('NEW', newAttachments);
-          console.log('DELETE', deleteableAttachments);
-
-          for (const file of newAttachments) {
-            let attachmentObj = new Attachment();
-            attachmentObj.fileId = file;
-            attachmentObj.targetId = milestoneEntry.id;
-            attachmentObj.targetType = EntityType.PROJECT_ENTRY;
-            attachmentObj.userId = userId;
-            let attachment = await transactionalEntityManager.save(
-              attachmentObj
-            );
-          }
+          response.push(milestoneEntry);
         }
 
-        return milestoneEntry;
+        return response;
       }
     );
 
-    let entryAttachments = await this.manager.find(Attachment, {
-      where: { targetType: 'PEN', targetId: entry.id },
-      relations: ['file'],
-    });
+    // let ids;
+    // entries.forEach((entry: any, index: number) => {
+    //   ids[entry] = index;
+    // });
 
-    let entryAttachment: Attachment | null =
-      entryAttachments.length > 0 ? entryAttachments[0] : null;
-    if (entryAttachment) {
-      (entryAttachment as any).uid = entryAttachment.file.uniqueName;
-      (entryAttachment as any).name = entryAttachment.file.originalName;
-      (entryAttachment as any).type = entryAttachment.file.type;
-    }
-    (entry as any).attachment = entryAttachment;
+    // let entriesAttachments = await this.manager.find(Attachment, {
+    //   where: { targetType: 'PEN', targetId: ids },
+    //   relations: ['file'],
+    // });
 
-    return entry;
+    // let entryAttachment: Attachment | null =
+    //   entryAttachments.length > 0 ? entryAttachments[0] : null;
+    // if (entryAttachment) {
+    //   (entryAttachment as any).uid = entryAttachment.file.uniqueName;
+    //   (entryAttachment as any).name = entryAttachment.file.originalName;
+    //   (entryAttachment as any).type = entryAttachment.file.type;
+    // }
+    // (entry as any).attachment = entryAttachment;
+
+    return entries;
   }
 
   async getUserAnyUsers(): Promise<any | undefined> {

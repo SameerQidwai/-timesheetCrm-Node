@@ -323,13 +323,10 @@ export class TimesheetController {
   ) {
     try {
       const repository = getCustomRepository(TimesheetRepository);
-      let milestoneEntryId = parseInt(req.params.id);
       const { user } = res.locals;
 
       let record = await repository.updateTimesheetMilestoneEntryNote(
-        milestoneEntryId,
-        req.body.note,
-        req.body.attachments,
+        req.body,
         user.id
       );
       console.log('record: ', record);

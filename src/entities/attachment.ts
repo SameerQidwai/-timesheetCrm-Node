@@ -1,20 +1,27 @@
-import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  OneToOne,
+  JoinColumn,
+  OneToMany,
+  ManyToOne,
+} from 'typeorm';
 import { Base } from './common/base';
 import { File } from './file';
 import { EntityType } from '../constants/constants';
 
 @Entity('attachments')
 export class Attachment extends Base {
-  @Column({ type: "varchar", length: "20", name: 'target_type' })
+  @Column({ type: 'varchar', length: '20', name: 'target_type' })
   targetType: EntityType;
-  @Column({ name: 'file_id' })
+  @Column({ name: 'file_id', unique: false })
   fileId: number;
   @Column({ name: 'target_id' })
   targetId: number;
   @Column({ name: 'user_id', nullable: false })
   userId: number;
 
-  @OneToOne(() => File)
+  @ManyToOne(() => File)
   @JoinColumn({ name: 'file_id' })
   file: File;
 }

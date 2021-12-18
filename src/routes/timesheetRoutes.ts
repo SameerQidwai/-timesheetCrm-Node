@@ -19,7 +19,7 @@ router
   .get([isLoggedIn], contr.getTimesheetUserMilestones.bind(contr));
 
 router
-  .route('/milestoneEntries/:id')
+  .route('/milestoneEntriesUpdate/')
   .patch([isLoggedIn], contr.updateTimesheetMilestoneEntryNote.bind(contr));
 
 router
@@ -75,7 +75,7 @@ router
 
 router
   .route('/print/milestoneEntries')
-  .get(
+  .post(
     [isLoggedIn, can(Action.READ, Resource.TIMESHEETS)],
     contr.getTimesheetPDF.bind(contr)
   );
