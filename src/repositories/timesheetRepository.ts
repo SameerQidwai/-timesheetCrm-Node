@@ -1017,9 +1017,9 @@ export class TimesheetRepository extends Repository<Timesheet> {
             milestoneEntry
           );
 
-          if (milestoneEntriesUpdateDTO.attachments) {
+          if (milestoneEntriesUpdateDTO.attachments.length > 0) {
             let deleteableAttachments: Attachment[] = [];
-            let newAttachments = milestoneEntriesUpdateDTO.attachments;
+            let newAttachments = [...milestoneEntriesUpdateDTO.attachments];
             let oldAttachments = await transactionalEntityManager.find(
               Attachment,
               {
@@ -1076,24 +1076,44 @@ export class TimesheetRepository extends Repository<Timesheet> {
       }
     );
 
-    // let ids;
-    // entries.forEach((entry: any, index: number) => {
-    //   ids[entry] = index;
-    // });
+    let ids: Array<number> = [],
+      tracking: any = {};
 
-    // let entriesAttachments = await this.manager.find(Attachment, {
-    //   where: { targetType: 'PEN', targetId: ids },
-    //   relations: ['file'],
-    // });
+    entries.forEach((entry: any, index: number) => {
+      ids.push(entry.id);
+      tracking[entry.id] = index;
+    });
 
-    // let entryAttachment: Attachment | null =
-    //   entryAttachments.length > 0 ? entryAttachments[0] : null;
-    // if (entryAttachment) {
-    //   (entryAttachment as any).uid = entryAttachment.file.uniqueName;
-    //   (entryAttachment as any).name = entryAttachment.file.originalName;
-    //   (entryAttachment as any).type = entryAttachment.file.type;
-    // }
-    // (entry as any).attachment = entryAttachment;
+    console.log('IDS', ids);
+    console.log('TRACKING', tracking);
+
+    let entriesAttachments = await this.manager.find(Attachment, {
+      where: { targetType: 'PEN', targetId: In(ids) },
+      relations: ['file'],
+    });
+
+    if (entriesAttachments.length > 0) {
+      entriesAttachments.forEach((entryAttachment) => {});
+
+      for (let entryAttachment of entriesAttachments) {
+        (entryAttachment as any).uid = entryAttachment.file.uniqueName;
+        (entryAttachment as any).name = entryAttachment.file.originalName;
+        (entryAttachment as any).type = entryAttachment.file.type;
+
+        // console.log('TARGET', entryAttachment.targetId);
+        // console.log('ENTRY', entries[tracking[entryAttachment.targetId]]);
+        (entries[tracking[entryAttachment.targetId]] as any).attachment =
+          entryAttachment;
+      }
+      // let entryAttachment: Attachment | null =
+      //   entryAttachments.length > 0 ? entryAttachments[0] : null;
+      // if (entryAttachment) {
+      //   (entryAttachment as any).uid = entryAttachment.file.uniqueName;
+      //   (entryAttachment as any).name = entryAttachment.file.originalName;
+      //   (entryAttachment as any).type = entryAttachment.file.type;
+      // }
+      // (entry as any).attachment = entryAttachment;
+    }
 
     return entries;
   }
@@ -1270,7 +1290,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     // console.log(cStartDate, cEndDate);
     console.log('MILESTONEENTRYID', milestoneEntryPrintDTO.milestoneEntryIds);
     let milestoneEntries = await this.manager.find(TimesheetMilestoneEntry, {
-      where: { id: milestoneEntryPrintDTO.milestoneEntryIds },
+      where: { id: In(milestoneEntryPrintDTO.milestoneEntryIds) },
       relations: [
         'timesheet',
         'timesheet.employee',
