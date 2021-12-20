@@ -1351,7 +1351,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
           }` ?? '-',
         notes: milestoneEntry.notes,
         totalHours: 0,
-        invoicedDays: milestoneEntry.entries.length,
+        invoicedDays: 0,
+        hoursPerDay: milestoneEntry.milestone.project.hoursPerDay,
         entries: [],
       };
 
@@ -1399,6 +1400,9 @@ export class TimesheetRepository extends Repository<Timesheet> {
           });
         }
       }
+
+      milestone.invoicedDays =
+        milestone.totalHours / milestoneEntry.milestone.project.hoursPerDay;
 
       let entry = {
         id: milestoneEntry.id,
@@ -1456,64 +1460,76 @@ export class TimesheetRepository extends Repository<Timesheet> {
       [key: string]: any;
     }
 
-    timesheets.forEach((timesheet) => {
+    for (let timesheet of timesheets) {
       let resTimesheet: any = {
         user: `${timesheet.employee.contactPersonOrganization.contactPerson.firstName} ${timesheet.employee.contactPersonOrganization.contactPerson.lastName}`,
         milestones: [],
         milestoneStatuses: [],
         timesheetStatus: TimesheetStatus,
       };
-      timesheet.milestoneEntries.map(
-        (milestoneEntry: TimesheetMilestoneEntry) => {
-          console.log('GOING THROUGH PROJECTS', milestoneEntry.milestoneId);
-          if (milestoneEntry.milestoneId == milestoneId) {
-            let status: TimesheetStatus = TimesheetStatus.SAVED;
+      for (let milestoneEntry of timesheet.milestoneEntries) {
+        console.log('GOING THROUGH PROJECTS', milestoneEntry.milestoneId);
+        if (milestoneEntry.milestoneId == milestoneId) {
+          let status: TimesheetStatus = TimesheetStatus.SAVED;
 
-            let authHaveThisMilestone = false;
-            if (
-              milestoneEntry.milestone.project.accountDirectorId == authId ||
-              milestoneEntry.milestone.project.accountManagerId == authId ||
-              milestoneEntry.milestone.project.projectManagerId == authId
-            ) {
-              authHaveThisMilestone = true;
-            }
+          let attachments = await this.manager.find(Attachment, {
+            where: { targetType: 'PEN', targetId: milestoneEntry.id },
+            relations: ['file'],
+          });
 
-            let milestone: Any = {
-              milestoneEntryId: milestoneEntry.id,
-              milestoneId: milestoneEntry.milestoneId,
-              milestone: milestoneEntry.milestone.title,
-              projectId: milestoneEntry.milestone.projectId,
-              projectType: milestoneEntry.milestone.project.type,
-              project: milestoneEntry.milestone.project.title,
-              isManaged: authHaveThisMilestone,
-              notes: milestoneEntry.notes,
-              totalHours: 0,
+          let attachment: Attachment | null =
+            attachments.length > 0 ? attachments[0] : null;
+          if (attachment) {
+            (attachment as any).uid = attachment.file.uniqueName;
+            (attachment as any).name = attachment.file.originalName;
+            (attachment as any).type = attachment.file.type;
+          }
+
+          let authHaveThisMilestone = false;
+          if (
+            milestoneEntry.milestone.project.accountDirectorId == authId ||
+            milestoneEntry.milestone.project.accountManagerId == authId ||
+            milestoneEntry.milestone.project.projectManagerId == authId
+          ) {
+            authHaveThisMilestone = true;
+          }
+
+          let milestone: Any = {
+            milestoneEntryId: milestoneEntry.id,
+            milestoneId: milestoneEntry.milestoneId,
+            milestone: milestoneEntry.milestone.title,
+            projectId: milestoneEntry.milestone.projectId,
+            projectType: milestoneEntry.milestone.project.type,
+            project: milestoneEntry.milestone.project.title,
+            isManaged: authHaveThisMilestone,
+            notes: milestoneEntry.notes,
+            totalHours: 0,
+            attachment: attachment,
+          };
+
+          milestoneEntry.entries.map((entry: TimesheetEntry) => {
+            milestone.totalHours += entry.hours;
+            milestone[moment(entry.date, 'DD-MM-YYYY').format('D/M')] = {
+              entryId: entry.id,
+              startTime: moment(entry.startTime, 'HH:mm').format('HH:mm'),
+              endTime: moment(entry.endTime, 'HH:mm').format('HH:mm'),
+              breakHours: entry.breakHours,
+              actualHours: entry.hours,
+              notes: entry.notes,
             };
 
-            milestoneEntry.entries.map((entry: TimesheetEntry) => {
-              milestone.totalHours += entry.hours;
-              milestone[moment(entry.date, 'DD-MM-YYYY').format('D/M')] = {
-                entryId: entry.id,
-                startTime: moment(entry.startTime, 'HH:mm').format('HH:mm'),
-                endTime: moment(entry.endTime, 'HH:mm').format('HH:mm'),
-                breakHours: entry.breakHours,
-                actualHours: entry.hours,
-                notes: entry.notes,
-              };
+            if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
+            else if (entry.approvedAt !== null)
+              status = TimesheetStatus.APPROVED;
+            else if (entry.submittedAt !== null)
+              status = TimesheetStatus.SUBMITTED;
+          });
 
-              if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
-              else if (entry.approvedAt !== null)
-                status = TimesheetStatus.APPROVED;
-              else if (entry.submittedAt !== null)
-                status = TimesheetStatus.SUBMITTED;
-            });
-
-            milestone.status = status;
-            resTimesheet.milestoneStatuses.push(status);
-            resTimesheet.milestones.push(milestone);
-          }
+          milestone.status = status;
+          resTimesheet.milestoneStatuses.push(status);
+          resTimesheet.milestones.push(milestone);
         }
-      );
+      }
 
       resTimesheet.timesheetStatus = resTimesheet.milestoneStatuses.includes(
         TimesheetStatus.REJECTED
@@ -1528,7 +1544,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         : TimesheetStatus.SAVED;
 
       resTimesheets.push(resTimesheet);
-    });
+    }
 
     let response = {
       timesheets: resTimesheets,
