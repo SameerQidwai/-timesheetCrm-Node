@@ -1027,7 +1027,7 @@ export class ProjectRepository extends Repository<Opportunity> {
           } else if (project.type == 1) {
             response.push({
               value: milestone.id,
-              label: `${milestone.title} - (${project.title})`,
+              label: `${project.title} - (${milestone.title})`,
             });
           }
       });
