@@ -1565,7 +1565,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
       project.milestones.forEach((milestone) => {
         let Obj: any = {};
         if (project.type == 2) Obj.label = project.title;
-        else Obj.label = `${milestone.title} - (${project.title})`;
+        else Obj.label = `${project.title} - (${milestone.title})`;
         Obj.value = milestone.id;
         milestones.push(Obj);
       });
