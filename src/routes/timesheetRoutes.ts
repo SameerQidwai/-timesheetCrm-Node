@@ -19,7 +19,7 @@ router
   .get([isLoggedIn], contr.getTimesheetUserMilestones.bind(contr));
 
 router
-  .route('/milestoneEntriesUpdate/')
+  .route('/milestoneEntriesUpdate')
   .patch([isLoggedIn], contr.updateTimesheetMilestoneEntryNote.bind(contr));
 
 router
