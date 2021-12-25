@@ -1626,9 +1626,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
       resTimesheets.push(resTimesheet);
     }
 
-    console.log('SPILICED', users);
     for (const id of users.ids) {
-      console.log('ID IS ', id);
       let resTimesheet: any = {
         user: users.details[id],
         milestones: [],
