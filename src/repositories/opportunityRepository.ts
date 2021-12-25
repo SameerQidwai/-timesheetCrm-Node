@@ -113,7 +113,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
           opportunity.accountManagerId
         );
         if (!accountManager) {
-          throw new Error('Account Director not found');
+          throw new Error('Account Manager not found');
         }
         opportunityObj.accountManagerId = accountManager.id;
         // opportunityObj.accountManagerId = 1;
@@ -126,7 +126,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
           opportunity.opportunityManagerId
         );
         if (!opportunityManager) {
-          throw new Error('Account Director not found');
+          throw new Error('Opportunity Manager not found');
         }
 
         opportunityObj.opportunityManagerId = opportunityManager.id;

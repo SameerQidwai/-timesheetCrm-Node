@@ -54,6 +54,7 @@ export enum SuperannuationType {
 }
 
 export enum TimesheetStatus {
+  NOT_CREATED = 'NC',
   SAVED = 'SV',
   SUBMITTED = 'SB',
   REJECTED = 'RJ',
