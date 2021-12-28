@@ -277,6 +277,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
       relations: [
         'milestoneEntries',
         'milestoneEntries.milestone',
+        'milestoneEntries.milestone.project',
         'milestoneEntries.entries',
       ],
     });
@@ -1424,9 +1425,23 @@ export class TimesheetRepository extends Repository<Timesheet> {
     //-- END OF MODIFIED RESPONSE FOR FRONTEND
   }
 
-  async getMilestoneUsers(milestoneId: number): Promise<any | undefined> {
-    let milestone = await this.manager.findOne(Milestone, {
-      relations: [
+  async getMilestoneResources(
+    milestoneId: number,
+    type: string = 'A&M'
+  ): Promise<any | undefined> {
+    let relations: Array<string> = [];
+
+    if (type == 'Allocations' || type == 'A&M') {
+      relations.push(
+        'opportunityResources',
+        'opportunityResources.opportunityResourceAllocations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson',
+        'opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations.employee'
+      );
+    }
+    if (type == 'Managers' || type == 'A&M') {
+      relations.push(
         'project',
         'project.projectManager',
         'project.accountDirector',
@@ -1436,13 +1451,12 @@ export class TimesheetRepository extends Repository<Timesheet> {
         'project.accountManager.contactPersonOrganization',
         'project.projectManager.contactPersonOrganization.contactPerson',
         'project.accountDirector.contactPersonOrganization.contactPerson',
-        'project.accountManager.contactPersonOrganization.contactPerson',
-        'opportunityResources',
-        'opportunityResources.opportunityResourceAllocations',
-        'opportunityResources.opportunityResourceAllocations.contactPerson',
-        'opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations',
-        'opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations.employee',
-      ],
+        'project.accountManager.contactPersonOrganization.contactPerson'
+      );
+    }
+
+    let milestone = await this.manager.findOne(Milestone, {
+      relations: relations,
       where: { id: milestoneId },
     });
 
@@ -1455,36 +1469,42 @@ export class TimesheetRepository extends Repository<Timesheet> {
       details: {},
     };
 
-    if (milestone.project.accountDirectorId) {
-      users.ids.push(milestone.project.accountDirectorId);
-      users.details[
-        milestone.project.accountDirectorId
-      ] = `${milestone.project.accountDirector.contactPersonOrganization.contactPerson.firstName} ${milestone.project.accountDirector.contactPersonOrganization.contactPerson.lastName}`;
-    }
-    if (milestone.project.projectManagerId) {
-      users.ids.push(milestone.project.projectManagerId);
-      users.details[
-        milestone.project.projectManagerId
-      ] = `${milestone.project.projectManager.contactPersonOrganization.contactPerson.firstName} ${milestone.project.projectManager.contactPersonOrganization.contactPerson.lastName}`;
-    }
-    if (milestone.project.accountManagerId) {
-      users.ids.push(milestone.project.accountManagerId);
-      users.details[
-        milestone.project.accountManagerId
-      ] = `${milestone.project.accountManager.contactPersonOrganization.contactPerson.firstName} ${milestone.project.accountManager.contactPersonOrganization.contactPerson.lastName}`;
+    if (type == 'Managers' || type == 'A&M') {
+      if (milestone.project.accountDirectorId) {
+        users.ids.push(milestone.project.accountDirectorId);
+        users.details[
+          milestone.project.accountDirectorId
+        ] = `${milestone.project.accountDirector.contactPersonOrganization.contactPerson.firstName} ${milestone.project.accountDirector.contactPersonOrganization.contactPerson.lastName}`;
+      }
+      if (milestone.project.projectManagerId) {
+        users.ids.push(milestone.project.projectManagerId);
+        users.details[
+          milestone.project.projectManagerId
+        ] = `${milestone.project.projectManager.contactPersonOrganization.contactPerson.firstName} ${milestone.project.projectManager.contactPersonOrganization.contactPerson.lastName}`;
+      }
+      if (milestone.project.accountManagerId) {
+        users.ids.push(milestone.project.accountManagerId);
+        users.details[
+          milestone.project.accountManagerId
+        ] = `${milestone.project.accountManager.contactPersonOrganization.contactPerson.firstName} ${milestone.project.accountManager.contactPersonOrganization.contactPerson.lastName}`;
+      }
     }
 
-    for (let resource of milestone.opportunityResources) {
-      for (let allocation of resource.opportunityResourceAllocations) {
-        if (allocation.isMarkedAsSelected) {
-          allocation.contactPerson.contactPersonOrganizations.forEach((org) => {
-            if (org.employee != null || org.status == true) {
-              users.ids.push(org.employee.id);
-              users.details[
-                org.employee.id
-              ] = `${allocation.contactPerson.firstName} ${allocation.contactPerson.lastName}`;
-            }
-          });
+    if (type == 'Allocations' || type == 'A&M') {
+      for (let resource of milestone.opportunityResources) {
+        for (let allocation of resource.opportunityResourceAllocations) {
+          if (allocation.isMarkedAsSelected) {
+            allocation.contactPerson.contactPersonOrganizations.forEach(
+              (org) => {
+                if (org.employee != null || org.status == true) {
+                  users.ids.push(org.employee.id);
+                  users.details[
+                    org.employee.id
+                  ] = `${allocation.contactPerson.firstName} ${allocation.contactPerson.lastName}`;
+                }
+              }
+            );
+          }
         }
       }
     }
@@ -1509,7 +1529,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
     console.log(cStartDate, cEndDate);
 
-    let users = await this.getMilestoneUsers(milestoneId);
+    let users = await this.getMilestoneResources(milestoneId, 'Allocations');
     let timesheets = await this.find({
       where: {
         startDate: cStartDate,
