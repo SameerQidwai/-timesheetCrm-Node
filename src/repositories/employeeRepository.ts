@@ -657,23 +657,28 @@ export class EmployeeRepository extends Repository<Employee> {
 
     contactPersons.forEach((cp) => {
       let Obj: any = {};
-      let cpRole: string = 'Contact Person';
+      let cpRole: string = '(Contact Person)';
       if (cp.contactPersonOrganizations.length > 0) {
-        cpRole =
-          cp.contactPersonOrganizations.filter((org) => org.status == true)[0]
-            .organizationId == 1
-            ? '(Employee)'
-            : cp.contactPersonOrganizations.filter(
-                (org) => org.status == true
-              )[0].organizationId != 1
-            ? '(Sub Contractor)'
-            : '(Contact Person)';
+        //TODO: FILTER CONTACTPERSON AND EMPLOYEE BASED ON API
+        let contactPersonActiveAssociation =
+          cp.contactPersonOrganizations.filter((org) => org.status == true)[0];
+        //? ONLY EMPLOYEES ARE BEING FILTERED DOWN
+        if (contactPersonActiveAssociation) {
+          cpRole =
+            contactPersonActiveAssociation.organizationId == 1
+              ? '(Employee)'
+              : cp.contactPersonOrganizations.filter(
+                  (org) => org.status == true
+                )[0].organizationId != 1
+              ? '(Sub Contractor)'
+              : '(Contact Person)';
+
+          Obj.value = cp.id;
+          Obj.label = `${cp.firstName} ${cp.lastName} ${cpRole}`;
+
+          filtered.push(Obj);
+        }
       }
-
-      Obj.value = cp.id;
-      Obj.label = `${cp.firstName} ${cp.lastName} ${cpRole}`;
-
-      filtered.push(Obj);
     });
     console.log('employees: ', contactPersons);
     return filtered;
