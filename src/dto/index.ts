@@ -436,3 +436,11 @@ export interface MilestoneEntriesPrintDTO {
 //PROJECT TYPE
 // 1 MILESTONE
 // 2 TM
+
+export interface LeaveRequestDTO {
+  description: string;
+  typeId: number;
+  workId: number;
+  entries: Array<{ date: Date; hours: number }>;
+  attachments: Array<number>;
+}

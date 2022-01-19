@@ -964,12 +964,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{Endpoint}}/employees",
+							"raw": "{{Endpoint}}/opportunities",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
-								"employees"
+								"opportunities"
 							]
 						}
 					},
@@ -1062,7 +1062,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"organizationId\": 1,\r\n    \"title\": \"Ecommerce website updated\",\r\n    \"value\": 30000,\r\n    \"type\": 1,\r\n    \"startDate\": null,\r\n    \"endDate\": null,\r\n    \"bidDate\": null,\r\n    \"entryDate\": null,\r\n    \"qualifiedOps\": true,\r\n    \"tender\": \"abc tender\",\r\n    \"tenderNumber\": \"12345\",\r\n    \"tenderValue\": 25000,\r\n    \"cmPercentage\": 20,\r\n    \"goPercentage\": 30,\r\n    \"getPercentage\": 70,\r\n    \"panelId\": 1,\r\n    \"stateId\": 1,\r\n    \"accountDirectorId\": null,\r\n    \"accountManagerId\": null,\r\n    \"projectManagerId\": 1\r\n}",
+							"raw": "{\r\n    \"reason\": [\"HELLO\",\"WTF\"],\r\n    \"feedback\": \"WTF\",\r\n    \"status\": \"NB\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1096,6 +1096,34 @@
 							"path": [
 								"opportunities",
 								"6",
+								"milestones"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Milestone",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\" : \"First milestone\",\r\n    \"description\": \"-\",\r\n    \"startDate\": \"2021-09-25\",\r\n    \"endDate\": \"2021-09-29\",\r\n    \"isApproved\": 0,\r\n    \"progress\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/opportunities/24/milestones",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"opportunities",
+								"24",
 								"milestones"
 							]
 						}
@@ -2403,13 +2431,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{Endpoint}}/timesheets/01-07-2021&31-07-2021&1",
+							"raw": "{{Endpoint}}/timesheets/01-12-2021&31-12-2021&12",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"timesheets",
-								"01-07-2021&31-07-2021&1"
+								"01-12-2021&31-12-2021&12"
 							]
 						}
 					},
@@ -2449,28 +2477,54 @@
 					"response": []
 				},
 				{
-					"name": "Submit Project Entry",
+					"name": "Submit Milestone Entries",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{Endpoint}}/timesheets/01-05-2021&31-05-2021&6/projectEntries/3/submit",
+							"raw": "{{Endpoint}}/timesheets/01-11-2021&30-11-2021&1/projectEntriesSubmit",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"timesheets",
-								"01-05-2021&31-05-2021&6",
-								"projectEntries",
-								"3",
-								"submit"
+								"01-11-2021&30-11-2021&1",
+								"projectEntriesSubmit"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Approve Project Entry",
+					"name": "Delete Mielstone Entries",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"milestoneEntries\": [60,61]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/timesheets/01-11-2021&30-11-2021&1/milestoneEntriesDelete",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"timesheets",
+								"01-11-2021&30-11-2021&1",
+								"milestoneEntriesDelete"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approve Milestone Entries",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -2480,38 +2534,52 @@
 								"type": "text"
 							}
 						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"milestoneEntries\": [67]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{Endpoint}}/timesheets/01-05-2021&31-05-2021&6/projectEntries/3/approve",
+							"raw": "{{Endpoint}}/timesheets/01-11-2021&30-11-2021&1/milestoneEntriesApprove",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"timesheets",
-								"01-05-2021&31-05-2021&6",
-								"projectEntries",
-								"3",
-								"approve"
+								"01-11-2021&30-11-2021&1",
+								"milestoneEntriesApprove"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Reject Project Entry",
+					"name": "Reject Milestone Entries",
 					"request": {
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"milestoneEntries\": [67]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{Endpoint}}/timesheets/01-05-2021&31-05-2021&1/projectEntries/1/reject",
+							"raw": "{{Endpoint}}/timesheets/01-11-2021&30-11-2021&1/milestoneEntriesReject",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"timesheets",
-								"01-05-2021&31-05-2021&1",
-								"projectEntries",
-								"1",
-								"reject"
+								"01-11-2021&30-11-2021&1",
+								"milestoneEntriesReject"
 							]
 						}
 					},
@@ -2524,7 +2592,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"note\": \"heyyy whatsuppp duudeeeeeeeeee\",\r\n    \"attachments\": [27,28]\r\n}",
+							"raw": "{\r\n    \"milestoneEntryIds\": [59,60],\r\n    \"note\": \"BUGGGGGGGGGGG\",\r\n    \"attachments\": [31]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2532,14 +2600,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{Endpoint}}/timesheets/projectEntries/31",
+							"raw": "{{Endpoint}}/timesheets/milestoneEntriesUpdate/",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"timesheets",
-								"projectEntries",
-								"31"
+								"milestoneEntriesUpdate",
+								""
 							]
 						}
 					},
@@ -2659,14 +2727,14 @@
 							}
 						],
 						"url": {
-							"raw": "{{Endpoint}}/timesheets/project/01-07-2021&31-07-2021&3",
+							"raw": "{{Endpoint}}/timesheets/milestone/01-11-2021&30-11-2021&3",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"timesheets",
-								"project",
-								"01-07-2021&31-07-2021&3"
+								"milestone",
+								"01-11-2021&30-11-2021&3"
 							]
 						}
 					},
@@ -2680,16 +2748,6 @@
 				{
 					"name": "Create",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjM2OTA3MTk4LCJleHAiOjE2MzY5MTA3OTh9.GOGHiv6VJqU1U30DoWTO8quuDaw-QbHHyrZ4nif59Fo",
-									"type": "string"
-								}
-							]
-						},
 						"method": "POST",
 						"header": [
 							{
@@ -2716,7 +2774,7 @@
 								{
 									"key": "files",
 									"type": "file",
-									"src": "/C:/Users/shahz/Documents/Lightshot/Screenshot_1.png"
+									"src": "/C:/Users/shahz/Documents/Lightshot/Screenshot_2.png"
 								}
 							]
 						},
@@ -2920,7 +2978,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"email\": \"mustafa.syed@1lm.com.au\",\r\n    \"password\": \"123123\"\r\n}",
+							"raw": "{\r\n    \"email\": \"mustafa.syed@1lm.com.au\",\r\n    \"password\": \"Rauf20\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3362,6 +3420,108 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Leave Requests",
+			"item": [
+				{
+					"name": "index",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/leaveRequests",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"leaveRequests"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"description\":\"Hello\",\r\n    \"typeId\": 1,\r\n    \"workId\": 1,\r\n    \"entries\": [\r\n        {\r\n            \"date\": \"2022-01-20\",\r\n            \"hours\": 4\r\n        }\r\n    ],\r\n    \"attachments\": []\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/leaveRequests",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"leaveRequests"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approve",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"leaveRequests\": [2]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/leaveRequests/leaveRequestsApprove",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"leaveRequests",
+								"leaveRequestsApprove"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reject",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"leaveRequests\": [2]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/leaveRequests/leaveRequestsReject",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"leaveRequests",
+								"leaveRequestsReject"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"auth": {
@@ -3401,7 +3561,7 @@
 		},
 		{
 			"key": "token",
-			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjM2OTg0MTkyLCJleHAiOjE2MzY5ODc3OTJ9.Jxyem6uaYhk4vf6-KcmfxYhx7YJDpKElOzZ7WAKYG9I"
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjM3MDQwNDE4LCJleHAiOjE2MzcwNDQwMTh9.GpwoarsovC0EO-iWdsRiC0xK3lj2uWhwc5lEUct64YE"
 		}
 	]
 }

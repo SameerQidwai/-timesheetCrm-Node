@@ -70,6 +70,7 @@ export enum EntityType {
   PURCHASE_ORDER = 'POR',
   COMMENT = 'COM',
   PROJECT_ENTRY = 'PEN',
+  LEAVE_REQUEST = 'LRE',
 }
 
 export enum OpportunityStatus {
@@ -78,4 +79,10 @@ export enum OpportunityStatus {
   DID_NOT_PROCEED = 'DNP',
   OPPORTUNITY = 'O',
   WON = 'P',
+}
+
+export enum LeaveRequestStatus {
+  SUBMITTED = 'SB',
+  REJECTED = 'RJ',
+  APPROVED = 'AP',
 }
