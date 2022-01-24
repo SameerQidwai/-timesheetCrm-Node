@@ -47,12 +47,12 @@ export class LeaveRequest extends Base {
   @JoinColumn({ name: 'type_id' })
   type: TimeOffType;
 
-  @Column({ name: 'work_id' })
-  workId: number;
+  @Column({ name: 'work_id', nullable: true })
+  workId: number | null;
 
   @ManyToOne(() => Opportunity)
   @JoinColumn({ name: 'work_id' })
-  work: Opportunity;
+  work: Opportunity | null;
 
   @OneToMany(
     () => LeaveRequestEntry,
@@ -62,4 +62,21 @@ export class LeaveRequest extends Base {
     }
   )
   entries: LeaveRequestEntry[];
+
+  public get getEntriesDetails(): any {
+    let startDate,
+      endDate,
+      totalHours = 0;
+    this.entries.forEach((entry, index) => {
+      index == 0 ? (startDate = entry.date) : '';
+      index == this.entries.length - 1 ? (endDate = entry.date) : '';
+      totalHours += entry.hours;
+    });
+
+    return {
+      startDate: startDate,
+      endDate: endDate,
+      totalHours: totalHours,
+    };
+  }
 }

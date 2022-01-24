@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { sendMail } from '../utilities/mailer';
-import { ContactPersonDTO, EmployeeDTO, LeaseDTO } from '../dto';
+import { ContactPersonDTO, EmployeeDTO, LeaseDTO, SettingsDTO } from '../dto';
 import { EntityRepository, getRepository, Repository } from 'typeorm';
 import { ContactPerson } from './../entities/contactPerson';
 import { ContactPersonOrganization } from './../entities/contactPersonOrganization';
@@ -12,6 +12,7 @@ import { EmploymentContract } from './../entities/employmentContract';
 import { BankAccount } from './../entities/bankAccount';
 import { PanelSkillStandardLevel } from './../entities/panelSkillStandardLevel';
 import { Lease } from './../entities/lease';
+import { SuperannuationType } from '../constants/constants';
 
 @EntityRepository(Employee)
 export class EmployeeRepository extends Repository<Employee> {
@@ -777,5 +778,48 @@ export class EmployeeRepository extends Repository<Employee> {
     });
 
     return filtered;
+  }
+
+  async updateSettings(authId: number, settingsDTO: SettingsDTO) {
+    if (!authId) {
+      throw new Error('Employee not found!');
+    }
+
+    let employee = await this.findOne(authId, { relations: ['bankAccounts'] });
+
+    if (!employee) {
+      throw new Error('Employee not found!');
+    }
+
+    employee.nextOfKinName = settingsDTO.nextOfKinName;
+    employee.nextOfKinPhoneNumber = settingsDTO.nextOfKinPhoneNumber;
+    employee.nextOfKinEmail = settingsDTO.nextOfKinEmail;
+    employee.nextOfKinRelation = settingsDTO.nextOfKinRelation;
+    employee.tfn = settingsDTO.tfn;
+    employee.taxFreeThreshold = settingsDTO.taxFreeThreshold ?? false;
+    employee.helpHECS = settingsDTO.helpHECS ?? false;
+    employee.superannuationName = settingsDTO.superannuationName;
+    employee.superannuationType =
+      settingsDTO.superannuationType == 'P'
+        ? SuperannuationType.PUBLIC
+        : SuperannuationType.SMSF;
+    employee.superannuationBankName = settingsDTO.superannuationBankName;
+    employee.superannuationBankAccountOrMembershipNumber =
+      settingsDTO.superannuationBankAccountOrMembershipNumber;
+    employee.superannuationAbnOrUsi = settingsDTO.superannuationAbnOrUsi;
+    employee.superannuationBankBsb = settingsDTO.superannuationBankBsb;
+    employee.superannuationAddress = settingsDTO.superannuationAddress;
+    employee.training = settingsDTO.training;
+
+    let bankAccount = employee.bankAccounts[0];
+    bankAccount.accountNo = settingsDTO.bankAccountNo;
+    bankAccount.name = settingsDTO.bankName;
+    bankAccount.bsb = settingsDTO.bankBsb;
+
+    employee.bankAccounts[0] = bankAccount;
+
+    this.save(employee);
+
+    return employee;
   }
 }

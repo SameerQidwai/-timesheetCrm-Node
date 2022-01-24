@@ -14,7 +14,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
   async getOwnLeaveRequests(authId: number): Promise<any | undefined> {
     let leaveRequests = await this.find({
       where: { submittedBy: authId },
-      relations: [],
+      relations: ['entries'],
     });
 
     if (leaveRequests.length < 1) {
@@ -23,16 +23,22 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
     //-- START OF MODIFIED RESPSONSE FOR FRONTEND
 
-    leaveRequests.forEach((request) => {
-      let requestStatus: LeaveRequestStatus = request.rejectedAt
+    leaveRequests.forEach((leaveRequest) => {
+      let requestStatus: LeaveRequestStatus = leaveRequest.rejectedAt
         ? LeaveRequestStatus.REJECTED
-        : request.submittedAt
+        : leaveRequest.submittedAt
         ? LeaveRequestStatus.SUBMITTED
-        : request.approvedAt
+        : leaveRequest.approvedAt
         ? LeaveRequestStatus.APPROVED
         : LeaveRequestStatus.SUBMITTED;
 
-      (request as any).status = requestStatus;
+      (leaveRequest as any).status = requestStatus;
+      let leavRequestDetails = leaveRequest.getEntriesDetails;
+      (leaveRequest as any).startDate = leavRequestDetails.startDate;
+      (leaveRequest as any).endDate = leavRequestDetails.endDate;
+      (leaveRequest as any).totalHours = leavRequestDetails.totalHours;
+
+      delete (leaveRequest as any).entries;
     });
 
     return leaveRequests;
@@ -47,6 +53,170 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     let leaveRequest = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let leaveRequestObj = new LeaveRequest();
+        leaveRequestObj.desc = leaveRequestDTO.description;
+        let types = await transactionalEntityManager.find(TimeOffType, {
+          where: { id: leaveRequestDTO.typeId },
+        });
+
+        if (!types[0]) {
+          throw new Error('Leave Request Type not found!');
+        }
+        leaveRequestObj.typeId = leaveRequestDTO.typeId;
+        let projects: Opportunity[] = [];
+        if (leaveRequestDTO.workId) {
+          projects = await transactionalEntityManager.find(Opportunity, {
+            where: { id: leaveRequestDTO.workId },
+          });
+
+          if (!projects[0]) {
+            throw new Error('Project not found!');
+          }
+
+          leaveRequestObj.workId = leaveRequestDTO.workId;
+        }
+
+        leaveRequestObj.submittedBy = authId;
+        leaveRequestObj.submittedAt = moment().toDate();
+        leaveRequestObj.entries = [];
+
+        leaveRequestDTO.entries.forEach((leaveRequestEntry) => {
+          let leaveRequestEntryObj = new LeaveRequestEntry();
+          leaveRequestEntryObj.hours = leaveRequestEntry.hours;
+          leaveRequestEntryObj.date = leaveRequestEntry.date;
+          leaveRequestEntryObj.leaveRequestId = leaveRequestObj.id;
+
+          leaveRequestObj.entries.push(leaveRequestEntryObj);
+        });
+
+        let leaveRequest = await transactionalEntityManager.save(
+          leaveRequestObj
+        );
+
+        if (leaveRequestDTO.attachments.length > 0) {
+          for (const file of leaveRequestDTO.attachments) {
+            let attachmentObj = new Attachment();
+            attachmentObj.fileId = file;
+            attachmentObj.targetId = leaveRequest.id;
+            attachmentObj.targetType = EntityType.LEAVE_REQUEST;
+            attachmentObj.userId = authId;
+            let attachment = await transactionalEntityManager.save(
+              attachmentObj
+            );
+          }
+        }
+
+        return leaveRequest;
+      }
+    );
+
+    // console.log(timesheetDTO);
+
+    return leaveRequest;
+  }
+
+  async getLeaveRequest(requestId: number): Promise<any | undefined> {
+    let leaveRequest = await this.findOne(requestId, {
+      relations: ['entries'],
+    });
+
+    if (!leaveRequest) {
+      throw new Error('Leave Request not found');
+    }
+
+    return leaveRequest;
+  }
+
+  async approveAnyLeaveRequest(
+    authId: number,
+    requestEntries: Array<number>
+  ): Promise<any | undefined> {
+    let leaveRequests = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let leaveRequests = await transactionalEntityManager.find(
+          LeaveRequest,
+          {
+            where: {
+              id: In(requestEntries),
+            },
+            relations: ['entries'],
+          }
+        );
+
+        if (leaveRequests.length < 1) {
+          throw new Error('Leave Requests not found');
+        }
+
+        leaveRequests.forEach((leaveRequest) => {
+          if (leaveRequest.approvedAt != null) {
+            throw new Error('Cannot perform this action');
+          }
+
+          leaveRequest.approvedAt = moment().toDate();
+          leaveRequest.approvedBy = authId;
+        });
+
+        leaveRequests = await transactionalEntityManager.save(leaveRequests);
+
+        return leaveRequests;
+      }
+    );
+
+    return leaveRequests;
+    // milestoneEntry.entries.map(entry => entry.submittedAt = )
+  }
+
+  async rejectAnyLeaveRequest(
+    authId: number,
+    requestEntries: Array<number>
+  ): Promise<any | undefined> {
+    let leaveRequests = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let leaveRequests = await transactionalEntityManager.find(
+          LeaveRequest,
+          {
+            where: {
+              id: In(requestEntries),
+            },
+            relations: ['entries'],
+          }
+        );
+
+        if (leaveRequests.length < 1) {
+          throw new Error('Leave Requests not found');
+        }
+
+        leaveRequests.forEach((leaveRequest) => {
+          if (
+            leaveRequest.approvedAt != null &&
+            leaveRequest.rejectedAt != null
+          ) {
+            throw new Error('Cannot perform this action');
+          }
+
+          leaveRequest.rejectedAt = moment().toDate();
+          leaveRequest.rejectedBy = authId;
+        });
+
+        leaveRequests = await transactionalEntityManager.save(leaveRequests);
+
+        return leaveRequests;
+      }
+    );
+
+    return leaveRequests;
+    // milestoneEntry.entries.map(entry => entry.submittedAt = )
+  }
+
+  async editLeaveRequest(
+    authId: number,
+    requestId: number,
+    leaveRequestDTO: LeaveRequestDTO
+  ): Promise<any | undefined> {
+    let leaveRequest = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let leaveRequestObj: LeaveRequest = await this.getLeaveRequest(
+          requestId
+        );
         leaveRequestObj.desc = leaveRequestDTO.description;
         let types = await transactionalEntityManager.find(TimeOffType, {
           where: { id: leaveRequestDTO.typeId },
@@ -142,86 +312,5 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     // console.log(timesheetDTO);
 
     return leaveRequest;
-  }
-
-  async approveAnyLeaveRequest(
-    authId: number,
-    requestEntries: Array<number>
-  ): Promise<any | undefined> {
-    let leaveRequests = await this.manager.transaction(
-      async (transactionalEntityManager) => {
-        let leaveRequests = await transactionalEntityManager.find(
-          LeaveRequest,
-          {
-            where: {
-              id: In(requestEntries),
-            },
-            relations: ['entries'],
-          }
-        );
-
-        if (leaveRequests.length < 1) {
-          throw new Error('Leave Requests not found');
-        }
-
-        leaveRequests.forEach((leaveRequest) => {
-          if (leaveRequest.approvedAt != null) {
-            throw new Error('Cannot perform this action');
-          }
-
-          leaveRequest.approvedAt = moment().toDate();
-          leaveRequest.approvedBy = authId;
-        });
-
-        leaveRequests = await transactionalEntityManager.save(leaveRequests);
-
-        return leaveRequests;
-      }
-    );
-
-    return leaveRequests;
-    // milestoneEntry.entries.map(entry => entry.submittedAt = )
-  }
-
-  async rejectAnyLeaveRequest(
-    authId: number,
-    requestEntries: Array<number>
-  ): Promise<any | undefined> {
-    let leaveRequests = await this.manager.transaction(
-      async (transactionalEntityManager) => {
-        let leaveRequests = await transactionalEntityManager.find(
-          LeaveRequest,
-          {
-            where: {
-              id: In(requestEntries),
-            },
-            relations: ['entries'],
-          }
-        );
-
-        if (leaveRequests.length < 1) {
-          throw new Error('Leave Requests not found');
-        }
-
-        leaveRequests.forEach((leaveRequest) => {
-          if (
-            leaveRequest.approvedAt != null &&
-            leaveRequest.rejectedAt != null
-          ) {
-            throw new Error('Cannot perform this action');
-          }
-
-          leaveRequest.rejectedAt = moment().toDate();
-          leaveRequest.rejectedBy = authId;
-        });
-
-        leaveRequests = await transactionalEntityManager.save(leaveRequests);
-
-        return leaveRequests;
-      }
-    );
-
-    return leaveRequests;
-    // milestoneEntry.entries.map(entry => entry.submittedAt = )
   }
 }

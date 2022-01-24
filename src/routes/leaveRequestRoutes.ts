@@ -13,6 +13,11 @@ router
   .post([isLoggedIn], contr.addLeaveRequest.bind(contr));
 
 router
+  .route('/:id')
+  .get([isLoggedIn], contr.getLeaveRequest.bind(contr))
+  .patch([isLoggedIn], contr.editLeaveRequest.bind(contr));
+
+router
   .route('/leaveRequestsApprove/')
   .post([isLoggedIn], contr.approveLeaveRequests.bind(contr));
 

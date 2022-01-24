@@ -22,6 +22,24 @@ export class LeaveRequestController {
     }
   }
 
+  async getLeaveRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(LeaveRequestRepository);
+
+      let requestId = parseInt(req.params.id) as number;
+
+      let records = await repository.getLeaveRequest(requestId);
+      console.log('record: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'Leave Requests Show',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
   async addLeaveRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(LeaveRequestRepository);
@@ -92,6 +110,30 @@ export class LeaveRequestController {
       res.status(200).json({
         success: true,
         message: 'Timesheet Reject',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async editLeaveRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(LeaveRequestRepository);
+
+      const { user } = res.locals;
+      let requestId = parseInt(req.params.id) as number;
+      let userId = parseInt(user.id) as number;
+
+      let records = await repository.editLeaveRequest(
+        requestId,
+        userId,
+        req.body
+      );
+      console.log('record: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'Edit Leave Request',
         data: records,
       });
     } catch (e) {
