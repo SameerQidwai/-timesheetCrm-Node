@@ -1019,56 +1019,54 @@ export class TimesheetRepository extends Repository<Timesheet> {
             milestoneEntry
           );
 
-          if (milestoneEntriesUpdateDTO.attachments.length > 0) {
-            let deleteableAttachments: Attachment[] = [];
-            let newAttachments = [...milestoneEntriesUpdateDTO.attachments];
-            let oldAttachments = await transactionalEntityManager.find(
-              Attachment,
-              {
-                where: { targetId: milestoneEntry.id, targetType: 'PEN' },
-              }
-            );
+          let deleteableAttachments: Attachment[] = [];
+          let newAttachments = [...milestoneEntriesUpdateDTO.attachments];
+          let oldAttachments = await transactionalEntityManager.find(
+            Attachment,
+            {
+              where: { targetId: milestoneEntry.id, targetType: 'PEN' },
+            }
+          );
 
-            if (oldAttachments.length > 0) {
-              oldAttachments.forEach((oldAttachment) => {
-                let flag_found = false;
+          if (oldAttachments.length > 0) {
+            oldAttachments.forEach((oldAttachment) => {
+              let flag_found = false;
 
-                milestoneEntriesUpdateDTO.attachments.forEach((attachment) => {
-                  let _indexOf = newAttachments.indexOf(attachment);
-                  if (oldAttachment.fileId === attachment) {
-                    flag_found = true;
-                    if (_indexOf > -1) {
-                      newAttachments.splice(_indexOf, 1);
-                    }
-                  } else {
-                    if (_indexOf <= -1) {
-                      newAttachments.push(attachment);
-                    }
+              milestoneEntriesUpdateDTO.attachments.forEach((attachment) => {
+                let _indexOf = newAttachments.indexOf(attachment);
+                if (oldAttachment.fileId === attachment) {
+                  flag_found = true;
+                  if (_indexOf > -1) {
+                    newAttachments.splice(_indexOf, 1);
                   }
-                });
-                if (!flag_found) {
-                  deleteableAttachments.push(oldAttachment);
+                } else {
+                  if (_indexOf <= -1) {
+                    newAttachments.push(attachment);
+                  }
                 }
               });
-              await transactionalEntityManager.remove(
-                Attachment,
-                deleteableAttachments
-              );
-            }
+              if (!flag_found) {
+                deleteableAttachments.push(oldAttachment);
+              }
+            });
+            await transactionalEntityManager.remove(
+              Attachment,
+              deleteableAttachments
+            );
+          }
 
-            console.log('NEW', newAttachments);
-            console.log('DELETE', deleteableAttachments);
+          console.log('NEW', newAttachments);
+          console.log('DELETE', deleteableAttachments);
 
-            for (const file of newAttachments) {
-              let attachmentObj = new Attachment();
-              attachmentObj.fileId = file;
-              attachmentObj.targetId = milestoneEntry.id;
-              attachmentObj.targetType = EntityType.PROJECT_ENTRY;
-              attachmentObj.userId = userId;
-              let attachment = await transactionalEntityManager.save(
-                attachmentObj
-              );
-            }
+          for (const file of newAttachments) {
+            let attachmentObj = new Attachment();
+            attachmentObj.fileId = file;
+            attachmentObj.targetId = milestoneEntry.id;
+            attachmentObj.targetType = EntityType.PROJECT_ENTRY;
+            attachmentObj.userId = userId;
+            let attachment = await transactionalEntityManager.save(
+              attachmentObj
+            );
           }
 
           response.push(milestoneEntry);
