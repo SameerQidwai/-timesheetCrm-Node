@@ -369,7 +369,7 @@ export interface CommentDTO extends Base {
   attachments: number[] | [];
 }
 
-export interface Settings extends Base {
+export interface SettingsDTO extends Base {
   nextOfKinName: string;
   nextOfKinPhoneNumber: string;
   nextOfKinEmail: string;
@@ -385,10 +385,11 @@ export interface Settings extends Base {
   superannuationBankBsb: string;
   superannuationAddress: string;
   training: string;
-  // bankName: string; //! NOT USING BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
-  // bankAccountNo: string; //! NOT USING BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
-  // bankBsb: string; //! NOT USING BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
+  bankName: string; //!  USING BUT RELATIONSHIP NEEDS TO BE CHANGED, BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
+  bankAccountNo: string; //!  USING BUT RELATIONSHIP NEEDS TO BE CHANGED, BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
+  bankBsb: string; //!  USING BUT RELATIONSHIP NEEDS TO BE CHANGED, BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
 }
+
 export interface PermissionDTO extends Base {
   action: Action;
   resource: Resource;

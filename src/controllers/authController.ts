@@ -150,27 +150,29 @@ export class AuthController {
       const repository = getCustomRepository(EmployeeRepository);
       const userId = res.locals.jwtPayload.id;
 
-      let updatedEmployee = await repository.update(userId, {
-        nextOfKinName: req.body.nextOfKinName,
-        nextOfKinPhoneNumber: req.body.nextOfKinPhoneNumber,
-        nextOfKinEmail: req.body.nextOfKinEmail,
-        nextOfKinRelation: req.body.nextOfKinRelation,
-        tfn: req.body.tfn,
-        taxFreeThreshold: req.body.taxFreeThreshold ?? false,
-        helpHECS: req.body.helpHECS ?? false,
-        superannuationName: req.body.superannuationName,
-        superannuationType:
-          req.body.superannuationType == 'P'
-            ? SuperannuationType.PUBLIC
-            : SuperannuationType.SMSF,
-        superannuationBankName: req.body.superannuationBankName,
-        superannuationBankAccountOrMembershipNumber:
-          req.body.superannuationBankAccountOrMembershipNumber,
-        superannuationAbnOrUsi: req.body.superannuationAbnOrUsi,
-        superannuationBankBsb: req.body.superannuationBankBsb,
-        superannuationAddress: req.body.superannuationAddress,
-        training: req.body.training,
-      });
+      let updatedEmployee = await repository.updateSettings(userId, req.body);
+
+      // let updatedEmployee = await repository.update(userId, {
+      //   nextOfKinName: req.body.nextOfKinName,
+      //   nextOfKinPhoneNumber: req.body.nextOfKinPhoneNumber,
+      //   nextOfKinEmail: req.body.nextOfKinEmail,
+      //   nextOfKinRelation: req.body.nextOfKinRelation,
+      //   tfn: req.body.tfn,
+      //   taxFreeThreshold: req.body.taxFreeThreshold ?? false,
+      //   helpHECS: req.body.helpHECS ?? false,
+      //   superannuationName: req.body.superannuationName,
+      //   superannuationType:
+      //     req.body.superannuationType == 'P'
+      //       ? SuperannuationType.PUBLIC
+      //       : SuperannuationType.SMSF,
+      //   superannuationBankName: req.body.superannuationBankName,
+      //   superannuationBankAccountOrMembershipNumber:
+      //     req.body.superannuationBankAccountOrMembershipNumber,
+      //   superannuationAbnOrUsi: req.body.superannuationAbnOrUsi,
+      //   superannuationBankBsb: req.body.superannuationBankBsb,
+      //   superannuationAddress: req.body.superannuationAddress,
+      //   training: req.body.training,
+      // });
 
       res.status(200).json({
         success: true,
