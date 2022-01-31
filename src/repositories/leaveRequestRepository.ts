@@ -17,7 +17,14 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
   async getOwnLeaveRequests(authId: number): Promise<any | undefined> {
     let leaveRequests = await this.find({
       where: { submittedBy: authId },
-      relations: ['entries'],
+      relations: [
+        'entries',
+        'submitter',
+        'submitter.contactPersonOrganization',
+        'submitter.contactPersonOrganization.contactPerson',
+        'type',
+        'type.leaveRequestType',
+      ],
     });
 
     if (leaveRequests.length < 1) {
@@ -35,6 +42,11 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         ? LeaveRequestStatus.APPROVED
         : LeaveRequestStatus.SUBMITTED;
 
+      (
+        leaveRequest as any
+      ).employee = `${leaveRequest.submitter.contactPersonOrganization.contactPerson.firstName} ${leaveRequest.submitter.contactPersonOrganization.contactPerson.lastName}`;
+      (leaveRequest as any).name =
+        leaveRequest.type?.leaveRequestType.label ?? 'Unpaid';
       (leaveRequest as any).status = requestStatus;
       let leavRequestDetails = leaveRequest.getEntriesDetails;
       (leaveRequest as any).startDate = leavRequestDetails.startDate;
@@ -42,6 +54,8 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
       (leaveRequest as any).totalHours = leavRequestDetails.totalHours;
 
       delete (leaveRequest as any).entries;
+      delete (leaveRequest as any).submitter;
+      delete (leaveRequest as any).type;
     });
 
     return leaveRequests;
