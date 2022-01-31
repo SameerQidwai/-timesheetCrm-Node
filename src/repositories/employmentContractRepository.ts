@@ -48,6 +48,7 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
     obj.noOfHoursPer = employmentContract.noOfHoursPer;
     obj.remunerationAmount = employmentContract.remunerationAmount;
     obj.remunerationAmountPer = employmentContract.remunerationAmountPer;
+    obj.leaveRequestPolicyId = employmentContract.leaveRequestPolicyId;
     obj.fileId = employmentContract.fileId;
     return await this.save(obj);
   }
@@ -119,6 +120,8 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
       employmentContract.remunerationAmount;
     employmentContractObj.remunerationAmountPer =
       employmentContract.remunerationAmountPer;
+    employmentContractObj.leaveRequestPolicyId =
+      employmentContract.leaveRequestPolicyId;
     employmentContractObj.fileId = employmentContract.fileId;
     await this.update(id, employmentContractObj);
     return this.findOneCustom(id);

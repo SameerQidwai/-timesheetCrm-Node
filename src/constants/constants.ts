@@ -1,4 +1,4 @@
-export enum TimeoffTriggerFrequency {
+export enum LeaveRequestTriggerFrequency {
   NEVER = 'N',
   MONTH = 'M',
   YEAR = 'Y',

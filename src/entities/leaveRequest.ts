@@ -2,7 +2,7 @@ import { Entity, Column, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { Base } from './common/base';
 import { Opportunity } from './opportunity';
 import { Employee } from './employee';
-import { TimeOffType } from './timeOffType';
+import { LeaveRequestPolicyLeaveRequestType } from './leaveRequestPolicyLeaveRequestType';
 import { LeaveRequestEntry } from './leaveRequestEntry';
 
 @Entity('leave_requests')
@@ -43,9 +43,9 @@ export class LeaveRequest extends Base {
   @Column({ name: 'type_id' })
   typeId: number;
 
-  @ManyToOne(() => TimeOffType)
+  @ManyToOne(() => LeaveRequestPolicyLeaveRequestType)
   @JoinColumn({ name: 'type_id' })
-  type: TimeOffType;
+  type: LeaveRequestPolicyLeaveRequestType;
 
   @Column({ name: 'work_id', nullable: true })
   workId: number | null;

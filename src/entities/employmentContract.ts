@@ -3,6 +3,7 @@ import { Entity, Column, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 import { Base } from './common/base';
 import { Employee } from './employee';
 import { File } from './file';
+import { LeaveRequestPolicy } from './leaveRequestPolicy';
 
 @Entity('employment_contracts')
 export class EmploymentContract extends Base {
@@ -51,6 +52,13 @@ export class EmploymentContract extends Base {
     name: 'remuneration_amount_per',
   })
   remunerationAmountPer: Frequency;
+
+  @Column({ name: 'leave_request_policy_id', nullable: true })
+  leaveRequestPolicyId: number;
+
+  @ManyToOne(() => LeaveRequestPolicy)
+  @JoinColumn({ name: 'leave_request_policy_id' })
+  leaveRequestPolicy: LeaveRequestPolicy;
 
   @Column({ name: 'file_id', nullable: true })
   fileId: number;

@@ -14,7 +14,11 @@
     "runSeeders": "ts-node src/seederScript.ts",
     "createMilestones": "ts-node src/milestoneScript.ts",
     "updateResourcesMilestones": "ts-node src/resourcesMilestoneScript.ts",
-    "updateResourcesDates": "ts-node src/resourcesDateScript.ts"
+    "updateResourcesDates": "ts-node src/resourcesDateScript.ts",
+    "startCrons": "ts-node src/cronScript.ts",
+    "stopCrons": "ts-node src/cronStopScript.ts",
+    "instantMonthCron": "ts-node src/instantMonthCronScript.ts",
+    "instantYearCron": "ts-node src/instantYearCronScript.ts"
   },
   "author": "",
   "license": "ISC",
@@ -32,6 +36,7 @@
   "dependencies": {
     "@types/express": "^4.17.8",
     "@types/multer": "^1.4.5",
+    "@types/node-cron": "^3.0.1",
     "bcrypt": "^5.0.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
@@ -41,6 +46,7 @@
     "moment": "^2.29.1",
     "multer": "^1.4.2",
     "mysql": "^2.18.1",
+    "node-cron": "^3.0.0",
     "nodemailer": "^6.6.1",
     "nodemon": "^2.0.6",
     "path": "^0.12.7",

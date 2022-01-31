@@ -2,7 +2,7 @@ import { Action, Grant, Resource } from './../constants/authorization';
 import {
   EmploymentType,
   Gender,
-  TimeoffTriggerFrequency,
+  LeaveRequestTriggerFrequency,
   Frequency,
   ProjectType,
   ClearanceLevel,
@@ -22,23 +22,23 @@ export interface SampleDTO extends Base {
   title: string;
 }
 
-export interface TimeOffTypeDTO extends Base {
+export interface LeaveRequestTypeDTO extends Base {
   label: string;
 }
 
-export interface TimeOffPolicyTimeOffType extends Base {
-  timeOffPolicyId?: number;
-  timeOffTypeId: number;
+export interface LeaveRequestPolicyLeaveRequestType extends Base {
+  leaveRequestPolicyId?: number;
+  leaveRequestTypeId: number;
   earnHours: number;
-  earnEvery: TimeoffTriggerFrequency;
-  resetEvery: TimeoffTriggerFrequency;
+  earnEvery: LeaveRequestTriggerFrequency;
+  resetEvery: LeaveRequestTriggerFrequency;
   resetHours: number;
   threshold: number;
 }
 
-export interface TimeOffPolicyDTO extends Base {
+export interface LeaveRequestPolicyDTO extends Base {
   label: string;
-  timeOffPolicyTimeOffTypes: TimeOffPolicyTimeOffType[];
+  leaveRequestPolicyLeaveRequestTypes: LeaveRequestPolicyLeaveRequestType[];
 }
 
 export interface StandardLevelDTO extends Base {
@@ -189,6 +189,7 @@ export interface EmployeeDTO extends Base {
   bankAccountNo: string;
   bankBsb: string;
   roleId: number;
+  lineManagerId: number;
 }
 
 export interface EmploymentContractDTO extends Base {
@@ -203,6 +204,7 @@ export interface EmploymentContractDTO extends Base {
   noOfHoursPer: Frequency;
   remunerationAmount: number;
   remunerationAmountPer: Frequency;
+  leaveRequestPolicyId: number;
   fileId: number;
 }
 

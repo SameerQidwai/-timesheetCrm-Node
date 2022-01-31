@@ -13,16 +13,19 @@ router
   .post([isLoggedIn], contr.addLeaveRequest.bind(contr));
 
 router
+  .route('/approvalLeaveRequests')
+  .get([isLoggedIn], contr.getApprovalLeaveRequests.bind(contr));
+router
   .route('/:id')
   .get([isLoggedIn], contr.getLeaveRequest.bind(contr))
   .patch([isLoggedIn], contr.editLeaveRequest.bind(contr));
 
 router
-  .route('/leaveRequestsApprove/')
+  .route('/leaveRequestsApprove')
   .post([isLoggedIn], contr.approveLeaveRequests.bind(contr));
 
 router
-  .route('/leaveRequestsReject/')
+  .route('/leaveRequestsReject')
   .post([isLoggedIn], contr.rejectLeaveRequests.bind(contr));
 
 export default router;

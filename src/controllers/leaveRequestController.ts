@@ -22,6 +22,29 @@ export class LeaveRequestController {
     }
   }
 
+  async getApprovalLeaveRequests(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const repository = getCustomRepository(LeaveRequestRepository);
+
+      const { user } = res.locals;
+      let userId = parseInt(user.id) as number;
+
+      let records = await repository.getManageLeaveRequests(userId);
+      console.log('record: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'Leave Requests Approval Index',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
   async getLeaveRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(LeaveRequestRepository);
@@ -126,8 +149,8 @@ export class LeaveRequestController {
       let userId = parseInt(user.id) as number;
 
       let records = await repository.editLeaveRequest(
-        requestId,
         userId,
+        requestId,
         req.body
       );
       console.log('record: ', records);

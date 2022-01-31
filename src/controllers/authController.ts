@@ -55,8 +55,8 @@ export class AuthController {
           data: {
             id: user.id,
             email: user.username,
-            role: role,
             accessToken: `Bearer ${token}`,
+            role: role,
           },
         });
       } else {

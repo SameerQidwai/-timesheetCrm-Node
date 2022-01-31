@@ -7,31 +7,31 @@ import { Action, Resource } from './../constants/authorization';
 import { isLoggedIn } from './../middlewares/loggedIn';
 
 const router = Router();
-let timeOffContr = new SharedController<
+let standardSkillContr = new SharedController<
   StandardSkillDTO,
   StandardSkillRepository
 >(StandardSkillRepository);
 router
   .route('/')
-  .get(timeOffContr.index.bind(timeOffContr))
+  .get(standardSkillContr.index.bind(standardSkillContr))
   .post(
     [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
-    timeOffContr.create.bind(timeOffContr)
+    standardSkillContr.create.bind(standardSkillContr)
   );
 
 router
   .route('/:id')
   .get(
     [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
-    timeOffContr.get.bind(timeOffContr)
+    standardSkillContr.get.bind(standardSkillContr)
   )
   .put(
     [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
-    timeOffContr.update.bind(timeOffContr)
+    standardSkillContr.update.bind(standardSkillContr)
   )
   .delete(
     [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
-    timeOffContr.delete.bind(timeOffContr)
+    standardSkillContr.delete.bind(standardSkillContr)
   );
 
 export default router;

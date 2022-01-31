@@ -13,6 +13,8 @@ import { BankAccount } from './bankAccount';
 import { Lease } from './lease';
 import { SuperannuationType } from '../constants/constants';
 import { Role } from './role';
+import moment from 'moment';
+import { LeaveRequestBalance } from './leaveRequestBalance';
 
 @Entity('employees')
 export class Employee extends Base {
@@ -89,6 +91,15 @@ export class Employee extends Base {
   @Column({ name: 'training', nullable: true })
   training: string;
 
+  // ---------------------------------------------------Management----------------------------------------
+
+  @Column({ name: 'line_manager_id', nullable: true })
+  lineManagerId: number;
+
+  @ManyToOne(() => Employee)
+  @JoinColumn({ name: 'line_manager_id' })
+  lineManager: Employee;
+
   @OneToMany(
     () => EmploymentContract,
     (employmentContract) => employmentContract.employee,
@@ -114,4 +125,31 @@ export class Employee extends Base {
   @ManyToOne(() => Role)
   @JoinColumn({ name: 'role_id' })
   role: Role;
+
+  @OneToMany(
+    () => LeaveRequestBalance,
+    (leaveRequestBalance) => leaveRequestBalance.employee,
+    {
+      cascade: true,
+    }
+  )
+  leaveRequestBalances: LeaveRequestBalance[];
+
+  public get getActiveContract(): EmploymentContract | null {
+    let activeContract: EmploymentContract | null = null;
+    this.employmentContracts.forEach((contract) => {
+      if (contract.endDate == null) {
+        activeContract = contract;
+      } else if (
+        moment(contract.startDate) <= moment() &&
+        moment(contract.endDate) >= moment()
+      ) {
+        activeContract = contract;
+      } else {
+        activeContract = null;
+      }
+    });
+
+    return activeContract;
+  }
 }
