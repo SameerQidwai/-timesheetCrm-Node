@@ -113,10 +113,6 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           }
         );
 
-        if (!leaveRequestBalance) {
-          throw new Error('Balance entry not found!');
-        }
-
         leaveRequestObj.submittedBy = authId;
         leaveRequestObj.submittedAt = moment().toDate();
         leaveRequestObj.entries = [];
@@ -133,30 +129,33 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         });
 
         //Checking if current balance has less hours than minimum required
-        if (
-          leaveRequestBalance.balanceHours <
-          leaveRequestPolicyType.minimumBalanceRequired
-        ) {
-          throw new Error('Balance is less than minimum required!');
+
+        if (leaveRequestBalance) {
+          if (
+            leaveRequestBalance.balanceHours <
+            leaveRequestPolicyType.minimumBalanceRequired
+          ) {
+            throw new Error('Balance is less than minimum required!');
+          }
+
+          if (
+            leaveRequestBalance.balanceHours ==
+              leaveRequestPolicyType.minimumBalance ||
+            _totalHours >
+              leaveRequestBalance.balanceHours +
+                Math.abs(leaveRequestPolicyType.minimumBalance)
+          ) {
+            throw new Error('Balance is less than minimum balance!');
+          }
+
+          leaveRequestBalance.balanceHours =
+            leaveRequestBalance.balanceHours - _totalHours;
+          leaveRequestBalance.used = leaveRequestBalance.used + _totalHours;
+
+          leaveRequestBalance = await transactionalEntityManager.save(
+            leaveRequestBalance
+          );
         }
-
-        if (
-          leaveRequestBalance.balanceHours ==
-            leaveRequestPolicyType.minimumBalance ||
-          _totalHours >
-            leaveRequestBalance.balanceHours +
-              Math.abs(leaveRequestPolicyType.minimumBalance)
-        ) {
-          throw new Error('Balance is less than minimum balance!');
-        }
-
-        leaveRequestBalance.balanceHours =
-          leaveRequestBalance.balanceHours - _totalHours;
-        leaveRequestBalance.used = leaveRequestBalance.used + _totalHours;
-
-        leaveRequestBalance = await transactionalEntityManager.save(
-          leaveRequestBalance
-        );
 
         let leaveRequest = await transactionalEntityManager.save(
           leaveRequestObj
@@ -371,6 +370,10 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           throw new Error('Leave Request not found!');
         }
 
+        if (leaveRequestObj.typeId != leaveRequestDTO.typeId) {
+          throw new Error('Cannot update Type');
+        }
+
         if (leaveRequestObj.approvedAt) {
           throw new Error('Cannot edit Approved Request!');
         }
@@ -434,16 +437,6 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           }
         );
 
-        console.log(
-          'AAAAAA',
-          authId,
-          leaveRequestPolicyType.leaveRequestTypeId
-        );
-
-        if (!leaveRequestBalance) {
-          throw new Error('Balance entry not found!');
-        }
-
         leaveRequestObj.submittedBy = authId;
         leaveRequestObj.submittedAt = moment().toDate();
 
@@ -466,33 +459,35 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           leaveRequestObj.entries.push(leaveRequestEntryObj);
         });
 
-        //Checking if current balance has less hours than minimum required
-        if (
-          leaveRequestBalance.balanceHours + _oldHours <
-          leaveRequestPolicyType.minimumBalanceRequired
-        ) {
-          throw new Error('Balance is less than minimum required!');
+        if (leaveRequestBalance) {
+          //Checking if current balance has less hours than minimum required
+          if (
+            leaveRequestBalance.balanceHours + _oldHours <
+            leaveRequestPolicyType.minimumBalanceRequired
+          ) {
+            throw new Error('Balance is less than minimum required!');
+          }
+
+          if (
+            leaveRequestBalance.balanceHours + _oldHours ==
+              leaveRequestPolicyType.minimumBalance ||
+            _totalHours >
+              leaveRequestBalance.balanceHours +
+                Math.abs(leaveRequestPolicyType.minimumBalance) +
+                _oldHours
+          ) {
+            throw new Error('Balance is less than minimum balance!');
+          }
+
+          leaveRequestBalance.balanceHours =
+            leaveRequestBalance.balanceHours - _totalHours + _oldHours;
+          leaveRequestBalance.used =
+            leaveRequestBalance.used + _totalHours - _oldHours;
+
+          leaveRequestBalance = await transactionalEntityManager.save(
+            leaveRequestBalance
+          );
         }
-
-        if (
-          leaveRequestBalance.balanceHours + _oldHours ==
-            leaveRequestPolicyType.minimumBalance ||
-          _totalHours >
-            leaveRequestBalance.balanceHours +
-              Math.abs(leaveRequestPolicyType.minimumBalance) +
-              _oldHours
-        ) {
-          throw new Error('Balance is less than minimum balance!');
-        }
-
-        leaveRequestBalance.balanceHours =
-          leaveRequestBalance.balanceHours - _totalHours + _oldHours;
-        leaveRequestBalance.used =
-          leaveRequestBalance.used + _totalHours - _oldHours;
-
-        leaveRequestBalance = await transactionalEntityManager.save(
-          leaveRequestBalance
-        );
 
         let leaveRequest = await transactionalEntityManager.save(
           leaveRequestObj

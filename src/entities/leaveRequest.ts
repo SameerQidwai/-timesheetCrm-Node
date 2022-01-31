@@ -40,7 +40,7 @@ export class LeaveRequest extends Base {
   @JoinColumn({ name: 'rejected_by' })
   rejecter: Employee;
 
-  @Column({ name: 'type_id' })
+  @Column({ name: 'type_id', nullable: true })
   typeId: number;
 
   @ManyToOne(() => LeaveRequestPolicyLeaveRequestType)
