@@ -43,6 +43,9 @@ export const leaveRequestMonthlyCron = cron.schedule(
                       balance.carryForward = balance.balanceHours;
                       balance.balanceHours =
                         balance.balanceHours + policy.earnHours;
+                      if (balance.balanceHours > policy.threshold) {
+                        balance.balanceHours = policy.threshold;
+                      }
                     }
                     if (
                       policy.resetEvery == LeaveRequestTriggerFrequency.MONTH
@@ -117,6 +120,9 @@ export const leaveRequestYearlyCron = cron.schedule(
                       balance.carryForward = balance.balanceHours;
                       balance.balanceHours =
                         balance.balanceHours + policy.earnHours;
+                      if (balance.balanceHours > policy.threshold) {
+                        balance.balanceHours = policy.threshold;
+                      }
                     }
                     if (
                       policy.resetEvery == LeaveRequestTriggerFrequency.YEAR
