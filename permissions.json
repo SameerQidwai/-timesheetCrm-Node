@@ -1,58 +1,49 @@
 {
-    "ADMIN_OPTIONS": [
-        "ADD",
-        "UPDATE",
-        "READ",
-        "DELETE"
-    ],
-    "CONTACT_PERSONS": [
-        "ADD",
-        "UPDATE",
-        "READ",
-        "DELETE"
-    ],
-    "ORGANIZATIONS": [
-        "ADD",
-        "UPDATE",
-        "READ",
-        "DELETE"
-    ],
-    "USERS": [
-        "ADD",
-        "UPDATE",
-        "READ",
-        "DELETE"
-    ],
-    "PROJECTS": [
-        "ADD",
-        "UPDATE:ANY",
-        "UPDATE:MANAGE",
-        "READ:ANY",
-        "READ:OWN",
-        "READ:MANAGE"
-    ],
-    "OPPORTUNITIES": [
-        "ADD",
-        "UPDATE:ANY",
-        "UPDATE:MANAGE",
-        "READ:ANY",
-        "READ:OWN",
-        "READ:MANAGE"
-    ],
-    "TIMESHEETS": [
-        "ADD:ANY",
-        "ADD:OWN",
-        "ADD:MANAGE",
-        "UPDATE:ANY",
-        "UPDATE:OWN",
-        "UPDATE:MANAGE",
-        "READ:ANY",
-        "READ:OWN",
-        "READ:MANAGE",
-        "APPROVAL:ANY",
-        "APPROVAL:MANAGE"
-    ],
-    "PROFILE": [
-        "UPDATE:OWN"
-    ]
+  "ADMIN_OPTIONS": ["ADD", "UPDATE", "READ", "DELETE"],
+  "CONTACT_PERSONS": ["ADD", "UPDATE", "READ", "DELETE"],
+  "ORGANIZATIONS": ["ADD", "UPDATE", "READ", "DELETE"],
+  "USERS": ["ADD", "UPDATE", "READ", "DELETE"],
+  "PROJECTS": [
+    "ADD",
+    "UPDATE:ANY",
+    "UPDATE:MANAGE",
+    "READ:ANY",
+    "READ:OWN",
+    "READ:MANAGE"
+  ],
+  "OPPORTUNITIES": [
+    "ADD",
+    "UPDATE:ANY",
+    "UPDATE:MANAGE",
+    "READ:ANY",
+    "READ:OWN",
+    "READ:MANAGE"
+  ],
+  "TIMESHEETS": [
+    "ADD:ANY",
+    "ADD:OWN",
+    "ADD:MANAGE",
+    "UPDATE:ANY",
+    "UPDATE:OWN",
+    "UPDATE:MANAGE",
+    "READ:ANY",
+    "READ:OWN",
+    "READ:MANAGE",
+    "APPROVAL:ANY",
+    "APPROVAL:MANAGE"
+  ],
+  "LEAVE_REQUESTS": [
+    "ADD:ANY",
+    "ADD:OWN",
+    "ADD:MANAGE",
+    "UPDATE:ANY",
+    "UPDATE:OWN",
+    "UPDATE:MANAGE",
+    "READ:ANY",
+    "READ:OWN",
+    "READ:MANAGE",
+    "APPROVAL:ANY",
+    "APPROVAL:MANAGE"
+  ],
+  "PROFILE": ["UPDATE:OWN"]
 }
