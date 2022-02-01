@@ -56,6 +56,8 @@ export class LeaveRequestPolicyRepository extends Repository<LeaveRequestPolicy>
               leaveRequestPolicyLeaveRequestType.resetEvery;
             leaveRequestPolicyLeaveRequestTypeObj.threshold =
               leaveRequestPolicyLeaveRequestType.threshold;
+            leaveRequestPolicyLeaveRequestTypeObj.includeOffDays =
+              leaveRequestPolicyLeaveRequestType.includeOffDays;
             return leaveRequestPolicyLeaveRequestTypeObj;
           }
         );
@@ -148,6 +150,8 @@ export class LeaveRequestPolicyRepository extends Repository<LeaveRequestPolicy>
               leaveRequestPolicyLeaveRequestType.resetEvery;
             leaveRequestPolicyLeaveRequestTypeObj.threshold =
               leaveRequestPolicyLeaveRequestType.threshold;
+            leaveRequestPolicyLeaveRequestTypeObj.includeOffDays =
+              leaveRequestPolicyLeaveRequestType.includeOffDays;
             return leaveRequestPolicyLeaveRequestTypeObj;
           }
         );

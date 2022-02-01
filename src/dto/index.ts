@@ -34,6 +34,7 @@ export interface LeaveRequestPolicyLeaveRequestType extends Base {
   resetEvery: LeaveRequestTriggerFrequency;
   resetHours: number;
   threshold: number;
+  includeOffDays: boolean;
 }
 
 export interface LeaveRequestPolicyDTO extends Base {

@@ -41,8 +41,8 @@ export class LeaveRequestPolicyLeaveRequestType extends Base {
   @Column({ type: 'float', name: 'minimum_balance' })
   minimumBalance: number;
 
-  @Column({ type: 'boolean', name: 'include_work_days' })
-  includeWorkDays: number;
+  @Column({ type: 'boolean', name: 'include_off_days' })
+  includeOffDays: boolean;
 
   @ManyToOne(() => LeaveRequestPolicy)
   @JoinColumn({ name: 'leave_request_policy_id' })
