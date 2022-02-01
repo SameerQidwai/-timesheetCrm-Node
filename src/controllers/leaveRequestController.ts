@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { getCustomRepository } from 'typeorm';
 import { LeaveRequestRepository } from '../repositories/leaveRequestRepository';
+import { leaveRequestRules } from '../rules/index';
 
 export class LeaveRequestController {
   async getLeaveRequests(req: Request, res: Response, next: NextFunction) {
@@ -69,6 +70,8 @@ export class LeaveRequestController {
 
       const { user } = res.locals;
       let userId = parseInt(user.id) as number;
+
+      await leaveRequestRules.createRules.validateAsync(req.body);
 
       let record = await repository.addLeaveRequest(userId, req.body);
       console.log('record: ', record);
