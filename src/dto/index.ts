@@ -248,6 +248,7 @@ export interface SubContractorDTO extends Base {
   nextOfKinRelation: string;
   latestContract: ContractDTO;
   roleId: number;
+  lineManagerId: number;
 }
 
 export interface ContractDTO extends Base {

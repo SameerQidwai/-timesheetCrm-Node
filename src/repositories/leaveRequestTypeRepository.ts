@@ -2,6 +2,8 @@ import { EntityRepository, Repository } from 'typeorm';
 import { LeaveRequestType } from '../entities/leaveRequestType';
 import { Employee } from '../entities/employee';
 import { Frequency } from '../constants/constants';
+import { Calendar } from '../entities/calendar';
+import moment from 'moment';
 
 @EntityRepository(LeaveRequestType)
 export class LeaveRequestTypeRepository extends Repository<LeaveRequestType> {
@@ -50,6 +52,18 @@ export class LeaveRequestTypeRepository extends Repository<LeaveRequestType> {
       throw new Error('No active contract');
     }
 
+    let calendar = await this.manager.find(Calendar, {
+      relations: ['calendarHolidays', 'calendarHolidays.holidayType'],
+    });
+
+    let holidays: any = {};
+
+    if (calendar[0]) {
+      calendar[0].calendarHolidays.forEach((holiday) => {
+        holidays[moment(holiday.date).toString()] = holiday.holidayType.label;
+      });
+    }
+
     let contractDetails = {
       noOfHours: employee.getActiveContract.noOfHours,
       noOfHoursPer: Frequency[employee.getActiveContract.noOfHoursPer],
@@ -57,6 +71,7 @@ export class LeaveRequestTypeRepository extends Repository<LeaveRequestType> {
 
     if (employee.getActiveContract.leaveRequestPolicyId == null) {
       return {
+        holidays: holidays,
         contractDetails: contractDetails,
         leaveRequestTypes: [],
       };
@@ -80,6 +95,7 @@ export class LeaveRequestTypeRepository extends Repository<LeaveRequestType> {
 
     employee.leaveRequestBalances;
     return {
+      holidays: holidays,
       contractDetails: contractDetails,
       LeaveRequestTypes: leaveRequestTypes,
     };
