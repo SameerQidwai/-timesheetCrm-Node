@@ -11,19 +11,21 @@ import { LeaveRequestPolicyLeaveRequestType } from '../entities/leaveRequestPoli
 import { LeaveRequestStatus, OpportunityStatus } from '../constants/constants';
 import { EntityType } from '../constants/constants';
 import moment from 'moment';
+import e from 'express';
 
 @EntityRepository(LeaveRequest)
 export class LeaveRequestRepository extends Repository<LeaveRequest> {
   async getOwnLeaveRequests(authId: number): Promise<any | undefined> {
     let leaveRequests = await this.find({
-      where: { submittedBy: authId },
+      where: { employeeId: authId },
       relations: [
         'entries',
-        'submitter',
-        'submitter.contactPersonOrganization',
-        'submitter.contactPersonOrganization.contactPerson',
+        'employee',
+        'employee.contactPersonOrganization',
+        'employee.contactPersonOrganization.contactPerson',
         'type',
         'type.leaveRequestType',
+        'work',
       ],
     });
 
@@ -44,7 +46,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
       (
         leaveRequest as any
-      ).employee = `${leaveRequest.submitter.contactPersonOrganization.contactPerson.firstName} ${leaveRequest.submitter.contactPersonOrganization.contactPerson.lastName}`;
+      ).employeeName = `${leaveRequest.employee.contactPersonOrganization.contactPerson.firstName} ${leaveRequest.employee.contactPersonOrganization.contactPerson.lastName}`;
       (leaveRequest as any).leaveRequestName =
         leaveRequest.type?.leaveRequestType.label ?? 'Unpaid';
       (leaveRequest as any).status = requestStatus;
@@ -55,7 +57,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
       (leaveRequest as any).project = leaveRequest.work?.title ?? null;
 
       delete (leaveRequest as any).entries;
-      delete (leaveRequest as any).submitter;
+      delete (leaveRequest as any).employee;
       delete (leaveRequest as any).type;
       delete (leaveRequest as any).work;
     });
@@ -129,6 +131,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           }
         );
 
+        leaveRequestObj.employeeId = authId;
         leaveRequestObj.submittedBy = authId;
         leaveRequestObj.submittedAt = moment().toDate();
         leaveRequestObj.entries = [];
@@ -267,9 +270,12 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
   async getManageLeaveRequests(
     authId: number,
-    startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
-    endDate: string = moment().endOf('month').format('DD-MM-YYYY')
+    startDate: string = moment().startOf('month').format('YYYY-MM-DD'),
+    endDate: string = moment().endOf('month').format('YYYY-MM-DD'),
+    userId: number,
+    workId: number
   ): Promise<any | undefined> {
+    console.log(startDate, endDate, userId);
     let cStartDate = moment(startDate);
     let cEndDate = moment(endDate);
 
@@ -278,12 +284,12 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
     let response: LeaveRequest[] = [];
     let leaveRequests = await this.find({
-      where: [{ submittedBy: In(employeeIds) }, { workId: In(projectIds) }],
+      where: [{ employeeId: In(employeeIds) }, { workId: In(projectIds) }],
       relations: [
         'entries',
-        'submitter',
-        'submitter.contactPersonOrganization',
-        'submitter.contactPersonOrganization.contactPerson',
+        'employee',
+        'employee.contactPersonOrganization',
+        'employee.contactPersonOrganization.contactPerson',
         'type',
         'type.leaveRequestType',
         'work',
@@ -307,7 +313,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
       (
         leaveRequest as any
-      ).employee = `${leaveRequest.submitter.contactPersonOrganization.contactPerson.firstName} ${leaveRequest.submitter.contactPersonOrganization.contactPerson.lastName}`;
+      ).employeeName = `${leaveRequest.employee.contactPersonOrganization.contactPerson.firstName} ${leaveRequest.employee.contactPersonOrganization.contactPerson.lastName}`;
       (leaveRequest as any).leaveRequestName =
         leaveRequest.type?.leaveRequestType.label ?? 'Unpaid';
       (leaveRequest as any).status = requestStatus;
@@ -317,15 +323,16 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
       (leaveRequest as any).totalHours = leavRequestDetails.totalHours;
       (leaveRequest as any).project = leaveRequest.work?.title ?? null;
 
-      delete (leaveRequest as any).submitter;
+      delete (leaveRequest as any).employee;
       delete (leaveRequest as any).type;
       delete (leaveRequest as any).work;
 
       if (
-        moment(leaveRequest.getEntriesDetails.startDate) >= cStartDate &&
-        moment(leaveRequest.getEntriesDetails.startDate) <= cEndDate
+        moment(leaveRequest.submittedAt) >= cStartDate &&
+        moment(leaveRequest.submittedAt) <= cEndDate &&
+        (userId == leaveRequest.employeeId || userId == NaN) &&
+        (workId == leaveRequest.workId || workId == NaN)
       ) {
-        console.log(cStartDate, leaveRequest.getEntriesDetails.startDate);
         delete (leaveRequest as any).entries;
         response.push(leaveRequest);
       }
@@ -499,6 +506,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           }
         );
 
+        leaveRequestObj.employeeId = authId;
         leaveRequestObj.submittedBy = authId;
         leaveRequestObj.submittedAt = moment().toDate();
 
@@ -607,6 +615,18 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     // console.log(timesheetDTO);
 
     return leaveRequest;
+  }
+
+  async getLeaveRequestBalances(authId: number): Promise<any | undefined> {
+    let employee = await this.manager.findOne(Employee, authId, {
+      relations: ['leaveRequestBalances'],
+    });
+
+    if (!employee) {
+      throw new Error('Employee not found');
+    }
+
+    return employee.leaveRequestBalances;
   }
 
   async _userManagesEmployeeIds(

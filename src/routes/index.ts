@@ -28,6 +28,7 @@ import helperRoutes from './helperRoutes';
 import roleRoutes from './roleRoutes';
 import globalRoutes from './globalRoutes';
 import leaveRequests from './leaveRequestRoutes';
+import leaveRequestBalances from './leaveRequestBalanceRoutes';
 import opportunityResourceRoutes from './opportunityResourceRoutes';
 import { getCustomRepository } from 'typeorm';
 
@@ -60,6 +61,7 @@ router.use('/helpers', helperRoutes);
 router.use('/roles', roleRoutes);
 router.use('/global-setting', globalRoutes);
 router.use('/leave-requests', leaveRequests);
+router.use('/leave-request-balances', leaveRequestBalances);
 // router.use("/opportunity-resources", opportunityResourceRoutes);
 
 // console.log("router: ", router);

@@ -19,6 +19,13 @@ export class LeaveRequest extends Base {
   @Column({ type: 'date', name: 'rejected_at', nullable: true })
   rejectedAt: Date | null;
 
+  @Column({ name: 'employee_id', nullable: true })
+  employeeId: number;
+
+  @ManyToOne(() => Employee)
+  @JoinColumn({ name: 'employee_id' })
+  employee: Employee;
+
   @Column({ name: 'submitted_by', nullable: true })
   submittedBy: number;
 

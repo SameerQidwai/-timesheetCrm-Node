@@ -8,9 +8,9 @@ export class LeaveRequestController {
       const repository = getCustomRepository(LeaveRequestRepository);
 
       const { user } = res.locals;
-      let userId = parseInt(user.id) as number;
+      let authId = parseInt(user.id) as number;
 
-      let records = await repository.getOwnLeaveRequests(userId);
+      let records = await repository.getOwnLeaveRequests(authId);
       console.log('record: ', records);
       res.status(200).json({
         success: true,
@@ -31,13 +31,18 @@ export class LeaveRequestController {
       const repository = getCustomRepository(LeaveRequestRepository);
 
       const { user } = res.locals;
-      let userId = parseInt(user.id) as number;
+      let authId = parseInt(user.id) as number;
       let startDate = req.query.startDate as string;
       let endDate = req.query.endDate as string;
+      let userId = parseInt(req.params.userId) as number;
+      let workId = parseInt(req.params.workId) as number;
+
       let records = await repository.getManageLeaveRequests(
-        userId,
+        authId,
         startDate,
-        endDate
+        endDate,
+        userId,
+        workId
       );
       console.log('record: ', records);
       res.status(200).json({
@@ -73,9 +78,9 @@ export class LeaveRequestController {
       const repository = getCustomRepository(LeaveRequestRepository);
 
       const { user } = res.locals;
-      let userId = parseInt(user.id) as number;
+      let authId = parseInt(user.id) as number;
 
-      let record = await repository.addLeaveRequest(userId, req.body);
+      let record = await repository.addLeaveRequest(authId, req.body);
       console.log('record: ', record);
       res.status(200).json({
         success: true,
@@ -92,7 +97,7 @@ export class LeaveRequestController {
       const repository = getCustomRepository(LeaveRequestRepository);
 
       const { user } = res.locals;
-      let userId = parseInt(user.id) as number;
+      let authId = parseInt(user.id) as number;
 
       let records: any = [];
       // console.log(req.body);
@@ -103,7 +108,7 @@ export class LeaveRequestController {
         throw new Error('Entries not found');
       }
 
-      records = await repository.approveAnyLeaveRequest(userId, requestEntries);
+      records = await repository.approveAnyLeaveRequest(authId, requestEntries);
 
       console.log('record: ', records);
       res.status(200).json({
@@ -121,7 +126,7 @@ export class LeaveRequestController {
       const repository = getCustomRepository(LeaveRequestRepository);
 
       const { user } = res.locals;
-      let userId = parseInt(user.id) as number;
+      let authId = parseInt(user.id) as number;
 
       let records: any = [];
       // console.log(req.body);
@@ -132,7 +137,7 @@ export class LeaveRequestController {
         throw new Error('Entries not found');
       }
 
-      records = await repository.rejectAnyLeaveRequest(userId, requestEntries);
+      records = await repository.rejectAnyLeaveRequest(authId, requestEntries);
 
       console.log('record: ', records);
       res.status(200).json({
@@ -151,10 +156,10 @@ export class LeaveRequestController {
 
       const { user } = res.locals;
       let requestId = parseInt(req.params.id) as number;
-      let userId = parseInt(user.id) as number;
+      let authId = parseInt(user.id) as number;
 
       let records = await repository.editLeaveRequest(
-        userId,
+        authId,
         requestId,
         req.body
       );
@@ -162,6 +167,29 @@ export class LeaveRequestController {
       res.status(200).json({
         success: true,
         message: 'Edit Leave Request',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async getLeaveRequestBalances(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const repository = getCustomRepository(LeaveRequestRepository);
+
+      const { user } = res.locals;
+      let authId = parseInt(user.id) as number;
+
+      let records = await repository.getLeaveRequestBalances(authId);
+      console.log('record: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'Leave Requests Index',
         data: records,
       });
     } catch (e) {

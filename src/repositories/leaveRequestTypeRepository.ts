@@ -65,8 +65,6 @@ export class LeaveRequestTypeRepository extends Repository<LeaveRequestType> {
       });
     }
 
-    let balances = employee.leaveRequestBalances;
-
     let contractDetails = {
       noOfHours: employee.getActiveContract.noOfHours,
       noOfHoursPer: Frequency[employee.getActiveContract.noOfHoursPer],
@@ -77,7 +75,6 @@ export class LeaveRequestTypeRepository extends Repository<LeaveRequestType> {
         holidays: holidays,
         contractDetails: contractDetails,
         leaveRequestTypes: [],
-        balances,
       };
     }
 
@@ -101,7 +98,6 @@ export class LeaveRequestTypeRepository extends Repository<LeaveRequestType> {
       holidays: holidays,
       contractDetails: contractDetails,
       LeaveRequestTypes: leaveRequestTypes,
-      balances,
     };
   }
 }
