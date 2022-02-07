@@ -205,13 +205,26 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     if (!leaveRequest) {
       throw new Error('Leave Request not found');
     }
+    let leavRequestDetails = leaveRequest.getEntriesDetails;
+    (leaveRequest as any).startDate = leavRequestDetails.startDate;
+    (leaveRequest as any).endDate = leavRequestDetails.endDate;
 
-    let requestAttachments = await this.manager.find(Attachment, {
+    let attachments = await this.manager.find(Attachment, {
       where: { targetType: 'LRE', targetId: leaveRequest.id },
       relations: ['file'],
     });
 
-    (leaveRequest as any).attachments = requestAttachments;
+    let responseAttachments: Attachment[] = [];
+
+    attachments.forEach((attachment) => {
+      let resAttachment: any = {};
+      resAttachment.uid = attachment.file.uniqueName;
+      resAttachment.name = attachment.file.originalName;
+      resAttachment.type = attachment.file.type;
+      responseAttachments.push(resAttachment);
+    });
+
+    (leaveRequest as any).attachments = responseAttachments;
 
     return leaveRequest;
   }

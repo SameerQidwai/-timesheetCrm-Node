@@ -60,9 +60,12 @@ export class LeaveRequestTypeRepository extends Repository<LeaveRequestType> {
 
     if (calendar[0]) {
       calendar[0].calendarHolidays.forEach((holiday) => {
-        holidays[moment(holiday.date).toString()] = holiday.holidayType.label;
+        holidays[moment(holiday.date).format('M/D/YYYY').toString()] =
+          holiday.holidayType.label;
       });
     }
+
+    let balances = employee.leaveRequestBalances;
 
     let contractDetails = {
       noOfHours: employee.getActiveContract.noOfHours,
@@ -74,6 +77,7 @@ export class LeaveRequestTypeRepository extends Repository<LeaveRequestType> {
         holidays: holidays,
         contractDetails: contractDetails,
         leaveRequestTypes: [],
+        balances,
       };
     }
 
@@ -93,11 +97,11 @@ export class LeaveRequestTypeRepository extends Repository<LeaveRequestType> {
       delete (type as any).leaveRequestType;
     });
 
-    employee.leaveRequestBalances;
     return {
       holidays: holidays,
       contractDetails: contractDetails,
       LeaveRequestTypes: leaveRequestTypes,
+      balances,
     };
   }
 }
