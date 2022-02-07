@@ -250,10 +250,18 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     //-- END OF MODIFIED RESPONSE FOR FRONTEND
   }
 
-  async getManageLeaveRequests(authId: number): Promise<any | undefined> {
+  async getManageLeaveRequests(
+    authId: number,
+    startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
+    endDate: string = moment().endOf('month').format('DD-MM-YYYY')
+  ): Promise<any | undefined> {
+    let cStartDate = moment(startDate);
+    let cEndDate = moment(endDate);
+
     let employeeIds = await this._userManagesEmployeeIds(authId);
     let projectIds = await this._userManagesProjectIds(authId);
 
+    let response: LeaveRequest[] = [];
     let leaveRequests = await this.find({
       where: [{ submittedBy: In(employeeIds) }, { workId: In(projectIds) }],
       relations: [
@@ -292,12 +300,20 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
       (leaveRequest as any).endDate = leavRequestDetails.endDate;
       (leaveRequest as any).totalHours = leavRequestDetails.totalHours;
 
-      delete (leaveRequest as any).entries;
       delete (leaveRequest as any).submitter;
       delete (leaveRequest as any).type;
+
+      if (
+        moment(leaveRequest.getEntriesDetails.startDate) >= cStartDate &&
+        moment(leaveRequest.getEntriesDetails.startDate) <= cEndDate
+      ) {
+        console.log(cStartDate, leaveRequest.getEntriesDetails.startDate);
+        delete (leaveRequest as any).entries;
+        response.push(leaveRequest);
+      }
     });
 
-    return leaveRequests;
+    return response;
 
     //-- END OF MODIFIED RESPONSE FOR FRONTEND
   }

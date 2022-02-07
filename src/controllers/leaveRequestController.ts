@@ -32,8 +32,13 @@ export class LeaveRequestController {
 
       const { user } = res.locals;
       let userId = parseInt(user.id) as number;
-
-      let records = await repository.getManageLeaveRequests(userId);
+      let startDate = req.query.startDate as string;
+      let endDate = req.query.endDate as string;
+      let records = await repository.getManageLeaveRequests(
+        userId,
+        startDate,
+        endDate
+      );
       console.log('record: ', records);
       res.status(200).json({
         success: true,
