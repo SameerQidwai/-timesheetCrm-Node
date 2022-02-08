@@ -5,6 +5,7 @@ import {
   JoinColumn,
   OneToMany,
   ManyToOne,
+  getManager,
 } from 'typeorm';
 import { Base } from './common/base';
 import { ContactPersonOrganization } from './contactPersonOrganization';
@@ -13,6 +14,9 @@ import { BankAccount } from './bankAccount';
 import { Lease } from './lease';
 import { SuperannuationType } from '../constants/constants';
 import { Role } from './role';
+import moment from 'moment';
+import { LeaveRequestBalance } from './leaveRequestBalance';
+import { Opportunity } from './opportunity';
 
 @Entity('employees')
 export class Employee extends Base {
@@ -89,6 +93,15 @@ export class Employee extends Base {
   @Column({ name: 'training', nullable: true })
   training: string;
 
+  // ---------------------------------------------------Management----------------------------------------
+
+  @Column({ name: 'line_manager_id', nullable: true })
+  lineManagerId: number;
+
+  @ManyToOne(() => Employee)
+  @JoinColumn({ name: 'line_manager_id' })
+  lineManager: Employee;
+
   @OneToMany(
     () => EmploymentContract,
     (employmentContract) => employmentContract.employee,
@@ -114,4 +127,54 @@ export class Employee extends Base {
   @ManyToOne(() => Role)
   @JoinColumn({ name: 'role_id' })
   role: Role;
+
+  @OneToMany(
+    () => LeaveRequestBalance,
+    (leaveRequestBalance) => leaveRequestBalance.employee,
+    {
+      cascade: true,
+    }
+  )
+  leaveRequestBalances: LeaveRequestBalance[];
+
+  public get getActiveContract(): EmploymentContract | null {
+    let activeContract: EmploymentContract | null = null;
+    this.employmentContracts.forEach((contract) => {
+      if (contract.endDate == null) {
+        activeContract = contract;
+      } else if (
+        moment(contract.startDate) <= moment() &&
+        moment(contract.endDate) >= moment()
+      ) {
+        activeContract = contract;
+      } else {
+        activeContract = null;
+      }
+    });
+
+    return activeContract;
+  }
+
+  public get getFullName(): string {
+    return `${this.contactPersonOrganization.contactPerson.firstName} ${this.contactPersonOrganization.contactPerson.lastName}`;
+  }
+
+  public get getProjects(): any {
+    getManager().find(Opportunity, {
+      where: [{ status: 'P' }, { status: 'C' }],
+      relations: [
+        'organization',
+        'opportunityResources',
+        'opportunityResources.panelSkill',
+        'opportunityResources.panelSkillStandardLevel',
+        'opportunityResources.opportunityResourceAllocations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
+    });
+    return {
+      own: {},
+      managing: {},
+      both: {},
+    };
+  }
 }

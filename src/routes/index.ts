@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import authRoutes from './authRoutes';
 import sampleRoutes from './sample';
-import timeOffTypeRoutes from './timeOffTypeRoutes';
-import timeOffPolicyRoutes from './timeOffPolicyRoutes';
+import leaveRequestTypeRoutes from './leaveRequestTypeRoutes';
+import leaveRequestPolicyRoutes from './leaveRequestPolicyRoutes';
 import standardLevelRoutes from './standardLevelRoutes';
 import standardSkillRoutes from './standardSkillRoutes';
 import holidayTypeRoutes from './holidayTypeRoutes';
@@ -27,14 +27,16 @@ import commentRoutes from './commentRoutes';
 import helperRoutes from './helperRoutes';
 import roleRoutes from './roleRoutes';
 import globalRoutes from './globalRoutes';
+import leaveRequests from './leaveRequestRoutes';
+import leaveRequestBalances from './leaveRequestBalanceRoutes';
 import opportunityResourceRoutes from './opportunityResourceRoutes';
 import { getCustomRepository } from 'typeorm';
 
 const router: Router = Router();
 router.use('', authRoutes);
 router.use('/samples', sampleRoutes);
-router.use('/time-off-types', timeOffTypeRoutes);
-router.use('/time-off-policies', timeOffPolicyRoutes);
+router.use('/leave-request-types', leaveRequestTypeRoutes);
+router.use('/leave-request-policies', leaveRequestPolicyRoutes);
 router.use('/standard-levels', standardLevelRoutes);
 router.use('/standard-skills', standardSkillRoutes);
 router.use('/holiday-types', holidayTypeRoutes);
@@ -58,6 +60,8 @@ router.use('/comments', commentRoutes);
 router.use('/helpers', helperRoutes);
 router.use('/roles', roleRoutes);
 router.use('/global-setting', globalRoutes);
+router.use('/leave-requests', leaveRequests);
+router.use('/leave-request-balances', leaveRequestBalances);
 // router.use("/opportunity-resources", opportunityResourceRoutes);
 
 // console.log("router: ", router);

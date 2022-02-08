@@ -5,18 +5,18 @@ import { PanelSkillRepository } from '../repositories/panelSkillRepository';
 import { isLoggedIn } from '../middlewares/loggedIn';
 
 const router = Router();
-let timeOffContr = new SharedController<PanelSkillDTO, PanelSkillRepository>(
+let panelSkillContr = new SharedController<PanelSkillDTO, PanelSkillRepository>(
   PanelSkillRepository
 );
 router
   .route('/')
-  .get([isLoggedIn], timeOffContr.index.bind(timeOffContr))
-  .post([isLoggedIn], timeOffContr.create.bind(timeOffContr));
+  .get([isLoggedIn], panelSkillContr.index.bind(panelSkillContr))
+  .post([isLoggedIn], panelSkillContr.create.bind(panelSkillContr));
 
 router
   .route('/:id')
-  .get([isLoggedIn], timeOffContr.get.bind(timeOffContr))
-  .put([isLoggedIn], timeOffContr.update.bind(timeOffContr))
-  .delete([isLoggedIn], timeOffContr.delete.bind(timeOffContr));
+  .get([isLoggedIn], panelSkillContr.get.bind(panelSkillContr))
+  .put([isLoggedIn], panelSkillContr.update.bind(panelSkillContr))
+  .delete([isLoggedIn], panelSkillContr.delete.bind(panelSkillContr));
 
 export default router;

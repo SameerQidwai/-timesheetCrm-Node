@@ -617,10 +617,10 @@ INSERT INTO `states` (`id`, `created_at`, `updated_at`, `deleted_at`, `label`) V
 -- --------------------------------------------------------
 
 --
--- Table structure for table `time_off_policies`
+-- Table structure for table `leave_request_policies`
 --
 
-CREATE TABLE `time_off_policies` (
+CREATE TABLE `leave_request_policies` (
   `id` int(11) NOT NULL,
   `created_at` datetime(6) NOT NULL DEFAULT current_timestamp(6),
   `updated_at` datetime(6) NOT NULL DEFAULT current_timestamp(6) ON UPDATE current_timestamp(6),
@@ -631,16 +631,16 @@ CREATE TABLE `time_off_policies` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `time_off_policy_time_off_types`
+-- Table structure for table `leave_request_policy_leave_request_types`
 --
 
-CREATE TABLE `time_off_policy_time_off_types` (
+CREATE TABLE `leave_request_policy_leave_request_types` (
   `id` int(11) NOT NULL,
   `created_at` datetime(6) NOT NULL DEFAULT current_timestamp(6),
   `updated_at` datetime(6) NOT NULL DEFAULT current_timestamp(6) ON UPDATE current_timestamp(6),
   `deleted_at` datetime(6) DEFAULT NULL,
-  `time_off_policy_id` int(11) NOT NULL,
-  `time_off_type_id` int(11) NOT NULL,
+  `leave_request_policy_id` int(11) NOT NULL,
+  `leave_request_type_id` int(11) NOT NULL,
   `earn_hours` int(11) NOT NULL,
   `earn_every` enum('N','M','Y','EM','EY') NOT NULL,
   `reset_hours` int(11) NOT NULL,
@@ -651,10 +651,10 @@ CREATE TABLE `time_off_policy_time_off_types` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `time_off_types`
+-- Table structure for table `leave_request_types`
 --
 
-CREATE TABLE `time_off_types` (
+CREATE TABLE `leave_request_types` (
   `id` int(11) NOT NULL,
   `created_at` datetime(6) NOT NULL DEFAULT current_timestamp(6),
   `updated_at` datetime(6) NOT NULL DEFAULT current_timestamp(6) ON UPDATE current_timestamp(6),
@@ -840,23 +840,23 @@ ALTER TABLE `states`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `time_off_policies`
+-- Indexes for table `leave_request_policies`
 --
-ALTER TABLE `time_off_policies`
+ALTER TABLE `leave_request_policies`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `time_off_policy_time_off_types`
+-- Indexes for table `leave_request_policy_leave_request_types`
 --
-ALTER TABLE `time_off_policy_time_off_types`
+ALTER TABLE `leave_request_policy_leave_request_types`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `FK_521609c3a872273ba155b3f222f` (`time_off_policy_id`),
-  ADD KEY `FK_b27b20b1e0c035dfa3497404aec` (`time_off_type_id`);
+  ADD KEY `FK_521609c3a872273ba155b3f222f` (`leave_request_policy_id`),
+  ADD KEY `FK_b27b20b1e0c035dfa3497404aec` (`leave_request_type_id`);
 
 --
--- Indexes for table `time_off_types`
+-- Indexes for table `leave_request_types`
 --
-ALTER TABLE `time_off_types`
+ALTER TABLE `leave_request_types`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -996,21 +996,21 @@ ALTER TABLE `states`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT for table `time_off_policies`
+-- AUTO_INCREMENT for table `leave_request_policies`
 --
-ALTER TABLE `time_off_policies`
+ALTER TABLE `leave_request_policies`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `time_off_policy_time_off_types`
+-- AUTO_INCREMENT for table `leave_request_policy_leave_request_types`
 --
-ALTER TABLE `time_off_policy_time_off_types`
+ALTER TABLE `leave_request_policy_leave_request_types`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `time_off_types`
+-- AUTO_INCREMENT for table `leave_request_types`
 --
-ALTER TABLE `time_off_types`
+ALTER TABLE `leave_request_types`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -1127,11 +1127,11 @@ ALTER TABLE `standard_skill_standard_levels`
   ADD CONSTRAINT `FK_ebeeb4b501e6926295a2b452b4b` FOREIGN KEY (`standard_skill_id`) REFERENCES `standard_skills` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
--- Constraints for table `time_off_policy_time_off_types`
+-- Constraints for table `leave_request_policy_leave_request_types`
 --
-ALTER TABLE `time_off_policy_time_off_types`
-  ADD CONSTRAINT `FK_521609c3a872273ba155b3f222f` FOREIGN KEY (`time_off_policy_id`) REFERENCES `time_off_policies` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `FK_b27b20b1e0c035dfa3497404aec` FOREIGN KEY (`time_off_type_id`) REFERENCES `time_off_types` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `leave_request_policy_leave_request_types`
+  ADD CONSTRAINT `FK_521609c3a872273ba155b3f222f` FOREIGN KEY (`leave_request_policy_id`) REFERENCES `leave_request_policies` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `FK_b27b20b1e0c035dfa3497404aec` FOREIGN KEY (`leave_request_type_id`) REFERENCES `leave_request_types` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

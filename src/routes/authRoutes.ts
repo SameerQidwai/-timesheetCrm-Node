@@ -19,4 +19,5 @@ router
   .get([isLoggedIn], contr.getSettings.bind(contr))
   .patch([isLoggedIn], contr.updateSettings.bind(contr));
 
+router.route('/users').get([isLoggedIn], contr.getUserUsers.bind(contr));
 export default router;

@@ -109,6 +109,7 @@ export class EmployeeRepository extends Repository<Employee> {
         employee.superannuationBankAccountOrMembershipNumber;
       employeeObj.training = employee.training;
       employeeObj.roleId = employee.roleId;
+      employeeObj.lineManagerId = employee.lineManagerId;
       employeeObj = await transactionalEntityManager.save(employeeObj);
       id = employeeObj.id;
 
@@ -128,6 +129,7 @@ export class EmployeeRepository extends Repository<Employee> {
         noOfHoursPer,
         remunerationAmount,
         remunerationAmountPer,
+        leaveRequestPolicyId,
         fileId,
       } = employee.latestEmploymentContract;
 
@@ -144,6 +146,7 @@ export class EmployeeRepository extends Repository<Employee> {
       employmentContract.remunerationAmount = remunerationAmount;
       employmentContract.remunerationAmountPer = remunerationAmountPer;
       employmentContract.employeeId = employeeObj.id;
+      employmentContract.leaveRequestPolicyId = leaveRequestPolicyId;
       employmentContract.fileId = fileId;
       await transactionalEntityManager.save(employmentContract);
       let { bankName, bankAccountNo, bankBsb } = employee;
@@ -300,6 +303,7 @@ export class EmployeeRepository extends Repository<Employee> {
         employee.superannuationBankAccountOrMembershipNumber;
       employeeObj.training = employee.training;
       employeeObj.roleId = employee.roleId;
+      employeeObj.lineManagerId = employee.lineManagerId;
       employeeObj = await transactionalEntityManager.save(employeeObj);
 
       if (!employee.latestEmploymentContract) {
@@ -317,6 +321,7 @@ export class EmployeeRepository extends Repository<Employee> {
         noOfHoursPer,
         remunerationAmount,
         remunerationAmountPer,
+        leaveRequestPolicyId,
         fileId,
       } = employee.latestEmploymentContract;
 
@@ -355,6 +360,7 @@ export class EmployeeRepository extends Repository<Employee> {
       employmentContract.remunerationAmount = remunerationAmount;
       employmentContract.remunerationAmountPer = remunerationAmountPer;
       employmentContract.employeeId = employeeObj.id;
+      employmentContract.leaveRequestPolicyId = leaveRequestPolicyId;
       employmentContract.fileId = fileId;
       await transactionalEntityManager.save(employmentContract);
       let { bankName, bankAccountNo, bankBsb } = employee;
@@ -821,5 +827,27 @@ export class EmployeeRepository extends Repository<Employee> {
     this.save(employee);
 
     return employee;
+  }
+
+  async getUserUsers(authId: number) {
+    if (!authId) {
+      throw new Error('Employee not found!');
+    }
+
+    let employees = await this.find({
+      relations: [
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+      ],
+      where: { lineManagerId: authId },
+    });
+
+    let response: any = [];
+
+    employees.forEach((employee) => {
+      response.push({ label: employee.getFullName, value: employee.id });
+    });
+
+    return response;
   }
 }

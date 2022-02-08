@@ -55,8 +55,8 @@ export class AuthController {
           data: {
             id: user.id,
             email: user.username,
-            role: role,
             accessToken: `Bearer ${token}`,
+            role: role,
           },
         });
       } else {
@@ -178,6 +178,24 @@ export class AuthController {
         success: true,
         message: 'Settings Updated Successfully',
         data: updatedEmployee,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async getUserUsers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(EmployeeRepository);
+      const { user } = res.locals;
+      let authId = parseInt(user.id);
+
+      let records = await repository.getUserUsers(authId);
+
+      res.status(200).json({
+        success: true,
+        message: 'User Users',
+        data: records,
       });
     } catch (e) {
       next(e);

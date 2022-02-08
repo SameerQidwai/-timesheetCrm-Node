@@ -101,6 +101,7 @@ export class SubContractorRepository extends Repository<Employee> {
       employeeObj.nextOfKinEmail = subContractor.nextOfKinEmail;
       employeeObj.nextOfKinRelation = subContractor.nextOfKinRelation;
       employeeObj.roleId = subContractor.roleId;
+      employeeObj.lineManagerId = subContractor.lineManagerId;
       employeeObj = await transactionalEntityManager.save(employeeObj);
       id = employeeObj.id;
 
@@ -264,6 +265,7 @@ export class SubContractorRepository extends Repository<Employee> {
       subContractorObj.nextOfKinEmail = subContractor.nextOfKinEmail;
       subContractorObj.nextOfKinRelation = subContractor.nextOfKinRelation;
       subContractorObj.roleId = subContractor.roleId;
+      subContractorObj.lineManagerId = subContractor.lineManagerId;
       subContractorObj = await transactionalEntityManager.save(
         subContractorObj
       );
