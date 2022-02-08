@@ -234,9 +234,27 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     return leaveRequest;
   }
 
-  async getAnyLeaveRequests(): Promise<any | undefined> {
+  async getAnyLeaveRequests(
+    authId: number,
+    startDate: string = moment().startOf('month').format('YYYY-MM-DD'),
+    endDate: string = moment().endOf('month').format('YYYY-MM-DD'),
+    userId: number,
+    workId: number
+  ): Promise<any | undefined> {
+    let cStartDate = moment(startDate);
+    let cEndDate = moment(endDate);
+
+    let response: LeaveRequest[] = [];
     let leaveRequests = await this.find({
-      relations: ['entries'],
+      relations: [
+        'entries',
+        'employee',
+        'employee.contactPersonOrganization',
+        'employee.contactPersonOrganization.contactPerson',
+        'type',
+        'type.leaveRequestType',
+        'work',
+      ],
     });
 
     if (leaveRequests.length < 1) {
@@ -254,16 +272,34 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         ? LeaveRequestStatus.APPROVED
         : LeaveRequestStatus.SUBMITTED;
 
+      (
+        leaveRequest as any
+      ).employeeName = `${leaveRequest.employee.contactPersonOrganization.contactPerson.firstName} ${leaveRequest.employee.contactPersonOrganization.contactPerson.lastName}`;
+      (leaveRequest as any).leaveRequestName =
+        leaveRequest.type?.leaveRequestType.label ?? 'Unpaid';
       (leaveRequest as any).status = requestStatus;
       let leavRequestDetails = leaveRequest.getEntriesDetails;
       (leaveRequest as any).startDate = leavRequestDetails.startDate;
       (leaveRequest as any).endDate = leavRequestDetails.endDate;
       (leaveRequest as any).totalHours = leavRequestDetails.totalHours;
+      (leaveRequest as any).project = leaveRequest.work?.title ?? null;
 
-      delete (leaveRequest as any).entries;
+      delete (leaveRequest as any).employee;
+      delete (leaveRequest as any).type;
+      delete (leaveRequest as any).work;
+
+      if (
+        moment(leaveRequest.submittedAt) >= cStartDate &&
+        moment(leaveRequest.submittedAt) <= cEndDate &&
+        (userId == leaveRequest.employeeId || isNaN(userId)) &&
+        (workId == leaveRequest.workId || isNaN(workId))
+      ) {
+        delete (leaveRequest as any).entries;
+        response.push(leaveRequest);
+      }
     });
 
-    return leaveRequests;
+    return response;
 
     //-- END OF MODIFIED RESPONSE FOR FRONTEND
   }
@@ -275,7 +311,6 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     userId: number,
     workId: number
   ): Promise<any | undefined> {
-    console.log(startDate, endDate, userId);
     let cStartDate = moment(startDate);
     let cEndDate = moment(endDate);
 
@@ -330,8 +365,8 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
       if (
         moment(leaveRequest.submittedAt) >= cStartDate &&
         moment(leaveRequest.submittedAt) <= cEndDate &&
-        (userId == leaveRequest.employeeId || userId == NaN) &&
-        (workId == leaveRequest.workId || workId == NaN)
+        (userId == leaveRequest.employeeId || isNaN(userId)) &&
+        (workId == leaveRequest.workId || isNaN(workId))
       ) {
         delete (leaveRequest as any).entries;
         response.push(leaveRequest);
@@ -352,9 +387,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         let leaveRequests = await transactionalEntityManager.find(
           LeaveRequest,
           {
-            where: {
-              id: In(requestEntries),
-            },
+            where: { id: In(requestEntries) },
             relations: ['entries'],
           }
         );
@@ -391,9 +424,95 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         let leaveRequests = await transactionalEntityManager.find(
           LeaveRequest,
           {
-            where: {
-              id: In(requestEntries),
-            },
+            where: { id: In(requestEntries) },
+            relations: ['entries'],
+          }
+        );
+
+        if (leaveRequests.length < 1) {
+          throw new Error('Leave Requests not found');
+        }
+
+        leaveRequests.forEach((leaveRequest) => {
+          if (
+            leaveRequest.approvedAt != null &&
+            leaveRequest.rejectedAt != null
+          ) {
+            throw new Error('Cannot perform this action');
+          }
+
+          leaveRequest.rejectedAt = moment().toDate();
+          leaveRequest.rejectedBy = authId;
+        });
+
+        leaveRequests = await transactionalEntityManager.save(leaveRequests);
+
+        return leaveRequests;
+      }
+    );
+
+    return leaveRequests;
+    // milestoneEntry.entries.map(entry => entry.submittedAt = )
+  }
+
+  async approveManageLeaveRequest(
+    authId: number,
+    requestEntries: Array<number>
+  ): Promise<any | undefined> {
+    let leaveRequests = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let employeeIds = await this._userManagesEmployeeIds(authId);
+        let projectIds = await this._userManagesProjectIds(authId);
+        let leaveRequests = await transactionalEntityManager.find(
+          LeaveRequest,
+          {
+            where: [
+              { id: In(requestEntries), employeeId: In(employeeIds) },
+              { id: In(requestEntries), workId: In(projectIds) },
+            ],
+            relations: ['entries'],
+          }
+        );
+
+        if (leaveRequests.length < 1) {
+          throw new Error('Leave Requests not found');
+        }
+
+        leaveRequests.forEach((leaveRequest) => {
+          if (leaveRequest.approvedAt != null) {
+            throw new Error('Cannot perform this action');
+          }
+
+          leaveRequest.approvedAt = moment().toDate();
+          leaveRequest.approvedBy = authId;
+        });
+
+        leaveRequests = await transactionalEntityManager.save(leaveRequests);
+
+        return leaveRequests;
+      }
+    );
+
+    return leaveRequests;
+    // milestoneEntry.entries.map(entry => entry.submittedAt = )
+  }
+
+  async rejectManageLeaveRequest(
+    authId: number,
+    requestEntries: Array<number>
+  ): Promise<any | undefined> {
+    let leaveRequests = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let employeeIds = await this._userManagesEmployeeIds(authId);
+        let projectIds = await this._userManagesProjectIds(authId);
+
+        let leaveRequests = await transactionalEntityManager.find(
+          LeaveRequest,
+          {
+            where: [
+              { id: In(requestEntries), employeeId: In(employeeIds) },
+              { id: In(requestEntries), workId: In(projectIds) },
+            ],
             relations: ['entries'],
           }
         );

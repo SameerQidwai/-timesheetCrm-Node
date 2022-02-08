@@ -9,23 +9,44 @@ let contr = new LeaveRequestController();
 
 router
   .route('/')
-  .get([isLoggedIn], contr.getLeaveRequests.bind(contr))
-  .post([isLoggedIn], contr.addLeaveRequest.bind(contr));
+  .get(
+    [isLoggedIn, can(Action.READ, Resource.LEAVE_REQUESTS)],
+    contr.getLeaveRequests.bind(contr)
+  )
+  .post(
+    [isLoggedIn, can(Action.ADD, Resource.LEAVE_REQUESTS)],
+    contr.addLeaveRequest.bind(contr)
+  );
 
 router
   .route('/approvalLeaveRequests')
-  .get([isLoggedIn], contr.getApprovalLeaveRequests.bind(contr));
+  .get(
+    [isLoggedIn, can(Action.APPROVAL, Resource.LEAVE_REQUESTS)],
+    contr.getApprovalLeaveRequests.bind(contr)
+  );
 router
   .route('/:id')
-  .get([isLoggedIn], contr.getLeaveRequest.bind(contr))
-  .patch([isLoggedIn], contr.editLeaveRequest.bind(contr));
+  .get(
+    [isLoggedIn, can(Action.READ, Resource.LEAVE_REQUESTS)],
+    contr.getLeaveRequest.bind(contr)
+  )
+  .patch(
+    [isLoggedIn, can(Action.UPDATE, Resource.LEAVE_REQUESTS)],
+    contr.editLeaveRequest.bind(contr)
+  );
 
 router
   .route('/leaveRequestsApprove')
-  .post([isLoggedIn], contr.approveLeaveRequests.bind(contr));
+  .post(
+    [isLoggedIn, can(Action.APPROVAL, Resource.LEAVE_REQUESTS)],
+    contr.approveLeaveRequests.bind(contr)
+  );
 
 router
   .route('/leaveRequestsReject')
-  .post([isLoggedIn], contr.rejectLeaveRequests.bind(contr));
+  .post(
+    [isLoggedIn, can(Action.APPROVAL, Resource.LEAVE_REQUESTS)],
+    contr.rejectLeaveRequests.bind(contr)
+  );
 
 export default router;

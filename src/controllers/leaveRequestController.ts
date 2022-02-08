@@ -31,19 +31,31 @@ export class LeaveRequestController {
       const repository = getCustomRepository(LeaveRequestRepository);
 
       const { user } = res.locals;
+      const { grantLevel } = res.locals;
+
       let authId = parseInt(user.id) as number;
       let startDate = req.query.startDate as string;
       let endDate = req.query.endDate as string;
-      let userId = parseInt(req.params.userId) as number;
-      let workId = parseInt(req.params.workId) as number;
-
-      let records = await repository.getManageLeaveRequests(
-        authId,
-        startDate,
-        endDate,
-        userId,
-        workId
-      );
+      let userId = req.query.userId as string;
+      let workId = req.query.workId as string;
+      let records: any = [];
+      if (grantLevel.includes('ANY')) {
+        records = await repository.getAnyLeaveRequests(
+          authId,
+          startDate,
+          endDate,
+          parseInt(userId),
+          parseInt(workId)
+        );
+      } else if (grantLevel.includes('MANAGE')) {
+        records = await repository.getManageLeaveRequests(
+          authId,
+          startDate,
+          endDate,
+          parseInt(userId),
+          parseInt(workId)
+        );
+      }
       console.log('record: ', records);
       res.status(200).json({
         success: true,
@@ -97,6 +109,7 @@ export class LeaveRequestController {
       const repository = getCustomRepository(LeaveRequestRepository);
 
       const { user } = res.locals;
+      const { grantLevel } = res.locals;
       let authId = parseInt(user.id) as number;
 
       let records: any = [];
@@ -108,7 +121,17 @@ export class LeaveRequestController {
         throw new Error('Entries not found');
       }
 
-      records = await repository.approveAnyLeaveRequest(authId, requestEntries);
+      if (grantLevel.includes('ANY')) {
+        records = await repository.approveAnyLeaveRequest(
+          authId,
+          requestEntries
+        );
+      } else if (grantLevel.includes('MANAGE')) {
+        records = await repository.approveManageLeaveRequest(
+          authId,
+          requestEntries
+        );
+      }
 
       console.log('record: ', records);
       res.status(200).json({
@@ -126,6 +149,7 @@ export class LeaveRequestController {
       const repository = getCustomRepository(LeaveRequestRepository);
 
       const { user } = res.locals;
+      const { grantLevel } = res.locals;
       let authId = parseInt(user.id) as number;
 
       let records: any = [];
@@ -137,7 +161,17 @@ export class LeaveRequestController {
         throw new Error('Entries not found');
       }
 
-      records = await repository.rejectAnyLeaveRequest(authId, requestEntries);
+      if (grantLevel.includes('ANY')) {
+        records = await repository.rejectAnyLeaveRequest(
+          authId,
+          requestEntries
+        );
+      } else if (grantLevel.includes('MANAGE')) {
+        records = await repository.rejectManageLeaveRequest(
+          authId,
+          requestEntries
+        );
+      }
 
       console.log('record: ', records);
       res.status(200).json({
