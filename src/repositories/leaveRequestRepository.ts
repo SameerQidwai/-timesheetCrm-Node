@@ -38,8 +38,6 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     leaveRequests.forEach((leaveRequest) => {
       let requestStatus: LeaveRequestStatus = leaveRequest.rejectedAt
         ? LeaveRequestStatus.REJECTED
-        : leaveRequest.submittedAt
-        ? LeaveRequestStatus.SUBMITTED
         : leaveRequest.approvedAt
         ? LeaveRequestStatus.APPROVED
         : LeaveRequestStatus.SUBMITTED;
@@ -340,8 +338,6 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     leaveRequests.forEach((leaveRequest) => {
       let requestStatus: LeaveRequestStatus = leaveRequest.rejectedAt
         ? LeaveRequestStatus.REJECTED
-        : leaveRequest.submittedAt
-        ? LeaveRequestStatus.SUBMITTED
         : leaveRequest.approvedAt
         ? LeaveRequestStatus.APPROVED
         : LeaveRequestStatus.SUBMITTED;

@@ -925,7 +925,7 @@ export class ProjectRepository extends Repository<Opportunity> {
     return await this.manager.softDelete(PurchaseOrder, deletedOrder);
   }
 
-  async helperGetProjectsByUserId(employeeId: number) {
+  async helperGetProjectsByUserId(employeeId: number, mode: string) {
     let response: any = [];
 
     let employee = await this.manager.findOne(Employee, employeeId, {
@@ -941,7 +941,7 @@ export class ProjectRepository extends Repository<Opportunity> {
     let employeeContactPersonId =
       employee.contactPersonOrganization.contactPerson.id;
 
-    let result = await this.find({
+    let projects = await this.find({
       where: [{ status: 'P' }, { status: 'C' }],
       relations: [
         'organization',
@@ -955,20 +955,28 @@ export class ProjectRepository extends Repository<Opportunity> {
 
     // console.log('result', result);
 
-    result.map((project) => {
+    projects.map((project) => {
       let add_flag = 0;
-      project.opportunityResources.map((resource) => {
-        resource.opportunityResourceAllocations.filter((allocation) => {
-          if (
-            allocation.contactPersonId === employeeContactPersonId &&
-            allocation.isMarkedAsSelected
-          ) {
-            add_flag = 1;
-          }
+      if (mode == 'O' || mode == 'o' || mode == '') {
+        project.opportunityResources.map((resource) => {
+          resource.opportunityResourceAllocations.filter((allocation) => {
+            if (
+              allocation.contactPersonId === employeeContactPersonId &&
+              allocation.isMarkedAsSelected
+            ) {
+              add_flag = 1;
+            }
+          });
         });
-      });
-      if (add_flag === 1)
-        response.push({ value: project.id, label: project.title });
+        if (add_flag === 1)
+          response.push({ value: project.id, label: project.title });
+      }
+      if ((mode == 'M' || mode == 'm' || mode == '') && add_flag === 0)
+        if (project.projectManagerId == employeeId)
+          response.push({
+            value: project.id,
+            label: project.title,
+          });
     });
 
     return response;
