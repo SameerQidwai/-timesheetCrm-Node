@@ -183,4 +183,22 @@ export class AuthController {
       next(e);
     }
   }
+
+  async getUserUsers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(EmployeeRepository);
+      const { user } = res.locals;
+      let authId = parseInt(user.id);
+
+      let records = await repository.getUserUsers(authId);
+
+      res.status(200).json({
+        success: true,
+        message: 'User Users',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

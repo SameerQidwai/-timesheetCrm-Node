@@ -5,6 +5,7 @@ import {
   JoinColumn,
   OneToMany,
   ManyToOne,
+  getManager,
 } from 'typeorm';
 import { Base } from './common/base';
 import { ContactPersonOrganization } from './contactPersonOrganization';
@@ -15,6 +16,7 @@ import { SuperannuationType } from '../constants/constants';
 import { Role } from './role';
 import moment from 'moment';
 import { LeaveRequestBalance } from './leaveRequestBalance';
+import { Opportunity } from './opportunity';
 
 @Entity('employees')
 export class Employee extends Base {
@@ -151,5 +153,28 @@ export class Employee extends Base {
     });
 
     return activeContract;
+  }
+
+  public get getFullName(): string {
+    return `${this.contactPersonOrganization.contactPerson.firstName} ${this.contactPersonOrganization.contactPerson.lastName}`;
+  }
+
+  public get getProjects(): any {
+    getManager().find(Opportunity, {
+      where: [{ status: 'P' }, { status: 'C' }],
+      relations: [
+        'organization',
+        'opportunityResources',
+        'opportunityResources.panelSkill',
+        'opportunityResources.panelSkillStandardLevel',
+        'opportunityResources.opportunityResourceAllocations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
+    });
+    return {
+      own: {},
+      managing: {},
+      both: {},
+    };
   }
 }

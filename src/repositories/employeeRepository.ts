@@ -828,4 +828,26 @@ export class EmployeeRepository extends Repository<Employee> {
 
     return employee;
   }
+
+  async getUserUsers(authId: number) {
+    if (!authId) {
+      throw new Error('Employee not found!');
+    }
+
+    let employees = await this.find({
+      relations: [
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+      ],
+      where: { lineManagerId: authId },
+    });
+
+    let response: any = [];
+
+    employees.forEach((employee) => {
+      response.push({ label: employee.getFullName, value: employee.id });
+    });
+
+    return response;
+  }
 }

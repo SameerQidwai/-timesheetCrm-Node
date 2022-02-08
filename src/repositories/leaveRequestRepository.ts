@@ -217,17 +217,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
       relations: ['file'],
     });
 
-    let responseAttachments: Attachment[] = [];
-
-    attachments.forEach((attachment) => {
-      let resAttachment: any = {};
-      resAttachment.uid = attachment.file.uniqueName;
-      resAttachment.name = attachment.file.originalName;
-      resAttachment.type = attachment.file.type;
-      responseAttachments.push(resAttachment);
-    });
-
-    (leaveRequest as any).attachments = responseAttachments;
+    (leaveRequest as any).attachments = attachments;
 
     return leaveRequest;
   }
@@ -239,8 +229,8 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     userId: number,
     workId: number
   ): Promise<any | undefined> {
-    let cStartDate = moment(startDate);
-    let cEndDate = moment(endDate);
+    let cStartDate = moment(startDate, 'DD-MM-YYYY');
+    let cEndDate = moment(endDate, 'DD-MM-YYYY');
 
     let response: LeaveRequest[] = [];
     let leaveRequests = await this.find({
@@ -304,13 +294,13 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
   async getManageLeaveRequests(
     authId: number,
-    startDate: string = moment().startOf('month').format('YYYY-MM-DD'),
-    endDate: string = moment().endOf('month').format('YYYY-MM-DD'),
+    startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
+    endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
     workId: number
   ): Promise<any | undefined> {
-    let cStartDate = moment(startDate);
-    let cEndDate = moment(endDate);
+    let cStartDate = moment(startDate, 'DD-MM-YYYY');
+    let cEndDate = moment(endDate, 'DD-MM-YYYY');
 
     let employeeIds = await this._userManagesEmployeeIds(authId);
     let projectIds = await this._userManagesProjectIds(authId);
@@ -734,14 +724,23 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
   async getLeaveRequestBalances(authId: number): Promise<any | undefined> {
     let employee = await this.manager.findOne(Employee, authId, {
-      relations: ['leaveRequestBalances'],
+      relations: [
+        'leaveRequestBalances',
+        'leaveRequestBalances.type',
+        'leaveRequestBalances.type.leaveRequestType',
+      ],
     });
 
     if (!employee) {
       throw new Error('Employee not found');
     }
 
-    return employee.leaveRequestBalances;
+    let leaveRequestBalances = employee.leaveRequestBalances;
+    leaveRequestBalances.forEach((balance) => {
+      (balance as any).name = balance.type.leaveRequestType.label;
+    });
+
+    return leaveRequestBalances;
   }
 
   async _userManagesEmployeeIds(

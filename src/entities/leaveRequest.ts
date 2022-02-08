@@ -7,7 +7,7 @@ import { LeaveRequestEntry } from './leaveRequestEntry';
 
 @Entity('leave_requests')
 export class LeaveRequest extends Base {
-  @Column({ name: 'desc' })
+  @Column({ name: 'desc', nullable: true })
   desc: string;
 
   @Column({ type: 'date', name: 'submitted_at', nullable: true })
