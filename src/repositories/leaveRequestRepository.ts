@@ -562,7 +562,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
         leaveRequests.forEach((leaveRequest) => {
           if (
-            leaveRequest.approvedAt != null &&
+            leaveRequest.approvedAt != null ||
             leaveRequest.rejectedAt != null
           ) {
             throw new Error('Cannot perform this action');
@@ -591,6 +591,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
       async (transactionalEntityManager) => {
         let leaveRequestObj = await this.findOne(requestId, {
           where: { employeeId: authId },
+          relations: ['entries'],
         });
 
         if (!leaveRequestObj) {
