@@ -71,9 +71,21 @@ export class LeaveRequestController {
     try {
       const repository = getCustomRepository(LeaveRequestRepository);
 
+      const { user } = res.locals;
+      const { grantLevel } = res.locals;
+
+      let authId = parseInt(user.id) as number;
       let requestId = parseInt(req.params.id) as number;
 
-      let records = await repository.getLeaveRequest(requestId);
+      let records: any = [];
+      if (grantLevel.includes('ANY')) {
+        records = await repository.getAnyLeaveRequest(requestId);
+      } else if (grantLevel.includes('MANAGE')) {
+        records = await repository.getManageLeaveRequest(authId, requestId);
+      } else if (grantLevel.includes('OWN')) {
+        records = await repository.getOwnLeaveRequest(authId, requestId);
+      }
+
       console.log('record: ', records);
       res.status(200).json({
         success: true,

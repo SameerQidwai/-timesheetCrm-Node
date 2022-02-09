@@ -200,9 +200,64 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     return leaveRequest;
   }
 
-  async getLeaveRequest(requestId: number): Promise<any | undefined> {
+  async getAnyLeaveRequest(requestId: number): Promise<any | undefined> {
     let leaveRequest = await this.findOne(requestId, {
       relations: ['entries'],
+    });
+
+    if (!leaveRequest) {
+      throw new Error('Leave Request not found');
+    }
+    let leavRequestDetails = leaveRequest.getEntriesDetails;
+    (leaveRequest as any).startDate = leavRequestDetails.startDate;
+    (leaveRequest as any).endDate = leavRequestDetails.endDate;
+
+    let attachments = await this.manager.find(Attachment, {
+      where: { targetType: 'LRE', targetId: leaveRequest.id },
+      relations: ['file'],
+    });
+
+    (leaveRequest as any).attachments = attachments;
+
+    return leaveRequest;
+  }
+
+  async getManageLeaveRequest(
+    authId: number,
+    requestId: number
+  ): Promise<any | undefined> {
+    let employeeIds = await this._userManagesEmployeeIds(authId);
+    let projectIds = await this._userManagesProjectIds(authId);
+
+    let leaveRequest = await this.findOne(requestId, {
+      relations: ['entries'],
+      where: [{ employeeId: In(employeeIds) }, { workId: In(projectIds) }],
+    });
+
+    if (!leaveRequest) {
+      throw new Error('Leave Request not found');
+    }
+    let leavRequestDetails = leaveRequest.getEntriesDetails;
+    (leaveRequest as any).startDate = leavRequestDetails.startDate;
+    (leaveRequest as any).endDate = leavRequestDetails.endDate;
+
+    let attachments = await this.manager.find(Attachment, {
+      where: { targetType: 'LRE', targetId: leaveRequest.id },
+      relations: ['file'],
+    });
+
+    (leaveRequest as any).attachments = attachments;
+
+    return leaveRequest;
+  }
+
+  async getOwnLeaveRequest(
+    authId: number,
+    requestId: number
+  ): Promise<any | undefined> {
+    let leaveRequest = await this.findOne(requestId, {
+      relations: ['entries'],
+      where: { employeeId: authId },
     });
 
     if (!leaveRequest) {
@@ -254,8 +309,6 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     leaveRequests.forEach((leaveRequest) => {
       let requestStatus: LeaveRequestStatus = leaveRequest.rejectedAt
         ? LeaveRequestStatus.REJECTED
-        : leaveRequest.submittedAt
-        ? LeaveRequestStatus.SUBMITTED
         : leaveRequest.approvedAt
         ? LeaveRequestStatus.APPROVED
         : LeaveRequestStatus.SUBMITTED;
@@ -536,9 +589,9 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
   ): Promise<any | undefined> {
     let leaveRequest = await this.manager.transaction(
       async (transactionalEntityManager) => {
-        let leaveRequestObj: LeaveRequest = await this.getLeaveRequest(
-          requestId
-        );
+        let leaveRequestObj = await this.findOne(requestId, {
+          where: { employeeId: authId },
+        });
 
         if (!leaveRequestObj) {
           throw new Error('Leave Request not found!');
@@ -573,9 +626,11 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           if (!project) {
             throw new Error('Project not found!');
           }
-        }
 
-        leaveRequestObj.workId = leaveRequestDTO.workId;
+          leaveRequestObj.workId = leaveRequestDTO.workId;
+        } else {
+          leaveRequestObj.workId = null;
+        }
 
         let employee = await transactionalEntityManager.findOne(
           Employee,
@@ -614,6 +669,8 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         leaveRequestObj.employeeId = authId;
         leaveRequestObj.submittedBy = authId;
         leaveRequestObj.submittedAt = moment().toDate();
+        leaveRequestObj.rejectedAt = null;
+        leaveRequestObj.rejectedBy = null;
 
         let _oldHours = 0;
 
@@ -625,14 +682,14 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
         let _totalHours = 0;
 
-        leaveRequestDTO.entries.forEach((leaveRequestEntry) => {
+        for (let leaveRequestEntry of leaveRequestDTO.entries) {
           let leaveRequestEntryObj = new LeaveRequestEntry();
           leaveRequestEntryObj.hours = leaveRequestEntry.hours;
           leaveRequestEntryObj.date = leaveRequestEntry.date;
           leaveRequestEntryObj.leaveRequestId = leaveRequestObj.id;
           _totalHours += leaveRequestEntry.hours;
           leaveRequestObj.entries.push(leaveRequestEntryObj);
-        });
+        }
 
         if (leaveRequestBalance) {
           //Checking if current balance has less hours than minimum required

@@ -96,7 +96,7 @@ export class Employee extends Base {
   // ---------------------------------------------------Management----------------------------------------
 
   @Column({ name: 'line_manager_id', nullable: true })
-  lineManagerId: number;
+  lineManagerId: number | null;
 
   @ManyToOne(() => Employee)
   @JoinColumn({ name: 'line_manager_id' })
