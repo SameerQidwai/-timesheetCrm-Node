@@ -109,7 +109,19 @@ export class EmployeeRepository extends Repository<Employee> {
         employee.superannuationBankAccountOrMembershipNumber;
       employeeObj.training = employee.training;
       employeeObj.roleId = employee.roleId;
-      employeeObj.lineManagerId = employee.lineManagerId;
+      if (employee.lineManagerId) {
+        let resEmployee = await transactionalEntityManager.findOne(
+          Employee,
+          employee.lineManagerId
+        );
+        if (!resEmployee) {
+          throw new Error('Line Manager not found');
+        }
+
+        employeeObj.lineManagerId = employee.lineManagerId;
+      } else {
+        employeeObj.lineManagerId = null;
+      }
       employeeObj = await transactionalEntityManager.save(employeeObj);
       id = employeeObj.id;
 

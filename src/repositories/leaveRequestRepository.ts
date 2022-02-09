@@ -254,8 +254,6 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     leaveRequests.forEach((leaveRequest) => {
       let requestStatus: LeaveRequestStatus = leaveRequest.rejectedAt
         ? LeaveRequestStatus.REJECTED
-        : leaveRequest.submittedAt
-        ? LeaveRequestStatus.SUBMITTED
         : leaveRequest.approvedAt
         ? LeaveRequestStatus.APPROVED
         : LeaveRequestStatus.SUBMITTED;
@@ -573,9 +571,11 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           if (!project) {
             throw new Error('Project not found!');
           }
-        }
 
-        leaveRequestObj.workId = leaveRequestDTO.workId;
+          leaveRequestObj.workId = leaveRequestDTO.workId;
+        } else {
+          leaveRequestObj.workId = null;
+        }
 
         let employee = await transactionalEntityManager.findOne(
           Employee,
@@ -614,6 +614,8 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         leaveRequestObj.employeeId = authId;
         leaveRequestObj.submittedBy = authId;
         leaveRequestObj.submittedAt = moment().toDate();
+        leaveRequestObj.rejectedAt = null;
+        leaveRequestObj.rejectedBy = null;
 
         let _oldHours = 0;
 

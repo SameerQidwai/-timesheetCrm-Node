@@ -19,14 +19,14 @@ export class LeaveRequest extends Base {
   @Column({ type: 'date', name: 'rejected_at', nullable: true })
   rejectedAt: Date | null;
 
-  @Column({ name: 'employee_id', nullable: true })
+  @Column({ name: 'employee_id' })
   employeeId: number;
 
   @ManyToOne(() => Employee)
   @JoinColumn({ name: 'employee_id' })
   employee: Employee;
 
-  @Column({ name: 'submitted_by', nullable: true })
+  @Column({ name: 'submitted_by' })
   submittedBy: number;
 
   @ManyToOne(() => Employee)
@@ -34,14 +34,14 @@ export class LeaveRequest extends Base {
   submitter: Employee;
 
   @Column({ name: 'approved_by', nullable: true })
-  approvedBy: number;
+  approvedBy: number | null;
 
   @ManyToOne(() => Employee)
   @JoinColumn({ name: 'approved_by' })
   approver: Employee;
 
   @Column({ name: 'rejected_by', nullable: true })
-  rejectedBy: number;
+  rejectedBy: number | null;
 
   @ManyToOne(() => Employee)
   @JoinColumn({ name: 'rejected_by' })
