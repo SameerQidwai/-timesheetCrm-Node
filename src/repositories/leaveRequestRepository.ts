@@ -1,4 +1,8 @@
-import { LeaveRequestDTO } from '../dto';
+import {
+  leaveRequestApproveRejectDTO,
+  LeaveRequestBalanceAccuredDTO,
+  LeaveRequestDTO,
+} from '../dto';
 import { EntityRepository, Repository, In } from 'typeorm';
 import { LeaveRequest } from '../entities/leaveRequest';
 import { LeaveRequestEntry } from '../entities/leaveRequestEntry';
@@ -279,8 +283,8 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
   async getAnyLeaveRequests(
     authId: number,
-    startDate: string = moment().startOf('month').format('YYYY-MM-DD'),
-    endDate: string = moment().endOf('month').format('YYYY-MM-DD'),
+    startDate: string = moment().startOf('year').format('YYYY-MM-DD'),
+    endDate: string = moment().endOf('year').format('YYYY-MM-DD'),
     userId: number,
     workId: number
   ): Promise<any | undefined> {
@@ -347,8 +351,8 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
   async getManageLeaveRequests(
     authId: number,
-    startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
-    endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
+    startDate: string = moment().startOf('year').format('DD-MM-YYYY'),
+    endDate: string = moment().endOf('year').format('DD-MM-YYYY'),
     userId: number,
     workId: number
   ): Promise<any | undefined> {
@@ -419,14 +423,14 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
   async approveAnyLeaveRequest(
     authId: number,
-    requestEntries: Array<number>
+    leaveRequestApproveDTO: leaveRequestApproveRejectDTO
   ): Promise<any | undefined> {
     let leaveRequests = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let leaveRequests = await transactionalEntityManager.find(
           LeaveRequest,
           {
-            where: { id: In(requestEntries) },
+            where: { id: In(leaveRequestApproveDTO.requestEntries) },
             relations: ['entries'],
           }
         );
@@ -442,6 +446,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
           leaveRequest.approvedAt = moment().toDate();
           leaveRequest.approvedBy = authId;
+          leaveRequest.note = leaveRequestApproveDTO.note;
         });
 
         leaveRequests = await transactionalEntityManager.save(leaveRequests);
@@ -456,14 +461,14 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
   async rejectAnyLeaveRequest(
     authId: number,
-    requestEntries: Array<number>
+    leaveRequestApproveDTO: leaveRequestApproveRejectDTO
   ): Promise<any | undefined> {
     let leaveRequests = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let leaveRequests = await transactionalEntityManager.find(
           LeaveRequest,
           {
-            where: { id: In(requestEntries) },
+            where: { id: In(leaveRequestApproveDTO.requestEntries) },
             relations: ['entries'],
           }
         );
@@ -482,6 +487,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
           leaveRequest.rejectedAt = moment().toDate();
           leaveRequest.rejectedBy = authId;
+          leaveRequest.note = leaveRequestApproveDTO.note;
         });
 
         leaveRequests = await transactionalEntityManager.save(leaveRequests);
@@ -496,7 +502,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
   async approveManageLeaveRequest(
     authId: number,
-    requestEntries: Array<number>
+    leaveRequestApproveDTO: leaveRequestApproveRejectDTO
   ): Promise<any | undefined> {
     let leaveRequests = await this.manager.transaction(
       async (transactionalEntityManager) => {
@@ -506,8 +512,14 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           LeaveRequest,
           {
             where: [
-              { id: In(requestEntries), employeeId: In(employeeIds) },
-              { id: In(requestEntries), workId: In(projectIds) },
+              {
+                id: In(leaveRequestApproveDTO.requestEntries),
+                employeeId: In(employeeIds),
+              },
+              {
+                id: In(leaveRequestApproveDTO.requestEntries),
+                workId: In(projectIds),
+              },
             ],
             relations: ['entries'],
           }
@@ -524,6 +536,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
           leaveRequest.approvedAt = moment().toDate();
           leaveRequest.approvedBy = authId;
+          leaveRequest.note = leaveRequestApproveDTO.note;
         });
 
         leaveRequests = await transactionalEntityManager.save(leaveRequests);
@@ -538,7 +551,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
   async rejectManageLeaveRequest(
     authId: number,
-    requestEntries: Array<number>
+    leaveRequestApproveDTO: leaveRequestApproveRejectDTO
   ): Promise<any | undefined> {
     let leaveRequests = await this.manager.transaction(
       async (transactionalEntityManager) => {
@@ -549,8 +562,14 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           LeaveRequest,
           {
             where: [
-              { id: In(requestEntries), employeeId: In(employeeIds) },
-              { id: In(requestEntries), workId: In(projectIds) },
+              {
+                id: In(leaveRequestApproveDTO.requestEntries),
+                employeeId: In(employeeIds),
+              },
+              {
+                id: In(leaveRequestApproveDTO.requestEntries),
+                workId: In(projectIds),
+              },
             ],
             relations: ['entries'],
           }
@@ -570,6 +589,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
           leaveRequest.rejectedAt = moment().toDate();
           leaveRequest.rejectedBy = authId;
+          leaveRequest.note = leaveRequestApproveDTO.note;
         });
 
         leaveRequests = await transactionalEntityManager.save(leaveRequests);
@@ -679,19 +699,6 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           _oldHours += entry.hours;
         });
 
-        await this.manager.delete(LeaveRequestEntry, leaveRequestObj.entries);
-
-        let _totalHours = 0;
-
-        for (let leaveRequestEntry of leaveRequestDTO.entries) {
-          let leaveRequestEntryObj = new LeaveRequestEntry();
-          leaveRequestEntryObj.hours = leaveRequestEntry.hours;
-          leaveRequestEntryObj.date = leaveRequestEntry.date;
-          leaveRequestEntryObj.leaveRequestId = leaveRequestObj.id;
-          _totalHours += leaveRequestEntry.hours;
-          leaveRequestObj.entries.push(leaveRequestEntryObj);
-        }
-
         if (leaveRequestBalance) {
           //Checking if current balance has less hours than minimum required
           if (
@@ -699,6 +706,19 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
             leaveRequestPolicyType.minimumBalanceRequired
           ) {
             throw new Error('Balance is less than minimum required!');
+          }
+
+          await this.manager.delete(LeaveRequestEntry, leaveRequestObj.entries);
+
+          let _totalHours = 0;
+
+          for (let leaveRequestEntry of leaveRequestDTO.entries) {
+            let leaveRequestEntryObj = new LeaveRequestEntry();
+            leaveRequestEntryObj.hours = leaveRequestEntry.hours;
+            leaveRequestEntryObj.date = leaveRequestEntry.date;
+            leaveRequestEntryObj.leaveRequestId = leaveRequestObj.id;
+            _totalHours += leaveRequestEntry.hours;
+            leaveRequestObj.entries.push(leaveRequestEntryObj);
           }
 
           if (
@@ -780,6 +800,36 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     return leaveRequest;
   }
 
+  async getAnyLeaveRequestBalances(
+    authId: number,
+    employeeId: number
+  ): Promise<any | undefined> {
+    let auth = await this.manager.findOne(Employee, authId, {});
+
+    if (!auth) {
+      throw new Error('Employee not found');
+    }
+
+    let employee = await this.manager.findOne(Employee, employeeId, {
+      relations: [
+        'leaveRequestBalances',
+        'leaveRequestBalances.type',
+        'leaveRequestBalances.type.leaveRequestType',
+      ],
+    });
+
+    if (!employee) {
+      throw new Error('Employee not found');
+    }
+
+    let leaveRequestBalances = employee.leaveRequestBalances;
+    leaveRequestBalances.forEach((balance) => {
+      (balance as any).name = balance.type.leaveRequestType.label;
+    });
+
+    return leaveRequestBalances;
+  }
+
   async getLeaveRequestBalances(authId: number): Promise<any | undefined> {
     let employee = await this.manager.findOne(Employee, authId, {
       relations: [
@@ -799,6 +849,24 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     });
 
     return leaveRequestBalances;
+  }
+
+  async updateLeaveRequestBalancedAccured(
+    id: number,
+    accuredDTO: LeaveRequestBalanceAccuredDTO
+  ): Promise<any | undefined> {
+    let leaveRequestBalance = await this.manager.findOne(
+      LeaveRequestBalance,
+      id
+    );
+
+    if (!leaveRequestBalance) {
+      throw new Error('Leave Request Balance Entry not found');
+    }
+
+    leaveRequestBalance.carryForward = accuredDTO.accured;
+
+    return this.manager.save(leaveRequestBalance);
   }
 
   async _userManagesEmployeeIds(

@@ -79,6 +79,7 @@ export enum OpportunityStatus {
   DID_NOT_PROCEED = 'DNP',
   OPPORTUNITY = 'O',
   WON = 'P',
+  COMPLETED = 'C',
 }
 
 export enum LeaveRequestStatus {

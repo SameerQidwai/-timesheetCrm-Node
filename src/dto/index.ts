@@ -35,6 +35,8 @@ export interface LeaveRequestPolicyLeaveRequestType extends Base {
   resetHours: number;
   threshold: number;
   includeOffDays: boolean;
+  minimumBalance: number;
+  minimumBalanceRequired: number;
 }
 
 export interface LeaveRequestPolicyDTO extends Base {
@@ -448,4 +450,17 @@ export interface LeaveRequestDTO {
   workId: number;
   entries: Array<{ date: Date; hours: number }>;
   attachments: Array<number>;
+}
+
+export interface EmployeeSkillDTO {
+  standardSkillStandardLevelIds: number[];
+}
+
+export interface LeaveRequestBalanceAccuredDTO {
+  accured: number;
+}
+
+export interface leaveRequestApproveRejectDTO {
+  requestEntries: Array<number>;
+  note: string;
 }

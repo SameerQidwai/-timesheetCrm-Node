@@ -7,6 +7,17 @@ import { can } from '../middlewares/can';
 const router = Router();
 let contr = new LeaveRequestController();
 
-router.route('/').get([isLoggedIn], contr.getLeaveRequestBalances.bind(contr));
+router
+  .route('/')
+  .get(
+    [isLoggedIn, can(Action.READ, Resource.LEAVE_REQUESTS)],
+    contr.getLeaveRequestBalances.bind(contr)
+  );
+router
+  .route('/:id')
+  .patch(
+    [isLoggedIn, can(Action.UPDATE, Resource.LEAVE_REQUESTS)],
+    contr.updateLeaveRequestBalancedAccured.bind(contr)
+  );
 
 export default router;

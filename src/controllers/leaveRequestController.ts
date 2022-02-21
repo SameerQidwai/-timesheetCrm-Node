@@ -134,15 +134,9 @@ export class LeaveRequestController {
       }
 
       if (grantLevel.includes('ANY')) {
-        records = await repository.approveAnyLeaveRequest(
-          authId,
-          requestEntries
-        );
+        records = await repository.approveAnyLeaveRequest(authId, req.body);
       } else if (grantLevel.includes('MANAGE')) {
-        records = await repository.approveManageLeaveRequest(
-          authId,
-          requestEntries
-        );
+        records = await repository.approveManageLeaveRequest(authId, req.body);
       }
 
       console.log('record: ', records);
@@ -174,15 +168,9 @@ export class LeaveRequestController {
       }
 
       if (grantLevel.includes('ANY')) {
-        records = await repository.rejectAnyLeaveRequest(
-          authId,
-          requestEntries
-        );
+        records = await repository.rejectAnyLeaveRequest(authId, req.body);
       } else if (grantLevel.includes('MANAGE')) {
-        records = await repository.rejectManageLeaveRequest(
-          authId,
-          requestEntries
-        );
+        records = await repository.rejectManageLeaveRequest(authId, req.body);
       }
 
       console.log('record: ', records);
@@ -228,14 +216,60 @@ export class LeaveRequestController {
     try {
       const repository = getCustomRepository(LeaveRequestRepository);
 
+      let records = [];
       const { user } = res.locals;
+      const { grantLevel } = res.locals;
       let authId = parseInt(user.id) as number;
+      let employeeId: string | number = req.query.employeeId as string;
+      employeeId = parseInt(employeeId);
 
-      let records = await repository.getLeaveRequestBalances(authId);
+      if (grantLevel.includes('ANY') && !isNaN(employeeId)) {
+        records = await repository.getAnyLeaveRequestBalances(
+          authId,
+          employeeId
+        );
+      } else {
+        records = await repository.getLeaveRequestBalances(authId);
+      }
+
       console.log('record: ', records);
       res.status(200).json({
         success: true,
         message: 'Leave Requests Index',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async updateLeaveRequestBalancedAccured(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const repository = getCustomRepository(LeaveRequestRepository);
+
+      let records: any = [];
+      const { user } = res.locals;
+      const { grantLevel } = res.locals;
+      let requestId = parseInt(req.params.id) as number;
+      let authId = parseInt(user.id) as number;
+
+      if (grantLevel.includes('ANY')) {
+        records = await repository.updateLeaveRequestBalancedAccured(
+          requestId,
+          req.body
+        );
+      } else {
+        throw new Error('Unauthorized Request');
+      }
+
+      console.log('record: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'Edit Leave Request',
         data: records,
       });
     } catch (e) {

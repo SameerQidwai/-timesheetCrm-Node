@@ -56,6 +56,10 @@ export class LeaveRequestPolicyRepository extends Repository<LeaveRequestPolicy>
               leaveRequestPolicyLeaveRequestType.resetEvery;
             leaveRequestPolicyLeaveRequestTypeObj.threshold =
               leaveRequestPolicyLeaveRequestType.threshold;
+            leaveRequestPolicyLeaveRequestTypeObj.minimumBalance =
+              leaveRequestPolicyLeaveRequestType.minimumBalance;
+            leaveRequestPolicyLeaveRequestTypeObj.minimumBalanceRequired =
+              leaveRequestPolicyLeaveRequestType.minimumBalanceRequired;
             leaveRequestPolicyLeaveRequestTypeObj.includeOffDays =
               leaveRequestPolicyLeaveRequestType.includeOffDays;
             return leaveRequestPolicyLeaveRequestTypeObj;
@@ -150,6 +154,10 @@ export class LeaveRequestPolicyRepository extends Repository<LeaveRequestPolicy>
               leaveRequestPolicyLeaveRequestType.resetEvery;
             leaveRequestPolicyLeaveRequestTypeObj.threshold =
               leaveRequestPolicyLeaveRequestType.threshold;
+            leaveRequestPolicyLeaveRequestTypeObj.minimumBalance =
+              leaveRequestPolicyLeaveRequestType.minimumBalance;
+            leaveRequestPolicyLeaveRequestTypeObj.minimumBalanceRequired =
+              leaveRequestPolicyLeaveRequestType.minimumBalanceRequired;
             leaveRequestPolicyLeaveRequestTypeObj.includeOffDays =
               leaveRequestPolicyLeaveRequestType.includeOffDays;
             return leaveRequestPolicyLeaveRequestTypeObj;

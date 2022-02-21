@@ -1,6 +1,12 @@
 import bcrypt from 'bcryptjs';
 import { sendMail } from '../utilities/mailer';
-import { ContactPersonDTO, EmployeeDTO, LeaseDTO, SettingsDTO } from '../dto';
+import {
+  ContactPersonDTO,
+  EmployeeDTO,
+  EmployeeSkillDTO,
+  LeaseDTO,
+  SettingsDTO,
+} from '../dto';
 import { EntityRepository, getRepository, Repository } from 'typeorm';
 import { ContactPerson } from './../entities/contactPerson';
 import { ContactPersonOrganization } from './../entities/contactPersonOrganization';
@@ -798,7 +804,7 @@ export class EmployeeRepository extends Repository<Employee> {
     return filtered;
   }
 
-  async updateSettings(authId: number, settingsDTO: SettingsDTO) {
+  async authUpdateSettings(authId: number, settingsDTO: SettingsDTO) {
     if (!authId) {
       throw new Error('Employee not found!');
     }
@@ -841,7 +847,7 @@ export class EmployeeRepository extends Repository<Employee> {
     return employee;
   }
 
-  async getUserUsers(authId: number) {
+  async authGetUserUsers(authId: number) {
     if (!authId) {
       throw new Error('Employee not found!');
     }
@@ -861,5 +867,59 @@ export class EmployeeRepository extends Repository<Employee> {
     });
 
     return response;
+  }
+
+  async authAddSkill(authId: number, employeeSkillsDTO: EmployeeSkillDTO) {
+    if (!authId) {
+      throw new Error('Employee not found!');
+    }
+
+    let employee = await this.findOne(authId, {
+      relations: [
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+        'contactPersonOrganization.contactPerson.standardSkillStandardLevels',
+      ],
+    });
+
+    if (!employee) {
+      throw new Error('Employee not found!');
+    }
+
+    if (employeeSkillsDTO.standardSkillStandardLevelIds.length <= 0) {
+      throw new Error('Skills not found');
+    }
+
+    let standardSkillStandardLevelList = await this.manager.findByIds(
+      StandardSkillStandardLevel,
+      employeeSkillsDTO.standardSkillStandardLevelIds
+    );
+
+    let employeeContactPerson =
+      employee.contactPersonOrganization.contactPerson;
+
+    employeeContactPerson.standardSkillStandardLevels.push(
+      ...standardSkillStandardLevelList
+    );
+
+    // employeeContactPerson.standardSkillStandardLevels = [
+    //   ...new Set(employeeContactPerson.standardSkillStandardLevels),
+    // ];
+
+    await this.manager.save(ContactPerson, employeeContactPerson);
+
+    let contactPerson = await this.manager.findOne(
+      ContactPerson,
+      employeeContactPerson.id,
+      {
+        relations: ['standardSkillStandardLevels'],
+      }
+    );
+
+    if (!contactPerson) {
+      throw new Error('Contact Person not found');
+    }
+
+    return contactPerson.standardSkillStandardLevels;
   }
 }

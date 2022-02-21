@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import { EmployeeRepository } from './../repositories/employeeRepository';
 import { Any, getCustomRepository } from 'typeorm';
 import { EntityType } from '../constants/constants';
 import { secret } from '../utilities/configs';
@@ -7,6 +6,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { SuperannuationType } from '../constants/constants';
 import { Role } from 'src/entities/role';
+import { EmployeeRepository } from './../repositories/employeeRepository';
+import { ProjectRepository } from '../repositories/projectRepository';
 
 export class AuthController {
   async login(req: Request, res: Response, next: NextFunction) {
@@ -150,7 +151,10 @@ export class AuthController {
       const repository = getCustomRepository(EmployeeRepository);
       const userId = res.locals.jwtPayload.id;
 
-      let updatedEmployee = await repository.updateSettings(userId, req.body);
+      let updatedEmployee = await repository.authUpdateSettings(
+        userId,
+        req.body
+      );
 
       // let updatedEmployee = await repository.update(userId, {
       //   nextOfKinName: req.body.nextOfKinName,
@@ -190,11 +194,56 @@ export class AuthController {
       const { user } = res.locals;
       let authId = parseInt(user.id);
 
-      let records = await repository.getUserUsers(authId);
+      let records = await repository.authGetUserUsers(authId);
 
       res.status(200).json({
         success: true,
         message: 'User Users',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async getUserProjects(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(ProjectRepository);
+      const { user } = res.locals;
+      let authId = parseInt(user.id);
+      const { grantLevel } = res.locals;
+
+      let records: any = [];
+
+      if (grantLevel.includes('ANY')) {
+        records = await repository.authAnyGetUserProjects();
+      } else if (grantLevel.includes('MANAGE')) {
+        records = await repository.authManageGetUserProjects(authId);
+      } else if (grantLevel.includes('OWN')) {
+        records = await repository.authOwnGetUserProjects(authId);
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'User Projects',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async addSkill(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(EmployeeRepository);
+      const { user } = res.locals;
+      let authId = parseInt(user.id);
+
+      let records = await repository.authAddSkill(authId, req.body);
+
+      res.status(200).json({
+        success: true,
+        message: 'Add Skill',
         data: records,
       });
     } catch (e) {

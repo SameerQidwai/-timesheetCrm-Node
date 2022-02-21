@@ -19,6 +19,9 @@ export class LeaveRequest extends Base {
   @Column({ type: 'date', name: 'rejected_at', nullable: true })
   rejectedAt: Date | null;
 
+  @Column({ type: 'text', name: 'note', nullable: true })
+  note: string;
+
   @Column({ name: 'employee_id' })
   employeeId: number;
 

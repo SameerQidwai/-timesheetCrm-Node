@@ -19,6 +19,7 @@ import { Employee } from '../entities/employee';
 import { PurchaseOrder } from '../entities/purchaseOrder';
 import { Milestone } from '../entities/milestone';
 import e from 'express';
+import { OpportunityStatus } from '../constants/constants';
 
 @EntityRepository(Opportunity)
 export class ProjectRepository extends Repository<Opportunity> {
@@ -1038,6 +1039,106 @@ export class ProjectRepository extends Repository<Opportunity> {
               label: `${project.title} - (${milestone.title})`,
             });
           }
+      });
+    });
+
+    return response;
+  }
+
+  async authAnyGetUserProjects() {
+    let response: any = [];
+
+    let projects = await this.find({
+      where: [
+        { status: OpportunityStatus.WON },
+        { status: OpportunityStatus.COMPLETED },
+      ],
+    });
+
+    projects.forEach((project) => {
+      response.push({ value: project.id, label: project.title });
+    });
+
+    return response;
+  }
+
+  async authManageGetUserProjects(authId: number) {
+    let response: any = [];
+
+    let projects = await this.find({
+      where: [
+        { status: OpportunityStatus.WON },
+        { status: OpportunityStatus.COMPLETED },
+      ],
+      relations: [
+        'organization',
+        'opportunityResources',
+        'opportunityResources.panelSkill',
+        'opportunityResources.panelSkillStandardLevel',
+        'opportunityResources.opportunityResourceAllocations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
+    });
+
+    // console.log('result', result);
+
+    projects.map((project) => {
+      if (project.projectManagerId == authId)
+        response.push({
+          value: project.id,
+          label: project.title,
+        });
+    });
+
+    return response;
+  }
+
+  async authOwnGetUserProjects(authId: number) {
+    let response: any = [];
+
+    let projects = await this.find({
+      where: [
+        { status: OpportunityStatus.WON },
+        { status: OpportunityStatus.COMPLETED },
+      ],
+      relations: [
+        'organization',
+        'opportunityResources',
+        'opportunityResources.panelSkill',
+        'opportunityResources.panelSkillStandardLevel',
+        'opportunityResources.opportunityResourceAllocations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
+    });
+
+    // console.log('result', result);
+
+    let employee = await this.manager.findOne(Employee, authId, {
+      relations: [
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+      ],
+    });
+
+    if (!employee) {
+      throw new Error('Employee not found');
+    }
+    let employeeContactPersonId =
+      employee.contactPersonOrganization.contactPerson.id;
+
+    projects.map((project) => {
+      project.opportunityResources.map((resource) => {
+        resource.opportunityResourceAllocations.filter((allocation) => {
+          if (
+            allocation.contactPersonId === employeeContactPersonId &&
+            allocation.isMarkedAsSelected
+          ) {
+            response.push({
+              value: project.id,
+              label: project.title,
+            });
+          }
+        });
       });
     });
 
