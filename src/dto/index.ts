@@ -457,7 +457,7 @@ export interface EmployeeSkillDTO {
 }
 
 export interface LeaveRequestBalanceAccuredDTO {
-  accured: number;
+  carryForward: number;
 }
 
 export interface leaveRequestApproveRejectDTO {

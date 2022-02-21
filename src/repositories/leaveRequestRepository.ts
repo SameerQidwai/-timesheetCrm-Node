@@ -864,7 +864,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
       throw new Error('Leave Request Balance Entry not found');
     }
 
-    leaveRequestBalance.carryForward = accuredDTO.accured;
+    leaveRequestBalance.carryForward = accuredDTO.carryForward;
 
     return this.manager.save(leaveRequestBalance);
   }
