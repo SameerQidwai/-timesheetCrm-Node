@@ -868,7 +868,7 @@ export class EmployeeRepository extends Repository<Employee> {
     employee.contactPersonOrganization.contactPerson.address =
       addressDTO.address;
 
-    this.save(employee);
+    this.save(employee.contactPersonOrganization.contactPerson);
 
     return employee;
   }
