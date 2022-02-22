@@ -464,3 +464,8 @@ export interface leaveRequestApproveRejectDTO {
   requestEntries: Array<number>;
   note: string;
 }
+
+export interface timesheetEntryApproveRejectDTO {
+  requestEntries: Array<number>;
+  note: string;
+}

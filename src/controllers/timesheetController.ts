@@ -224,14 +224,14 @@ export class TimesheetController {
           startDate,
           endDate,
           userId,
-          requestEntries
+          req.body
         );
       } else if (grantLevel.includes('MANAGE')) {
         record = await repository.approveManageMilestoneTimesheetEntry(
           startDate,
           endDate,
           userId,
-          requestEntries,
+          req.body,
           user.id
         );
       }
@@ -274,14 +274,14 @@ export class TimesheetController {
           startDate,
           endDate,
           userId,
-          requestEntries
+          req.body
         );
       } else if (grantLevel.includes('MANAGE')) {
         record = await repository.rejectManageMilestoneTimesheetEntry(
           startDate,
           endDate,
           userId,
-          requestEntries,
+          req.body,
           user.id
         );
       }

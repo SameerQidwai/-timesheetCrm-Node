@@ -24,6 +24,9 @@ export class TimesheetMilestoneEntry extends Base {
   @Column({ name: 'notes', nullable: true })
   notes: string;
 
+  @Column({ name: 'action_notes', nullable: true })
+  actionNotes: string;
+
   @Column({ name: 'attachment', nullable: true })
   attachment: string;
 

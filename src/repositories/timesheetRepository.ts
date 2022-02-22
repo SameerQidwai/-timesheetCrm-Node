@@ -1,6 +1,7 @@
 import {
   MilestoneEntriesPrintDTO,
   MilestoneEntriesUpdateDTO,
+  timesheetEntryApproveRejectDTO,
   TimesheetDTO,
 } from '../dto';
 import { EntityRepository, Repository, MoreThan, In } from 'typeorm';
@@ -627,7 +628,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    requestEntries: Array<number>
+    approveEntryDTO: timesheetEntryApproveRejectDTO
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
       'YYYY-MM-DD HH:mm:ss'
@@ -656,7 +657,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
         let responseEntries: TimesheetMilestoneEntry[] = [];
 
-        for (const requestEntry of requestEntries) {
+        for (const requestEntry of approveEntryDTO.requestEntries) {
           timesheets.forEach((timesheet) => {
             let milestoneEntry = timesheet.milestoneEntries.filter(
               (entry) => entry.id === requestEntry
@@ -667,7 +668,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
               milestoneEntry.entries.map((entry) => {
                 entry.approvedAt = moment().toDate();
               });
-
+              milestoneEntry.actionNotes = approveEntryDTO.note;
               responseEntries.push(milestoneEntry);
             }
           });
@@ -691,7 +692,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    requestEntries: Array<number>,
+    approveEntryDTO: timesheetEntryApproveRejectDTO,
     authId: number
   ): Promise<any | undefined> {
     let flagUserIsAllowed = 0;
@@ -720,7 +721,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
         let responseEntries: TimesheetMilestoneEntry[] = [];
 
-        for (const requestEntry of requestEntries) {
+        for (const requestEntry of approveEntryDTO.requestEntries) {
           let milestoneEntry = timesheet.milestoneEntries.filter(
             (entry) => entry.id === requestEntry
           )[0];
@@ -746,6 +747,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
           milestoneEntry.entries.map((entry) => {
             entry.approvedAt = moment().toDate();
           });
+          milestoneEntry.actionNotes = approveEntryDTO.note;
           responseEntries.push(milestoneEntry);
         }
 
@@ -763,7 +765,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    requestEntries: Array<number>
+    rejectEntryDTO: timesheetEntryApproveRejectDTO
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
       'YYYY-MM-DD HH:mm:ss'
@@ -792,7 +794,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
         let responseEntries: TimesheetMilestoneEntry[] = [];
 
-        for (const requestEntry of requestEntries) {
+        for (const requestEntry of rejectEntryDTO.requestEntries) {
           timesheets.forEach((timesheet) => {
             let milestoneEntry = timesheet.milestoneEntries.filter(
               (entry) => entry.id === requestEntry
@@ -803,7 +805,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
               milestoneEntry.entries.map((entry) => {
                 entry.rejectedAt = moment().toDate();
               });
-
+              milestoneEntry.actionNotes = rejectEntryDTO.note;
               responseEntries.push(milestoneEntry);
             }
           });
@@ -826,7 +828,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    requestEntries: Array<number>,
+    rejectEntryDTO: timesheetEntryApproveRejectDTO,
     authId: number
   ): Promise<any | undefined> {
     let flagUserIsAllowed = 0;
@@ -856,7 +858,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
         let responseEntries: TimesheetMilestoneEntry[] = [];
 
-        for (const requestEntry of requestEntries) {
+        for (const requestEntry of rejectEntryDTO.requestEntries) {
           let milestoneEntry = timesheet.milestoneEntries.filter(
             (entry) => entry.id === requestEntry
           )[0];
@@ -883,7 +885,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
           milestoneEntry.entries.map((entry) => {
             entry.rejectedAt = moment().toDate();
           });
-
+          milestoneEntry.actionNotes = rejectEntryDTO.note;
           responseEntries.push(milestoneEntry);
         }
         await transactionalEntityManager.save(timesheet);
