@@ -66,7 +66,7 @@ export class LeaveRequestTypeRepository extends Repository<LeaveRequestType> {
     }
 
     let contractDetails = {
-      noOfHours: employee.getActiveContract.noOfHours,
+      noOfHours: (employee.getActiveContract.noOfHours / 5).toFixed(2),
       noOfHoursPer: Frequency[employee.getActiveContract.noOfHoursPer],
     };
 

@@ -460,12 +460,20 @@ export interface LeaveRequestBalanceAccuredDTO {
   carryForward: number;
 }
 
-export interface leaveRequestApproveRejectDTO {
-  requestEntries: Array<number>;
+export interface LeaveRequestApproveRejectDTO {
+  leaveRequests: Array<number>;
   note: string;
 }
 
-export interface timesheetEntryApproveRejectDTO {
-  requestEntries: Array<number>;
+export interface TimesheetEntryApproveRejectDTO {
+  milestoneEntries: Array<number>;
   note: string;
+}
+
+export interface AddressDTO {
+  address: string;
+}
+
+export interface TrainingDTO {
+  training: string;
 }

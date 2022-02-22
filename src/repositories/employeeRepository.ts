@@ -1,11 +1,13 @@
 import bcrypt from 'bcryptjs';
 import { sendMail } from '../utilities/mailer';
 import {
+  AddressDTO,
   ContactPersonDTO,
   EmployeeDTO,
   EmployeeSkillDTO,
   LeaseDTO,
   SettingsDTO,
+  TrainingDTO,
 } from '../dto';
 import { EntityRepository, getRepository, Repository } from 'typeorm';
 import { ContactPerson } from './../entities/contactPerson';
@@ -841,6 +843,48 @@ export class EmployeeRepository extends Repository<Employee> {
     bankAccount.bsb = settingsDTO.bankBsb;
 
     employee.bankAccounts[0] = bankAccount;
+
+    this.save(employee);
+
+    return employee;
+  }
+
+  async authUpdateAddress(authId: number, addressDTO: AddressDTO) {
+    if (!authId) {
+      throw new Error('Employee not found!');
+    }
+
+    let employee = await this.findOne(authId, {
+      relations: [
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+      ],
+    });
+
+    if (!employee) {
+      throw new Error('Employee not found!');
+    }
+
+    employee.contactPersonOrganization.contactPerson.address =
+      addressDTO.address;
+
+    this.save(employee);
+
+    return employee;
+  }
+
+  async authUpdateTraining(authId: number, trainingDTO: TrainingDTO) {
+    if (!authId) {
+      throw new Error('Employee not found!');
+    }
+
+    let employee = await this.findOne(authId, {});
+
+    if (!employee) {
+      throw new Error('Employee not found!');
+    }
+
+    employee.training = trainingDTO.training;
 
     this.save(employee);
 

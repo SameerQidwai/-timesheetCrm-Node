@@ -1,5 +1,5 @@
 import {
-  leaveRequestApproveRejectDTO,
+  LeaveRequestApproveRejectDTO,
   LeaveRequestBalanceAccuredDTO,
   LeaveRequestDTO,
 } from '../dto';
@@ -176,6 +176,8 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           leaveRequestBalance = await transactionalEntityManager.save(
             leaveRequestBalance
           );
+        } else {
+          throw new Error('Leave Balance not found');
         }
 
         let leaveRequest = await transactionalEntityManager.save(
@@ -423,14 +425,14 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
   async approveAnyLeaveRequest(
     authId: number,
-    leaveRequestApproveDTO: leaveRequestApproveRejectDTO
+    leaveRequestApproveDTO: LeaveRequestApproveRejectDTO
   ): Promise<any | undefined> {
     let leaveRequests = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let leaveRequests = await transactionalEntityManager.find(
           LeaveRequest,
           {
-            where: { id: In(leaveRequestApproveDTO.requestEntries) },
+            where: { id: In(leaveRequestApproveDTO.leaveRequests) },
             relations: ['entries'],
           }
         );
@@ -461,14 +463,14 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
   async rejectAnyLeaveRequest(
     authId: number,
-    leaveRequestApproveDTO: leaveRequestApproveRejectDTO
+    leaveRequestApproveDTO: LeaveRequestApproveRejectDTO
   ): Promise<any | undefined> {
     let leaveRequests = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let leaveRequests = await transactionalEntityManager.find(
           LeaveRequest,
           {
-            where: { id: In(leaveRequestApproveDTO.requestEntries) },
+            where: { id: In(leaveRequestApproveDTO.leaveRequests) },
             relations: ['entries'],
           }
         );
@@ -502,7 +504,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
   async approveManageLeaveRequest(
     authId: number,
-    leaveRequestApproveDTO: leaveRequestApproveRejectDTO
+    leaveRequestApproveDTO: LeaveRequestApproveRejectDTO
   ): Promise<any | undefined> {
     let leaveRequests = await this.manager.transaction(
       async (transactionalEntityManager) => {
@@ -513,11 +515,11 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           {
             where: [
               {
-                id: In(leaveRequestApproveDTO.requestEntries),
+                id: In(leaveRequestApproveDTO.leaveRequests),
                 employeeId: In(employeeIds),
               },
               {
-                id: In(leaveRequestApproveDTO.requestEntries),
+                id: In(leaveRequestApproveDTO.leaveRequests),
                 workId: In(projectIds),
               },
             ],
@@ -551,7 +553,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
   async rejectManageLeaveRequest(
     authId: number,
-    leaveRequestApproveDTO: leaveRequestApproveRejectDTO
+    leaveRequestApproveDTO: LeaveRequestApproveRejectDTO
   ): Promise<any | undefined> {
     let leaveRequests = await this.manager.transaction(
       async (transactionalEntityManager) => {
@@ -563,11 +565,11 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           {
             where: [
               {
-                id: In(leaveRequestApproveDTO.requestEntries),
+                id: In(leaveRequestApproveDTO.leaveRequests),
                 employeeId: In(employeeIds),
               },
               {
-                id: In(leaveRequestApproveDTO.requestEntries),
+                id: In(leaveRequestApproveDTO.leaveRequests),
                 workId: In(projectIds),
               },
             ],
@@ -740,6 +742,8 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           leaveRequestBalance = await transactionalEntityManager.save(
             leaveRequestBalance
           );
+        } else {
+          throw new Error('Leave Request Balance not found');
         }
 
         let leaveRequest = await transactionalEntityManager.save(
@@ -864,7 +868,9 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
       throw new Error('Leave Request Balance Entry not found');
     }
 
+    let difference = leaveRequestBalance.carryForward - accuredDTO.carryForward;
     leaveRequestBalance.carryForward = accuredDTO.carryForward;
+    leaveRequestBalance.balanceHours -= difference;
 
     return this.manager.save(leaveRequestBalance);
   }

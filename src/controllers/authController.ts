@@ -8,6 +8,7 @@ import { SuperannuationType } from '../constants/constants';
 import { Role } from 'src/entities/role';
 import { EmployeeRepository } from './../repositories/employeeRepository';
 import { ProjectRepository } from '../repositories/projectRepository';
+import { Employee } from '../entities/employee';
 
 export class AuthController {
   async login(req: Request, res: Response, next: NextFunction) {
@@ -125,6 +126,7 @@ export class AuthController {
         relations: [
           'contactPersonOrganization',
           'contactPersonOrganization.contactPerson',
+          'contactPersonOrganization.contactPerson.standardSkillStandardLevels',
           'contactPersonOrganization.organization',
           'bankAccounts',
           'employmentContracts',
@@ -181,6 +183,115 @@ export class AuthController {
       res.status(200).json({
         success: true,
         message: 'Settings Updated Successfully',
+        data: updatedEmployee,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async getTraining(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(EmployeeRepository);
+
+      //Get userId from JWT
+      const userId = res.locals.jwtPayload.id;
+
+      let user = await repository.findOne({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new Error('Employee not found');
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Training Received Successfully',
+        data: user.training,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async updateTraining(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(EmployeeRepository);
+      const userId = res.locals.jwtPayload.id;
+
+      let updatedEmployee = await repository.authUpdateTraining(
+        userId,
+        req.body
+      );
+
+      // let updatedEmployee = await repository.update(userId, {
+      //   nextOfKinName: req.body.nextOfKinName,
+      //   nextOfKinPhoneNumber: req.body.nextOfKinPhoneNumber,
+      //   nextOfKinEmail: req.body.nextOfKinEmail,
+      //   nextOfKinRelation: req.body.nextOfKinRelation,
+      //   tfn: req.body.tfn,
+      //   taxFreeThreshold: req.body.taxFreeThreshold ?? false,
+      //   helpHECS: req.body.helpHECS ?? false,
+      //   superannuationName: req.body.superannuationName,
+      //   superannuationType:
+      //     req.body.superannuationType == 'P'
+      //       ? SuperannuationType.PUBLIC
+      //       : SuperannuationType.SMSF,
+      //   superannuationBankName: req.body.superannuationBankName,
+      //   superannuationBankAccountOrMembershipNumber:
+      //     req.body.superannuationBankAccountOrMembershipNumber,
+      //   superannuationAbnOrUsi: req.body.superannuationAbnOrUsi,
+      //   superannuationBankBsb: req.body.superannuationBankBsb,
+      //   superannuationAddress: req.body.superannuationAddress,
+      //   training: req.body.training,
+      // });
+
+      res.status(200).json({
+        success: true,
+        message: 'Training Updated Successfully',
+        data: updatedEmployee,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async updateAddress(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(EmployeeRepository);
+      const userId = res.locals.jwtPayload.id;
+
+      let updatedEmployee = await repository.authUpdateAddress(
+        userId,
+        req.body
+      );
+
+      // let updatedEmployee = await repository.update(userId, {
+      //   nextOfKinName: req.body.nextOfKinName,
+      //   nextOfKinPhoneNumber: req.body.nextOfKinPhoneNumber,
+      //   nextOfKinEmail: req.body.nextOfKinEmail,
+      //   nextOfKinRelation: req.body.nextOfKinRelation,
+      //   tfn: req.body.tfn,
+      //   taxFreeThreshold: req.body.taxFreeThreshold ?? false,
+      //   helpHECS: req.body.helpHECS ?? false,
+      //   superannuationName: req.body.superannuationName,
+      //   superannuationType:
+      //     req.body.superannuationType == 'P'
+      //       ? SuperannuationType.PUBLIC
+      //       : SuperannuationType.SMSF,
+      //   superannuationBankName: req.body.superannuationBankName,
+      //   superannuationBankAccountOrMembershipNumber:
+      //     req.body.superannuationBankAccountOrMembershipNumber,
+      //   superannuationAbnOrUsi: req.body.superannuationAbnOrUsi,
+      //   superannuationBankBsb: req.body.superannuationBankBsb,
+      //   superannuationAddress: req.body.superannuationAddress,
+      //   training: req.body.training,
+      // });
+
+      res.status(200).json({
+        success: true,
+        message: 'Address Updated Successfully',
         data: updatedEmployee,
       });
     } catch (e) {

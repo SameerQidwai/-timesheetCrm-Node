@@ -1177,7 +1177,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
           opportunityManagerId: userId,
         },
       ],
-      relations: ['organization'],
+      relations: ['organization', 'milestones'],
     });
     return result;
   }

@@ -1,7 +1,7 @@
 import {
   MilestoneEntriesPrintDTO,
   MilestoneEntriesUpdateDTO,
-  timesheetEntryApproveRejectDTO,
+  TimesheetEntryApproveRejectDTO,
   TimesheetDTO,
 } from '../dto';
 import { EntityRepository, Repository, MoreThan, In } from 'typeorm';
@@ -628,7 +628,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    approveEntryDTO: timesheetEntryApproveRejectDTO
+    approveEntryDTO: TimesheetEntryApproveRejectDTO
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
       'YYYY-MM-DD HH:mm:ss'
@@ -657,7 +657,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
         let responseEntries: TimesheetMilestoneEntry[] = [];
 
-        for (const requestEntry of approveEntryDTO.requestEntries) {
+        for (const requestEntry of approveEntryDTO.milestoneEntries) {
           timesheets.forEach((timesheet) => {
             let milestoneEntry = timesheet.milestoneEntries.filter(
               (entry) => entry.id === requestEntry
@@ -692,7 +692,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    approveEntryDTO: timesheetEntryApproveRejectDTO,
+    approveEntryDTO: TimesheetEntryApproveRejectDTO,
     authId: number
   ): Promise<any | undefined> {
     let flagUserIsAllowed = 0;
@@ -721,7 +721,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
         let responseEntries: TimesheetMilestoneEntry[] = [];
 
-        for (const requestEntry of approveEntryDTO.requestEntries) {
+        for (const requestEntry of approveEntryDTO.milestoneEntries) {
           let milestoneEntry = timesheet.milestoneEntries.filter(
             (entry) => entry.id === requestEntry
           )[0];
@@ -765,7 +765,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    rejectEntryDTO: timesheetEntryApproveRejectDTO
+    rejectEntryDTO: TimesheetEntryApproveRejectDTO
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
       'YYYY-MM-DD HH:mm:ss'
@@ -794,7 +794,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
         let responseEntries: TimesheetMilestoneEntry[] = [];
 
-        for (const requestEntry of rejectEntryDTO.requestEntries) {
+        for (const requestEntry of rejectEntryDTO.milestoneEntries) {
           timesheets.forEach((timesheet) => {
             let milestoneEntry = timesheet.milestoneEntries.filter(
               (entry) => entry.id === requestEntry
@@ -828,7 +828,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
-    rejectEntryDTO: timesheetEntryApproveRejectDTO,
+    rejectEntryDTO: TimesheetEntryApproveRejectDTO,
     authId: number
   ): Promise<any | undefined> {
     let flagUserIsAllowed = 0;
@@ -858,7 +858,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
         let responseEntries: TimesheetMilestoneEntry[] = [];
 
-        for (const requestEntry of rejectEntryDTO.requestEntries) {
+        for (const requestEntry of rejectEntryDTO.milestoneEntries) {
           let milestoneEntry = timesheet.milestoneEntries.filter(
             (entry) => entry.id === requestEntry
           )[0];
@@ -1603,6 +1603,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
             project: milestoneEntry.milestone.project.title,
             isManaged: authHaveThisMilestone,
             notes: milestoneEntry.notes,
+            actionNotes: milestoneEntry.actionNotes,
             totalHours: 0,
             attachment: attachment,
           };
