@@ -103,6 +103,8 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           }
         }
         leaveRequestObj.workId = leaveRequestDTO.workId;
+        leaveRequestObj.typeId =
+          leaveRequestDTO.typeId == 0 ? null : leaveRequestDTO.typeId;
 
         let employee = await transactionalEntityManager.findOne(
           Employee,
