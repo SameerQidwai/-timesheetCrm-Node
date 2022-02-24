@@ -115,6 +115,8 @@ export class EmployeeRepository extends Repository<Employee> {
             : employeeDTO.superannuationType == 'S'
             ? SuperannuationType.SMSF
             : null;
+      } else {
+        employeeObj.superannuationType = null;
       }
       employeeObj.superannuationAbnOrUsi = employeeDTO.superannuationAbnOrUsi;
       employeeObj.superannuationAddress = employeeDTO.superannuationAddress;
@@ -327,6 +329,8 @@ export class EmployeeRepository extends Repository<Employee> {
             : employeeDTO.superannuationType == 'S'
             ? SuperannuationType.SMSF
             : null;
+      } else {
+        employeeObj.superannuationType = null;
       }
       employeeObj.superannuationAbnOrUsi = employeeDTO.superannuationAbnOrUsi;
       employeeObj.superannuationAddress = employeeDTO.superannuationAddress;
