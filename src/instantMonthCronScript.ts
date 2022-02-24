@@ -42,7 +42,7 @@ let runMonthly = async () => {
 
                 if (_flag_found == 1) {
                   if (policy.earnEvery == LeaveRequestTriggerFrequency.MONTH) {
-                    balance.carryForward = balance.balanceHours;
+                    // balance.carryForward = balance.balanceHours;
                     balance.balanceHours =
                       balance.balanceHours + policy.earnHours;
                     if (balance.balanceHours > policy.threshold) {

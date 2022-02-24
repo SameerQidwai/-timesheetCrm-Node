@@ -41,6 +41,7 @@ export class LeaveRequestTypeRepository extends Repository<LeaveRequestType> {
         'employmentContracts.leaveRequestPolicy.leaveRequestPolicyLeaveRequestTypes',
         'employmentContracts.leaveRequestPolicy.leaveRequestPolicyLeaveRequestTypes.leaveRequestType',
         'leaveRequestBalances',
+        'leaveRequestBalances.type',
       ],
     });
 
@@ -78,9 +79,10 @@ export class LeaveRequestTypeRepository extends Repository<LeaveRequestType> {
       };
     }
 
-    let balanceByType: any = [];
+    let balanceByType: any = {};
     employee.leaveRequestBalances.forEach((balance) => {
-      balanceByType[balance.typeId] = balance.balanceHours;
+      console.log('AAAAAAAAAA', balance.typeId);
+      balanceByType[balance.type.leaveRequestTypeId] = balance.balanceHours;
     });
 
     let leaveRequestTypes =
