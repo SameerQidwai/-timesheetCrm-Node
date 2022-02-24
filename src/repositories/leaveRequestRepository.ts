@@ -75,6 +75,10 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
   ): Promise<any | undefined> {
     let leaveRequest = await this.manager.transaction(
       async (transactionalEntityManager) => {
+        if (isNaN(parseInt(leaveRequestDTO.typeId as any))) {
+          throw new Error('Undefined Type');
+        }
+
         let leaveRequestObj = new LeaveRequest();
 
         leaveRequestObj.desc = leaveRequestDTO.description;
@@ -84,10 +88,9 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           leaveRequestDTO.typeId
         );
 
-        if (!leaveRequestPolicyType) {
+        if (!leaveRequestPolicyType && leaveRequestDTO.typeId != 0) {
           throw new Error('Leave Request Type not found!');
         }
-        leaveRequestObj.typeId = leaveRequestDTO.typeId;
 
         if (leaveRequestDTO.workId) {
           let project = await transactionalEntityManager.findOne(
@@ -121,7 +124,6 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           throw new Error('No Active Contract of Employee');
         }
 
-        console.log('AAAAAAAAAAAA', employee.getActiveContract);
         if (!employee.getActiveContract.leaveRequestPolicy) {
           throw new Error('No Active Leave Request of Employee');
         }
@@ -145,13 +147,13 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           leaveRequestEntryObj.hours = leaveRequestEntry.hours;
           leaveRequestEntryObj.date = leaveRequestEntry.date;
           leaveRequestEntryObj.leaveRequestId = leaveRequestObj.id;
-          _totalHours += leaveRequestEntry.hours;
+          _totalHours += parseFloat(leaveRequestEntry.hours as any);
           leaveRequestObj.entries.push(leaveRequestEntryObj);
         });
 
         //Checking if current balance has less hours than minimum required
 
-        if (leaveRequestBalance) {
+        if (leaveRequestBalance && leaveRequestPolicyType) {
           if (
             leaveRequestBalance.balanceHours <
             leaveRequestPolicyType.minimumBalanceRequired
@@ -176,6 +178,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           leaveRequestBalance = await transactionalEntityManager.save(
             leaveRequestBalance
           );
+        } else if (leaveRequestDTO.typeId == 0) {
         } else {
           throw new Error('Leave Balance not found');
         }
@@ -620,7 +623,11 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           throw new Error('Leave Request not found!');
         }
 
-        if (leaveRequestObj.typeId != leaveRequestDTO.typeId) {
+        if (
+          leaveRequestObj.typeId != leaveRequestDTO.typeId &&
+          leaveRequestObj.typeId != null &&
+          leaveRequestDTO.typeId != 0
+        ) {
           throw new Error('Cannot update Type');
         }
 
@@ -635,10 +642,9 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           leaveRequestDTO.typeId
         );
 
-        if (!leaveRequestPolicyType) {
+        if (!leaveRequestPolicyType && leaveRequestDTO.typeId != 0) {
           throw new Error('Leave Request Type not found!');
         }
-        leaveRequestObj.typeId = leaveRequestDTO.typeId;
 
         if (leaveRequestDTO.workId) {
           let project = await transactionalEntityManager.findOne(
@@ -679,15 +685,18 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           throw new Error('No Active Policy of Employee');
         }
 
-        let leaveRequestBalance = await transactionalEntityManager.findOne(
-          LeaveRequestBalance,
-          {
-            where: {
-              typeId: leaveRequestPolicyType.id,
-              employeeId: authId,
-            },
-          }
-        );
+        let leaveRequestBalance: LeaveRequestBalance | undefined;
+        if (leaveRequestObj.typeId != null && leaveRequestPolicyType) {
+          leaveRequestBalance = await transactionalEntityManager.findOne(
+            LeaveRequestBalance,
+            {
+              where: {
+                typeId: leaveRequestPolicyType.id,
+                employeeId: authId,
+              },
+            }
+          );
+        }
 
         leaveRequestObj.employeeId = authId;
         leaveRequestObj.submittedBy = authId;
@@ -698,10 +707,10 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         let _oldHours = 0;
 
         leaveRequestObj.entries.forEach((entry) => {
-          _oldHours += entry.hours;
+          _oldHours += parseFloat(entry.hours as any);
         });
 
-        if (leaveRequestBalance) {
+        if (leaveRequestBalance && leaveRequestPolicyType) {
           //Checking if current balance has less hours than minimum required
           if (
             leaveRequestBalance.balanceHours + _oldHours <
@@ -719,7 +728,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
             leaveRequestEntryObj.hours = leaveRequestEntry.hours;
             leaveRequestEntryObj.date = leaveRequestEntry.date;
             leaveRequestEntryObj.leaveRequestId = leaveRequestObj.id;
-            _totalHours += leaveRequestEntry.hours;
+            _totalHours += parseFloat(leaveRequestEntry.hours as any);
             leaveRequestObj.entries.push(leaveRequestEntryObj);
           }
 
@@ -742,8 +751,24 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           leaveRequestBalance = await transactionalEntityManager.save(
             leaveRequestBalance
           );
+        } else if (
+          leaveRequestDTO.typeId == 0 ||
+          isNaN(leaveRequestDTO.typeId)
+        ) {
+          await this.manager.delete(LeaveRequestEntry, leaveRequestObj.entries);
+
+          let _totalHours = 0;
+
+          for (let leaveRequestEntry of leaveRequestDTO.entries) {
+            let leaveRequestEntryObj = new LeaveRequestEntry();
+            leaveRequestEntryObj.hours = leaveRequestEntry.hours;
+            leaveRequestEntryObj.date = leaveRequestEntry.date;
+            leaveRequestEntryObj.leaveRequestId = leaveRequestObj.id;
+            _totalHours += parseFloat(leaveRequestEntry.hours as any);
+            leaveRequestObj.entries.push(leaveRequestEntryObj);
+          }
         } else {
-          throw new Error('Leave Request Balance not found');
+          throw new Error('Leave Balance not found');
         }
 
         let leaveRequest = await transactionalEntityManager.save(

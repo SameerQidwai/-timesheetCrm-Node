@@ -24,16 +24,16 @@ import { SuperannuationType } from '../constants/constants';
 
 @EntityRepository(Employee)
 export class EmployeeRepository extends Repository<Employee> {
-  async createAndSave(employee: EmployeeDTO): Promise<any> {
+  async createAndSave(employeeDTO: EmployeeDTO): Promise<any> {
     let id: number;
     let generatedPassword = Math.random().toString(36).substring(4);
     id = await this.manager.transaction(async (transactionalEntityManager) => {
-      if (!employee.contactPersonId) {
+      if (!employeeDTO.contactPersonId) {
         throw Error('Must provide contact person');
       }
       let contactPersonObj = await transactionalEntityManager.findOne(
         ContactPerson,
-        employee.contactPersonId,
+        employeeDTO.contactPersonId,
         { relations: ['contactPersonOrganizations'] }
       );
       if (!contactPersonObj) {
@@ -68,20 +68,20 @@ export class EmployeeRepository extends Repository<Employee> {
           contactPersonOrganization
         );
       }
-      contactPersonObj.firstName = employee.firstName;
-      contactPersonObj.lastName = employee.lastName;
-      contactPersonObj.email = employee.email;
-      contactPersonObj.address = employee.address;
-      contactPersonObj.gender = employee.gender;
-      contactPersonObj.phoneNumber = employee.phoneNumber;
-      if (employee.dateOfBirth)
-        contactPersonObj.dateOfBirth = new Date(employee.dateOfBirth);
+      contactPersonObj.firstName = employeeDTO.firstName;
+      contactPersonObj.lastName = employeeDTO.lastName;
+      contactPersonObj.email = employeeDTO.email;
+      contactPersonObj.address = employeeDTO.address;
+      contactPersonObj.gender = employeeDTO.gender;
+      contactPersonObj.phoneNumber = employeeDTO.phoneNumber;
+      if (employeeDTO.dateOfBirth)
+        contactPersonObj.dateOfBirth = new Date(employeeDTO.dateOfBirth);
 
       let state: State | undefined;
-      if (employee.stateId) {
+      if (employeeDTO.stateId) {
         state = await transactionalEntityManager.findOne(
           State,
-          employee.stateId
+          employeeDTO.stateId
         );
         if (!state) {
           throw new Error('State not found');
@@ -90,7 +90,7 @@ export class EmployeeRepository extends Repository<Employee> {
       await transactionalEntityManager.save(contactPersonObj);
       let employeeObj = new Employee();
       employeeObj.contactPersonOrganizationId = contactPersonOrganization.id;
-      employeeObj.username = employee.username;
+      employeeObj.username = employeeDTO.username;
       // Math.random().toString(36).substring(4)
       employeeObj.password = bcrypt.hashSync(
         generatedPassword,
@@ -98,42 +98,50 @@ export class EmployeeRepository extends Repository<Employee> {
       );
       console.log(generatedPassword);
 
-      employeeObj.nextOfKinName = employee.nextOfKinName;
-      employeeObj.nextOfKinPhoneNumber = employee.nextOfKinPhoneNumber;
-      employeeObj.nextOfKinEmail = employee.nextOfKinEmail;
-      employeeObj.nextOfKinRelation = employee.nextOfKinRelation;
-      employeeObj.tfn = employee.tfn;
-      employeeObj.taxFreeThreshold = employee.taxFreeThreshold ? true : false;
-      employeeObj.helpHECS = employee.helpHECS ? true : false;
-      employeeObj.superannuationName = employee.superannuationName;
-      if (employee.superannuationType) {
-        employeeObj.superannuationType = employee.superannuationType;
+      employeeObj.nextOfKinName = employeeDTO.nextOfKinName;
+      employeeObj.nextOfKinPhoneNumber = employeeDTO.nextOfKinPhoneNumber;
+      employeeObj.nextOfKinEmail = employeeDTO.nextOfKinEmail;
+      employeeObj.nextOfKinRelation = employeeDTO.nextOfKinRelation;
+      employeeObj.tfn = employeeDTO.tfn;
+      employeeObj.taxFreeThreshold = employeeDTO.taxFreeThreshold
+        ? true
+        : false;
+      employeeObj.helpHECS = employeeDTO.helpHECS ? true : false;
+      employeeObj.superannuationName = employeeDTO.superannuationName;
+      if (employeeDTO.superannuationType) {
+        employeeObj.superannuationType =
+          employeeDTO.superannuationType == 'P'
+            ? SuperannuationType.PUBLIC
+            : employeeDTO.superannuationType == 'S'
+            ? SuperannuationType.SMSF
+            : null;
       }
-      employeeObj.superannuationAbnOrUsi = employee.superannuationAbnOrUsi;
-      employeeObj.superannuationAddress = employee.superannuationAddress;
-      employeeObj.superannuationBankName = employee.superannuationBankName;
-      employeeObj.superannuationBankBsb = employee.superannuationBankBsb;
+      employeeObj.superannuationAbnOrUsi = employeeDTO.superannuationAbnOrUsi;
+      employeeObj.superannuationAddress = employeeDTO.superannuationAddress;
+      employeeObj.superannuationBankName = employeeDTO.superannuationBankName;
+      employeeObj.superannuationBankBsb = employeeDTO.superannuationBankBsb;
       employeeObj.superannuationBankAccountOrMembershipNumber =
-        employee.superannuationBankAccountOrMembershipNumber;
-      employeeObj.training = employee.training;
-      employeeObj.roleId = employee.roleId;
-      if (employee.lineManagerId) {
+        employeeDTO.superannuationBankAccountOrMembershipNumber;
+      employeeObj.training = employeeDTO.training;
+      employeeObj.roleId = employeeDTO.roleId;
+
+      if (employeeDTO.lineManagerId) {
         let resEmployee = await transactionalEntityManager.findOne(
           Employee,
-          employee.lineManagerId
+          employeeDTO.lineManagerId
         );
         if (!resEmployee) {
           throw new Error('Line Manager not found');
         }
 
-        employeeObj.lineManagerId = employee.lineManagerId;
+        employeeObj.lineManagerId = employeeDTO.lineManagerId;
       } else {
         employeeObj.lineManagerId = null;
       }
       employeeObj = await transactionalEntityManager.save(employeeObj);
       id = employeeObj.id;
 
-      if (!employee.latestEmploymentContract) {
+      if (!employeeDTO.latestEmploymentContract) {
         throw Error('Must have contract info');
       }
 
@@ -151,7 +159,7 @@ export class EmployeeRepository extends Repository<Employee> {
         remunerationAmountPer,
         leaveRequestPolicyId,
         fileId,
-      } = employee.latestEmploymentContract;
+      } = employeeDTO.latestEmploymentContract;
 
       employmentContract.payslipEmail = payslipEmail;
       employmentContract.comments = comments;
@@ -169,7 +177,7 @@ export class EmployeeRepository extends Repository<Employee> {
       employmentContract.leaveRequestPolicyId = leaveRequestPolicyId;
       employmentContract.fileId = fileId;
       await transactionalEntityManager.save(employmentContract);
-      let { bankName, bankAccountNo, bankBsb } = employee;
+      let { bankName, bankAccountNo, bankBsb } = employeeDTO;
       let bankAccount = new BankAccount();
       bankAccount.accountNo = bankAccountNo;
       bankAccount.bsb = bankBsb;
@@ -267,7 +275,7 @@ export class EmployeeRepository extends Repository<Employee> {
 
   async updateAndReturn(
     id: number,
-    employee: EmployeeDTO
+    employeeDTO: EmployeeDTO
   ): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
       let employeeObj = await this.findOneCustom(id);
@@ -282,20 +290,20 @@ export class EmployeeRepository extends Repository<Employee> {
         throw Error('Employee not found');
       }
 
-      contactPersonObj.firstName = employee.firstName;
-      contactPersonObj.lastName = employee.lastName;
-      contactPersonObj.email = employee.email;
-      contactPersonObj.address = employee.address;
-      contactPersonObj.gender = employee.gender;
-      contactPersonObj.phoneNumber = employee.phoneNumber;
-      if (employee.dateOfBirth)
-        contactPersonObj.dateOfBirth = new Date(employee.dateOfBirth);
+      contactPersonObj.firstName = employeeDTO.firstName;
+      contactPersonObj.lastName = employeeDTO.lastName;
+      contactPersonObj.email = employeeDTO.email;
+      contactPersonObj.address = employeeDTO.address;
+      contactPersonObj.gender = employeeDTO.gender;
+      contactPersonObj.phoneNumber = employeeDTO.phoneNumber;
+      if (employeeDTO.dateOfBirth)
+        contactPersonObj.dateOfBirth = new Date(employeeDTO.dateOfBirth);
 
       let state: State | undefined;
-      if (employee.stateId) {
+      if (employeeDTO.stateId) {
         state = await transactionalEntityManager.findOne(
           State,
-          employee.stateId
+          employeeDTO.stateId
         );
         if (!state) {
           throw new Error('State not found');
@@ -303,30 +311,45 @@ export class EmployeeRepository extends Repository<Employee> {
         contactPersonObj.state = state;
       }
       await transactionalEntityManager.save(contactPersonObj);
-      employeeObj.username = employee.username;
-      employeeObj.nextOfKinName = employee.nextOfKinName;
-      employeeObj.nextOfKinPhoneNumber = employee.nextOfKinPhoneNumber;
-      employeeObj.nextOfKinEmail = employee.nextOfKinEmail;
-      employeeObj.nextOfKinRelation = employee.nextOfKinRelation;
-      employeeObj.tfn = employee.tfn;
-      employeeObj.taxFreeThreshold = employee.taxFreeThreshold;
-      employeeObj.helpHECS = employee.helpHECS;
-      employeeObj.superannuationName = employee.superannuationName;
-      if (employee.superannuationType) {
-        employeeObj.superannuationType = employee.superannuationType;
+      employeeObj.username = employeeDTO.username;
+      employeeObj.nextOfKinName = employeeDTO.nextOfKinName;
+      employeeObj.nextOfKinPhoneNumber = employeeDTO.nextOfKinPhoneNumber;
+      employeeObj.nextOfKinEmail = employeeDTO.nextOfKinEmail;
+      employeeObj.nextOfKinRelation = employeeDTO.nextOfKinRelation;
+      employeeObj.tfn = employeeDTO.tfn;
+      employeeObj.taxFreeThreshold = employeeDTO.taxFreeThreshold;
+      employeeObj.helpHECS = employeeDTO.helpHECS;
+      employeeObj.superannuationName = employeeDTO.superannuationName;
+      if (employeeDTO.superannuationType) {
+        employeeObj.superannuationType =
+          employeeDTO.superannuationType == 'P'
+            ? SuperannuationType.PUBLIC
+            : employeeDTO.superannuationType == 'S'
+            ? SuperannuationType.SMSF
+            : null;
       }
-      employeeObj.superannuationAbnOrUsi = employee.superannuationAbnOrUsi;
-      employeeObj.superannuationAddress = employee.superannuationAddress;
-      employeeObj.superannuationBankName = employee.superannuationBankName;
-      employeeObj.superannuationBankBsb = employee.superannuationBankBsb;
+      employeeObj.superannuationAbnOrUsi = employeeDTO.superannuationAbnOrUsi;
+      employeeObj.superannuationAddress = employeeDTO.superannuationAddress;
+      employeeObj.superannuationBankName = employeeDTO.superannuationBankName;
+      employeeObj.superannuationBankBsb = employeeDTO.superannuationBankBsb;
       employeeObj.superannuationBankAccountOrMembershipNumber =
-        employee.superannuationBankAccountOrMembershipNumber;
-      employeeObj.training = employee.training;
-      employeeObj.roleId = employee.roleId;
-      employeeObj.lineManagerId = employee.lineManagerId;
+        employeeDTO.superannuationBankAccountOrMembershipNumber;
+      employeeObj.training = employeeDTO.training;
+      employeeObj.roleId = employeeDTO.roleId;
+
+      if (employeeDTO.lineManagerId) {
+        let linerManager = await transactionalEntityManager.findOne(
+          Employee,
+          employeeDTO.lineManagerId
+        );
+        if (!linerManager) {
+          throw Error('Line Manager not found');
+        }
+      }
+      employeeObj.lineManagerId = employeeDTO.lineManagerId;
       employeeObj = await transactionalEntityManager.save(employeeObj);
 
-      if (!employee.latestEmploymentContract) {
+      if (!employeeDTO.latestEmploymentContract) {
         throw Error('Must have contract info');
       }
 
@@ -343,7 +366,7 @@ export class EmployeeRepository extends Repository<Employee> {
         remunerationAmountPer,
         leaveRequestPolicyId,
         fileId,
-      } = employee.latestEmploymentContract;
+      } = employeeDTO.latestEmploymentContract;
 
       // find latest contract here
       let employmentContract = await transactionalEntityManager
@@ -383,7 +406,7 @@ export class EmployeeRepository extends Repository<Employee> {
       employmentContract.leaveRequestPolicyId = leaveRequestPolicyId;
       employmentContract.fileId = fileId;
       await transactionalEntityManager.save(employmentContract);
-      let { bankName, bankAccountNo, bankBsb } = employee;
+      let { bankName, bankAccountNo, bankBsb } = employeeDTO;
       let bankAccount = await transactionalEntityManager
         .getRepository(BankAccount)
         .findOne({
@@ -828,7 +851,9 @@ export class EmployeeRepository extends Repository<Employee> {
     employee.superannuationType =
       settingsDTO.superannuationType == 'P'
         ? SuperannuationType.PUBLIC
-        : SuperannuationType.SMSF;
+        : settingsDTO.superannuationType == 'S'
+        ? SuperannuationType.SMSF
+        : null;
     employee.superannuationBankName = settingsDTO.superannuationBankName;
     employee.superannuationBankAccountOrMembershipNumber =
       settingsDTO.superannuationBankAccountOrMembershipNumber;

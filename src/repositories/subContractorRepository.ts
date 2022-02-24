@@ -101,6 +101,17 @@ export class SubContractorRepository extends Repository<Employee> {
       employeeObj.nextOfKinEmail = subContractor.nextOfKinEmail;
       employeeObj.nextOfKinRelation = subContractor.nextOfKinRelation;
       employeeObj.roleId = subContractor.roleId;
+
+      if (subContractor.lineManagerId) {
+        let lineManager = await transactionalEntityManager.findOne(
+          Employee,
+          subContractor.lineManagerId
+        );
+        if (!lineManager) {
+          throw Error('Line Manager not found');
+        }
+      }
+
       employeeObj.lineManagerId = subContractor.lineManagerId;
       employeeObj = await transactionalEntityManager.save(employeeObj);
       id = employeeObj.id;
@@ -265,6 +276,7 @@ export class SubContractorRepository extends Repository<Employee> {
       subContractorObj.nextOfKinEmail = subContractor.nextOfKinEmail;
       subContractorObj.nextOfKinRelation = subContractor.nextOfKinRelation;
       subContractorObj.roleId = subContractor.roleId;
+
       if (subContractor.lineManagerId) {
         let resSubContrator = await transactionalEntityManager.findOne(
           Employee,

@@ -69,7 +69,7 @@ export class Employee extends Base {
     name: 'superannuation_type',
     nullable: true,
   })
-  superannuationType: SuperannuationType;
+  superannuationType: SuperannuationType | null;
 
   @Column({ name: 'superannuation_bank_name', nullable: true })
   superannuationBankName: string;
