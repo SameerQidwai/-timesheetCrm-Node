@@ -80,7 +80,7 @@ export class LeaveRequest extends Base {
     this.entries.forEach((entry, index) => {
       index == 0 ? (startDate = entry.date) : '';
       index == this.entries.length - 1 ? (endDate = entry.date) : '';
-      totalHours += entry.hours;
+      totalHours += parseFloat((entry.hours as any).toFixed(2));
     });
 
     return {
