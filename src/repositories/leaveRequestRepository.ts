@@ -15,7 +15,6 @@ import { LeaveRequestPolicyLeaveRequestType } from '../entities/leaveRequestPoli
 import { LeaveRequestStatus, OpportunityStatus } from '../constants/constants';
 import { EntityType } from '../constants/constants';
 import moment from 'moment';
-import e from 'express';
 
 @EntityRepository(LeaveRequest)
 export class LeaveRequestRepository extends Repository<LeaveRequest> {
@@ -484,18 +483,44 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           throw new Error('Leave Requests not found');
         }
 
-        leaveRequests.forEach((leaveRequest) => {
+        for (let leaveRequest of leaveRequests) {
           if (
-            leaveRequest.approvedAt != null &&
+            leaveRequest.approvedAt != null ||
             leaveRequest.rejectedAt != null
           ) {
             throw new Error('Cannot perform this action');
           }
 
+          let _oldHours = 0;
+          leaveRequest.entries.forEach((entry) => {
+            _oldHours += parseFloat(entry.hours as any);
+          });
+
+          let leaveRequestBalance = await transactionalEntityManager.findOne(
+            LeaveRequestBalance,
+            {
+              where: {
+                typeId: leaveRequest.typeId,
+                employeeId: leaveRequest.employeeId,
+              },
+            }
+          );
+
+          if (!leaveRequestBalance) {
+            throw new Error('Leave Request Balance not found');
+          }
+          leaveRequestBalance.balanceHours =
+            leaveRequestBalance.balanceHours + _oldHours;
+          leaveRequestBalance.used = leaveRequestBalance.used - _oldHours;
+
+          leaveRequestBalance = await transactionalEntityManager.save(
+            leaveRequestBalance
+          );
+
           leaveRequest.rejectedAt = moment().toDate();
           leaveRequest.rejectedBy = authId;
           leaveRequest.note = leaveRequestApproveDTO.note;
-        });
+        }
 
         leaveRequests = await transactionalEntityManager.save(leaveRequests);
 
@@ -586,7 +611,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           throw new Error('Leave Requests not found');
         }
 
-        leaveRequests.forEach((leaveRequest) => {
+        for (let leaveRequest of leaveRequests) {
           if (
             leaveRequest.approvedAt != null ||
             leaveRequest.rejectedAt != null
@@ -594,10 +619,36 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
             throw new Error('Cannot perform this action');
           }
 
+          let _oldHours = 0;
+          leaveRequest.entries.forEach((entry) => {
+            _oldHours += parseFloat(entry.hours as any);
+          });
+
+          let leaveRequestBalance = await transactionalEntityManager.findOne(
+            LeaveRequestBalance,
+            {
+              where: {
+                typeId: leaveRequest.typeId,
+                employeeId: leaveRequest.employeeId,
+              },
+            }
+          );
+
+          if (!leaveRequestBalance) {
+            throw new Error('Leave Request Balance not found');
+          }
+          leaveRequestBalance.balanceHours =
+            leaveRequestBalance.balanceHours + _oldHours;
+          leaveRequestBalance.used = leaveRequestBalance.used - _oldHours;
+
+          leaveRequestBalance = await transactionalEntityManager.save(
+            leaveRequestBalance
+          );
+
           leaveRequest.rejectedAt = moment().toDate();
           leaveRequest.rejectedBy = authId;
           leaveRequest.note = leaveRequestApproveDTO.note;
-        });
+        }
 
         leaveRequests = await transactionalEntityManager.save(leaveRequests);
 

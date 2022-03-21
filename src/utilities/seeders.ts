@@ -453,7 +453,7 @@ let employeeSeeder = async () => {
         endDate: null,
         type: 1,
         noOfHours: 8,
-        noOfHoursPer: 2,
+        noOfDays: 2,
         remunerationAmount: 1200,
         remunerationAmountPer: 3,
         comments: '',
@@ -561,7 +561,7 @@ let employeeSeeder = async () => {
         endDate,
         type,
         noOfHours,
-        noOfHoursPer,
+        noOfDays,
         remunerationAmount,
         remunerationAmountPer,
       } = employeeData.latestEmploymentContract;
@@ -575,7 +575,7 @@ let employeeSeeder = async () => {
       // }
       employmentContract.type = type;
       employmentContract.noOfHours = noOfHours;
-      employmentContract.noOfHoursPer = noOfHoursPer;
+      employmentContract.noOfDays = noOfDays;
       employmentContract.remunerationAmount = remunerationAmount;
       employmentContract.remunerationAmountPer = remunerationAmountPer;
       employmentContract.employeeId = employeeObj.id;

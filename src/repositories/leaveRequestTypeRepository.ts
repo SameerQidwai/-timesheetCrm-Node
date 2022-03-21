@@ -67,8 +67,12 @@ export class LeaveRequestTypeRepository extends Repository<LeaveRequestType> {
     }
 
     let contractDetails = {
-      noOfHours: (employee.getActiveContract.noOfHours / 5).toFixed(2),
-      noOfHoursPer: Frequency[employee.getActiveContract.noOfHoursPer],
+      noOfHours: employee.getActiveContract.noOfHours,
+      noOfDays: employee.getActiveContract.noOfDays,
+      hoursPerDay: (
+        employee.getActiveContract.noOfHours /
+        employee.getActiveContract.noOfDays
+      ).toFixed(2),
     };
 
     if (employee.getActiveContract.leaveRequestPolicyId == null) {
@@ -81,7 +85,6 @@ export class LeaveRequestTypeRepository extends Repository<LeaveRequestType> {
 
     let balanceByType: any = {};
     employee.leaveRequestBalances.forEach((balance) => {
-      console.log('AAAAAAAAAA', balance.typeId);
       balanceByType[balance.type.leaveRequestTypeId] = balance.balanceHours;
     });
 

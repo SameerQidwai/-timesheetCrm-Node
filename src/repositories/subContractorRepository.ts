@@ -128,7 +128,7 @@ export class SubContractorRepository extends Repository<Employee> {
         remunerationAmountPer,
         comments,
         noOfHours,
-        noOfHoursPer,
+        noOfDays,
         fileId,
       } = subContractor.latestContract;
 
@@ -138,7 +138,7 @@ export class SubContractorRepository extends Repository<Employee> {
       }
       employmentContract.comments = comments;
       employmentContract.noOfHours = noOfHours;
-      employmentContract.noOfHoursPer = noOfHoursPer;
+      employmentContract.noOfDays = noOfDays;
       employmentContract.remunerationAmount = remunerationAmount;
       employmentContract.remunerationAmountPer = remunerationAmountPer;
       employmentContract.employeeId = employeeObj.id;
@@ -305,7 +305,7 @@ export class SubContractorRepository extends Repository<Employee> {
         remunerationAmountPer,
         comments,
         noOfHours,
-        noOfHoursPer,
+        noOfDays,
         fileId,
       } = subContractor.latestContract;
 
@@ -337,7 +337,7 @@ export class SubContractorRepository extends Repository<Employee> {
       }
       subContractorContract.comments = comments;
       subContractorContract.noOfHours = noOfHours;
-      subContractorContract.noOfHoursPer = noOfHoursPer;
+      subContractorContract.noOfDays = noOfDays;
 
       subContractorContract.remunerationAmount = remunerationAmount;
       subContractorContract.remunerationAmountPer = remunerationAmountPer;

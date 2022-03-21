@@ -42,7 +42,7 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
     }
     obj.comments = contract.comments;
     obj.noOfHours = contract.noOfHours;
-    obj.noOfHoursPer = contract.noOfHoursPer;
+    obj.noOfDays = contract.noOfDays;
     obj.remunerationAmount = contract.remunerationAmount;
     obj.remunerationAmountPer = contract.remunerationAmountPer;
     obj.fileId = contract.fileId;
@@ -107,7 +107,7 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
     }
     employmentContractObj.comments = contract.comments;
     employmentContractObj.noOfHours = contract.noOfHours;
-    employmentContractObj.noOfHoursPer = contract.noOfHoursPer;
+    employmentContractObj.noOfDays = contract.noOfDays;
     employmentContractObj.remunerationAmount = contract.remunerationAmount;
     employmentContractObj.remunerationAmountPer =
       contract.remunerationAmountPer;

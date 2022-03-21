@@ -36,12 +36,15 @@ export class EmploymentContract extends Base {
   @Column({ name: 'no_of_hours', nullable: true })
   noOfHours: number;
 
-  @Column({
-    type: 'enum',
-    enum: Frequency,
-    name: 'no_of_hours_per',
-  })
-  noOfHoursPer: Frequency;
+  @Column({ name: 'no_of_days', nullable: true })
+  noOfDays: number;
+
+  // @Column({
+  //   type: 'enum',
+  //   enum: Frequency,
+  //   name: 'no_of_hours_per',
+  // })
+  // noOfHoursPer: Frequency;
 
   @Column({ name: 'remuneration_amount' })
   remunerationAmount: number;

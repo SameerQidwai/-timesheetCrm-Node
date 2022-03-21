@@ -45,7 +45,7 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
     }
     obj.type = employmentContract.type;
     obj.noOfHours = employmentContract.noOfHours;
-    obj.noOfHoursPer = employmentContract.noOfHoursPer;
+    obj.noOfDays = employmentContract.noOfDays;
     obj.remunerationAmount = employmentContract.remunerationAmount;
     obj.remunerationAmountPer = employmentContract.remunerationAmountPer;
     obj.leaveRequestPolicyId = employmentContract.leaveRequestPolicyId;
@@ -115,7 +115,7 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
     }
     employmentContractObj.type = employmentContract.type;
     employmentContractObj.noOfHours = employmentContract.noOfHours;
-    employmentContractObj.noOfHoursPer = employmentContract.noOfHoursPer;
+    employmentContractObj.noOfDays = employmentContract.noOfDays;
     employmentContractObj.remunerationAmount =
       employmentContract.remunerationAmount;
     employmentContractObj.remunerationAmountPer =

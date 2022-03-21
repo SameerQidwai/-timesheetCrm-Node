@@ -156,7 +156,7 @@ export class EmployeeRepository extends Repository<Employee> {
         endDate,
         type,
         noOfHours,
-        noOfHoursPer,
+        noOfDays,
         remunerationAmount,
         remunerationAmountPer,
         leaveRequestPolicyId,
@@ -172,7 +172,7 @@ export class EmployeeRepository extends Repository<Employee> {
       }
       employmentContract.type = type;
       employmentContract.noOfHours = noOfHours;
-      employmentContract.noOfHoursPer = noOfHoursPer;
+      employmentContract.noOfDays = noOfDays;
       employmentContract.remunerationAmount = remunerationAmount;
       employmentContract.remunerationAmountPer = remunerationAmountPer;
       employmentContract.employeeId = employeeObj.id;
@@ -365,7 +365,7 @@ export class EmployeeRepository extends Repository<Employee> {
         endDate,
         type,
         noOfHours,
-        noOfHoursPer,
+        noOfDays,
         remunerationAmount,
         remunerationAmountPer,
         leaveRequestPolicyId,
@@ -403,7 +403,7 @@ export class EmployeeRepository extends Repository<Employee> {
       }
       employmentContract.type = type;
       employmentContract.noOfHours = noOfHours;
-      employmentContract.noOfHoursPer = noOfHoursPer;
+      employmentContract.noOfDays = noOfDays;
       employmentContract.remunerationAmount = remunerationAmount;
       employmentContract.remunerationAmountPer = remunerationAmountPer;
       employmentContract.employeeId = employeeObj.id;
