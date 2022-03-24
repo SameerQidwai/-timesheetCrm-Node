@@ -3,6 +3,7 @@ import { Action, Resource } from '../constants/authorization';
 import { can } from '../middlewares/can';
 import { AuthController } from '../controllers/authController';
 import { isLoggedIn } from '../middlewares/loggedIn';
+import { canCustom } from '../middlewares/canCustom';
 
 const router = Router();
 const contr = new AuthController();
@@ -37,10 +38,7 @@ router.route('/auth/users').get([isLoggedIn], contr.getUserUsers.bind(contr));
 
 router
   .route('/auth/projects')
-  .get(
-    [isLoggedIn, can(Action.READ, Resource.PROJECTS)],
-    contr.getUserProjects.bind(contr)
-  );
+  .get([isLoggedIn, canCustom(Action.READ)], contr.getUserProjects.bind(contr));
 
 router.route('/auth/addSkill').post([isLoggedIn], contr.addSkill.bind(contr));
 
