@@ -15,6 +15,7 @@ import { LeaveRequestPolicyLeaveRequestType } from '../entities/leaveRequestPoli
 import { LeaveRequestStatus, OpportunityStatus } from '../constants/constants';
 import { EntityType } from '../constants/constants';
 import moment from 'moment';
+import { Calendar } from '../entities/calendar';
 
 @EntityRepository(LeaveRequest)
 export class LeaveRequestRepository extends Repository<LeaveRequest> {
@@ -212,7 +213,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
   async getAnyLeaveRequest(requestId: number): Promise<any | undefined> {
     let leaveRequest = await this.findOne(requestId, {
-      relations: ['entries'],
+      relations: ['entries', 'employee', 'employee.employmentContracts'],
     });
 
     if (!leaveRequest) {
@@ -227,7 +228,37 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
       relations: ['file'],
     });
 
+    let calendar = await this.manager.find(Calendar, {
+      relations: ['calendarHolidays', 'calendarHolidays.holidayType'],
+    });
+
+    let holidays: any = {};
+
+    if (calendar[0]) {
+      calendar[0].calendarHolidays.forEach((holiday) => {
+        holidays[moment(holiday.date).format('M/D/YYYY').toString()] =
+          holiday.holidayType.label;
+      });
+    }
+
+    if (leaveRequest.employee.getActiveContract == null) {
+      throw new Error('No active contract');
+    }
+
+    let contractDetails = {
+      noOfHours: leaveRequest.employee.getActiveContract.noOfHours,
+      noOfDays: leaveRequest.employee.getActiveContract.noOfDays,
+      hoursPerDay: (
+        leaveRequest.employee.getActiveContract.noOfHours /
+        leaveRequest.employee.getActiveContract.noOfDays
+      ).toFixed(2),
+    };
+
+    delete (leaveRequest as any).employee;
+
     (leaveRequest as any).attachments = attachments;
+    (leaveRequest as any).holidays = holidays;
+    (leaveRequest as any).contractDetails = contractDetails;
 
     return leaveRequest;
   }
@@ -240,13 +271,14 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     let projectIds = await this._userManagesProjectIds(authId);
 
     let leaveRequest = await this.findOne(requestId, {
-      relations: ['entries'],
+      relations: ['entries', 'employee', 'employee.employmentContracts'],
       where: [{ employeeId: In(employeeIds) }, { workId: In(projectIds) }],
     });
 
     if (!leaveRequest) {
       throw new Error('Leave Request not found');
     }
+
     let leavRequestDetails = leaveRequest.getEntriesDetails;
     (leaveRequest as any).startDate = leavRequestDetails.startDate;
     (leaveRequest as any).endDate = leavRequestDetails.endDate;
@@ -256,7 +288,36 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
       relations: ['file'],
     });
 
+    let calendar = await this.manager.find(Calendar, {
+      relations: ['calendarHolidays', 'calendarHolidays.holidayType'],
+    });
+
+    let holidays: any = {};
+
+    if (calendar[0]) {
+      calendar[0].calendarHolidays.forEach((holiday) => {
+        holidays[moment(holiday.date).format('M/D/YYYY').toString()] =
+          holiday.holidayType.label;
+      });
+    }
+
+    if (leaveRequest.employee.getActiveContract == null) {
+      throw new Error('No active contract');
+    }
+
+    let contractDetails = {
+      noOfHours: leaveRequest.employee.getActiveContract.noOfHours,
+      noOfDays: leaveRequest.employee.getActiveContract.noOfDays,
+      hoursPerDay: (
+        leaveRequest.employee.getActiveContract.noOfHours /
+        leaveRequest.employee.getActiveContract.noOfDays
+      ).toFixed(2),
+    };
+
+    delete (leaveRequest as any).employee;
     (leaveRequest as any).attachments = attachments;
+    (leaveRequest as any).holidays = holidays;
+    (leaveRequest as any).contractDetails = contractDetails;
 
     return leaveRequest;
   }

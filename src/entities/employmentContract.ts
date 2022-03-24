@@ -36,7 +36,7 @@ export class EmploymentContract extends Base {
   @Column({ name: 'no_of_hours', nullable: true })
   noOfHours: number;
 
-  @Column({ name: 'no_of_days', nullable: true })
+  @Column({ name: 'no_of_days', default: 5 })
   noOfDays: number;
 
   // @Column({
