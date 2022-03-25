@@ -350,13 +350,16 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
   async getAnyLeaveRequests(
     authId: number,
-    startDate: string = moment().startOf('year').format('YYYY-MM-DD'),
-    endDate: string = moment().endOf('year').format('YYYY-MM-DD'),
+    startDate: string | null = moment().startOf('year').format('YYYY-MM-DD'),
+    endDate: string | null = moment().endOf('year').format('YYYY-MM-DD'),
     userId: number,
     workId: number
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY');
     let cEndDate = moment(endDate, 'DD-MM-YYYY');
+
+    console.log('STAAART', cStartDate);
+    console.log('ENDDDDD', cEndDate);
 
     let response: LeaveRequest[] = [];
     let leaveRequests = await this.find({

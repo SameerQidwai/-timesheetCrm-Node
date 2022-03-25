@@ -15,6 +15,7 @@ import { Opportunity } from '../entities/opportunity';
 import { OpportunityResourceAllocation } from '../entities/opportunityResourceAllocation';
 import moment from 'moment';
 import { Milestone } from '../entities/milestone';
+import { LeaveRequest } from '../entities/leaveRequest';
 
 @EntityRepository(Timesheet)
 export class TimesheetRepository extends Repository<Timesheet> {
@@ -43,6 +44,28 @@ export class TimesheetRepository extends Repository<Timesheet> {
     if (!timesheet) {
       throw new Error('Timesheet not found');
     }
+
+    // let resLeaveRequests: LeaveRequest[] = [];
+    // let leaveRequest = await this.manager.find(LeaveRequest, {
+    //   where: {
+    //     employeeId: userId,
+    //   },
+    //   relations: ['entries'],
+    // });
+
+    // leaveRequest.forEach((leaveRequest) => {
+    //   let leaveRequestDetails = leaveRequest.getEntriesDetails;
+    //   console.log('LEAVE REQUEST START', moment(leaveRequestDetails.startDate));
+    //   console.log('LEAVE REQUEST END', moment(leaveRequestDetails.endDate));
+    //   console.log('MONTH START', moment(cStartDate));
+    //   console.log('MONTH END', moment(cEndDate));
+    //   if (
+    //     moment(leaveRequestDetails.startDate).isSameOrAfter(cStartDate) &&
+    //     moment(leaveRequestDetails.endDate).isSameOrBefore(cEndDate)
+    //   ) {
+    //     resLeaveRequests.push(leaveRequest);
+    //   }
+    // });
 
     //-- START OF MODIFIED RESPSONSE FOR FRONTEND
 
@@ -133,6 +156,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
       status: timesheetStatus,
       notes: timesheet.notes,
       milestones: milestones,
+      // leaveRequests: resLeaveRequests,
     };
 
     return response;

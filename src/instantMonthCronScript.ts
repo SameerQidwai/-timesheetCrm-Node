@@ -24,61 +24,77 @@ let runMonthly = async () => {
         'leaveRequestBalances',
       ],
     });
-
-    for (let employee of employees) {
+    let promises: any = [];
+    employees.forEach((employee) => {
       if (employee.getActiveContract != null) {
         if (employee.getActiveContract.leaveRequestPolicy) {
-          for (let policy of employee.getActiveContract.leaveRequestPolicy
-            .leaveRequestPolicyLeaveRequestTypes) {
-            if (
-              policy.earnEvery == LeaveRequestTriggerFrequency.MONTH ||
-              policy.resetEvery == LeaveRequestTriggerFrequency.MONTH
-            ) {
-              let _flag_found = 0;
-              for (let balance of employee.leaveRequestBalances) {
-                if (policy.id == balance.typeId && _flag_found == 0) {
-                  _flag_found = 1;
-                }
+          employee.getActiveContract.leaveRequestPolicy.leaveRequestPolicyLeaveRequestTypes.forEach(
+            (policy) => {
+              if (
+                policy.earnEvery == LeaveRequestTriggerFrequency.MONTH ||
+                policy.resetEvery == LeaveRequestTriggerFrequency.MONTH
+              ) {
+                let _flag_create = 1;
+                employee.leaveRequestBalances.forEach((balance) => {
+                  let _flag_found = 0;
+                  if (policy.id == balance.typeId && _flag_found == 0) {
+                    _flag_found = 1;
+                    _flag_create = 0;
+                  }
 
-                if (_flag_found == 1) {
-                  if (policy.earnEvery == LeaveRequestTriggerFrequency.MONTH) {
-                    // balance.carryForward = balance.balanceHours;
-                    balance.balanceHours =
-                      balance.balanceHours + policy.earnHours;
-                    if (balance.balanceHours > policy.threshold) {
-                      balance.balanceHours = policy.threshold;
+                  if (_flag_found == 1) {
+                    if (
+                      policy.earnEvery == LeaveRequestTriggerFrequency.MONTH
+                    ) {
+                      // balance.carryForward = balance.balanceHours;
+                      if (balance.balanceHours > policy.threshold) {
+                        if (policy.threshold == 0) {
+                          balance.balanceHours =
+                            balance.balanceHours + policy.earnHours;
+                        } else if (policy.threshold != 0) {
+                          balance.balanceHours = policy.threshold;
+                        }
+                      } else {
+                        balance.balanceHours =
+                          balance.balanceHours + policy.earnHours;
+                      }
                     }
+                    if (
+                      policy.resetEvery == LeaveRequestTriggerFrequency.MONTH
+                    ) {
+                      balance.balanceHours = policy.resetHours;
+                      balance.carryForward = 0;
+                      balance.used = 0;
+                    }
+                    promises.push(balance);
                   }
-                  if (policy.resetEvery == LeaveRequestTriggerFrequency.MONTH) {
-                    balance.balanceHours = policy.resetHours;
-                    balance.carryForward = 0;
-                    balance.used = 0;
+                });
+                if (_flag_create == 1) {
+                  let leaveRequestBalanceObj = new LeaveRequestBalance();
+                  if (policy.earnEvery == LeaveRequestTriggerFrequency.MONTH) {
+                    leaveRequestBalanceObj.balanceHours = policy.earnHours;
+                  } else if (
+                    policy.resetEvery == LeaveRequestTriggerFrequency.MONTH
+                  ) {
+                    leaveRequestBalanceObj.balanceHours = policy.resetHours;
                   }
+                  leaveRequestBalanceObj.typeId = policy.id;
+                  leaveRequestBalanceObj.employeeId = employee.id;
+                  leaveRequestBalanceObj.carryForward = 0;
+                  leaveRequestBalanceObj.used = 0;
 
-                  await transactionalEntityManager.save(balance);
+                  promises.push(leaveRequestBalanceObj);
                 }
-              }
-              if (_flag_found == 0) {
-                let leaveRequestBalanceObj = new LeaveRequestBalance();
-                if (policy.earnEvery == LeaveRequestTriggerFrequency.MONTH) {
-                  leaveRequestBalanceObj.balanceHours = policy.earnHours;
-                } else if (
-                  policy.resetEvery == LeaveRequestTriggerFrequency.MONTH
-                ) {
-                  leaveRequestBalanceObj.balanceHours = policy.resetHours;
-                }
-                leaveRequestBalanceObj.typeId = policy.id;
-                leaveRequestBalanceObj.employeeId = employee.id;
-                leaveRequestBalanceObj.carryForward = 0;
-                leaveRequestBalanceObj.used = 0;
-
-                await transactionalEntityManager.save(leaveRequestBalanceObj);
               }
             }
-          }
+          );
         }
       }
-    }
+    });
+
+    let balances = await Promise.all(promises);
+    await transactionalEntityManager.save(balances);
   });
   console.log('Monthly Cron Ends');
+  return 1;
 };

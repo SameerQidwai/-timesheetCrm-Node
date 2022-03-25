@@ -34,10 +34,11 @@ export class LeaveRequestController {
       const { grantLevel } = res.locals;
 
       let authId = parseInt(user.id) as number;
-      let startDate = req.query.startDate as string;
-      let endDate = req.query.endDate as string;
+      let startDate = req.query.startDate as string | undefined;
+      let endDate = req.query.endDate as string | undefined;
       let userId = req.query.userId as string;
       let workId = req.query.workId as string;
+
       let records: any = [];
       if (grantLevel.includes('ANY')) {
         records = await repository.getAnyLeaveRequests(
