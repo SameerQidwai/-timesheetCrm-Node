@@ -4,7 +4,14 @@ import {
   TimesheetEntryApproveRejectDTO,
   TimesheetDTO,
 } from '../dto';
-import { EntityRepository, Repository, MoreThan, In } from 'typeorm';
+import {
+  EntityRepository,
+  Repository,
+  MoreThan,
+  In,
+  Not,
+  IsNull,
+} from 'typeorm';
 import { Timesheet } from '../entities/timesheet';
 import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
 import { TimesheetEntry } from '../entities/timesheetEntry';
@@ -45,27 +52,45 @@ export class TimesheetRepository extends Repository<Timesheet> {
       throw new Error('Timesheet not found');
     }
 
-    // let resLeaveRequests: LeaveRequest[] = [];
-    // let leaveRequest = await this.manager.find(LeaveRequest, {
-    //   where: {
-    //     employeeId: userId,
-    //   },
-    //   relations: ['entries'],
-    // });
+    let resLeaveRequests: any = [];
+    let leaveRequest = await this.manager.find(LeaveRequest, {
+      where: [
+        {
+          employeeId: userId,
+          submittedAt: Not(IsNull()),
+          rejectedAt: IsNull(),
+        },
+        { employeeId: userId, approvedAt: Not(IsNull()), rejectedAt: IsNull() },
+      ],
+      relations: ['entries', 'work', 'type', 'type.leaveRequestType'],
+    });
 
-    // leaveRequest.forEach((leaveRequest) => {
-    //   let leaveRequestDetails = leaveRequest.getEntriesDetails;
-    //   console.log('LEAVE REQUEST START', moment(leaveRequestDetails.startDate));
-    //   console.log('LEAVE REQUEST END', moment(leaveRequestDetails.endDate));
-    //   console.log('MONTH START', moment(cStartDate));
-    //   console.log('MONTH END', moment(cEndDate));
-    //   if (
-    //     moment(leaveRequestDetails.startDate).isSameOrAfter(cStartDate) &&
-    //     moment(leaveRequestDetails.endDate).isSameOrBefore(cEndDate)
-    //   ) {
-    //     resLeaveRequests.push(leaveRequest);
-    //   }
-    // });
+    leaveRequest.forEach((leaveRequest) => {
+      let leaveRequestDetails = leaveRequest.getEntriesDetails;
+      if (
+        moment(leaveRequestDetails.startDate).isSameOrAfter(cStartDate) &&
+        moment(leaveRequestDetails.endDate).isSameOrBefore(cEndDate)
+      ) {
+        let resLeaveRequest: any = {
+          leaveRequest: true,
+          project: leaveRequest.work?.title ?? '-',
+          workId: leaveRequest.workId,
+          leaveType: leaveRequest.type?.leaveRequestType.label ?? 'Unpaid',
+          typeId: leaveRequest.typeId,
+          totalHours: 0.0,
+        };
+        leaveRequest.entries.forEach((entry) => {
+          resLeaveRequest[moment(entry.date, 'YYYY-MM-DD').format('D/M')] = {
+            date: moment(entry.date, 'YYYY-MM-DD').format('D-M-Y'),
+            hours: entry.hours,
+            status: leaveRequest.status,
+            statusMsg: leaveRequest.note,
+            notes: leaveRequest.desc,
+          };
+        });
+        resLeaveRequests.push(resLeaveRequest);
+      }
+    });
 
     //-- START OF MODIFIED RESPSONSE FOR FRONTEND
 
@@ -138,6 +163,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
       milestones.push(milestone);
     }
 
+    milestones.push(resLeaveRequests);
+
     console.log(milestoneStatuses);
     let timesheetStatus: TimesheetStatus = milestoneStatuses.includes(
       TimesheetStatus.REJECTED
@@ -188,6 +215,46 @@ export class TimesheetRepository extends Repository<Timesheet> {
     if (!timesheet) {
       throw new Error('Timesheet not found');
     }
+
+    let resLeaveRequests: any = [];
+    let leaveRequest = await this.manager.find(LeaveRequest, {
+      where: [
+        {
+          employeeId: userId,
+          submittedAt: Not(IsNull()),
+          rejectedAt: IsNull(),
+        },
+        { employeeId: userId, approvedAt: Not(IsNull()), rejectedAt: IsNull() },
+      ],
+      relations: ['entries', 'work', 'type', 'type.leaveRequestType'],
+    });
+
+    leaveRequest.forEach((leaveRequest) => {
+      let leaveRequestDetails = leaveRequest.getEntriesDetails;
+      if (
+        moment(leaveRequestDetails.startDate).isSameOrAfter(cStartDate) &&
+        moment(leaveRequestDetails.endDate).isSameOrBefore(cEndDate)
+      ) {
+        let resLeaveRequest: any = {
+          leaveRequest: true,
+          project: leaveRequest.work?.title ?? '-',
+          workId: leaveRequest.workId,
+          leaveType: leaveRequest.type?.leaveRequestType.label ?? 'Unpaid',
+          typeId: leaveRequest.typeId,
+          totalHours: 0.0,
+        };
+        leaveRequest.entries.forEach((entry) => {
+          resLeaveRequest[moment(entry.date, 'YYYY-MM-DD').format('D/M')] = {
+            date: moment(entry.date, 'YYYY-MM-DD').format('D-M-Y'),
+            hours: entry.hours,
+            status: leaveRequest.status,
+            statusMsg: leaveRequest.note,
+            notes: leaveRequest.desc,
+          };
+        });
+        resLeaveRequests.push(resLeaveRequest);
+      }
+    });
 
     //-- START OF MODIFIED RESPSONSE FOR FRONTEND
 
@@ -261,6 +328,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
       }
     }
 
+    milestones.push(resLeaveRequests);
+
     console.log(milestoneStatuses);
     let timesheetStatus: TimesheetStatus = milestoneStatuses.includes(
       TimesheetStatus.REJECTED
@@ -310,6 +379,46 @@ export class TimesheetRepository extends Repository<Timesheet> {
     if (!timesheet) {
       throw new Error('Timesheet not found');
     }
+
+    let resLeaveRequests: any = [];
+    let leaveRequest = await this.manager.find(LeaveRequest, {
+      where: [
+        {
+          employeeId: userId,
+          submittedAt: Not(IsNull()),
+          rejectedAt: IsNull(),
+        },
+        { employeeId: userId, approvedAt: Not(IsNull()), rejectedAt: IsNull() },
+      ],
+      relations: ['entries', 'work', 'type', 'type.leaveRequestType'],
+    });
+
+    leaveRequest.forEach((leaveRequest) => {
+      let leaveRequestDetails = leaveRequest.getEntriesDetails;
+      if (
+        moment(leaveRequestDetails.startDate).isSameOrAfter(cStartDate) &&
+        moment(leaveRequestDetails.endDate).isSameOrBefore(cEndDate)
+      ) {
+        let resLeaveRequest: any = {
+          leaveRequest: true,
+          project: leaveRequest.work?.title ?? '-',
+          workId: leaveRequest.workId,
+          leaveType: leaveRequest.type?.leaveRequestType.label ?? 'Unpaid',
+          typeId: leaveRequest.typeId,
+          totalHours: 0.0,
+        };
+        leaveRequest.entries.forEach((entry) => {
+          resLeaveRequest[moment(entry.date, 'YYYY-MM-DD').format('D/M')] = {
+            date: moment(entry.date, 'YYYY-MM-DD').format('D-M-Y'),
+            hours: entry.hours,
+            status: leaveRequest.status,
+            statusMsg: leaveRequest.note,
+            notes: leaveRequest.desc,
+          };
+        });
+        resLeaveRequests.push(resLeaveRequest);
+      }
+    });
 
     //-- START OF MODIFIED RESPSONSE FOR FRONTEND
 
@@ -382,6 +491,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
         milestones.push(milestone);
       }
     }
+
+    milestones.push(resLeaveRequests);
 
     console.log(milestoneStatuses);
     let timesheetStatus: TimesheetStatus = milestoneStatuses.includes(

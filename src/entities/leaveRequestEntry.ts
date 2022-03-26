@@ -5,7 +5,7 @@ import { LeaveRequest } from './leaveRequest';
 
 @Entity('leave_request_entries')
 export class LeaveRequestEntry extends Base {
-  @Column({ name: 'date' })
+  @Column({ name: 'date', type: 'date' })
   date: Date;
 
   @Column({ name: 'hours', type: 'float' })

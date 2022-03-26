@@ -4,6 +4,7 @@ import { Opportunity } from './opportunity';
 import { Employee } from './employee';
 import { LeaveRequestPolicyLeaveRequestType } from './leaveRequestPolicyLeaveRequestType';
 import { LeaveRequestEntry } from './leaveRequestEntry';
+import { LeaveRequestStatus } from '../constants/constants';
 
 @Entity('leave_requests')
 export class LeaveRequest extends Base {
@@ -88,5 +89,13 @@ export class LeaveRequest extends Base {
       endDate: endDate,
       totalHours: totalHours,
     };
+  }
+
+  public get status(): LeaveRequestStatus {
+    return this.rejectedAt
+      ? LeaveRequestStatus.REJECTED
+      : this.approvedAt
+      ? LeaveRequestStatus.APPROVED
+      : LeaveRequestStatus.SUBMITTED;
   }
 }
