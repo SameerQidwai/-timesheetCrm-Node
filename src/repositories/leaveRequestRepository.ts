@@ -3,7 +3,14 @@ import {
   LeaveRequestBalanceAccuredDTO,
   LeaveRequestDTO,
 } from '../dto';
-import { EntityRepository, Repository, In } from 'typeorm';
+import {
+  EntityRepository,
+  Repository,
+  In,
+  LessThan,
+  MoreThan,
+  Between,
+} from 'typeorm';
 import { LeaveRequest } from '../entities/leaveRequest';
 import { LeaveRequestEntry } from '../entities/leaveRequestEntry';
 import { LeaveRequestType } from '../entities/leaveRequestType';
@@ -130,6 +137,39 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           throw new Error('No Active Leave Request of Employee');
         }
 
+        let _firstDate = moment(leaveRequestDTO.entries[0].date).format(
+          'YYYY-MM-DD'
+        );
+        let _lastDate = moment(
+          leaveRequestDTO.entries[leaveRequestDTO.entries.length - 1].date
+        ).format('YYYY-MM-DD');
+
+        console.log('FIRSTTT DATEEE', _firstDate);
+        console.log('LASTTTT DATEEE', _lastDate);
+
+        let oldEntries = await transactionalEntityManager
+          .createQueryBuilder(LeaveRequestEntry, 'entry')
+          .orderBy('entry.id')
+          .leftJoinAndSelect(
+            'leave_requests',
+            'leaveRequest',
+            'leaveRequest.id = entry.leave_request_id'
+          )
+          .where('leaveRequest.employee_id = :authId', { authId })
+          .andWhere('entry.date BETWEEN :_firstDate AND :_lastDate', {
+            _firstDate,
+            _lastDate,
+          })
+          .getRawMany();
+
+        if (oldEntries.length > 0) {
+          throw new Error(
+            `On Date: ${moment(oldEntries[0].entry_date).format(
+              'DD-MM-YYYY'
+            )} leave request is already created`
+          );
+        }
+
         let leaveRequestBalance = await transactionalEntityManager.findOne(
           LeaveRequestBalance,
           {
@@ -145,6 +185,10 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         let _totalHours = 0;
 
         leaveRequestDTO.entries.forEach((leaveRequestEntry) => {
+          let parsedDate = moment(leaveRequestEntry.date).isValid();
+          if (!parsedDate) {
+            throw new Error('Invalid Date');
+          }
           let leaveRequestEntryObj = new LeaveRequestEntry();
           leaveRequestEntryObj.hours = leaveRequestEntry.hours;
           leaveRequestEntryObj.date = leaveRequestEntry.date;
@@ -805,6 +849,39 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           throw new Error('No Active Policy of Employee');
         }
 
+        let _firstDate = moment(leaveRequestDTO.entries[0].date).format(
+          'YYYY-MM-DD'
+        );
+        let _lastDate = moment(
+          leaveRequestDTO.entries[leaveRequestDTO.entries.length - 1].date
+        ).format('YYYY-MM-DD');
+
+        console.log('FIRSTTT DATEEE', _firstDate);
+        console.log('LASTTTT DATEEE', _lastDate);
+
+        let oldEntries = await transactionalEntityManager
+          .createQueryBuilder(LeaveRequestEntry, 'entry')
+          .orderBy('entry.id')
+          .leftJoinAndSelect(
+            'leave_requests',
+            'leaveRequest',
+            'leaveRequest.id = entry.leave_request_id'
+          )
+          .where('leaveRequest.employee_id = :authId', { authId })
+          .andWhere('entry.date BETWEEN :_firstDate AND :_lastDate', {
+            _firstDate,
+            _lastDate,
+          })
+          .getRawMany();
+
+        if (oldEntries.length > 0) {
+          throw new Error(
+            `On Date: ${moment(oldEntries[0].entry_date).format(
+              'DD-MM-YYYY'
+            )} leave request is already created`
+          );
+        }
+
         let leaveRequestBalance: LeaveRequestBalance | undefined;
         if (leaveRequestObj.typeId != null && leaveRequestPolicyType) {
           leaveRequestBalance = await transactionalEntityManager.findOne(
@@ -844,6 +921,10 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           let _totalHours = 0;
 
           for (let leaveRequestEntry of leaveRequestDTO.entries) {
+            let parsedDate = moment(leaveRequestEntry.date).isValid();
+            if (!parsedDate) {
+              throw new Error('Invalid Date');
+            }
             let leaveRequestEntryObj = new LeaveRequestEntry();
             leaveRequestEntryObj.hours = leaveRequestEntry.hours;
             leaveRequestEntryObj.date = leaveRequestEntry.date;
@@ -880,6 +961,10 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           let _totalHours = 0;
 
           for (let leaveRequestEntry of leaveRequestDTO.entries) {
+            let parsedDate = moment(leaveRequestEntry.date).isValid();
+            if (!parsedDate) {
+              throw new Error('Invalid Date');
+            }
             let leaveRequestEntryObj = new LeaveRequestEntry();
             leaveRequestEntryObj.hours = leaveRequestEntry.hours;
             leaveRequestEntryObj.date = leaveRequestEntry.date;

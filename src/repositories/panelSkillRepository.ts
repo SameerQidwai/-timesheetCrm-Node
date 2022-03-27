@@ -102,7 +102,7 @@ export class PanelSkillRepository extends Repository<PanelSkill> {
     panelSkill: PanelSkillDTO
   ): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
-      console.log('wtf');
+      // console.log('wtf');
       let panelSkillObj = await this.findOneCustom(id);
       panelSkillObj.label = panelSkill.label;
       let standardSkill = await transactionalEntityManager.find(StandardSkill, {
@@ -166,10 +166,10 @@ export class PanelSkillRepository extends Repository<PanelSkill> {
               throw new Error('standardLevel not found!');
             }
             panelSkillStandardLevelObj.standardLevelId = standardLevel[0].id;
-            console.log(
-              'HEREEE SDAKHUDHAKHD',
-              panelSkillStandardLevelObj.standardLevelId
-            );
+            // console.log(
+            //   'HEREEE SDAKHUDHAKHD',
+            //   panelSkillStandardLevelObj.standardLevelId
+            // );
             // panelSkillStandardLevelObj.standardLevel = standardLevel[0];
             return panelSkillStandardLevelObj;
           }
@@ -177,7 +177,7 @@ export class PanelSkillRepository extends Repository<PanelSkill> {
       let panelSkillStandardLevels = await Promise.all(
         panelSkillStandardLevelsPromise
       );
-      console.log('AIHDIKAHSDDHSHKSHDKAKH', panelSkillStandardLevels);
+      // console.log('AIHDIKAHSDDHSHKSHDKAKH', panelSkillStandardLevels);
 
       panelSkillObj['panelSkillStandardLevels'] = panelSkillStandardLevels;
       await transactionalEntityManager.save(panelSkillObj);
