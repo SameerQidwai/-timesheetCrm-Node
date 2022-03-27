@@ -3,7 +3,11 @@ import { Base } from './common/base';
 import { Employee } from './employee';
 import { LeaveRequest } from './leaveRequest';
 
-@Entity('leave_request_entries')
+@Entity('leave_request_entries', {
+  orderBy: {
+    date: 'ASC',
+  },
+})
 export class LeaveRequestEntry extends Base {
   @Column({ name: 'date', type: 'date' })
   date: Date;
