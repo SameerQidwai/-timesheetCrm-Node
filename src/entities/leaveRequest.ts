@@ -91,7 +91,7 @@ export class LeaveRequest extends Base {
     };
   }
 
-  public get status(): LeaveRequestStatus {
+  public get getStatus(): LeaveRequestStatus {
     return this.rejectedAt
       ? LeaveRequestStatus.REJECTED
       : this.approvedAt

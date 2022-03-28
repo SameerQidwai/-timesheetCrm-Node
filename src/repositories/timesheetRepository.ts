@@ -98,6 +98,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         notes: milestoneEntry.notes,
         attachment: attachment,
         totalHours: 0,
+        actionNotes: milestoneEntry.actionNotes,
       };
 
       milestoneEntry.entries.map((entry: TimesheetEntry) => {
@@ -122,7 +123,6 @@ export class TimesheetRepository extends Repository<Timesheet> {
       milestones.push(milestone);
     }
 
-    let resLeaveRequests: any[] = [];
     let leaveRequest = await this.manager.find(LeaveRequest, {
       where: [
         {
@@ -139,8 +139,22 @@ export class TimesheetRepository extends Repository<Timesheet> {
     leaveRequest.forEach((leaveRequest) => {
       let leaveRequestDetails = leaveRequest.getEntriesDetails;
       if (
-        moment(leaveRequestDetails.startDate).isSameOrAfter(cStartDate) &&
-        moment(leaveRequestDetails.endDate).isSameOrBefore(cEndDate)
+        (moment(leaveRequestDetails.startDate).isSameOrAfter(cStartDate) &&
+          moment(leaveRequestDetails.endDate).isSameOrBefore(cEndDate)) ||
+        ((moment(leaveRequestDetails.startDate).isSameOrBefore(cEndDate) ||
+          moment(leaveRequestDetails.startDate).isSame(cEndDate) ||
+          moment(leaveRequestDetails.startDate).isBetween(
+            cStartDate,
+            cEndDate
+          )) &&
+          moment(leaveRequestDetails.endDate).isSameOrAfter(cStartDate)) ||
+        (moment(leaveRequestDetails.startDate).isSameOrBefore(cStartDate) &&
+          (moment(leaveRequestDetails.endDate).isSame(cEndDate) ||
+            moment(leaveRequestDetails.endDate).isBetween(
+              cStartDate,
+              cEndDate
+            ) ||
+            moment(leaveRequestDetails.endDate).isSame(cStartDate)))
       ) {
         let _checker =
           _projectAndTypeIndexer[
@@ -154,7 +168,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
             resLeaveRequest[moment(entry.date, 'YYYY-MM-DD').format('D/M')] = {
               date: moment(entry.date, 'YYYY-MM-DD').format('D-M-Y'),
               hours: entry.hours,
-              status: leaveRequest.status,
+              status: leaveRequest.getStatus,
               statusMsg: leaveRequest.note,
               notes: leaveRequest.desc,
             };
@@ -174,13 +188,16 @@ export class TimesheetRepository extends Repository<Timesheet> {
           };
 
           leaveRequest.entries.forEach((entry) => {
-            resLeaveRequest[moment(entry.date, 'YYYY-MM-DD').format('D/M')] = {
-              date: moment(entry.date, 'YYYY-MM-DD').format('D-M-Y'),
-              hours: entry.hours,
-              status: leaveRequest.status,
-              statusMsg: leaveRequest.note,
-              notes: leaveRequest.desc,
-            };
+            if (entry.hours > 0) {
+              resLeaveRequest[moment(entry.date, 'YYYY-MM-DD').format('D/M')] =
+                {
+                  date: moment(entry.date, 'YYYY-MM-DD').format('D-M-Y'),
+                  hours: entry.hours,
+                  status: leaveRequest.getStatus,
+                  statusMsg: leaveRequest.note,
+                  notes: leaveRequest.desc,
+                };
+            }
           });
 
           milestones.push(resLeaveRequest);
@@ -239,46 +256,6 @@ export class TimesheetRepository extends Repository<Timesheet> {
       throw new Error('Timesheet not found');
     }
 
-    let resLeaveRequests: any = [];
-    let leaveRequest = await this.manager.find(LeaveRequest, {
-      where: [
-        {
-          employeeId: userId,
-          submittedAt: Not(IsNull()),
-          rejectedAt: IsNull(),
-        },
-        { employeeId: userId, approvedAt: Not(IsNull()), rejectedAt: IsNull() },
-      ],
-      relations: ['entries', 'work', 'type', 'type.leaveRequestType'],
-    });
-
-    leaveRequest.forEach((leaveRequest) => {
-      let leaveRequestDetails = leaveRequest.getEntriesDetails;
-      if (
-        moment(leaveRequestDetails.startDate).isSameOrAfter(cStartDate) &&
-        moment(leaveRequestDetails.endDate).isSameOrBefore(cEndDate)
-      ) {
-        let resLeaveRequest: any = {
-          leaveRequest: true,
-          project: leaveRequest.work?.title ?? '-',
-          workId: leaveRequest.workId,
-          leaveType: leaveRequest.type?.leaveRequestType.label ?? 'Unpaid',
-          typeId: leaveRequest.typeId,
-          totalHours: 0.0,
-        };
-        leaveRequest.entries.forEach((entry) => {
-          resLeaveRequest[moment(entry.date, 'YYYY-MM-DD').format('D/M')] = {
-            date: moment(entry.date, 'YYYY-MM-DD').format('D-M-Y'),
-            hours: entry.hours,
-            status: leaveRequest.status,
-            statusMsg: leaveRequest.note,
-            notes: leaveRequest.desc,
-          };
-        });
-        resLeaveRequests.push(resLeaveRequest);
-      }
-    });
-
     //-- START OF MODIFIED RESPSONSE FOR FRONTEND
 
     let milestones: any = [];
@@ -324,6 +301,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         notes: milestoneEntry.notes,
         attachment: attachment,
         totalHours: 0,
+        actionNotes: milestoneEntry.actionNotes,
       };
 
       if (authHaveThisMilestone) {
@@ -351,7 +329,87 @@ export class TimesheetRepository extends Repository<Timesheet> {
       }
     }
 
-    milestones.push(resLeaveRequests);
+    let leaveRequest = await this.manager.find(LeaveRequest, {
+      where: [
+        {
+          employeeId: userId,
+          submittedAt: Not(IsNull()),
+          rejectedAt: IsNull(),
+        },
+        { employeeId: userId, approvedAt: Not(IsNull()), rejectedAt: IsNull() },
+      ],
+      relations: ['entries', 'work', 'type', 'type.leaveRequestType'],
+    });
+
+    let _projectAndTypeIndexer: any = {};
+    leaveRequest.forEach((leaveRequest) => {
+      let leaveRequestDetails = leaveRequest.getEntriesDetails;
+      if (
+        (moment(leaveRequestDetails.startDate).isSameOrAfter(cStartDate) &&
+          moment(leaveRequestDetails.endDate).isSameOrBefore(cEndDate)) ||
+        ((moment(leaveRequestDetails.startDate).isSameOrBefore(cEndDate) ||
+          moment(leaveRequestDetails.startDate).isSame(cEndDate) ||
+          moment(leaveRequestDetails.startDate).isBetween(
+            cStartDate,
+            cEndDate
+          )) &&
+          moment(leaveRequestDetails.endDate).isSameOrAfter(cStartDate)) ||
+        (moment(leaveRequestDetails.startDate).isSameOrBefore(cStartDate) &&
+          (moment(leaveRequestDetails.endDate).isSame(cEndDate) ||
+            moment(leaveRequestDetails.endDate).isBetween(
+              cStartDate,
+              cEndDate
+            ) ||
+            moment(leaveRequestDetails.endDate).isSame(cStartDate)))
+      ) {
+        let _checker =
+          _projectAndTypeIndexer[
+            `${leaveRequest.workId ?? 0}_${leaveRequest.typeId ?? 0}`
+          ];
+
+        if (_checker !== undefined) {
+          let resLeaveRequest = milestones[_checker];
+
+          leaveRequest.entries.forEach((entry) => {
+            resLeaveRequest[moment(entry.date, 'YYYY-MM-DD').format('D/M')] = {
+              date: moment(entry.date, 'YYYY-MM-DD').format('D-M-Y'),
+              hours: entry.hours,
+              status: leaveRequest.getStatus,
+              statusMsg: leaveRequest.note,
+              notes: leaveRequest.desc,
+            };
+          });
+        } else {
+          _projectAndTypeIndexer[
+            `${leaveRequest.workId ?? '0'}_${leaveRequest.typeId ?? '0'}`
+          ] = milestones.length;
+
+          let resLeaveRequest: any = {
+            leaveRequest: true,
+            project: leaveRequest.work?.title ?? '-',
+            workId: leaveRequest.workId,
+            leaveType: leaveRequest.type?.leaveRequestType.label ?? 'Unpaid',
+            typeId: leaveRequest.typeId,
+            totalHours: 0.0,
+          };
+
+          leaveRequest.entries.forEach((entry) => {
+            if (entry.hours > 0) {
+              resLeaveRequest[moment(entry.date, 'YYYY-MM-DD').format('D/M')] =
+                {
+                  date: moment(entry.date, 'YYYY-MM-DD').format('D-M-Y'),
+                  hours: entry.hours,
+                  status: leaveRequest.getStatus,
+                  statusMsg: leaveRequest.note,
+                  notes: leaveRequest.desc,
+                };
+            }
+          });
+
+          milestones.push(resLeaveRequest);
+        }
+      }
+    });
 
     console.log(milestoneStatuses);
     let timesheetStatus: TimesheetStatus = milestoneStatuses.includes(
@@ -403,46 +461,6 @@ export class TimesheetRepository extends Repository<Timesheet> {
       throw new Error('Timesheet not found');
     }
 
-    let resLeaveRequests: any = [];
-    let leaveRequest = await this.manager.find(LeaveRequest, {
-      where: [
-        {
-          employeeId: userId,
-          submittedAt: Not(IsNull()),
-          rejectedAt: IsNull(),
-        },
-        { employeeId: userId, approvedAt: Not(IsNull()), rejectedAt: IsNull() },
-      ],
-      relations: ['entries', 'work', 'type', 'type.leaveRequestType'],
-    });
-
-    leaveRequest.forEach((leaveRequest) => {
-      let leaveRequestDetails = leaveRequest.getEntriesDetails;
-      if (
-        moment(leaveRequestDetails.startDate).isSameOrAfter(cStartDate) &&
-        moment(leaveRequestDetails.endDate).isSameOrBefore(cEndDate)
-      ) {
-        let resLeaveRequest: any = {
-          leaveRequest: true,
-          project: leaveRequest.work?.title ?? '-',
-          workId: leaveRequest.workId,
-          leaveType: leaveRequest.type?.leaveRequestType.label ?? 'Unpaid',
-          typeId: leaveRequest.typeId,
-          totalHours: 0.0,
-        };
-        leaveRequest.entries.forEach((entry) => {
-          resLeaveRequest[moment(entry.date, 'YYYY-MM-DD').format('D/M')] = {
-            date: moment(entry.date, 'YYYY-MM-DD').format('D-M-Y'),
-            hours: entry.hours,
-            status: leaveRequest.status,
-            statusMsg: leaveRequest.note,
-            notes: leaveRequest.desc,
-          };
-        });
-        resLeaveRequests.push(resLeaveRequest);
-      }
-    });
-
     //-- START OF MODIFIED RESPSONSE FOR FRONTEND
 
     let milestones: any = [];
@@ -489,6 +507,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
           notes: milestoneEntry.notes,
           attachment: attachment,
           totalHours: 0,
+          actionNotes: milestoneEntry.actionNotes,
         };
 
         milestoneEntry.entries.map((entry: TimesheetEntry) => {
@@ -515,7 +534,87 @@ export class TimesheetRepository extends Repository<Timesheet> {
       }
     }
 
-    milestones.push(resLeaveRequests);
+    let leaveRequest = await this.manager.find(LeaveRequest, {
+      where: [
+        {
+          employeeId: userId,
+          submittedAt: Not(IsNull()),
+          rejectedAt: IsNull(),
+        },
+        { employeeId: userId, approvedAt: Not(IsNull()), rejectedAt: IsNull() },
+      ],
+      relations: ['entries', 'work', 'type', 'type.leaveRequestType'],
+    });
+
+    let _projectAndTypeIndexer: any = {};
+    leaveRequest.forEach((leaveRequest) => {
+      let leaveRequestDetails = leaveRequest.getEntriesDetails;
+      if (
+        (moment(leaveRequestDetails.startDate).isSameOrAfter(cStartDate) &&
+          moment(leaveRequestDetails.endDate).isSameOrBefore(cEndDate)) ||
+        ((moment(leaveRequestDetails.startDate).isSameOrBefore(cEndDate) ||
+          moment(leaveRequestDetails.startDate).isSame(cEndDate) ||
+          moment(leaveRequestDetails.startDate).isBetween(
+            cStartDate,
+            cEndDate
+          )) &&
+          moment(leaveRequestDetails.endDate).isSameOrAfter(cStartDate)) ||
+        (moment(leaveRequestDetails.startDate).isSameOrBefore(cStartDate) &&
+          (moment(leaveRequestDetails.endDate).isSame(cEndDate) ||
+            moment(leaveRequestDetails.endDate).isBetween(
+              cStartDate,
+              cEndDate
+            ) ||
+            moment(leaveRequestDetails.endDate).isSame(cStartDate)))
+      ) {
+        let _checker =
+          _projectAndTypeIndexer[
+            `${leaveRequest.workId ?? 0}_${leaveRequest.typeId ?? 0}`
+          ];
+
+        if (_checker !== undefined) {
+          let resLeaveRequest = milestones[_checker];
+
+          leaveRequest.entries.forEach((entry) => {
+            resLeaveRequest[moment(entry.date, 'YYYY-MM-DD').format('D/M')] = {
+              date: moment(entry.date, 'YYYY-MM-DD').format('D-M-Y'),
+              hours: entry.hours,
+              status: leaveRequest.getStatus,
+              statusMsg: leaveRequest.note,
+              notes: leaveRequest.desc,
+            };
+          });
+        } else {
+          _projectAndTypeIndexer[
+            `${leaveRequest.workId ?? '0'}_${leaveRequest.typeId ?? '0'}`
+          ] = milestones.length;
+
+          let resLeaveRequest: any = {
+            leaveRequest: true,
+            project: leaveRequest.work?.title ?? '-',
+            workId: leaveRequest.workId,
+            leaveType: leaveRequest.type?.leaveRequestType.label ?? 'Unpaid',
+            typeId: leaveRequest.typeId,
+            totalHours: 0.0,
+          };
+
+          leaveRequest.entries.forEach((entry) => {
+            if (entry.hours > 0) {
+              resLeaveRequest[moment(entry.date, 'YYYY-MM-DD').format('D/M')] =
+                {
+                  date: moment(entry.date, 'YYYY-MM-DD').format('D-M-Y'),
+                  hours: entry.hours,
+                  status: leaveRequest.getStatus,
+                  statusMsg: leaveRequest.note,
+                  notes: leaveRequest.desc,
+                };
+            }
+          });
+
+          milestones.push(resLeaveRequest);
+        }
+      }
+    });
 
     console.log(milestoneStatuses);
     let timesheetStatus: TimesheetStatus = milestoneStatuses.includes(

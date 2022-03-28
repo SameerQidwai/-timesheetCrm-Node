@@ -47,18 +47,12 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     //-- START OF MODIFIED RESPSONSE FOR FRONTEND
 
     leaveRequests.forEach((leaveRequest) => {
-      let requestStatus: LeaveRequestStatus = leaveRequest.rejectedAt
-        ? LeaveRequestStatus.REJECTED
-        : leaveRequest.approvedAt
-        ? LeaveRequestStatus.APPROVED
-        : LeaveRequestStatus.SUBMITTED;
-
       (
         leaveRequest as any
       ).employeeName = `${leaveRequest.employee.contactPersonOrganization.contactPerson.firstName} ${leaveRequest.employee.contactPersonOrganization.contactPerson.lastName}`;
       (leaveRequest as any).leaveRequestName =
         leaveRequest.type?.leaveRequestType.label ?? 'Unpaid';
-      (leaveRequest as any).status = requestStatus;
+      (leaveRequest as any).status = leaveRequest.getStatus;
       let leavRequestDetails = leaveRequest.getEntriesDetails;
       (leaveRequest as any).startDate = leavRequestDetails.startDate;
       (leaveRequest as any).endDate = leavRequestDetails.endDate;
@@ -147,7 +141,14 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         console.log('FIRSTTT DATEEE', _firstDate);
         console.log('LASTTTT DATEEE', _lastDate);
 
-        let oldEntries = await transactionalEntityManager
+        let _leaveRequestTypeId =
+          leaveRequestDTO.typeId == 0 ? null : leaveRequestDTO.typeId;
+        let _leaveRequestWorkId =
+          leaveRequestDTO.workId == undefined ? null : leaveRequestDTO.workId;
+
+        console.log('TYPE AND WORK', _leaveRequestTypeId, _leaveRequestWorkId);
+
+        let query = await transactionalEntityManager
           .createQueryBuilder(LeaveRequestEntry, 'entry')
           .orderBy('entry.id')
           .leftJoinAndSelect(
@@ -155,7 +156,24 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
             'leaveRequest',
             'leaveRequest.id = entry.leave_request_id'
           )
-          .where('leaveRequest.employee_id = :authId', { authId })
+          .where('leaveRequest.employee_id = :authId', { authId });
+
+        if (leaveRequestDTO.workId == undefined) {
+          query.andWhere('leaveRequest.work_id is NULL');
+        } else {
+          query.andWhere('leaveRequest.work_id = :_leaveRequestWorkId', {
+            _leaveRequestWorkId,
+          });
+        }
+        if (leaveRequestDTO.typeId == 0) {
+          query.andWhere('leaveRequest.type_id is NULL');
+        } else {
+          query.andWhere('leaveRequest.type_id = :_leaveRequestTypeId', {
+            _leaveRequestTypeId,
+          });
+        }
+
+        let oldEntries = await query
           .andWhere('entry.date BETWEEN :_firstDate AND :_lastDate', {
             _firstDate,
             _lastDate,
@@ -858,8 +876,11 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
         console.log('FIRSTTT DATEEE', _firstDate);
         console.log('LASTTTT DATEEE', _lastDate);
-
-        let oldEntries = await transactionalEntityManager
+        let _leaveRequestTypeId =
+          leaveRequestDTO.typeId == null ? 0 : leaveRequestDTO.typeId;
+        let _leaveRequestWorkId =
+          leaveRequestDTO.workId == null ? 0 : leaveRequestDTO.workId;
+        let query = transactionalEntityManager
           .createQueryBuilder(LeaveRequestEntry, 'entry')
           .orderBy('entry.id')
           .leftJoinAndSelect(
@@ -867,7 +888,25 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
             'leaveRequest',
             'leaveRequest.id = entry.leave_request_id'
           )
-          .where('leaveRequest.employee_id = :authId', { authId })
+          .where('leaveRequest.employee_id = :authId', { authId });
+
+        if (leaveRequestDTO.workId == undefined) {
+          query.andWhere('leaveRequest.work_id is NULL');
+        } else {
+          query.andWhere('leaveRequest.work_id = :_leaveRequestWorkId', {
+            _leaveRequestWorkId,
+          });
+        }
+        if (leaveRequestDTO.typeId == 0) {
+          query.andWhere('leaveRequest.type_id is NULL');
+        } else {
+          query.andWhere('leaveRequest.type_id = :_leaveRequestTypeId', {
+            _leaveRequestTypeId,
+          });
+        }
+
+        let oldEntries = await query
+          .andWhere('leaveRequest.id != :requestId', { requestId })
           .andWhere('entry.date BETWEEN :_firstDate AND :_lastDate', {
             _firstDate,
             _lastDate,
