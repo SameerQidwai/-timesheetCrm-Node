@@ -63,7 +63,7 @@ let runMonthly = async () => {
                       policy.resetEvery == LeaveRequestTriggerFrequency.MONTH
                     ) {
                       balance.balanceHours = policy.resetHours;
-                      balance.carryForward = 0;
+                      balance.carryForward = policy.resetHours;
                       balance.used = 0;
                     }
                     promises.push(balance);
