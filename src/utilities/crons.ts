@@ -4,8 +4,8 @@ import { Employee } from '../entities/employee';
 import { LeaveRequestBalance } from '../entities/leaveRequestBalance';
 import { LeaveRequestTriggerFrequency } from '../constants/constants';
 
-let monthCronString = '0 0 * */1 *';
-let yearCronString = '0 0 * */12 *';
+let monthCronString = '1 0 0 1 */1 *';
+let yearCronString = '1 0 0 1 7 *';
 
 export const leaveRequestMonthlyCron = cron.schedule(
   monthCronString,
@@ -60,7 +60,7 @@ export const leaveRequestMonthlyCron = cron.schedule(
                         policy.resetEvery == LeaveRequestTriggerFrequency.MONTH
                       ) {
                         balance.balanceHours = policy.resetHours;
-                        balance.carryForward = 0;
+                        balance.carryForward = policy.resetHours;
                         balance.used = 0;
                       }
                       promises.push(balance);
@@ -152,7 +152,7 @@ export const leaveRequestYearlyCron = cron.schedule(
                         policy.resetEvery == LeaveRequestTriggerFrequency.YEAR
                       ) {
                         balance.balanceHours = policy.resetHours;
-                        balance.carryForward = 0;
+                        balance.carryForward = policy.resetHours;
                         balance.used = 0;
                       }
                       promises.push(balance);
