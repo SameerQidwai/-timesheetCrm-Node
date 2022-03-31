@@ -18,7 +18,8 @@
     "startCrons": "ts-node src/cronScript.ts",
     "stopCrons": "ts-node src/cronStopScript.ts",
     "instantMonthCron": "ts-node src/instantMonthCronScript.ts",
-    "instantYearCron": "ts-node src/instantYearCronScript.ts"
+    "instantYearCron": "ts-node src/instantYearCronScript.ts",
+    "updateEmployeeBalance": "ts-node src/employeeBalanceScript.ts"
   },
   "author": "",
   "license": "ISC",

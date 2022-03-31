@@ -96,6 +96,7 @@ export const leaveRequestMonthlyCron = cron.schedule(
   },
   {
     scheduled: true,
+    timezone: 'Australia/Melbourne',
   }
 );
 
@@ -187,6 +188,7 @@ export const leaveRequestYearlyCron = cron.schedule(
   },
   {
     scheduled: true,
+    timezone: 'Australia/Melbourne',
   }
 );
 
