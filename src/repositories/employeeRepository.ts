@@ -442,35 +442,50 @@ export class EmployeeRepository extends Repository<Employee> {
       employmentContract.remunerationAmountPer = remunerationAmountPer;
       employmentContract.employeeId = employeeObj.id;
       employmentContract.leaveRequestPolicyId = leaveRequestPolicyId;
-      if (employeeObj.getActiveContract != null) {
-        if (
-          employeeObj.getActiveContract.leaveRequestPolicy &&
-          leaveRequestPolicyId !=
-            employeeObj.getActiveContract.leaveRequestPolicyId
-        ) {
-          for (let policy of employeeObj.getActiveContract.leaveRequestPolicy
-            .leaveRequestPolicyLeaveRequestTypes) {
-            let _flag_found = 0;
-            for (let balance of employeeObj.leaveRequestBalances) {
-              if (policy.id == balance.typeId && _flag_found == 0) {
-                _flag_found = 1;
-              }
-            }
-            if (_flag_found == 0) {
-              let leaveRequestBalanceObj = new LeaveRequestBalance();
-              leaveRequestBalanceObj.balanceHours = 0;
-              leaveRequestBalanceObj.carryForward = 0;
-              leaveRequestBalanceObj.used = 0;
-              leaveRequestBalanceObj.typeId = policy.id;
-              leaveRequestBalanceObj.employeeId = employeeObj.id;
+      employmentContract.fileId = fileId;
+      await transactionalEntityManager.save(employmentContract);
 
-              await transactionalEntityManager.save(leaveRequestBalanceObj);
+      let contract = await transactionalEntityManager.findOne(
+        EmploymentContract,
+        employmentContract.id,
+        {
+          relations: [
+            'leaveRequestPolicy',
+            'leaveRequestPolicy.leaveRequestPolicyLeaveRequestTypes',
+          ],
+        }
+      );
+
+      if (!contract) {
+        throw Error('Contract not found');
+      }
+
+      if (leaveRequestPolicyId) {
+        for (let policy of contract.leaveRequestPolicy
+          .leaveRequestPolicyLeaveRequestTypes) {
+          let _flag_found = 0;
+          for (let balance of employeeObj.leaveRequestBalances) {
+            if (policy.id == balance.typeId && _flag_found == 0) {
+              _flag_found = 1;
             }
+          }
+          console.log(
+            '🚀 ~ file: employeeRepository.ts ~ line 473 ~ EmployeeRepository ~ awaitthis.manager.transaction ~ _flag_found',
+            _flag_found
+          );
+          if (_flag_found == 0) {
+            let leaveRequestBalanceObj = new LeaveRequestBalance();
+            leaveRequestBalanceObj.balanceHours = 0;
+            leaveRequestBalanceObj.carryForward = 0;
+            leaveRequestBalanceObj.used = 0;
+            leaveRequestBalanceObj.typeId = policy.id;
+            leaveRequestBalanceObj.employeeId = employeeObj.id;
+
+            await transactionalEntityManager.save(leaveRequestBalanceObj);
           }
         }
       }
-      employmentContract.fileId = fileId;
-      await transactionalEntityManager.save(employmentContract);
+
       let { bankName, bankAccountNo, bankBsb } = employeeDTO;
       let bankAccount = await transactionalEntityManager
         .getRepository(BankAccount)
