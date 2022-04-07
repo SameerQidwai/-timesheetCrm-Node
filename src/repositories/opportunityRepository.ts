@@ -16,6 +16,10 @@ import { OpportunityResource } from './../entities/opportunityResource';
 import { OpportunityResourceAllocation } from '../entities/opportunityResourceAllocation';
 import { Employee } from '../entities/employee';
 import { Milestone } from '../entities/milestone';
+import { PurchaseOrder } from '../entities/purchaseOrder';
+import { Attachment } from '../entities/attachment';
+import { EntityType } from '../constants/constants';
+import { Comment } from '../entities/comment';
 
 @EntityRepository(Opportunity)
 export class OpportunityRepository extends Repository<Opportunity> {
@@ -318,7 +322,48 @@ export class OpportunityRepository extends Repository<Opportunity> {
   }
 
   async deleteCustom(id: number): Promise<any | undefined> {
-    return this.softDelete(id);
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      let opportunity = await transactionalEntityManager.findOne(
+        Opportunity,
+        id,
+        {
+          relations: ['milestones', 'purchaseOrders'],
+        }
+      );
+      if (!opportunity) {
+        throw new Error('Opportunity not found');
+      }
+
+      let linkedOpportunities = await transactionalEntityManager.find(
+        Opportunity,
+        {
+          where: { linkedWorkId: id },
+        }
+      );
+
+      if (opportunity.milestones) {
+        throw new Error('Opportunity has milestones');
+      }
+
+      if (linkedOpportunities) {
+        throw new Error('Opportunity is linked to other Opportunity / Project');
+      }
+
+      await transactionalEntityManager.softDelete(Attachment, {
+        where: { targetType: EntityType.WORK, targetId: id },
+      });
+
+      await transactionalEntityManager.softDelete(Comment, {
+        where: { targetType: EntityType.WORK, targetId: id },
+      });
+
+      await transactionalEntityManager.softDelete(
+        PurchaseOrder,
+        opportunity.purchaseOrders
+      );
+
+      await transactionalEntityManager.softDelete(Opportunity, id);
+    });
   }
 
   async getAllActiveMilestones(
@@ -410,6 +455,37 @@ export class OpportunityRepository extends Repository<Opportunity> {
     milestone.progress = milestoneDTO.progress;
     await this.manager.save(milestone);
     return this.findOneCustomMilestone(opportunityId, milestoneId);
+  }
+
+  async deleteMilestone(
+    opportunityId: number,
+    id: number
+  ): Promise<any | undefined> {
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      let opportunity = await transactionalEntityManager.findOne(
+        Opportunity,
+        opportunityId,
+        {
+          relations: ['milestones', 'milestones.opportunityResources'],
+        }
+      );
+
+      if (!opportunity) {
+        throw new Error('Opportunity not found');
+      }
+
+      let milestone = opportunity.milestones.filter((x) => x.id == id)[0];
+
+      if (!milestone) {
+        throw new Error('Milestone not found');
+      }
+
+      if (milestone.opportunityResources) {
+        throw new Error('Milestone has resources');
+      }
+
+      return await transactionalEntityManager.softDelete(Milestone, id);
+    });
   }
 
   async getAllActiveResources(opportunityId: number, milestoneId: number) {
@@ -620,7 +696,15 @@ export class OpportunityRepository extends Repository<Opportunity> {
     }
 
     milestone.opportunityResources = milestone.opportunityResources.filter(
-      (x) => x.id !== id
+      (x) => {
+        if (x.id !== id) {
+          return x;
+        } else {
+          if (x.opportunityResourceAllocations) {
+            throw new Error('Resource with allocations cannot be deleted');
+          }
+        }
+      }
     );
     return await this.manager.save(opportunity);
   }

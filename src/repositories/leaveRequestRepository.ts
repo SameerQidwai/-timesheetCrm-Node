@@ -1073,6 +1073,35 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     return leaveRequest;
   }
 
+  async deleteLeaveRequest(
+    authId: number,
+    requestId: number
+  ): Promise<any | undefined> {
+    let leaveRequest = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let leaveRequest = await this.findOne(requestId, {
+          where: { employeeId: authId },
+          relations: ['entries'],
+        });
+
+        if (!leaveRequest) {
+          throw new Error('Leave Request not found!');
+        }
+
+        if (leaveRequest.approvedAt) {
+          throw new Error('Cannot delete Approved Request!');
+        }
+
+        return await transactionalEntityManager.softDelete(
+          LeaveRequest,
+          leaveRequest
+        );
+      }
+    );
+
+    return leaveRequest;
+  }
+
   async getAnyLeaveRequestBalances(
     authId: number,
     employeeId: number

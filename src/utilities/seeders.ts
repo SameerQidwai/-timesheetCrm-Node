@@ -462,7 +462,7 @@ let employeeSeeder = async () => {
 
     await getManager().transaction(async (transactionalEntityManager) => {
       if (!employeeData.contactPersonId) {
-        throw Error('Must provide contact person');
+        throw new Error('Must provide contact person');
       }
       let contactPersonObj = await transactionalEntityManager.findOne(
         ContactPerson,
@@ -470,7 +470,7 @@ let employeeSeeder = async () => {
         { relations: ['contactPersonOrganizations'] }
       );
       if (!contactPersonObj) {
-        throw Error('Must provide contact person');
+        throw new Error('Must provide contact person');
       }
 
       // find contactpersonorganization id for oneLM
@@ -480,7 +480,7 @@ let employeeSeeder = async () => {
           (x) => x.organizationId == 1
         )[0];
       if (!contactPersonOrganization) {
-        throw Error('Not associated with oneLM');
+        throw new Error('Not associated with oneLM');
       } else {
         let oldOrganization =
           contactPersonObj.contactPersonOrganizations.filter(
@@ -549,7 +549,7 @@ let employeeSeeder = async () => {
       employeeObj = await transactionalEntityManager.save(employeeObj);
 
       if (!employeeData.latestEmploymentContract) {
-        throw Error('Must have contract info');
+        throw new Error('Must have contract info');
       }
 
       let employmentContract = new EmploymentContract();

@@ -45,7 +45,7 @@ export class OrganizationRepository extends Repository<Organization> {
         obj.parentOrganization = await this.findOne(
           organization.parentOrganizationId
         );
-      
+
       obj = await transactionalEntityManager.save(obj);
       console.log('obj: ', obj);
 
@@ -122,16 +122,20 @@ export class OrganizationRepository extends Repository<Organization> {
       }
       if (organization.delegateContactPersonId) {
         let delegateContactPerson = await this.manager.findOne(
-          ContactPersonOrganization, {
+          ContactPersonOrganization,
+          {
             where: {
               organizationId: id,
-              contactPersonId: organization.delegateContactPersonId
-            }
+              contactPersonId: organization.delegateContactPersonId,
+            },
           }
         );
         if (delegateContactPerson)
-          console.log("delegateContactPerson: ", delegateContactPerson.designation);
-          obj.delegateContactPersonId = organization.delegateContactPersonId;
+          console.log(
+            'delegateContactPerson: ',
+            delegateContactPerson.designation
+          );
+        obj.delegateContactPersonId = organization.delegateContactPersonId;
       } else {
         obj.delegateContactPersonId = null;
       }
@@ -149,7 +153,7 @@ export class OrganizationRepository extends Repository<Organization> {
           },
         });
       if (!bankAccount) {
-        throw Error('Bank Account not found');
+        throw new Error('Bank Account not found');
       }
 
       bankAccount.accountNo = bankAccountNo;

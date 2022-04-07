@@ -61,7 +61,8 @@ router
 router
   .route('/:opportunityId/milestones/:id')
   .get([isLoggedIn], milestoneContr.get.bind(milestoneContr))
-  .put([isLoggedIn], milestoneContr.update.bind(milestoneContr));
+  .put([isLoggedIn], milestoneContr.update.bind(milestoneContr))
+  .delete([isLoggedIn], milestoneContr.delete.bind(milestoneContr));
 
 router
   .route('/:opportunityId/milestones/:milestoneId/resources')
@@ -71,7 +72,7 @@ router
 router
   .route('/:opportunityId/milestones/:milestoneId/resources/:id')
   .get([isLoggedIn], resourceContr.get.bind(resourceContr))
-  .put([isLoggedIn], resourceContr.update.bind(resourceContr))
+  .delete([isLoggedIn], resourceContr.update.bind(resourceContr))
   .delete([isLoggedIn], resourceContr.delete.bind(resourceContr));
 
 router

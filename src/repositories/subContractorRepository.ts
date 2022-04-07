@@ -18,18 +18,18 @@ export class SubContractorRepository extends Repository<Employee> {
     let generatedPassword = Math.random().toString(36).substring(4);
     id = await this.manager.transaction(async (transactionalEntityManager) => {
       if (!subContractor.organizationId) {
-        throw Error('Must provide organization');
+        throw new Error('Must provide organization');
       }
       let organizationObj = await transactionalEntityManager.findOne(
         Organization,
         subContractor.organizationId
       );
       if (!organizationObj) {
-        throw Error('Must provide organization');
+        throw new Error('Must provide organization');
       }
 
       if (!subContractor.contactPersonId) {
-        throw Error('Must provide contact person');
+        throw new Error('Must provide contact person');
       }
       let contactPersonObj = await transactionalEntityManager.findOne(
         ContactPerson,
@@ -37,7 +37,7 @@ export class SubContractorRepository extends Repository<Employee> {
         { relations: ['contactPersonOrganizations'] }
       );
       if (!contactPersonObj) {
-        throw Error('Must provide contact person');
+        throw new Error('Must provide contact person');
       }
 
       // find contactpersonorganization id for oneLM
@@ -46,7 +46,7 @@ export class SubContractorRepository extends Repository<Employee> {
           (x) => x.organizationId == subContractor.organizationId
         )[0];
       if (!contactPersonOrganization) {
-        throw Error('Not associated with this organization');
+        throw new Error('Not associated with this organization');
       } else {
         let oldOrganization =
           contactPersonObj.contactPersonOrganizations.filter(
@@ -108,7 +108,7 @@ export class SubContractorRepository extends Repository<Employee> {
           subContractor.lineManagerId
         );
         if (!lineManager) {
-          throw Error('Line Manager not found');
+          throw new Error('Line Manager not found');
         }
       }
 
@@ -117,7 +117,7 @@ export class SubContractorRepository extends Repository<Employee> {
       id = employeeObj.id;
 
       if (!subContractor.latestContract) {
-        throw Error('Must have contract info');
+        throw new Error('Must have contract info');
       }
 
       let employmentContract = new EmploymentContract();
@@ -238,14 +238,14 @@ export class SubContractorRepository extends Repository<Employee> {
       console.log('subContractorObj: ', subContractorObj);
 
       if (!subContractorObj) {
-        throw Error('Sub Contractor not found');
+        throw new Error('Sub Contractor not found');
       }
       let contactPersonObj = await transactionalEntityManager.findOne(
         ContactPerson,
         subContractorObj.contactPersonOrganization.contactPerson.id
       );
       if (!contactPersonObj) {
-        throw Error('Sub Contractor not found');
+        throw new Error('Sub Contractor not found');
       }
 
       contactPersonObj.firstName = subContractor.firstName;
@@ -295,7 +295,7 @@ export class SubContractorRepository extends Repository<Employee> {
       );
 
       if (!subContractor.latestContract) {
-        throw Error('Must have contract info');
+        throw new Error('Must have contract info');
       }
 
       let {
@@ -329,7 +329,7 @@ export class SubContractorRepository extends Repository<Employee> {
       console.log('subContractorContract: ', subContractorContract);
 
       if (!subContractorContract) {
-        throw Error('Contract Not found');
+        throw new Error('Contract Not found');
       }
       subContractorContract.startDate = new Date(startDate);
       if (endDate) {

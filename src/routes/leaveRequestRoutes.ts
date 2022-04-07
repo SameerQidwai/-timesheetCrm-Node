@@ -33,7 +33,8 @@ router
   .patch(
     [isLoggedIn, can(Action.UPDATE, Resource.LEAVE_REQUESTS)],
     contr.editLeaveRequest.bind(contr)
-  );
+  )
+  .delete([isLoggedIn], contr.deleteLeaveRequest.bind(contr));
 
 router
   .route('/leaveRequestsApprove')

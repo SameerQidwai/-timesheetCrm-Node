@@ -31,8 +31,8 @@ let runMonthly = async () => {
           employee.getActiveContract.leaveRequestPolicy.leaveRequestPolicyLeaveRequestTypes.forEach(
             (policy) => {
               if (
-                policy.earnEvery == LeaveRequestTriggerFrequency.MONTH ||
-                policy.resetEvery == LeaveRequestTriggerFrequency.MONTH
+                policy.earnEvery == LeaveRequestTriggerFrequency.MONTH
+                // ||policy.resetEvery == LeaveRequestTriggerFrequency.MONTH
               ) {
                 let _flag_create = 1;
                 employee.leaveRequestBalances.forEach((balance) => {

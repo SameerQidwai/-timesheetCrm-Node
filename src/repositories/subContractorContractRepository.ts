@@ -32,7 +32,7 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
     console.log('count: ', count);
 
     if (count > 0) {
-      throw Error('overlapping contract found');
+      throw new Error('overlapping contract found');
     }
     let obj = new EmploymentContract();
     obj.employee = employee;
@@ -97,7 +97,7 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
     console.log('count: ', count);
 
     if (count > 0) {
-      throw Error('overlapping contract found');
+      throw new Error('overlapping contract found');
     }
 
     employmentContractObj.employeeId = employee.id;

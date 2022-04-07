@@ -1197,10 +1197,13 @@ export class TimesheetRepository extends Repository<Timesheet> {
           }
 
           if (milestoneEntry.entries.length > 0)
-            await transactionalEntityManager.delete(
-              TimesheetEntry,
-              milestoneEntry.entries
-            );
+            if (milestoneEntry.entries[0].approvedAt != null) {
+              throw new Error('Cannot delete approved timesheet entry');
+            }
+          await transactionalEntityManager.delete(
+            TimesheetEntry,
+            milestoneEntry.entries
+          );
 
           responseEntries.push(milestoneEntry);
         }
@@ -1233,6 +1236,10 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
         if (!entry) {
           throw new Error('Entry not found');
+        }
+
+        if (entry.approvedAt != null) {
+          throw new Error('Cannot delete approved timesheet entry');
         }
 
         let deletedEntry = await transactionalEntityManager.delete(

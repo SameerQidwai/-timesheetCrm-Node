@@ -87,4 +87,24 @@ export class OpportunityMilestoneController {
       next(e);
     }
   }
+
+  async delete(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(OpportunityRepository);
+      let response = await repository.deleteMilestone(
+        parseInt(req.params.opportunityId),
+        parseInt(req.params.id)
+      );
+
+      // if no timesheet found
+      return res.status(200).json({
+        success: true,
+        // message: `Win Opportunity ${req.params.id}`,
+        message: 'Milestones Deleted Succesfully',
+        data: response,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

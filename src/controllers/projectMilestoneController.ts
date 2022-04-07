@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { OpportunityRepository } from '../repositories/opportunityRepository';
+import { ProjectRepository } from '../repositories/projectRepository';
 import { MilestoneRepository } from '../repositories/milestoneRepository';
 import { getCustomRepository } from 'typeorm';
 import path from 'path';
@@ -7,7 +7,7 @@ import path from 'path';
 export class ProjectMilestoneController {
   async index(req: Request, res: Response, next: NextFunction) {
     try {
-      const repository = getCustomRepository(OpportunityRepository);
+      const repository = getCustomRepository(ProjectRepository);
       let records: any = [];
       const { grantLevel } = res.locals;
       // if (grantLevel.includes('ANY')) {
@@ -33,7 +33,7 @@ export class ProjectMilestoneController {
   async create(req: Request, res: Response, next: NextFunction) {
     try {
       let projectId = parseInt(req.params.projectId);
-      const repository = getCustomRepository(OpportunityRepository);
+      const repository = getCustomRepository(ProjectRepository);
       let response = await repository.addMilestone(projectId, req.body);
 
       // if no timesheet found
@@ -50,7 +50,7 @@ export class ProjectMilestoneController {
 
   async get(req: Request, res: Response, next: NextFunction) {
     try {
-      const repository = getCustomRepository(OpportunityRepository);
+      const repository = getCustomRepository(ProjectRepository);
       let response = await repository.findOneCustomMilestone(
         parseInt(req.params.projectId),
         parseInt(req.params.id)
@@ -69,7 +69,7 @@ export class ProjectMilestoneController {
 
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const repository = getCustomRepository(OpportunityRepository);
+      const repository = getCustomRepository(ProjectRepository);
       let response = await repository.updateMilestone(
         parseInt(req.params.projectId),
         parseInt(req.params.id),
@@ -81,6 +81,26 @@ export class ProjectMilestoneController {
         success: true,
         // message: `Win Opportunity ${req.params.id}`,
         message: 'Milestones Updated Succesfully',
+        data: response,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async delete(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(ProjectRepository);
+      let response = await repository.deleteMilestone(
+        parseInt(req.params.opportunityId),
+        parseInt(req.params.id)
+      );
+
+      // if no timesheet found
+      return res.status(200).json({
+        success: true,
+        // message: `Win Opportunity ${req.params.id}`,
+        message: 'Milestones Deleted Succesfully',
         data: response,
       });
     } catch (e) {

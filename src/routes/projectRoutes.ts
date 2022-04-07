@@ -48,7 +48,8 @@ router
 router
   .route('/:projectId/milestones/:id')
   .get([isLoggedIn], milestoneContr.get.bind(milestoneContr))
-  .put([isLoggedIn], milestoneContr.update.bind(milestoneContr));
+  .put([isLoggedIn], milestoneContr.update.bind(milestoneContr))
+  .delete([isLoggedIn], milestoneContr.delete.bind(milestoneContr));
 
 router
   .route('/:projectId/milestones/:milestoneId/resources')

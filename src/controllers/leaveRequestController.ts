@@ -209,6 +209,26 @@ export class LeaveRequestController {
     }
   }
 
+  async deleteLeaveRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(LeaveRequestRepository);
+
+      const { user } = res.locals;
+      let requestId = parseInt(req.params.id) as number;
+      let authId = parseInt(user.id) as number;
+
+      let records = await repository.deleteLeaveRequest(authId, requestId);
+      console.log('record: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'Delete Leave Request',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
   async getLeaveRequestBalances(
     req: Request,
     res: Response,

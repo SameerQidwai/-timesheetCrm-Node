@@ -34,7 +34,7 @@ export class EmployeeRepository extends Repository<Employee> {
     let generatedPassword = Math.random().toString(36).substring(4);
     id = await this.manager.transaction(async (transactionalEntityManager) => {
       if (!employeeDTO.contactPersonId) {
-        throw Error('Must provide contact person');
+        throw new Error('Must provide contact person');
       }
       let contactPersonObj = await transactionalEntityManager.findOne(
         ContactPerson,
@@ -42,7 +42,7 @@ export class EmployeeRepository extends Repository<Employee> {
         { relations: ['contactPersonOrganizations'] }
       );
       if (!contactPersonObj) {
-        throw Error('Must provide contact person');
+        throw new Error('Must provide contact person');
       }
 
       // find contactpersonorganization id for oneLM
@@ -52,7 +52,7 @@ export class EmployeeRepository extends Repository<Employee> {
           (x) => x.organizationId == 1
         )[0];
       if (!contactPersonOrganization) {
-        throw Error('Not associated with oneLM');
+        throw new Error('Not associated with oneLM');
       } else {
         let oldOrganization =
           contactPersonObj.contactPersonOrganizations.filter(
@@ -149,7 +149,7 @@ export class EmployeeRepository extends Repository<Employee> {
       id = employeeObj.id;
 
       if (!employeeDTO.latestEmploymentContract) {
-        throw Error('Must have contract info');
+        throw new Error('Must have contract info');
       }
 
       let employmentContract = new EmploymentContract();
@@ -316,14 +316,14 @@ export class EmployeeRepository extends Repository<Employee> {
         ],
       });
       if (!employeeObj) {
-        throw Error('Employee not found');
+        throw new Error('Employee not found');
       }
       let contactPersonObj = await transactionalEntityManager.findOne(
         ContactPerson,
         employeeObj.contactPersonOrganization.contactPerson.id
       );
       if (!contactPersonObj) {
-        throw Error('Employee not found');
+        throw new Error('Employee not found');
       }
 
       contactPersonObj.firstName = employeeDTO.firstName;
@@ -381,14 +381,14 @@ export class EmployeeRepository extends Repository<Employee> {
           employeeDTO.lineManagerId
         );
         if (!linerManager) {
-          throw Error('Line Manager not found');
+          throw new Error('Line Manager not found');
         }
       }
       employeeObj.lineManagerId = employeeDTO.lineManagerId;
       employeeObj = await transactionalEntityManager.save(employeeObj);
 
       if (!employeeDTO.latestEmploymentContract) {
-        throw Error('Must have contract info');
+        throw new Error('Must have contract info');
       }
 
       let {
@@ -426,7 +426,7 @@ export class EmployeeRepository extends Repository<Employee> {
       console.log('employmentContract: ', employmentContract);
 
       if (!employmentContract) {
-        throw Error('Contract Not found');
+        throw new Error('Contract Not found');
       }
       employmentContract.payslipEmail = payslipEmail;
       employmentContract.comments = comments;
@@ -457,7 +457,7 @@ export class EmployeeRepository extends Repository<Employee> {
       );
 
       if (!contract) {
-        throw Error('Contract not found');
+        throw new Error('Contract not found');
       }
 
       if (leaveRequestPolicyId) {
@@ -469,10 +469,7 @@ export class EmployeeRepository extends Repository<Employee> {
               _flag_found = 1;
             }
           }
-          console.log(
-            '🚀 ~ file: employeeRepository.ts ~ line 473 ~ EmployeeRepository ~ awaitthis.manager.transaction ~ _flag_found',
-            _flag_found
-          );
+
           if (_flag_found == 0) {
             let leaveRequestBalanceObj = new LeaveRequestBalance();
             leaveRequestBalanceObj.balanceHours = 0;
@@ -497,7 +494,7 @@ export class EmployeeRepository extends Repository<Employee> {
           },
         });
       if (!bankAccount) {
-        throw Error('Bank Account not found');
+        throw new Error('Bank Account not found');
       }
 
       bankAccount.accountNo = bankAccountNo;

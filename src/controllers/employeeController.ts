@@ -28,7 +28,7 @@ export class EmployeeController extends BaseController<
       const repository = getCustomRepository(EmployeeRepository);
       let panelSkillStandardLevelId = req.query.psslId?.toString();
       if (!panelSkillStandardLevelId) {
-        throw Error('panelSkillStandardLevelId is required');
+        throw new Error('panelSkillStandardLevelId is required');
       }
       // console.log("req.params.panelSkillStandardLevelId: ", req.query.panelSkillStandardLevelId);
 

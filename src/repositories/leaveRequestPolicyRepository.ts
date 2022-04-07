@@ -10,6 +10,8 @@ import {
 import { LeaveRequestPolicy } from '../entities/leaveRequestPolicy';
 import { LeaveRequestPolicyLeaveRequestType } from '../entities/leaveRequestPolicyLeaveRequestType';
 import { LeaveRequestType } from '../entities/leaveRequestType';
+import { EmploymentContract } from '../entities/employmentContract';
+import { LeaveRequestBalance } from '../entities/leaveRequestBalance';
 
 @EntityRepository(LeaveRequestPolicy)
 export class LeaveRequestPolicyRepository extends Repository<LeaveRequestPolicy> {
@@ -170,7 +172,44 @@ export class LeaveRequestPolicyRepository extends Repository<LeaveRequestPolicy>
         leaveRequestPolicyLeaveRequestTypes;
       // await transactionalEntityManager.save(leaveRequestPolicyLeaveRequestTypes);
       await transactionalEntityManager.save(leaveRequestPolicyObj);
+
+      let contracts = await transactionalEntityManager.find(
+        EmploymentContract,
+        {
+          where: { leaveRequestPolicyId: id },
+          relations: [
+            'employee',
+            'employee.leaveRequestBalances',
+            'leaveRequestPolicy',
+            'leaveRequestPolicy.leaveRequestPolicyLeaveRequestTypes',
+          ],
+        }
+      );
+
+      for (let contract of contracts) {
+        for (let policy of contract.leaveRequestPolicy
+          .leaveRequestPolicyLeaveRequestTypes) {
+          let _flag_found = 0;
+          for (let balance of contract.employee.leaveRequestBalances) {
+            if (policy.id == balance.typeId && _flag_found == 0) {
+              _flag_found = 1;
+            }
+          }
+
+          if (_flag_found == 0) {
+            let leaveRequestBalanceObj = new LeaveRequestBalance();
+            leaveRequestBalanceObj.balanceHours = 0;
+            leaveRequestBalanceObj.carryForward = 0;
+            leaveRequestBalanceObj.used = 0;
+            leaveRequestBalanceObj.typeId = policy.id;
+            leaveRequestBalanceObj.employeeId = contract.employee.id;
+
+            await transactionalEntityManager.save(leaveRequestBalanceObj);
+          }
+        }
+      }
     });
+
     return await this.findOneCustom(id);
   }
 

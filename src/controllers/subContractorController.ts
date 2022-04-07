@@ -13,7 +13,7 @@ export class SubContractorController extends BaseController<
       const repository = getCustomRepository(SubContractorRepository);
       let organizationId = req.query.organizationId?.toString();
       if (!organizationId) {
-        throw Error('organizationId is required');
+        throw new Error('organizationId is required');
       }
       let records = await repository.getAllContactPersons(
         parseInt(organizationId)

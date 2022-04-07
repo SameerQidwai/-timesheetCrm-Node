@@ -18,8 +18,10 @@ import { OpportunityResourceAllocation } from '../entities/opportunityResourceAl
 import { Employee } from '../entities/employee';
 import { PurchaseOrder } from '../entities/purchaseOrder';
 import { Milestone } from '../entities/milestone';
-import e from 'express';
-import { OpportunityStatus } from '../constants/constants';
+import { EntityType, OpportunityStatus } from '../constants/constants';
+import { Attachment } from '../entities/attachment';
+import { Comment } from '../entities/comment';
+import { Timesheet } from '../entities/timesheet';
 
 @EntityRepository(Opportunity)
 export class ProjectRepository extends Repository<Opportunity> {
@@ -438,7 +440,44 @@ export class ProjectRepository extends Repository<Opportunity> {
   }
 
   async deleteCustom(id: number): Promise<any | undefined> {
-    return this.softDelete(id);
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      let project = await transactionalEntityManager.findOne(Opportunity, id, {
+        relations: ['milestones', 'purchaseOrders'],
+      });
+      if (!project) {
+        throw new Error('Project not found');
+      }
+
+      let linkedOpportunities = await transactionalEntityManager.find(
+        Opportunity,
+        {
+          where: { linkedWorkId: id },
+        }
+      );
+
+      if (project.milestones) {
+        throw new Error('Project has milestones');
+      }
+
+      if (linkedOpportunities) {
+        throw new Error('Project is linked to other Opportunity / Project');
+      }
+
+      await transactionalEntityManager.softDelete(Attachment, {
+        where: { targetType: EntityType.WORK, targetId: id },
+      });
+
+      await transactionalEntityManager.softDelete(Comment, {
+        where: { targetType: EntityType.WORK, targetId: id },
+      });
+
+      await transactionalEntityManager.softDelete(
+        PurchaseOrder,
+        project.purchaseOrders
+      );
+
+      await transactionalEntityManager.softDelete(Opportunity, id);
+    });
   }
 
   async getAllActiveMilestones(projectId: number): Promise<any | undefined> {
@@ -526,6 +565,33 @@ export class ProjectRepository extends Repository<Opportunity> {
     milestone.progress = milestoneDTO.progress;
     await this.manager.save(milestone);
     return this.findOneCustomMilestone(projectId, milestoneId);
+  }
+
+  async deleteMilestone(
+    projectId: number,
+    id: number
+  ): Promise<any | undefined> {
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      let project = await transactionalEntityManager.findOne(Opportunity, id, {
+        relations: ['milestones', 'milestones.opportunityResources'],
+      });
+
+      if (!project) {
+        throw new Error('Project not found');
+      }
+
+      let milestone = project.milestones.filter((x) => x.id == id)[0];
+
+      if (!milestone) {
+        throw new Error('Milestone not found');
+      }
+
+      if (milestone.opportunityResources) {
+        throw new Error('Milestone has resources');
+      }
+
+      await transactionalEntityManager.softDelete(Milestone, id);
+    });
   }
 
   async getAllActiveResources(projectId: number, milestoneId: number) {
@@ -735,32 +801,68 @@ export class ProjectRepository extends Repository<Opportunity> {
     milestoneId: number,
     id: number
   ): Promise<any | undefined> {
-    if (!projectId) {
-      throw new Error('Project not found!');
-    }
-    if (!milestoneId) {
-      throw new Error('Milestone not found!');
-    }
-    let project = await this.findOne(projectId, {
-      relations: [
-        'milestones',
-        'milestones.opportunityResources',
-        'milestones.opportunityResources.panelSkill',
-        'milestones.opportunityResources.panelSkillStandardLevel',
-        'milestones.opportunityResources.opportunityResourceAllocations',
-        'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
-      ],
-    });
-    if (!project) {
-      throw new Error('Project not found!');
-    }
+    let project = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        if (!projectId) {
+          throw new Error('Project not found!');
+        }
+        if (!milestoneId) {
+          throw new Error('Milestone not found!');
+        }
+        let project = await transactionalEntityManager.findOne(
+          Opportunity,
+          projectId,
+          {
+            relations: [
+              'milestones',
+              'milestones.opportunityResources',
+              'milestones.opportunityResources.panelSkill',
+              'milestones.opportunityResources.panelSkillStandardLevel',
+              'milestones.opportunityResources.opportunityResourceAllocations',
+              'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
+            ],
+          }
+        );
+        if (!project) {
+          throw new Error('Project not found!');
+        }
 
-    let milestone = project.milestones.filter((x) => x.id == milestoneId)[0];
+        let milestone = project.milestones.filter(
+          (x) => x.id == milestoneId
+        )[0];
 
-    milestone.opportunityResources = milestone.opportunityResources.filter(
-      (x) => x.id !== id
+        if (!milestone) {
+          throw new Error('Milestone not found!');
+        }
+
+        let newResources: OpportunityResource[] = [];
+        for (let opportunityResource of milestone.opportunityResources) {
+          if (opportunityResource.id !== id) {
+            newResources.push(opportunityResource);
+          } else {
+            if (opportunityResource.opportunityResourceAllocations) {
+              let allocation =
+                opportunityResource.opportunityResourceAllocations[0];
+
+              let timesheets = await transactionalEntityManager.find(
+                Timesheet,
+                { where: { employeeId: allocation.contactPersonId } }
+              );
+
+              if (timesheets) {
+                throw new Error('Resource timesheet has been created');
+              }
+            }
+          }
+        }
+
+        project.opportunityResources = newResources;
+
+        return await transactionalEntityManager.save(project);
+      }
     );
-    return await this.manager.save(project);
+
+    return project;
   }
 
   async getSelectedResources(projectId: number, milestoneId: number) {
