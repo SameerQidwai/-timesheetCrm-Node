@@ -1092,9 +1092,13 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           throw new Error('Cannot delete Approved Request!');
         }
 
+        await transactionalEntityManager.softDelete(
+          LeaveRequestEntry,
+          leaveRequest.entries
+        );
         return await transactionalEntityManager.softDelete(
           LeaveRequest,
-          leaveRequest
+          leaveRequest.id
         );
       }
     );

@@ -6,7 +6,7 @@ import {
   ProjectDTO,
   OpportunityLostDTO,
 } from '../dto';
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, In, IsNull, Not, Repository } from 'typeorm';
 import { Organization } from './../entities/organization';
 import { Opportunity } from './../entities/opportunity';
 import { Panel } from './../entities/panel';
@@ -20,6 +20,7 @@ import { PurchaseOrder } from '../entities/purchaseOrder';
 import { Attachment } from '../entities/attachment';
 import { EntityType } from '../constants/constants';
 import { Comment } from '../entities/comment';
+import moment from 'moment';
 
 @EntityRepository(Opportunity)
 export class OpportunityRepository extends Repository<Opportunity> {
@@ -187,6 +188,36 @@ export class OpportunityRepository extends Repository<Opportunity> {
         await this.findOneCustomWithoutContactPerson(id);
 
       opportunityObj.title = opportunity.title;
+
+      let milestones = await transactionalEntityManager.find(Milestone, {
+        where: {
+          startDate: Not(IsNull()),
+          endDate: Not(IsNull()),
+          projectId: id,
+        },
+      });
+      let milestoneIds = milestones.map((milestone) => milestone.id);
+
+      let resources = await transactionalEntityManager.find(
+        OpportunityResource,
+        {
+          where: {
+            startDate: Not(IsNull()),
+            endDate: Not(IsNull()),
+            milestoneId: In(milestoneIds),
+          },
+        }
+      );
+
+      if (opportunity.startDate || opportunity.endDate) {
+        this._validateOpportunityDates(
+          opportunity.startDate,
+          opportunity.endDate,
+          milestones,
+          resources
+        );
+      }
+
       if (opportunity.startDate) {
         opportunityObj.startDate = new Date(opportunity.startDate);
       }
@@ -349,13 +380,16 @@ export class OpportunityRepository extends Repository<Opportunity> {
         throw new Error('Opportunity is linked to other Opportunity / Project');
       }
 
-      await transactionalEntityManager.softDelete(Attachment, {
+      let attachments = await transactionalEntityManager.find(Attachment, {
         where: { targetType: EntityType.WORK, targetId: id },
       });
 
-      await transactionalEntityManager.softDelete(Comment, {
+      let comments = await transactionalEntityManager.find(Comment, {
         where: { targetType: EntityType.WORK, targetId: id },
       });
+
+      await transactionalEntityManager.softDelete(Attachment, attachments);
+      await transactionalEntityManager.softDelete(Attachment, comments);
 
       await transactionalEntityManager.softDelete(
         PurchaseOrder,
@@ -691,6 +725,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
     let milestone = opportunity.milestones.filter(
       (x) => x.id === milestoneId
     )[0];
+
     if (!milestone) {
       throw new Error('Milestone not found');
     }
@@ -700,7 +735,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
         if (x.id !== id) {
           return x;
         } else {
-          if (x.opportunityResourceAllocations) {
+          if (x.opportunityResourceAllocations.length > 0) {
             throw new Error('Resource with allocations cannot be deleted');
           }
         }
@@ -1380,5 +1415,47 @@ export class OpportunityRepository extends Repository<Opportunity> {
     if (!isNaN(employeeId) && employeeId != 0) return data;
 
     return work;
+  }
+
+  //!--------------------------- HELPER FUNCTIONS ----------------------------//
+
+  _validateOpportunityDates(
+    startDate: Date | null,
+    endDate: Date | null,
+    milestones: Milestone[],
+    resources: OpportunityResource[]
+  ) {
+    if (startDate) {
+      for (let milestone of milestones) {
+        if (moment(startDate).isAfter(moment(milestone.startDate), 'date')) {
+          throw new Error(
+            'Opportunity Start Date cannot be after Milestone Start Date'
+          );
+        }
+      }
+      for (let poisition of resources) {
+        if (moment(startDate).isAfter(moment(poisition.startDate), 'date')) {
+          throw new Error(
+            'Opportunity Start Date cannot be after Resource / Position Start Date'
+          );
+        }
+      }
+    }
+    if (endDate) {
+      for (let milestone of milestones) {
+        if (moment(endDate).isBefore(moment(milestone.endDate))) {
+          throw new Error(
+            'Opportunity End Date cannot be before Milestone End Date'
+          );
+        }
+      }
+      for (let poisition of resources) {
+        if (moment(endDate).isBefore(moment(poisition.endDate))) {
+          throw new Error(
+            'Opportunity End Date cannot be before Resource / Position End Date'
+          );
+        }
+      }
+    }
   }
 }
