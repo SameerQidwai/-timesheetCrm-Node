@@ -21,6 +21,8 @@ import { Attachment } from '../entities/attachment';
 import { EntityType } from '../constants/constants';
 import { Comment } from '../entities/comment';
 import moment from 'moment';
+import { LeaveRequest } from 'src/entities/leaveRequest';
+import { Timesheet } from 'src/entities/timesheet';
 
 @EntityRepository(Opportunity)
 export class OpportunityRepository extends Repository<Opportunity> {
@@ -617,6 +619,18 @@ export class OpportunityRepository extends Repository<Opportunity> {
       throw new Error('Milestone not found');
     }
 
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    if (opportunityResourceDTO.startDate || opportunityResourceDTO.endDate) {
+      this._validateResourceDates(
+        opportunityResourceDTO.startDate,
+        opportunityResourceDTO.endDate,
+        milestone
+      );
+    }
+
     let resource = new OpportunityResource();
     resource.panelSkillId = opportunityResourceDTO.panelSkillId;
     resource.panelSkillStandardLevelId =
@@ -644,47 +658,60 @@ export class OpportunityRepository extends Repository<Opportunity> {
     id: number,
     opportunityResourceDTO: OpportunityResourceDTO
   ) {
-    if (!opportunityId) {
-      throw new Error('Opportunity not found!');
-    }
-    if (!milestoneId) {
-      throw new Error('This Milestone not found!');
-    }
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      if (!opportunityId) {
+        throw new Error('Opportunity not found!');
+      }
+      if (!milestoneId) {
+        throw new Error('This Milestone not found!');
+      }
 
-    let opportunity = await this.findOne(opportunityId, {
-      relations: ['milestones', 'milestones.opportunityResources'],
+      let opportunity = await this.findOne(opportunityId, {
+        relations: ['milestones', 'milestones.opportunityResources'],
+      });
+      console.log(opportunity);
+
+      if (!opportunity) {
+        throw new Error('Opportunity not found!');
+      }
+
+      let milestone = opportunity.milestones.filter(
+        (x) => x.id === milestoneId
+      )[0];
+      if (!milestone) {
+        throw new Error('Milestone not found');
+      }
+
+      if (opportunityResourceDTO.startDate || opportunityResourceDTO.endDate) {
+        this._validateResourceDates(
+          opportunityResourceDTO.startDate,
+          opportunityResourceDTO.endDate,
+          milestone
+        );
+      }
+
+      let resource = milestone.opportunityResources.filter(
+        (x) => x.id == id
+      )[0];
+      if (!resource) {
+        throw new Error('Resource not found!');
+      }
+
+      resource.panelSkillId = opportunityResourceDTO.panelSkillId;
+      resource.panelSkillStandardLevelId =
+        opportunityResourceDTO.panelSkillStandardLevelId;
+      resource.billableHours = opportunityResourceDTO.billableHours;
+      resource.title = opportunityResourceDTO.title;
+      if (opportunityResourceDTO.startDate) {
+        resource.startDate = new Date(opportunityResourceDTO.startDate);
+      }
+      if (opportunityResourceDTO.endDate) {
+        resource.endDate = new Date(opportunityResourceDTO.endDate);
+      }
+      // resource.startDate = opportunityResourceDTO.startDate;
+      // resource.endDate = opportunityResourceDTO.endDate;
+      await this.manager.save(resource);
     });
-    console.log(opportunity);
-
-    if (!opportunity) {
-      throw new Error('Opportunity not found!');
-    }
-
-    let milestone = opportunity.milestones.filter(
-      (x) => x.id === milestoneId
-    )[0];
-    if (!milestone) {
-      throw new Error('Milestone not found');
-    }
-
-    let resource = milestone.opportunityResources.filter((x) => x.id == id)[0];
-    if (!resource) {
-      throw new Error('Resource not found!');
-    }
-    resource.panelSkillId = opportunityResourceDTO.panelSkillId;
-    resource.panelSkillStandardLevelId =
-      opportunityResourceDTO.panelSkillStandardLevelId;
-    resource.billableHours = opportunityResourceDTO.billableHours;
-    resource.title = opportunityResourceDTO.title;
-    if (opportunityResourceDTO.startDate) {
-      resource.startDate = new Date(opportunityResourceDTO.startDate);
-    }
-    if (opportunityResourceDTO.endDate) {
-      resource.endDate = new Date(opportunityResourceDTO.endDate);
-    }
-    // resource.startDate = opportunityResourceDTO.startDate;
-    // resource.endDate = opportunityResourceDTO.endDate;
-    await this.manager.save(resource);
     return this.findOneCustomResource(opportunityId, milestoneId, id);
   }
 
@@ -1515,7 +1542,9 @@ export class OpportunityRepository extends Repository<Opportunity> {
         );
       }
       if (moment(startDate).isAfter(moment(opportunity.endDate), 'date')) {
-        ('Milestone Start Date cannot be After Milestone End Date');
+        throw new Error(
+          'Milestone Start Date cannot be After Milestone End Date'
+        );
       }
       for (let poisition of resources) {
         if (poisition.startDate) {
@@ -1527,7 +1556,9 @@ export class OpportunityRepository extends Repository<Opportunity> {
         }
         if (poisition.endDate) {
           if (moment(startDate).isBefore(moment(opportunity.endDate), 'date')) {
-            ('Milestone Start Date cannot be Before Resource / Position Start Date');
+            throw new Error(
+              'Milestone Start Date cannot be Before Resource / Position Start Date'
+            );
           }
         }
       }
@@ -1539,7 +1570,9 @@ export class OpportunityRepository extends Repository<Opportunity> {
         );
       }
       if (moment(endDate).isAfter(moment(opportunity.endDate), 'date')) {
-        ('Milestone Start Date cannot be After Milestone End Date');
+        throw new Error(
+          'Milestone Start Date cannot be After Milestone End Date'
+        );
       }
       for (let poisition of resources) {
         if (poisition.startDate) {
@@ -1551,9 +1584,54 @@ export class OpportunityRepository extends Repository<Opportunity> {
         }
         if (poisition.endDate) {
           if (moment(endDate).isBefore(moment(opportunity.endDate), 'date')) {
-            ('Milestone Start Date cannot be Before Resource / Position Start Date');
+            throw new Error(
+              'Milestone Start Date cannot be Before Resource / Position Start Date'
+            );
           }
         }
+      }
+    }
+  }
+
+  _validateResourceDates(
+    startDate: Date | null,
+    endDate: Date | null,
+    milestone: Milestone
+  ) {
+    if (startDate && !milestone.startDate) {
+      throw new Error('Milestone start date is not set');
+    }
+    if (endDate && !milestone.endDate) {
+      throw new Error('Milestone end date is not set');
+    }
+
+    if (moment(startDate).isAfter(moment(endDate))) {
+      throw new Error('Invalid date input');
+    }
+
+    if (startDate) {
+      if (moment(startDate).isBefore(moment(milestone.startDate), 'date')) {
+        throw new Error(
+          'Milestone Start Date cannot be Before Milestone Start Date'
+        );
+      }
+      if (moment(startDate).isAfter(moment(milestone.endDate), 'date')) {
+        throw new Error(
+          'Milestone Start Date cannot be After Milestone End Date'
+        );
+      }
+    }
+
+    if (endDate) {
+      if (moment(endDate).isBefore(moment(milestone.startDate), 'date')) {
+        throw new Error(
+          'Milestone Start Date cannot be Before Milestone Start Date'
+        );
+      }
+      if (moment(endDate).isAfter(moment(milestone.endDate), 'date')) {
+        throw new Error(
+          'Milestone Start Date cannot be After Milestone End Date'
+        );
       }
     }
   }

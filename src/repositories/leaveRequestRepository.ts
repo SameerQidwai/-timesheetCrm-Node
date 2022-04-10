@@ -94,7 +94,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         }
 
         if (leaveRequestDTO.workId) {
-          let project = await transactionalEntityManager.findOne(
+          var project = await transactionalEntityManager.findOne(
             Opportunity,
             leaveRequestDTO.workId
           );
@@ -186,6 +186,10 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
               'DD-MM-YYYY'
             )} leave request is already created`
           );
+        }
+
+        if (project) {
+          this._validateRequestDates(_firstDate, _lastDate, project);
         }
 
         let leaveRequestBalance = await transactionalEntityManager.findOne(
@@ -1207,5 +1211,36 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     });
 
     return projectIds;
+  }
+
+  //!--------------------------- HELPER FUNCTIONS ----------------------------//
+
+  _validateRequestDates(
+    starDate: Date | string,
+    endDate: Date | string,
+    opportunity: Opportunity
+  ) {
+    if (opportunity.startDate) {
+      if (moment(starDate).isBefore(moment(opportunity.startDate), 'date')) {
+        throw new Error(
+          'Leave Request Date cannot be Before Project Start Date'
+        );
+      }
+      if (moment(endDate).isBefore(moment(opportunity.startDate), 'date')) {
+        throw new Error(
+          'Milestone Start Date cannot be Before Project Start Date'
+        );
+      }
+    }
+    if (opportunity.endDate) {
+      if (moment(starDate).isAfter(moment(opportunity.endDate), 'date')) {
+        throw new Error('Leave Request Date cannot be After Project End Date');
+      }
+      if (moment(endDate).isAfter(moment(opportunity.endDate), 'date')) {
+        throw new Error(
+          'Milestone Start Date cannot be After Project End Date'
+        );
+      }
+    }
   }
 }

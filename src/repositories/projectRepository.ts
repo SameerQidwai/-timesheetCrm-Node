@@ -23,6 +23,7 @@ import { Attachment } from '../entities/attachment';
 import { Comment } from '../entities/comment';
 import { Timesheet } from '../entities/timesheet';
 import moment from 'moment';
+import { LeaveRequest } from 'src/entities/leaveRequest';
 
 @EntityRepository(Opportunity)
 export class ProjectRepository extends Repository<Opportunity> {
@@ -712,6 +713,24 @@ export class ProjectRepository extends Repository<Opportunity> {
           throw new Error('Project not found!');
         }
 
+        let milestone = project.milestones.filter(
+          (x) => x.id == milestoneId
+        )[0];
+
+        if (!milestone) {
+          throw new Error('Milestone not found');
+        }
+
+        if (projectResourceDTO.startDate || projectResourceDTO.endDate) {
+          this._validateResourceDates(
+            projectResourceDTO.startDate,
+            projectResourceDTO.endDate,
+            milestone,
+            [],
+            []
+          );
+        }
+
         let resource = new OpportunityResource();
 
         resource.panelSkillId = projectResourceDTO.panelSkillId;
@@ -782,6 +801,20 @@ export class ProjectRepository extends Repository<Opportunity> {
 
       let milestone = project.milestones.filter((x) => x.id == milestoneId)[0];
 
+      if (!milestone) {
+        throw new Error('Milestone not found');
+      }
+
+      if (projectResourceDTO.startDate || projectResourceDTO.endDate) {
+        this._validateResourceDates(
+          projectResourceDTO.startDate,
+          projectResourceDTO.endDate,
+          milestone,
+          [],
+          []
+        );
+      }
+
       let resource = milestone.opportunityResources.filter(
         (x) => x.id == id
       )[0];
@@ -789,6 +822,24 @@ export class ProjectRepository extends Repository<Opportunity> {
       if (!resource) {
         throw new Error('Resource not found!');
       }
+
+      let index = resource.opportunityResourceAllocations.findIndex(
+        (x) => x.isMarkedAsSelected == true
+      );
+
+      if (projectResourceDTO.startDate || projectResourceDTO.endDate) {
+        this._validateResourceDates(
+          projectResourceDTO.startDate,
+          projectResourceDTO.endDate,
+          milestone,
+          [],
+          []
+        );
+      }
+
+      if (resource.billableHours != projectResourceDTO.billableHours) {
+      }
+
       resource.billableHours = projectResourceDTO.billableHours;
 
       if (projectResourceDTO.startDate) {
@@ -797,10 +848,6 @@ export class ProjectRepository extends Repository<Opportunity> {
       if (projectResourceDTO.endDate) {
         resource.endDate = new Date(projectResourceDTO.endDate);
       }
-
-      let index = resource.opportunityResourceAllocations.findIndex(
-        (x) => x.isMarkedAsSelected == true
-      );
 
       resource.opportunityResourceAllocations[index].buyingRate =
         projectResourceDTO.buyingRate;
@@ -1318,6 +1365,10 @@ export class ProjectRepository extends Repository<Opportunity> {
     milestones: Milestone[],
     resources: OpportunityResource[]
   ) {
+    if (moment(startDate).isAfter(moment(endDate))) {
+      throw new Error('Invalid date input');
+    }
+
     if (startDate) {
       for (let milestone of milestones) {
         if (moment(startDate).isAfter(moment(milestone.startDate), 'date')) {
@@ -1372,11 +1423,13 @@ export class ProjectRepository extends Repository<Opportunity> {
     if (startDate) {
       if (moment(startDate).isBefore(moment(project.startDate), 'date')) {
         throw new Error(
-          'Milestone Start Date cannot be Before Milestone Start Date'
+          'Milestone Start Date cannot be Before Project Start Date'
         );
       }
       if (moment(startDate).isAfter(moment(project.endDate), 'date')) {
-        ('Milestone Start Date cannot be After Milestone End Date');
+        throw new Error(
+          'Milestone Start Date cannot be After Project End Date'
+        );
       }
       for (let poisition of resources) {
         if (poisition.startDate) {
@@ -1388,7 +1441,9 @@ export class ProjectRepository extends Repository<Opportunity> {
         }
         if (poisition.endDate) {
           if (moment(startDate).isBefore(moment(project.endDate), 'date')) {
-            ('Milestone Start Date cannot be Before Resource / Position Start Date');
+            throw new Error(
+              'Milestone Start Date cannot be Before Resource / Position Start Date'
+            );
           }
         }
       }
@@ -1396,11 +1451,13 @@ export class ProjectRepository extends Repository<Opportunity> {
     if (endDate) {
       if (moment(endDate).isBefore(moment(project.startDate), 'date')) {
         throw new Error(
-          'Milestone Start Date cannot be Before Milestone Start Date'
+          'Milestone Start Date cannot be Before Project Start Date'
         );
       }
       if (moment(endDate).isAfter(moment(project.endDate), 'date')) {
-        ('Milestone Start Date cannot be After Milestone End Date');
+        throw new Error(
+          'Milestone Start Date cannot be After Project End Date'
+        );
       }
       for (let poisition of resources) {
         if (poisition.startDate) {
@@ -1412,10 +1469,59 @@ export class ProjectRepository extends Repository<Opportunity> {
         }
         if (poisition.endDate) {
           if (moment(endDate).isBefore(moment(project.endDate), 'date')) {
-            ('Milestone Start Date cannot be Before Resource / Position Start Date');
+            throw new Error(
+              'Milestone Start Date cannot be Before Resource / Position Start Date'
+            );
           }
         }
       }
     }
   }
+
+  _validateResourceDates(
+    startDate: Date | null,
+    endDate: Date | null,
+    milestone: Milestone,
+    leaveRequests: LeaveRequest[],
+    timesheet: Timesheet[]
+  ) {
+    if (startDate && !milestone.startDate) {
+      throw new Error('Milestone start date is not set');
+    }
+    if (endDate && !milestone.endDate) {
+      throw new Error('Milestone end date is not set');
+    }
+
+    if (moment(startDate).isAfter(moment(endDate))) {
+      throw new Error('Invalid date input');
+    }
+
+    if (startDate) {
+      if (moment(startDate).isBefore(moment(milestone.startDate), 'date')) {
+        throw new Error(
+          'Milestone Start Date cannot be Before Milestone Start Date'
+        );
+      }
+      if (moment(startDate).isAfter(moment(milestone.endDate), 'date')) {
+        throw new Error(
+          'Milestone Start Date cannot be After Milestone End Date'
+        );
+      }
+    }
+
+    if (endDate) {
+      if (moment(endDate).isBefore(moment(milestone.startDate), 'date')) {
+        throw new Error(
+          'Milestone Start Date cannot be Before Milestone Start Date'
+        );
+      }
+      if (moment(endDate).isAfter(moment(milestone.endDate), 'date')) {
+        throw new Error(
+          'Milestone Start Date cannot be After Milestone End Date'
+        );
+      }
+    }
+  }
+
+  _validateResourceHours(hours: number, timesheets: Timesheet[]) {}
 }

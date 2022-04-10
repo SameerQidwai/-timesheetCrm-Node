@@ -700,6 +700,22 @@ export class TimesheetRepository extends Repository<Timesheet> {
           );
         }
 
+        let milestone = await transactionalEntityManager.findOne(
+          Milestone,
+          milestoneEntry.milestoneId
+        );
+
+        if (!milestone) {
+          throw new Error('Milestone not found');
+        }
+
+        if (milestone.startDate || milestone.endDate) {
+          this._validateEntryDates(
+            moment(timesheetDTO.date).toDate(),
+            milestone
+          );
+        }
+
         let entry = new TimesheetEntry();
         //--COMMENTED TIMEZONE LOGIC
         {
@@ -772,10 +788,31 @@ export class TimesheetRepository extends Repository<Timesheet> {
     let entry = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let entry: TimesheetEntry | undefined;
-        entry = await this.manager.findOne(TimesheetEntry, entryId);
+        entry = await transactionalEntityManager.findOne(
+          TimesheetEntry,
+          entryId,
+          { relations: ['milestoneEntry'] }
+        );
         if (!entry) {
           throw new Error('Entry not found');
         }
+
+        let milestone = await transactionalEntityManager.findOne(
+          Milestone,
+          entry.milestoneEntry.milestoneId
+        );
+
+        if (!milestone) {
+          throw new Error('Milestone not found');
+        }
+
+        if (milestone.startDate || milestone.endDate) {
+          this._validateEntryDates(
+            moment(timesheetDTO.date).toDate(),
+            milestone
+          );
+        }
+
         entry.date = moment(timesheetDTO.date, 'DD-MM-YYYY').format(
           'DD-MM-YYYY'
         );
@@ -1989,5 +2026,31 @@ export class TimesheetRepository extends Repository<Timesheet> {
     });
 
     return users;
+  }
+
+  //!--------------------------- HELPER FUNCTIONS ----------------------------//
+
+  _validateEntryDates(date: Date, milestone: Milestone) {
+    if (milestone.startDate) {
+      if (moment(date).isBefore(moment(milestone.startDate), 'date')) {
+        throw new Error('Timesheet Date cannot be Before Milestone Start Date');
+      }
+      if (moment(date).isBefore(moment(milestone.startDate), 'date')) {
+        throw new Error(
+          'Milestone Start Date cannot be Before Project Start Date'
+        );
+      }
+    }
+    if (milestone.endDate) {
+      if (moment(date).isAfter(moment(milestone.endDate), 'date')) {
+        throw new Error('Timesheet Date cannot be After Milestone End Date');
+      }
+
+      if (moment(date).isAfter(moment(milestone.endDate), 'date')) {
+        throw new Error(
+          'Milestone Start Date cannot be After Project End Date'
+        );
+      }
+    }
   }
 }
