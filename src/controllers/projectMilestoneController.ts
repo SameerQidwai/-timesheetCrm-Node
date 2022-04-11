@@ -92,7 +92,7 @@ export class ProjectMilestoneController {
     try {
       const repository = getCustomRepository(ProjectRepository);
       let response = await repository.deleteMilestone(
-        parseInt(req.params.opportunityId),
+        parseInt(req.params.projectId),
         parseInt(req.params.id)
       );
 

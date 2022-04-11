@@ -712,7 +712,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
         if (milestone.startDate || milestone.endDate) {
           this._validateEntryDates(
             moment(timesheetDTO.date).toDate(),
-            milestone
+            milestone,
+            timesheet
           );
         }
 
@@ -791,7 +792,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         entry = await transactionalEntityManager.findOne(
           TimesheetEntry,
           entryId,
-          { relations: ['milestoneEntry'] }
+          { relations: ['milestoneEntry', 'milestoneEntry.timesheet'] }
         );
         if (!entry) {
           throw new Error('Entry not found');
@@ -809,7 +810,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
         if (milestone.startDate || milestone.endDate) {
           this._validateEntryDates(
             moment(timesheetDTO.date).toDate(),
-            milestone
+            milestone,
+            entry.milestoneEntry.timesheet
           );
         }
 
@@ -2030,7 +2032,14 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
   //!--------------------------- HELPER FUNCTIONS ----------------------------//
 
-  _validateEntryDates(date: Date, milestone: Milestone) {
+  _validateEntryDates(date: Date, milestone: Milestone, timesheet: Timesheet) {
+    if (
+      moment(date).isBefore(timesheet.startDate) ||
+      moment(date).isAfter(timesheet.endDate)
+    ) {
+      throw new Error('Entry date is out of timesheet range');
+    }
+
     if (milestone.startDate) {
       if (moment(date).isBefore(moment(milestone.startDate), 'date')) {
         throw new Error('Timesheet Date cannot be Before Milestone Start Date');

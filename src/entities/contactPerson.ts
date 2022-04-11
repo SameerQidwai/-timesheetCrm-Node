@@ -13,6 +13,7 @@ import { StandardSkillStandardLevel } from './standardSkillStandardLevel';
 import { State } from './state';
 import { ContactPersonOrganization } from './contactPersonOrganization';
 import { Organization } from './organization';
+import { Employee } from './employee';
 
 @Entity('contact_persons')
 export class ContactPerson extends Base {
@@ -87,4 +88,11 @@ export class ContactPerson extends Base {
     }
   )
   contactPersonOrganizations: ContactPersonOrganization[];
+
+  public get getEmployee(): Employee {
+    let activeOrganization = this.contactPersonOrganizations.filter(
+      (contactPersonOrganization) => contactPersonOrganization.status == true
+    );
+    return activeOrganization[0].employee;
+  }
 }

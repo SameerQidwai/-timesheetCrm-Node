@@ -18,7 +18,11 @@ import { OpportunityResourceAllocation } from '../entities/opportunityResourceAl
 import { Employee } from '../entities/employee';
 import { PurchaseOrder } from '../entities/purchaseOrder';
 import { Milestone } from '../entities/milestone';
-import { EntityType, OpportunityStatus } from '../constants/constants';
+import {
+  EntityType,
+  OpportunityStatus,
+  ProjectType,
+} from '../constants/constants';
 import { Attachment } from '../entities/attachment';
 import { Comment } from '../entities/comment';
 import { Timesheet } from '../entities/timesheet';
@@ -143,7 +147,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       milestoneObj.title = 'Default Milestone';
       milestoneObj.description = '-';
       milestoneObj.startDate = newProject.startDate;
-      milestoneObj.endDate = newProject.startDate;
+      milestoneObj.endDate = newProject.endDate;
       milestoneObj.isApproved = false;
       milestoneObj.projectId = newProject.id;
       milestoneObj.progress = 0;
@@ -315,7 +319,15 @@ export class ProjectRepository extends Repository<Opportunity> {
     project: ProjectDTO
   ): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
-      let projectObj = await this.findOneCustomWithoutContactPerson(id);
+      let projectObj = await transactionalEntityManager.findOne(
+        Opportunity,
+        id,
+        { relations: ['organization', 'milestones'] }
+      );
+
+      if (!projectObj) {
+        throw new Error('Project not found');
+      }
 
       projectObj.title = project.title;
 
@@ -350,9 +362,15 @@ export class ProjectRepository extends Repository<Opportunity> {
 
       if (project.startDate) {
         projectObj.startDate = new Date(project.startDate);
+        if (project.type == ProjectType.TIME_BASE) {
+          projectObj.milestones[0].startDate == new Date(project.startDate);
+        }
       }
       if (project.endDate) {
         projectObj.endDate = new Date(project.endDate);
+        if (project.type == ProjectType.TIME_BASE) {
+          projectObj.milestones[0].startDate == new Date(project.endDate);
+        }
       }
       if (project.entryDate) {
         projectObj.entryDate = new Date(project.entryDate);
@@ -474,7 +492,11 @@ export class ProjectRepository extends Repository<Opportunity> {
   async deleteCustom(id: number): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
       let project = await transactionalEntityManager.findOne(Opportunity, id, {
-        relations: ['milestones', 'purchaseOrders'],
+        relations: [
+          'milestones',
+          'purchaseOrders',
+          'milestones.opportunityResources',
+        ],
       });
       if (!project) {
         throw new Error('Project not found');
@@ -487,18 +509,30 @@ export class ProjectRepository extends Repository<Opportunity> {
         }
       );
 
-      if (project.milestones) {
+      if (
+        project.milestones.length > 0 &&
+        project.type == ProjectType.MILESTONE_BASE
+      ) {
         throw new Error('Project has milestones');
       }
 
-      if (linkedOpportunities) {
+      if (
+        project.milestones.length > 0 &&
+        project.type == ProjectType.TIME_BASE &&
+        project.milestones[0].opportunityResources.length > 0
+      ) {
+        throw new Error('Project has resources');
+      }
+
+      if (linkedOpportunities.length > 0) {
         throw new Error('Project is linked to other Opportunity / Project');
       }
 
-      await transactionalEntityManager.softDelete(
-        PurchaseOrder,
-        project.purchaseOrders
-      );
+      if (project.purchaseOrders.length > 0)
+        await transactionalEntityManager.softDelete(
+          PurchaseOrder,
+          project.purchaseOrders
+        );
 
       let attachments = await transactionalEntityManager.find(Attachment, {
         where: { targetType: EntityType.WORK, targetId: id },
@@ -508,8 +542,10 @@ export class ProjectRepository extends Repository<Opportunity> {
         where: { targetType: EntityType.WORK, targetId: id },
       });
 
-      await transactionalEntityManager.softDelete(Attachment, attachments);
-      await transactionalEntityManager.softDelete(Attachment, comments);
+      if (attachments.length > 0)
+        await transactionalEntityManager.softDelete(Attachment, attachments);
+      if (comments.length > 0)
+        await transactionalEntityManager.softDelete(Comment, comments);
 
       await transactionalEntityManager.softDelete(Opportunity, id);
     });
@@ -526,15 +562,43 @@ export class ProjectRepository extends Repository<Opportunity> {
     projectId: number,
     milestoneDTO: MilestoneDTO
   ): Promise<any> {
-    let milestone = new Milestone();
-    milestone.title = milestoneDTO.title;
-    milestone.description = milestoneDTO.description;
-    milestone.startDate = new Date(milestoneDTO.startDate);
-    milestone.endDate = new Date(milestoneDTO.endDate);
-    milestone.isApproved = milestoneDTO.isApproved;
-    milestone.projectId = projectId;
-    milestone.progress = milestoneDTO.progress;
-    return this.manager.save(milestone);
+    let milestone = this.manager.transaction(
+      async (transactionEntityManager) => {
+        let milestone = new Milestone();
+        milestone.title = milestoneDTO.title;
+        milestone.description = milestoneDTO.description;
+
+        let project = await transactionEntityManager.findOne(
+          Opportunity,
+          projectId
+        );
+
+        if (!project) {
+          throw new Error('Project not found');
+        }
+
+        if (milestoneDTO.startDate || milestoneDTO.endDate) {
+          this._validateMilestoneDates(
+            milestoneDTO.startDate,
+            milestoneDTO.endDate,
+            project,
+            []
+          );
+        }
+
+        if (milestoneDTO.startDate) {
+          milestone.startDate = new Date(milestoneDTO.startDate);
+        }
+        if (milestoneDTO.startDate) {
+          milestone.endDate = new Date(milestoneDTO.endDate);
+        }
+        milestone.isApproved = milestoneDTO.isApproved;
+        milestone.projectId = projectId;
+        milestone.progress = milestoneDTO.progress;
+        return this.manager.save(milestone);
+      }
+    );
+    return milestone;
   }
 
   async findOneCustomMilestone(
@@ -572,7 +636,7 @@ export class ProjectRepository extends Repository<Opportunity> {
     milestoneId: number,
     milestoneDTO: MilestoneDTO
   ) {
-    this.manager.transaction(async (transactionalEntityManager) => {
+    await this.manager.transaction(async (transactionalEntityManager) => {
       if (!projectId) {
         throw new Error('Project not found!');
       }
@@ -636,9 +700,13 @@ export class ProjectRepository extends Repository<Opportunity> {
     id: number
   ): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
-      let project = await transactionalEntityManager.findOne(Opportunity, id, {
-        relations: ['milestones', 'milestones.opportunityResources'],
-      });
+      let project = await transactionalEntityManager.findOne(
+        Opportunity,
+        projectId,
+        {
+          relations: ['milestones', 'milestones.opportunityResources'],
+        }
+      );
 
       if (!project) {
         throw new Error('Project not found');
@@ -650,7 +718,7 @@ export class ProjectRepository extends Repository<Opportunity> {
         throw new Error('Milestone not found');
       }
 
-      if (milestone.opportunityResources) {
+      if (milestone.opportunityResources.length > 0) {
         throw new Error('Milestone has resources');
       }
 
@@ -792,6 +860,9 @@ export class ProjectRepository extends Repository<Opportunity> {
           'milestones',
           'milestones.opportunityResources',
           'milestones.opportunityResources.opportunityResourceAllocations',
+          'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
+          'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations',
+          'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations.employee',
         ],
       });
 
@@ -928,8 +999,6 @@ export class ProjectRepository extends Repository<Opportunity> {
               'milestones.opportunityResources',
               'milestones.opportunityResources.panelSkill',
               'milestones.opportunityResources.panelSkillStandardLevel',
-              'milestones.opportunityResources.opportunityResourceAllocations',
-              'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
             ],
           }
         );
@@ -945,34 +1014,56 @@ export class ProjectRepository extends Repository<Opportunity> {
           throw new Error('Milestone not found!');
         }
 
-        let newResources: OpportunityResource[] = [];
-        for (let opportunityResource of milestone.opportunityResources) {
-          if (opportunityResource.id !== id) {
-            newResources.push(opportunityResource);
-          } else {
-            if (opportunityResource.opportunityResourceAllocations) {
-              let allocation =
-                opportunityResource.opportunityResourceAllocations[0];
+        let resource = await transactionalEntityManager.findOne(
+          OpportunityResource,
+          id,
+          {
+            where: { milestoneId: milestoneId },
+            relations: [
+              'opportunityResourceAllocations',
+              'opportunityResourceAllocations.contactPerson',
+              'opportunityResourceAllocations.contactPerson.contactPersonOrganizations',
+              'opportunityResourceAllocations.contactPerson.contactPersonOrganizations.employee',
+            ],
+          }
+        );
 
-              let timesheets = await transactionalEntityManager.find(
-                Timesheet,
-                { where: { employeeId: allocation.contactPersonId } }
-              );
+        if (!resource) {
+          throw new Error('Resource not found');
+        }
 
-              if (timesheets) {
-                throw new Error('Resource timesheet has been created');
-              }
+        let allocation = resource.opportunityResourceAllocations[0];
+
+        if (!allocation) {
+          throw new Error('Allocation not found');
+        }
+
+        let timesheets = await transactionalEntityManager.find(Timesheet, {
+          where: { employeeId: allocation.contactPerson.getEmployee.id },
+          relations: ['milestoneEntries'],
+        });
+
+        for (let timesheet of timesheets) {
+          for (let milestoneEntry of timesheet.milestoneEntries) {
+            if (milestoneEntry.milestoneId == milestoneId) {
+              throw new Error('Resource timesheet has been created');
             }
           }
         }
 
-        project.opportunityResources = newResources;
+        await transactionalEntityManager.delete(
+          OpportunityResourceAllocation,
+          allocation.id
+        );
 
-        return await transactionalEntityManager.save(project);
+        return await transactionalEntityManager.delete(
+          OpportunityResource,
+          resource.id
+        );
       }
     );
 
-    return project;
+    return this.findOneCustom(projectId);
   }
 
   async getSelectedResources(projectId: number, milestoneId: number) {
@@ -1442,7 +1533,7 @@ export class ProjectRepository extends Repository<Opportunity> {
         if (poisition.endDate) {
           if (moment(startDate).isBefore(moment(project.endDate), 'date')) {
             throw new Error(
-              'Milestone Start Date cannot be Before Resource / Position Start Date'
+              'Milestone Start Date cannot be Before Resource / Position End Date'
             );
           }
         }
@@ -1451,13 +1542,11 @@ export class ProjectRepository extends Repository<Opportunity> {
     if (endDate) {
       if (moment(endDate).isBefore(moment(project.startDate), 'date')) {
         throw new Error(
-          'Milestone Start Date cannot be Before Project Start Date'
+          'Milestone End Date cannot be Before Project Start Date'
         );
       }
       if (moment(endDate).isAfter(moment(project.endDate), 'date')) {
-        throw new Error(
-          'Milestone Start Date cannot be After Project End Date'
-        );
+        throw new Error('Milestone End Date cannot be After Project End Date');
       }
       for (let poisition of resources) {
         if (poisition.startDate) {
@@ -1470,7 +1559,7 @@ export class ProjectRepository extends Repository<Opportunity> {
         if (poisition.endDate) {
           if (moment(endDate).isBefore(moment(project.endDate), 'date')) {
             throw new Error(
-              'Milestone Start Date cannot be Before Resource / Position Start Date'
+              'Milestone Start Date cannot be Before Resource / Position End Date'
             );
           }
         }
@@ -1486,7 +1575,7 @@ export class ProjectRepository extends Repository<Opportunity> {
     timesheet: Timesheet[]
   ) {
     if (startDate && !milestone.startDate) {
-      throw new Error('Milestone start date is not set');
+      throw new Error('Resource start date is not set');
     }
     if (endDate && !milestone.endDate) {
       throw new Error('Milestone end date is not set');
@@ -1499,12 +1588,12 @@ export class ProjectRepository extends Repository<Opportunity> {
     if (startDate) {
       if (moment(startDate).isBefore(moment(milestone.startDate), 'date')) {
         throw new Error(
-          'Milestone Start Date cannot be Before Milestone Start Date'
+          'Resource Start Date cannot be Before Milestone Start Date'
         );
       }
       if (moment(startDate).isAfter(moment(milestone.endDate), 'date')) {
         throw new Error(
-          'Milestone Start Date cannot be After Milestone End Date'
+          'Resource Start Date cannot be After Milestone End Date'
         );
       }
     }
@@ -1512,13 +1601,11 @@ export class ProjectRepository extends Repository<Opportunity> {
     if (endDate) {
       if (moment(endDate).isBefore(moment(milestone.startDate), 'date')) {
         throw new Error(
-          'Milestone Start Date cannot be Before Milestone Start Date'
+          'Resource End Date cannot be Before Milestone Start Date'
         );
       }
       if (moment(endDate).isAfter(moment(milestone.endDate), 'date')) {
-        throw new Error(
-          'Milestone Start Date cannot be After Milestone End Date'
-        );
+        throw new Error('Resource End Date cannot be After Milestone End Date');
       }
     }
   }
