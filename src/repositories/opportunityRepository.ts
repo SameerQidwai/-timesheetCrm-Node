@@ -221,9 +221,17 @@ export class OpportunityRepository extends Repository<Opportunity> {
       }
 
       if (opportunity.startDate) {
+        if (opportunity.type == ProjectType.TIME_BASE) {
+          opportunityObj.milestones[0].startDate ==
+            new Date(opportunity.startDate);
+        }
         opportunityObj.startDate = new Date(opportunity.startDate);
       }
       if (opportunity.endDate) {
+        if (opportunity.type == ProjectType.TIME_BASE) {
+          opportunityObj.milestones[0].startDate ==
+            new Date(opportunity.endDate);
+        }
         opportunityObj.endDate = new Date(opportunity.endDate);
       }
       if (opportunity.bidDate) {
@@ -416,12 +424,12 @@ export class OpportunityRepository extends Repository<Opportunity> {
           opportunity.purchaseOrders
         );
 
-      if (opportunity.type == ProjectType.TIME_BASE)
-        await transactionalEntityManager.softDelete(
-          Milestone,
-          opportunity.milestones[0].id
-        );
-      await transactionalEntityManager.softDelete(Opportunity, id);
+      // if (opportunity.type == ProjectType.TIME_BASE)
+      //   await transactionalEntityManager.softDelete(
+      //     Milestone,
+      //     opportunity.milestones[0].id
+      //   );
+      return await this.softDelete(id);
     });
   }
 
@@ -441,11 +449,35 @@ export class OpportunityRepository extends Repository<Opportunity> {
     let milestone = new Milestone();
     milestone.title = milestoneDTO.title;
     milestone.description = milestoneDTO.description;
-    milestone.startDate = new Date(milestoneDTO.startDate);
-    milestone.endDate = new Date(milestoneDTO.endDate);
+
+    let opportunity = await this.findOne(opportunityId, {
+      relations: ['milestones'],
+    });
+
+    if (!opportunity) {
+      throw new Error('Project not found');
+    }
+
+    if (milestoneDTO.startDate || milestoneDTO.endDate) {
+      this._validateMilestoneDates(
+        milestoneDTO.startDate,
+        milestoneDTO.endDate,
+        opportunity,
+        []
+      );
+    }
+
+    if (milestoneDTO.startDate) {
+      milestone.startDate = new Date(milestoneDTO.startDate);
+    }
+    if (milestoneDTO.startDate) {
+      milestone.endDate = new Date(milestoneDTO.endDate);
+    }
+
     milestone.isApproved = milestoneDTO.isApproved;
     milestone.projectId = opportunityId;
     milestone.progress = milestoneDTO.progress;
+
     return this.manager.save(milestone);
   }
 
@@ -1635,10 +1667,10 @@ export class OpportunityRepository extends Repository<Opportunity> {
     milestone: Milestone
   ) {
     if (startDate && !milestone.startDate) {
-      throw new Error('Resource start date is not set');
+      throw new Error('Milestone start date is not set');
     }
     if (endDate && !milestone.endDate) {
-      throw new Error('Resource end date is not set');
+      throw new Error('Milestone end date is not set');
     }
 
     if (moment(startDate).isAfter(moment(endDate))) {

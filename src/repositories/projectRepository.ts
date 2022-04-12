@@ -876,16 +876,6 @@ export class ProjectRepository extends Repository<Opportunity> {
         throw new Error('Milestone not found');
       }
 
-      if (projectResourceDTO.startDate || projectResourceDTO.endDate) {
-        this._validateResourceDates(
-          projectResourceDTO.startDate,
-          projectResourceDTO.endDate,
-          milestone,
-          [],
-          []
-        );
-      }
-
       let resource = milestone.opportunityResources.filter(
         (x) => x.id == id
       )[0];
@@ -1575,7 +1565,7 @@ export class ProjectRepository extends Repository<Opportunity> {
     timesheet: Timesheet[]
   ) {
     if (startDate && !milestone.startDate) {
-      throw new Error('Resource start date is not set');
+      throw new Error('Milestone start date is not set');
     }
     if (endDate && !milestone.endDate) {
       throw new Error('Milestone end date is not set');
