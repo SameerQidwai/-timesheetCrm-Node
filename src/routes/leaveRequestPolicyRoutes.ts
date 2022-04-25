@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { LeaveRequestPolicyDTO } from 'src/dto';
+import { LeaveRequestPolicyDTO } from '../dto';
 import { SharedController } from '../controllers/sharedController';
 import { LeaveRequestPolicyRepository } from '../repositories/leaveRequestPolicyRepository';
 import { can } from '../middlewares/can';

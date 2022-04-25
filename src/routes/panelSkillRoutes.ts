@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { PanelSkillDTO } from 'src/dto';
+import { PanelSkillDTO } from '../dto';
 import { SharedController } from '../controllers/sharedController';
 import { PanelSkillRepository } from '../repositories/panelSkillRepository';
 import { isLoggedIn } from '../middlewares/loggedIn';

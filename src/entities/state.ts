@@ -1,10 +1,8 @@
-import { Entity, Column } from 'typeorm'; 
+import { Entity, Column } from 'typeorm';
 import { Base } from './common/base';
 
-@Entity("states") 
+@Entity('states')
 export class State extends Base {
-
-   @Column({ name: "label" })
-   label: string;
-
+  @Column({ name: 'label' })
+  label: string;
 }

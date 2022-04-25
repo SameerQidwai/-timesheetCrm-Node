@@ -1,8 +1,4 @@
-import { OpportunityDTO, OpportunityResourceDTO } from './../dto';
-import { BaseController } from './baseController';
-import { OpportunityRepository } from './../repositories/opportunityRepository';
 import { Request, Response, NextFunction } from 'express';
-import { OpportunityResource } from 'src/entities/opportunityResource';
 import { getCustomRepository } from 'typeorm';
 import { EmployeeRepository } from './../repositories/employeeRepository';
 
@@ -90,7 +86,7 @@ export class LeaseController {
       );
       res.status(200).json({
         success: true,
-        message: `Deleted ${req.params.id} Successfully`,
+        message: `Deleted Successfully`,
         data: record,
       });
     } catch (e) {

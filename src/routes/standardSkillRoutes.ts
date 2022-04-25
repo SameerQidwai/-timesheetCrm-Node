@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { StandardSkillDTO } from 'src/dto';
+import { StandardSkillDTO } from '../dto';
 import { SharedController } from '../controllers/sharedController';
 import { StandardSkillRepository } from '../repositories/standardSkillRepository';
 import { can } from './../middlewares/can';

@@ -23,6 +23,7 @@ import { OpportunityResourceAllocation } from '../entities/opportunityResourceAl
 import moment from 'moment';
 import { Milestone } from '../entities/milestone';
 import { LeaveRequest } from '../entities/leaveRequest';
+import { OpportunityResource } from 'src/entities/opportunityResource';
 
 @EntityRepository(Timesheet)
 export class TimesheetRepository extends Repository<Timesheet> {
@@ -681,6 +682,18 @@ export class TimesheetRepository extends Repository<Timesheet> {
           timesheet = await transactionalEntityManager.save(timesheet);
         }
 
+        let employee = await transactionalEntityManager.findOne(
+          Employee,
+          userId,
+          {
+            relations: ['contactPersonOrganization'],
+          }
+        );
+
+        if (!employee) {
+          throw new Error('Employee not found');
+        }
+
         milestoneEntry = await this.manager.findOne(TimesheetMilestoneEntry, {
           where: {
             milestoneId: timesheetDTO.milestoneId,
@@ -702,19 +715,34 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
         let milestone = await transactionalEntityManager.findOne(
           Milestone,
-          milestoneEntry.milestoneId
+          milestoneEntry.milestoneId,
+          {
+            relations: [
+              'opportunityResources',
+              'opportunityResources.opportunityResourceAllocations',
+            ],
+          }
         );
 
         if (!milestone) {
           throw new Error('Milestone not found');
         }
 
-        if (milestone.startDate || milestone.endDate) {
-          this._validateEntryDates(
-            moment(timesheetDTO.date).toDate(),
-            milestone,
-            timesheet
-          );
+        for (let resource of milestone.opportunityResources) {
+          if (resource.milestoneId == milestone.id) {
+            for (let allocation of resource.opportunityResourceAllocations) {
+              if (
+                allocation.contactPersonId ==
+                employee.contactPersonOrganization.contactPersonId
+              ) {
+                this._validateEntryDates(
+                  moment(timesheetDTO.date).toDate(),
+                  resource,
+                  timesheet
+                );
+              }
+            }
+          }
         }
 
         let entry = new TimesheetEntry();
@@ -798,6 +826,18 @@ export class TimesheetRepository extends Repository<Timesheet> {
           throw new Error('Entry not found');
         }
 
+        let employee = await transactionalEntityManager.findOne(
+          Employee,
+          entry.milestoneEntry.timesheet.employeeId,
+          {
+            relations: ['contactPersonOrganization'],
+          }
+        );
+
+        if (!employee) {
+          throw new Error('Employee not found');
+        }
+
         let milestone = await transactionalEntityManager.findOne(
           Milestone,
           entry.milestoneEntry.milestoneId
@@ -807,12 +847,21 @@ export class TimesheetRepository extends Repository<Timesheet> {
           throw new Error('Milestone not found');
         }
 
-        if (milestone.startDate || milestone.endDate) {
-          this._validateEntryDates(
-            moment(timesheetDTO.date).toDate(),
-            milestone,
-            entry.milestoneEntry.timesheet
-          );
+        for (let resource of milestone.opportunityResources) {
+          if (resource.milestoneId == milestone.id) {
+            for (let allocation of resource.opportunityResourceAllocations) {
+              if (
+                allocation.contactPersonId ==
+                employee.contactPersonOrganization.contactPersonId
+              ) {
+                this._validateEntryDates(
+                  moment(timesheetDTO.date).toDate(),
+                  resource,
+                  entry.milestoneEntry.timesheet
+                );
+              }
+            }
+          }
         }
 
         entry.date = moment(timesheetDTO.date, 'DD-MM-YYYY').format(
@@ -2032,7 +2081,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
   //!--------------------------- HELPER FUNCTIONS ----------------------------//
 
-  _validateEntryDates(date: Date, milestone: Milestone, timesheet: Timesheet) {
+  _validateEntryDates(
+    date: Date,
+    resource: OpportunityResource,
+    timesheet: Timesheet
+  ) {
     if (
       moment(date).isBefore(timesheet.startDate) ||
       moment(date).isAfter(timesheet.endDate)
@@ -2040,26 +2093,34 @@ export class TimesheetRepository extends Repository<Timesheet> {
       throw new Error('Entry date is out of timesheet range');
     }
 
-    if (milestone.startDate) {
-      if (moment(date).isBefore(moment(milestone.startDate), 'date')) {
+    if (resource.startDate) {
+      if (moment(date).isBefore(moment(resource.startDate), 'date')) {
         throw new Error('Timesheet Date cannot be Before Milestone Start Date');
       }
-      if (moment(date).isBefore(moment(milestone.startDate), 'date')) {
+      if (moment(date).isBefore(moment(resource.startDate), 'date')) {
         throw new Error(
           'Milestone Start Date cannot be Before Project Start Date'
         );
       }
     }
-    if (milestone.endDate) {
-      if (moment(date).isAfter(moment(milestone.endDate), 'date')) {
+    if (resource.endDate) {
+      if (moment(date).isAfter(moment(resource.endDate), 'date')) {
         throw new Error('Timesheet Date cannot be After Milestone End Date');
       }
 
-      if (moment(date).isAfter(moment(milestone.endDate), 'date')) {
+      if (moment(date).isAfter(moment(resource.endDate), 'date')) {
         throw new Error(
           'Milestone Start Date cannot be After Project End Date'
         );
       }
+    }
+    if (
+      moment(date).isBefore(timesheet.startDate) ||
+      moment(date).isAfter(timesheet.endDate)
+    ) {
+      throw new Error(
+        'Entry date should be in range of timesheet start and end date'
+      );
     }
   }
 }

@@ -17,6 +17,7 @@ import { Role } from './role';
 import moment from 'moment';
 import { LeaveRequestBalance } from './leaveRequestBalance';
 import { Opportunity } from './opportunity';
+import { LeaveRequest } from './leaveRequest';
 
 @Entity('employees')
 export class Employee extends Base {
@@ -127,6 +128,11 @@ export class Employee extends Base {
   @ManyToOne(() => Role)
   @JoinColumn({ name: 'role_id' })
   role: Role;
+
+  @OneToMany(() => LeaveRequest, (leaveRequest) => leaveRequest.employee, {
+    cascade: true,
+  })
+  leaveRequests: LeaveRequest[];
 
   @OneToMany(
     () => LeaveRequestBalance,

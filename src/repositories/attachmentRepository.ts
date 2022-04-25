@@ -1,7 +1,7 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { Attachment } from './../entities/attachment';
 import { AttachmentDTO } from '../dto/index';
-import { EntityType } from 'src/constants/constants';
+import { EntityType } from '../constants/constants';
 
 @EntityRepository(Attachment)
 export class AttachmentRepository extends Repository<Attachment> {

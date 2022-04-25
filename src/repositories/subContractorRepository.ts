@@ -10,6 +10,11 @@ import { Organization } from './../entities/organization';
 import { Employee } from './../entities/employee';
 import { EmploymentContract } from './../entities/employmentContract';
 import { BankAccount } from './../entities/bankAccount';
+import { Attachment } from '../entities/attachment';
+import { Comment } from '../entities/comment';
+import { EntityType } from '../constants/constants';
+import { OpportunityResourceAllocation } from '../entities/opportunityResourceAllocation';
+import { Opportunity } from '../entities/opportunity';
 
 @EntityRepository(Employee)
 export class SubContractorRepository extends Repository<Employee> {
@@ -362,6 +367,76 @@ export class SubContractorRepository extends Repository<Employee> {
   }
 
   async deleteCustom(id: number): Promise<any | undefined> {
-    return this.softDelete(id);
+    return this.manager.transaction(async (transactionalEntityManager) => {
+      let subContract = await transactionalEntityManager.findOne(Employee, id, {
+        relations: [
+          'contactPersonOrganization',
+          'contactPersonOrganization.contactPerson',
+          'employmentContracts',
+          'bankAccounts',
+          'leases',
+          'leaveRequests',
+        ],
+      });
+
+      if (!subContract) {
+        throw new Error('Employee not found');
+      }
+
+      let allocations = await transactionalEntityManager.find(
+        OpportunityResourceAllocation,
+        {
+          where: {
+            contactPersonId:
+              subContract.contactPersonOrganization.contactPerson.id,
+          },
+        }
+      );
+
+      if (allocations.length > 0) {
+        throw new Error('Employee is allocated');
+      }
+
+      if (subContract.leaveRequests.length > 0) {
+        throw new Error('Employee has leave requests');
+      }
+
+      let works = await transactionalEntityManager.find(Opportunity, {
+        where: [
+          { projectManagerId: id },
+          { accountDirectorId: id },
+          { opportunityManagerId: id },
+          { accountManagerId: id },
+        ],
+      });
+
+      if (works.length > 0) {
+        throw new Error('Employee is managing Opportunities / Projects');
+      }
+
+      let juniors = await transactionalEntityManager.find(Employee, {
+        where: { lineManagerId: id },
+      });
+
+      if (juniors.length > 0) {
+        throw new Error('Employee is managing other employees');
+      }
+
+      let attachments = await transactionalEntityManager.find(Attachment, {
+        where: { targetType: EntityType.EMPLOYEE, targetId: id },
+      });
+
+      let comments = await transactionalEntityManager.find(Comment, {
+        where: { targetType: EntityType.EMPLOYEE, targetId: id },
+      });
+
+      transactionalEntityManager.softRemove(Attachment, attachments);
+      transactionalEntityManager.softRemove(Comment, comments);
+      transactionalEntityManager.softRemove(
+        ContactPersonOrganization,
+        subContract.contactPersonOrganization
+      );
+      return transactionalEntityManager.softRemove(Employee, subContract);
+    });
   }
 }

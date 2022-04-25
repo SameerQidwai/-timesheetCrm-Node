@@ -1,16 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { Any, getCustomRepository } from 'typeorm';
-import { EntityType } from '../constants/constants';
 import { secret } from '../utilities/configs';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { SuperannuationType } from '../constants/constants';
-import { Role } from 'src/entities/role';
 import { EmployeeRepository } from './../repositories/employeeRepository';
 import { ProjectRepository } from '../repositories/projectRepository';
-import { Employee } from '../entities/employee';
-import { can } from '../middlewares/can';
-import { Action, Resource } from '../constants/authorization';
 
 export class AuthController {
   async login(req: Request, res: Response, next: NextFunction) {

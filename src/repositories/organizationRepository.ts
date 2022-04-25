@@ -3,6 +3,11 @@ import { EntityRepository, Repository } from 'typeorm';
 import { Organization } from './../entities/organization';
 import { ContactPersonOrganization } from './../entities/contactPersonOrganization';
 import { BankAccount } from './../entities/bankAccount';
+import { Opportunity } from '../entities/opportunity';
+import { ContactPerson } from '../entities/contactPerson';
+import { Attachment } from '../entities/attachment';
+import { Comment } from '../entities/comment';
+import { EntityType } from '../constants/constants';
 
 @EntityRepository(Organization)
 export class OrganizationRepository extends Repository<Organization> {
@@ -178,6 +183,63 @@ export class OrganizationRepository extends Repository<Organization> {
   }
 
   async deleteCustom(id: number): Promise<any | undefined> {
-    return this.softDelete(id);
+    return this.manager.transaction(async (transactionalEntityManager) => {
+      let organization = await transactionalEntityManager.findOne(
+        Organization,
+        id
+      );
+      if (!organization) {
+        throw new Error('Organization not found');
+      }
+
+      let children = await transactionalEntityManager.find(Organization, {
+        where: { parentOrganizationId: id },
+      });
+
+      if (children.length > 0) {
+        throw new Error('Organization is parent');
+      }
+
+      let opportunities = await transactionalEntityManager.find(Opportunity, {
+        where: { organizationId: id },
+      });
+
+      if (opportunities.length > 0) {
+        throw new Error('Organization has opportunities');
+      }
+
+      let associations = await transactionalEntityManager.find(
+        ContactPersonOrganization,
+        { where: { organizationId: id } }
+      );
+
+      if (associations.length > 0) {
+        throw new Error('Organization has associations');
+      }
+
+      let contactPersons = await transactionalEntityManager.find(
+        ContactPerson,
+        { where: { clearanceSponsorId: id } }
+      );
+
+      if (contactPersons.length > 0) {
+        throw new Error('Organization is Sponsor');
+      }
+
+      let attachments = await transactionalEntityManager.find(Attachment, {
+        where: { targetType: EntityType.WORK, targetId: id },
+      });
+
+      let comments = await transactionalEntityManager.find(Comment, {
+        where: { targetType: EntityType.WORK, targetId: id },
+      });
+
+      if (attachments.length > 0)
+        await transactionalEntityManager.softDelete(Attachment, attachments);
+      if (comments.length > 0)
+        await transactionalEntityManager.softDelete(Comment, comments);
+
+      return transactionalEntityManager.softDelete(Organization, id);
+    });
   }
 }

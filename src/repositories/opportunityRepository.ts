@@ -21,8 +21,9 @@ import { Attachment } from '../entities/attachment';
 import { EntityType, ProjectType } from '../constants/constants';
 import { Comment } from '../entities/comment';
 import moment from 'moment';
-import { LeaveRequest } from 'src/entities/leaveRequest';
-import { Timesheet } from 'src/entities/timesheet';
+import { LeaveRequest } from '../entities/leaveRequest';
+import { Timesheet } from '../entities/timesheet';
+import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
 
 @EntityRepository(Opportunity)
 export class OpportunityRepository extends Repository<Opportunity> {
@@ -151,7 +152,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
       milestoneObj.title = 'Default Milestone';
       milestoneObj.description = '-';
       milestoneObj.startDate = newOpportunity.startDate;
-      milestoneObj.endDate = newOpportunity.startDate;
+      milestoneObj.endDate = newOpportunity.endDate;
       milestoneObj.isApproved = false;
       milestoneObj.projectId = newOpportunity.id;
       milestoneObj.progress = 0;
@@ -183,81 +184,143 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
   async updateAndReturn(
     id: number,
-    opportunity: OpportunityDTO
+    opportunityDTO: OpportunityDTO
   ): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
-      let opportunityObj: Opportunity =
-        await this.findOneCustomWithoutContactPerson(id);
+      let opportunityObj = await transactionalEntityManager.findOne(
+        Opportunity,
+        id,
+        { relations: ['milestones', 'milestones.opportunityResources'] }
+      );
 
-      opportunityObj.title = opportunity.title;
+      if (!opportunityObj) {
+        throw new Error('Opportunity not found');
+      }
 
-      let milestones = await transactionalEntityManager.find(Milestone, {
-        where: {
-          startDate: Not(IsNull()),
-          endDate: Not(IsNull()),
-          projectId: id,
-        },
-      });
-      let milestoneIds = milestones.map((milestone) => milestone.id);
+      opportunityObj.title = opportunityDTO.title;
 
-      let resources = await transactionalEntityManager.find(
-        OpportunityResource,
-        {
+      let milestones: Milestone[] = [];
+      let resources: OpportunityResource[] = [];
+      let milestoneIds: number[] = [];
+      if (opportunityDTO.type == ProjectType.MILESTONE_BASE) {
+        if (opportunityDTO.startDate && opportunityDTO.endDate) {
+          milestones = await transactionalEntityManager.find(Milestone, {
+            where: {
+              startDate: Not(IsNull()),
+              endDate: Not(IsNull()),
+              projectId: id,
+            },
+          });
+          milestoneIds = milestones.map((milestone) => milestone.id);
+        } else if (opportunityDTO.startDate) {
+          let _milestones = await transactionalEntityManager.find(Milestone, {
+            where: { projectId: id },
+          });
+          for (let milestone of _milestones) {
+            if (milestone.endDate) {
+              throw new Error('Cannot remove End date');
+            }
+          }
+          milestones = await transactionalEntityManager.find(Milestone, {
+            where: {
+              startDate: Not(IsNull()),
+              projectId: id,
+            },
+          });
+        } else if (opportunityDTO.endDate) {
+          let _milestones = await transactionalEntityManager.find(Milestone, {
+            where: { projectId: id },
+          });
+          for (let milestone of _milestones) {
+            if (milestone.startDate) {
+              throw new Error('Cannot remove start Date');
+            }
+          }
+          milestones = await transactionalEntityManager.find(Milestone, {
+            where: {
+              endDate: Not(IsNull()),
+              projectId: id,
+            },
+          });
+        }
+        resources = await transactionalEntityManager.find(OpportunityResource, {
           where: {
             startDate: Not(IsNull()),
             endDate: Not(IsNull()),
             milestoneId: In(milestoneIds),
           },
-        }
-      );
+        });
+      } else {
+        resources = opportunityObj.milestones[0].opportunityResources;
+      }
 
-      if (opportunity.startDate || opportunity.endDate) {
+      if (
+        (!opportunityDTO.startDate || !opportunityDTO.endDate) &&
+        resources.length > 0
+      ) {
+        throw new Error('Cannot null date after adding resource');
+      }
+
+      if (opportunityDTO.startDate || opportunityDTO.endDate) {
         this._validateOpportunityDates(
-          opportunity.startDate,
-          opportunity.endDate,
+          opportunityDTO.startDate,
+          opportunityDTO.endDate,
           milestones,
           resources
         );
       }
 
-      if (opportunity.startDate) {
-        if (opportunity.type == ProjectType.TIME_BASE) {
-          opportunityObj.milestones[0].startDate ==
-            new Date(opportunity.startDate);
+      if (opportunityDTO.startDate) {
+        if (opportunityDTO.type == ProjectType.TIME_BASE) {
+          opportunityObj.milestones[0].startDate = new Date(
+            opportunityDTO.startDate
+          );
         }
-        opportunityObj.startDate = new Date(opportunity.startDate);
-      }
-      if (opportunity.endDate) {
-        if (opportunity.type == ProjectType.TIME_BASE) {
-          opportunityObj.milestones[0].startDate ==
-            new Date(opportunity.endDate);
+        opportunityObj.startDate = new Date(opportunityDTO.startDate);
+      } else {
+        (opportunityObj as any).startDate = null;
+        if (opportunityDTO.type == ProjectType.TIME_BASE) {
+          (opportunityObj as any).milestones[0].startDate = null;
         }
-        opportunityObj.endDate = new Date(opportunity.endDate);
       }
-      if (opportunity.bidDate) {
-        opportunityObj.bidDate = new Date(opportunity.bidDate);
+      if (opportunityDTO.endDate) {
+        if (opportunityDTO.type == ProjectType.TIME_BASE) {
+          opportunityObj.milestones[0].endDate = new Date(
+            opportunityDTO.endDate
+          );
+        }
+        opportunityObj.endDate = new Date(opportunityDTO.endDate);
+      } else {
+        (opportunityObj as any).endDate = null;
+        if (opportunityDTO.type == ProjectType.TIME_BASE) {
+          (opportunityObj as any).milestones[0].endDate = null;
+        }
       }
-      if (opportunity.entryDate) {
-        opportunityObj.entryDate = new Date(opportunity.entryDate);
+      if (opportunityDTO.bidDate) {
+        opportunityObj.bidDate = new Date(opportunityDTO.bidDate);
       }
-      opportunityObj.qualifiedOps = opportunity.qualifiedOps ? true : false;
-      opportunityObj.value = opportunity.value;
-      opportunityObj.type = opportunity.type;
-      opportunityObj.tender = opportunity.tender;
-      opportunityObj.tenderNumber = opportunity.tenderNumber;
-      opportunityObj.hoursPerDay = opportunity.hoursPerDay;
-      opportunityObj.cmPercentage = opportunity.cmPercentage;
-      opportunityObj.goPercentage = opportunity.goPercentage;
-      opportunityObj.getPercentage = opportunity.getPercentage;
-      opportunityObj.stage = opportunity.stage;
-      opportunityObj.linkedWorkId = opportunity.linkedWorkId;
+      if (opportunityDTO.entryDate) {
+        opportunityObj.entryDate = new Date(opportunityDTO.entryDate);
+      }
+      opportunityObj.qualifiedOps = opportunityDTO.qualifiedOps ? true : false;
+      opportunityObj.value = opportunityDTO.value;
+      //! REMOVING CAUSE OF MILESTONE ADD AND REMOVE
+      // opportunityObj.type = opportunityDTO.type;
+      opportunityObj.tender = opportunityDTO.tender;
+      opportunityObj.tenderNumber = opportunityDTO.tenderNumber;
+      opportunityObj.hoursPerDay = opportunityDTO.hoursPerDay;
+      opportunityObj.cmPercentage = opportunityDTO.cmPercentage;
+      opportunityObj.goPercentage = opportunityDTO.goPercentage;
+      opportunityObj.getPercentage = opportunityDTO.getPercentage;
+      opportunityObj.stage = opportunityDTO.stage;
+      opportunityObj.linkedWorkId = opportunityDTO.linkedWorkId;
 
       // validate organization
       let organization: Organization | undefined;
-      if (opportunity.organizationId) {
+      if (opportunityDTO.organizationId) {
         organization = await this.manager.findOne(
           Organization,
-          opportunity.organizationId
+          opportunityDTO.organizationId
         );
         if (!organization) {
           throw new Error('Organization not found');
@@ -267,8 +330,8 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
       // validate panel
       let panel: Panel | undefined;
-      if (opportunity.panelId) {
-        panel = await this.manager.findOne(Panel, opportunity.panelId);
+      if (opportunityDTO.panelId) {
+        panel = await this.manager.findOne(Panel, opportunityDTO.panelId);
         if (!panel) {
           throw new Error('Panel not found');
         }
@@ -276,12 +339,12 @@ export class OpportunityRepository extends Repository<Opportunity> {
       }
 
       let contactPerson: ContactPerson | undefined;
-      if (opportunity.contactPersonId == null) {
+      if (opportunityDTO.contactPersonId == null) {
         opportunityObj.contactPersonId = null;
-      } else if (opportunity.contactPersonId) {
+      } else if (opportunityDTO.contactPersonId) {
         contactPerson = await this.manager.findOne(
           ContactPerson,
-          opportunity.contactPersonId
+          opportunityDTO.contactPersonId
         );
         if (!contactPerson) {
           throw new Error('Contact Person not found');
@@ -290,8 +353,8 @@ export class OpportunityRepository extends Repository<Opportunity> {
       }
 
       let state: State | undefined;
-      if (opportunity.stateId) {
-        state = await this.manager.findOne(State, opportunity.stateId);
+      if (opportunityDTO.stateId) {
+        state = await this.manager.findOne(State, opportunityDTO.stateId);
         if (!state) {
           throw new Error('State not found');
         }
@@ -299,12 +362,12 @@ export class OpportunityRepository extends Repository<Opportunity> {
       }
 
       let accountDirector: Employee | undefined;
-      if (opportunity.accountDirectorId == null) {
+      if (opportunityDTO.accountDirectorId == null) {
         opportunityObj.accountDirectorId = null;
-      } else if (opportunity.accountDirectorId) {
+      } else if (opportunityDTO.accountDirectorId) {
         accountDirector = await this.manager.findOne(
           Employee,
-          opportunity.accountDirectorId
+          opportunityDTO.accountDirectorId
         );
         if (!accountDirector) {
           throw new Error('Account Director not found');
@@ -314,12 +377,12 @@ export class OpportunityRepository extends Repository<Opportunity> {
       // opportunityObj.accountDirectorId = 1;
 
       let accountManager: Employee | undefined;
-      if (opportunity.accountManagerId == null) {
+      if (opportunityDTO.accountManagerId == null) {
         opportunityObj.accountManagerId = null;
-      } else if (opportunity.accountManagerId) {
+      } else if (opportunityDTO.accountManagerId) {
         accountManager = await this.manager.findOne(
           Employee,
-          opportunity.accountManagerId
+          opportunityDTO.accountManagerId
         );
         if (!accountManager) {
           throw new Error('Account Manager not found');
@@ -329,12 +392,12 @@ export class OpportunityRepository extends Repository<Opportunity> {
       // opportunityObj.accountManagerId = 1;
 
       let opportunityManager: Employee | undefined;
-      if (opportunity.opportunityManagerId == null) {
+      if (opportunityDTO.opportunityManagerId == null) {
         opportunityObj.opportunityManagerId = null;
-      } else if (opportunity.opportunityManagerId) {
+      } else if (opportunityDTO.opportunityManagerId) {
         opportunityManager = await this.manager.findOne(
           Employee,
-          opportunity.opportunityManagerId
+          opportunityDTO.opportunityManagerId
         );
         if (!opportunityManager) {
           throw new Error('Opportunity Manager not found');
@@ -370,8 +433,9 @@ export class OpportunityRepository extends Repository<Opportunity> {
         {
           relations: [
             'milestones',
-            'purchaseOrders',
             'milestones.opportunityResources',
+            'milestones.timesheetMilestoneEntries',
+            'purchaseOrders',
           ],
         }
       );
@@ -386,20 +450,20 @@ export class OpportunityRepository extends Repository<Opportunity> {
         }
       );
 
-      if (
-        opportunity.milestones.length > 0 &&
-        opportunity.type == ProjectType.MILESTONE_BASE
-      ) {
-        throw new Error('Opportunity has milestones');
-      }
+      // if (
+      //   opportunity.milestones.length > 0 &&
+      //   opportunity.type == ProjectType.MILESTONE_BASE
+      // ) {
+      //   throw new Error('Opportunity has milestones');
+      // }
 
-      if (
-        opportunity.milestones.length > 0 &&
-        opportunity.type == ProjectType.TIME_BASE &&
-        opportunity.milestones[0].opportunityResources.length > 0
-      ) {
-        throw new Error('Project has resources');
-      }
+      // if (
+      //   opportunity.milestones.length > 0 &&
+      //   opportunity.type == ProjectType.TIME_BASE &&
+      //   opportunity.milestones[0].opportunityResources.length > 0
+      // ) {
+      //   throw new Error('Project has resources');
+      // }
 
       if (linkedOpportunities.length > 0) {
         throw new Error('Opportunity is linked to other Opportunity / Project');
@@ -418,18 +482,21 @@ export class OpportunityRepository extends Repository<Opportunity> {
       if (comments.length > 0)
         await transactionalEntityManager.softDelete(Comment, comments);
 
-      if (opportunity.purchaseOrders.length > 0)
-        await transactionalEntityManager.softDelete(
-          PurchaseOrder,
-          opportunity.purchaseOrders
-        );
+      // if (opportunity.purchaseOrders.length > 0)
+      //   await transactionalEntityManager.softDelete(
+      //     PurchaseOrder,
+      //     opportunity.purchaseOrders
+      //   );
 
       // if (opportunity.type == ProjectType.TIME_BASE)
       //   await transactionalEntityManager.softDelete(
       //     Milestone,
       //     opportunity.milestones[0].id
       //   );
-      return await this.softDelete(id);
+      return await transactionalEntityManager.softRemove(
+        Opportunity,
+        opportunity
+      );
     });
   }
 
@@ -589,7 +656,11 @@ export class OpportunityRepository extends Repository<Opportunity> {
         Opportunity,
         opportunityId,
         {
-          relations: ['milestones', 'milestones.opportunityResources'],
+          relations: [
+            'milestones',
+            'milestones.opportunityResources',
+            'milestones.timesheetMilestoneEntries',
+          ],
         }
       );
 
@@ -603,11 +674,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
         throw new Error('Milestone not found');
       }
 
-      if (milestone.opportunityResources.length > 0) {
-        throw new Error('Milestone has resources');
-      }
-
-      return await transactionalEntityManager.softDelete(Milestone, id);
+      return await transactionalEntityManager.softRemove(Milestone, milestone);
     });
   }
 
@@ -1209,40 +1276,64 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
   async markOpportunityAsWin(
     id: number,
-    opportunity: ProjectDTO
+    opportunityDTO: ProjectDTO
   ): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
-      let opportunityObj = await this.findOneCustomWithoutContactPerson(id);
+      let opportunityObj = await transactionalEntityManager.findOne(
+        Opportunity,
+        id,
+        { relations: ['organization', 'contactPerson', 'milestones'] }
+      );
 
-      opportunityObj.title = opportunity.title;
-      if (opportunity.startDate) {
-        opportunityObj.startDate = new Date(opportunity.startDate);
+      if (!opportunityObj) {
+        throw new Error('Opportunity not found');
       }
-      if (opportunity.endDate) {
-        opportunityObj.endDate = new Date(opportunity.endDate);
+
+      opportunityObj.title = opportunityDTO.title;
+
+      if (opportunityDTO.startDate) {
+        opportunityObj.startDate = new Date(opportunityDTO.startDate);
+        if (opportunityObj.type == ProjectType.TIME_BASE) {
+          opportunityObj.milestones[0].startDate = new Date(
+            opportunityDTO.startDate
+          );
+        }
+      } else {
+        throw new Error('Start Date is required in Project');
       }
-      if (opportunity.bidDate) {
-        opportunityObj.bidDate = new Date(opportunity.bidDate);
+      if (opportunityDTO.endDate) {
+        opportunityObj.endDate = new Date(opportunityDTO.endDate);
+        if (opportunityObj.type == ProjectType.TIME_BASE) {
+          opportunityObj.milestones[0].endDate = new Date(
+            opportunityDTO.endDate
+          );
+        }
+      } else {
+        throw new Error('End Date is required in Project');
       }
-      if (opportunity.entryDate) {
-        opportunityObj.entryDate = new Date(opportunity.entryDate);
+
+      if (opportunityDTO.bidDate) {
+        opportunityObj.bidDate = new Date(opportunityDTO.bidDate);
       }
-      opportunityObj.qualifiedOps = opportunity.qualifiedOps ? true : false;
-      opportunityObj.value = opportunity.value;
-      opportunityObj.type = opportunity.type;
-      opportunityObj.tender = opportunity.tender;
-      opportunityObj.tenderNumber = opportunity.tenderNumber;
-      opportunityObj.hoursPerDay = opportunity.hoursPerDay;
-      opportunityObj.cmPercentage = opportunity.cmPercentage;
-      opportunityObj.goPercentage = opportunity.goPercentage;
-      opportunityObj.getPercentage = opportunity.getPercentage;
+      if (opportunityDTO.entryDate) {
+        opportunityObj.entryDate = new Date(opportunityDTO.entryDate);
+      }
+      opportunityObj.qualifiedOps = opportunityDTO.qualifiedOps ? true : false;
+      opportunityObj.value = opportunityDTO.value;
+      opportunityObj.type = opportunityDTO.type;
+      opportunityObj.tender = opportunityDTO.tender;
+      opportunityObj.tenderNumber = opportunityDTO.tenderNumber;
+      opportunityObj.hoursPerDay = opportunityDTO.hoursPerDay;
+      opportunityObj.cmPercentage = opportunityDTO.cmPercentage;
+      opportunityObj.goPercentage = opportunityDTO.goPercentage;
+      opportunityObj.getPercentage = opportunityDTO.getPercentage;
 
       // validate organization
       let organization: Organization | undefined;
-      if (opportunity.organizationId) {
+      if (opportunityDTO.organizationId) {
         organization = await this.manager.findOne(
           Organization,
-          opportunity.organizationId
+          opportunityDTO.organizationId
         );
         if (!organization) {
           throw new Error('Organization not found');
@@ -1252,8 +1343,8 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
       // validate panel
       let panel: Panel | undefined;
-      if (opportunity.panelId) {
-        panel = await this.manager.findOne(Panel, opportunity.panelId);
+      if (opportunityDTO.panelId) {
+        panel = await this.manager.findOne(Panel, opportunityDTO.panelId);
         if (!panel) {
           throw new Error('Panel not found');
         }
@@ -1261,10 +1352,10 @@ export class OpportunityRepository extends Repository<Opportunity> {
       }
 
       let contactPerson: ContactPerson | undefined;
-      if (opportunity.contactPersonId) {
+      if (opportunityDTO.contactPersonId) {
         contactPerson = await this.manager.findOne(
           ContactPerson,
-          opportunity.contactPersonId
+          opportunityDTO.contactPersonId
         );
         if (!contactPerson) {
           throw new Error('Contact Person not found');
@@ -1273,8 +1364,8 @@ export class OpportunityRepository extends Repository<Opportunity> {
       }
 
       let state: State | undefined;
-      if (opportunity.stateId) {
-        state = await this.manager.findOne(State, opportunity.stateId);
+      if (opportunityDTO.stateId) {
+        state = await this.manager.findOne(State, opportunityDTO.stateId);
         if (!state) {
           throw new Error('State not found');
         }
@@ -1282,12 +1373,12 @@ export class OpportunityRepository extends Repository<Opportunity> {
       }
 
       let accountDirector: Employee | undefined;
-      if (opportunity.accountDirectorId == null) {
+      if (opportunityDTO.accountDirectorId == null) {
         opportunityObj.accountDirectorId = null;
-      } else if (opportunity.accountDirectorId) {
+      } else if (opportunityDTO.accountDirectorId) {
         accountDirector = await this.manager.findOne(
           Employee,
-          opportunity.accountDirectorId
+          opportunityDTO.accountDirectorId
         );
         if (!accountDirector) {
           throw new Error('Account Director not found');
@@ -1297,12 +1388,12 @@ export class OpportunityRepository extends Repository<Opportunity> {
       // opportunityObj.accountDirectorId = 1;
 
       let accountManager: Employee | undefined;
-      if (opportunity.accountManagerId == null) {
+      if (opportunityDTO.accountManagerId == null) {
         opportunityObj.accountManagerId = null;
-      } else if (opportunity.accountManagerId) {
+      } else if (opportunityDTO.accountManagerId) {
         accountManager = await this.manager.findOne(
           Employee,
-          opportunity.accountManagerId
+          opportunityDTO.accountManagerId
         );
         if (!accountManager) {
           throw new Error('Account Manager not found');
@@ -1312,12 +1403,12 @@ export class OpportunityRepository extends Repository<Opportunity> {
       // opportunityObj.accountManagerId = 1;
 
       let opportunityManager: Employee | undefined;
-      if (opportunity.projectManagerId == null) {
+      if (opportunityDTO.projectManagerId == null) {
         opportunityObj.projectManagerId = null;
-      } else if (opportunity.projectManagerId) {
+      } else if (opportunityDTO.projectManagerId) {
         opportunityManager = await this.manager.findOne(
           Employee,
-          opportunity.projectManagerId
+          opportunityDTO.projectManagerId
         );
         if (!opportunityManager) {
           throw new Error('Opportunity Manager not found');
@@ -1326,7 +1417,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
       }
 
       opportunityObj.status = 'P';
-      opportunityObj.wonDate = new Date()
+      (opportunityObj as any).wonDate = new Date()
         .toISOString()
         .slice(0, 19)
         .replace('T', ' ');
@@ -1625,7 +1716,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
         if (poisition.endDate) {
           if (moment(startDate).isBefore(moment(opportunity.endDate), 'date')) {
             throw new Error(
-              'Milestone Start Date cannot be Before Resource / Position Start Date'
+              'Milestone End Date cannot be Before Resource / Position End Date'
             );
           }
         }

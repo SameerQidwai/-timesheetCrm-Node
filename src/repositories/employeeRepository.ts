@@ -22,7 +22,12 @@ import { PanelSkillStandardLevel } from './../entities/panelSkillStandardLevel';
 import { Lease } from './../entities/lease';
 import { LeaveRequestBalance } from '../entities/leaveRequestBalance';
 import { LeaveRequestPolicy } from '../entities/leaveRequestPolicy';
+import { OpportunityResourceAllocation } from '../entities/opportunityResourceAllocation';
+import { Opportunity } from '../entities/opportunity';
+import { Attachment } from '../entities/attachment';
+import { Comment } from '../entities/comment';
 import {
+  EntityType,
   LeaveRequestTriggerFrequency,
   SuperannuationType,
 } from '../constants/constants';
@@ -521,7 +526,84 @@ export class EmployeeRepository extends Repository<Employee> {
   }
 
   async deleteCustom(id: number): Promise<any | undefined> {
-    return this.softDelete(id);
+    return this.manager.transaction(async (transactionalEntityManager) => {
+      let employee = await transactionalEntityManager.findOne(Employee, id, {
+        relations: [
+          'contactPersonOrganization',
+          'contactPersonOrganization.contactPerson',
+          'employmentContracts',
+          'bankAccounts',
+          'leases',
+          'leaveRequests',
+          'leaveRequestBalances',
+        ],
+      });
+
+      if (!employee) {
+        throw new Error('Employee not found');
+      }
+
+      let allocations = await transactionalEntityManager.find(
+        OpportunityResourceAllocation,
+        {
+          where: {
+            contactPersonId:
+              employee.contactPersonOrganization.contactPerson.id,
+          },
+        }
+      );
+
+      if (allocations.length > 0) {
+        throw new Error('Employee is allocated');
+      }
+
+      if (employee.leaveRequests.length > 0) {
+        throw new Error('Employee has leave requests');
+      }
+
+      let works = await transactionalEntityManager.find(Opportunity, {
+        where: [
+          { projectManagerId: id },
+          { accountDirectorId: id },
+          { opportunityManagerId: id },
+          { accountManagerId: id },
+        ],
+      });
+
+      if (works.length > 0) {
+        throw new Error('Employee is managing Opportunities / Projects');
+      }
+
+      let juniors = await transactionalEntityManager.find(Employee, {
+        where: { lineManagerId: id },
+      });
+
+      if (juniors.length > 0) {
+        throw new Error('Employee is managing other employees');
+      }
+
+      let attachments = await transactionalEntityManager.find(Attachment, {
+        where: { targetType: EntityType.EMPLOYEE, targetId: id },
+      });
+
+      let comments = await transactionalEntityManager.find(Comment, {
+        where: { targetType: EntityType.EMPLOYEE, targetId: id },
+      });
+
+      employee.contactPersonOrganization.status = false;
+
+      transactionalEntityManager.save(employee.contactPersonOrganization);
+
+      delete (employee as any).contactPersonOrganization;
+
+      if (attachments.length > 0)
+        transactionalEntityManager.softRemove(Attachment, attachments);
+
+      if (comments.length > 0)
+        transactionalEntityManager.softRemove(Comment, comments);
+
+      return transactionalEntityManager.softRemove(Employee, employee);
+    });
   }
 
   // async getEmployeesBySkill(panelSkillStandardLevelId: number): Promise<any[]> {
@@ -723,8 +805,8 @@ export class EmployeeRepository extends Repository<Employee> {
       throw new Error('Employee not found!');
     }
 
-    employee.leases = employee.leases.filter((x) => x.id != id);
-    return this.manager.save(employee);
+    let lease = employee.leases.filter((x) => x.id == id);
+    return this.manager.softRemove(lease);
   }
 
   async getEmployeesBySkill(panelSkillStandardLevelId: number): Promise<any[]> {
@@ -823,6 +905,9 @@ export class EmployeeRepository extends Repository<Employee> {
         'contactPersonOrganizations',
         'contactPersonOrganizations.employee',
       ],
+      order: {
+        firstName: 'ASC',
+      },
     });
 
     let filtered: any[] = [];

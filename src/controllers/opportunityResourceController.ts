@@ -1,8 +1,5 @@
-import { OpportunityDTO, OpportunityResourceDTO } from './../dto';
-import { BaseController } from './baseController';
 import { OpportunityRepository } from './../repositories/opportunityRepository';
 import { Request, Response, NextFunction } from 'express';
-import { OpportunityResource } from 'src/entities/opportunityResource';
 import { getCustomRepository } from 'typeorm';
 
 export class OpportunityResourceController {

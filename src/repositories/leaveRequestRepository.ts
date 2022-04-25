@@ -23,6 +23,8 @@ import { LeaveRequestStatus, OpportunityStatus } from '../constants/constants';
 import { EntityType } from '../constants/constants';
 import moment from 'moment';
 import { Calendar } from '../entities/calendar';
+import { OpportunityResourceAllocation } from '../entities/opportunityResourceAllocation';
+import { OpportunityResource } from '../entities/opportunityResource';
 
 @EntityRepository(LeaveRequest)
 export class LeaveRequestRepository extends Repository<LeaveRequest> {
@@ -115,6 +117,8 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
               'employmentContracts',
               'employmentContracts.leaveRequestPolicy',
               'employmentContracts.leaveRequestPolicy.leaveRequestPolicyLeaveRequestTypes',
+              'contactPersonOrganization',
+              'contactPersonOrganization.contactPerson',
             ],
           }
         );
@@ -148,7 +152,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
         console.log('TYPE AND WORK', _leaveRequestTypeId, _leaveRequestWorkId);
 
-        let query = await transactionalEntityManager
+        let query = transactionalEntityManager
           .createQueryBuilder(LeaveRequestEntry, 'entry')
           .orderBy('entry.id')
           .leftJoinAndSelect(
@@ -189,7 +193,26 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         }
 
         if (project) {
-          this._validateRequestDates(_firstDate, _lastDate, project);
+          let employeeAllocations = await transactionalEntityManager.find(
+            OpportunityResourceAllocation,
+            {
+              where: {
+                contactPersonId:
+                  employee.contactPersonOrganization.contactPerson.id,
+              },
+              relations: ['OpportunityResource'],
+            }
+          );
+
+          for (let allocation of employeeAllocations) {
+            if (allocation.opportunityResource.opportunityId == project.id) {
+              this._validateRequestDates(
+                _firstDate,
+                _lastDate,
+                allocation.opportunityResource
+              );
+            }
+          }
         }
 
         let leaveRequestBalance = await transactionalEntityManager.findOne(
@@ -833,7 +856,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         }
 
         if (leaveRequestDTO.workId) {
-          let project = await transactionalEntityManager.findOne(
+          var project = await transactionalEntityManager.findOne(
             Opportunity,
             leaveRequestDTO.workId
           );
@@ -923,6 +946,29 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
               'DD-MM-YYYY'
             )} leave request is already created`
           );
+        }
+
+        if (project) {
+          let employeeAllocations = await transactionalEntityManager.find(
+            OpportunityResourceAllocation,
+            {
+              where: {
+                contactPersonId:
+                  employee.contactPersonOrganization.contactPerson.id,
+              },
+              relations: ['OpportunityResource'],
+            }
+          );
+
+          for (let allocation of employeeAllocations) {
+            if (allocation.opportunityResource.opportunityId == project.id) {
+              this._validateRequestDates(
+                _firstDate,
+                _lastDate,
+                allocation.opportunityResource
+              );
+            }
+          }
         }
 
         let leaveRequestBalance: LeaveRequestBalance | undefined;
@@ -1218,7 +1264,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
   _validateRequestDates(
     starDate: Date | string,
     endDate: Date | string,
-    opportunity: Opportunity
+    opportunity: OpportunityResource
   ) {
     if (opportunity.startDate) {
       if (moment(starDate).isBefore(moment(opportunity.startDate), 'date')) {

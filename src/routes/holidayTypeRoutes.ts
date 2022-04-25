@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { HolidayTypeDTO } from 'src/dto';
+import { HolidayTypeDTO } from '../dto';
 import { SharedController } from '../controllers/sharedController';
 import { HolidayTypeRepository } from '../repositories/holidayTypeRepository';
 import { can } from './../middlewares/can';

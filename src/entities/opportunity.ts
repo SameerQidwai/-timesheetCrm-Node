@@ -19,6 +19,7 @@ import { OpportunityResource } from './opportunityResource';
 import { PurchaseOrder } from './purchaseOrder';
 import { Employee } from './employee';
 import { Milestone } from './milestone';
+import { LeaveRequest } from './leaveRequest';
 
 @Entity('opportunities')
 export class Opportunity extends Base {
@@ -182,4 +183,9 @@ export class Opportunity extends Base {
     cascade: true,
   })
   milestones: Milestone[];
+
+  @OneToMany(() => LeaveRequest, (leaveRequest) => leaveRequest.work, {
+    cascade: true,
+  })
+  leaveRequests: LeaveRequest[];
 }

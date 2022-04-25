@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { ProjectRepository } from '../repositories/projectRepository';
-import { MilestoneRepository } from '../repositories/milestoneRepository';
 import { getCustomRepository } from 'typeorm';
 import path from 'path';
 

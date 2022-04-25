@@ -2,6 +2,7 @@ import { Entity, Column, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { Base } from './common/base';
 import { Opportunity } from './opportunity';
 import { OpportunityResource } from './opportunityResource';
+import { TimesheetMilestoneEntry } from './timesheetMilestoneEntry';
 
 @Entity('milestones')
 export class Milestone extends Base {
@@ -38,4 +39,13 @@ export class Milestone extends Base {
     }
   )
   opportunityResources: OpportunityResource[];
+
+  @OneToMany(
+    () => TimesheetMilestoneEntry,
+    (milestoneEntry) => milestoneEntry.milestone,
+    {
+      cascade: true,
+    }
+  )
+  timesheetMilestoneEntries: TimesheetMilestoneEntry[];
 }

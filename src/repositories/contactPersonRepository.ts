@@ -1,29 +1,32 @@
 import { ContactPersonDTO } from '../dto';
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, In, Not, Repository } from 'typeorm';
 import { ContactPerson } from './../entities/contactPerson';
 import { ContactPersonOrganization } from './../entities/contactPersonOrganization';
 import { State } from './../entities/state';
 import { StandardSkillStandardLevel } from './../entities/standardSkillStandardLevel';
 import { Organization } from './../entities/organization';
+import { OpportunityResourceAllocation } from '../entities/opportunityResourceAllocation';
+import { Employee } from '../entities/employee';
+import { Opportunity } from '../entities/opportunity';
 
 @EntityRepository(ContactPerson)
 export class ContactPersonRepository extends Repository<ContactPerson> {
-  async createAndSave(contactPerson: ContactPersonDTO): Promise<any> {
+  async createAndSave(contactPersonDTO: ContactPersonDTO): Promise<any> {
     let id: number;
     id = await this.manager.transaction(async (transactionalEntityManager) => {
       let contactPersonObj = new ContactPerson();
-      contactPersonObj.firstName = contactPerson.firstName;
-      contactPersonObj.lastName = contactPerson.lastName;
-      contactPersonObj.email = contactPerson.email;
-      contactPersonObj.address = contactPerson.address;
-      contactPersonObj.gender = contactPerson.gender;
-      contactPersonObj.phoneNumber = contactPerson.phoneNumber;
-      if (contactPerson.dateOfBirth)
-        contactPersonObj.dateOfBirth = new Date(contactPerson.dateOfBirth);
+      contactPersonObj.firstName = contactPersonDTO.firstName;
+      contactPersonObj.lastName = contactPersonDTO.lastName;
+      contactPersonObj.email = contactPersonDTO.email;
+      contactPersonObj.address = contactPersonDTO.address;
+      contactPersonObj.gender = contactPersonDTO.gender;
+      contactPersonObj.phoneNumber = contactPersonDTO.phoneNumber;
+      if (contactPersonDTO.dateOfBirth)
+        contactPersonObj.dateOfBirth = new Date(contactPersonDTO.dateOfBirth);
 
       let state: State | undefined;
-      if (contactPerson.stateId) {
-        state = await this.manager.findOne(State, contactPerson.stateId);
+      if (contactPersonDTO.stateId) {
+        state = await this.manager.findOne(State, contactPersonDTO.stateId);
         if (!state) {
           throw new Error('State not found');
         }
@@ -31,24 +34,24 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
       }
 
       if (
-        contactPerson.clearanceLevel &&
-        contactPerson.clearanceGrantedDate &&
-        contactPerson.clearanceExpiryDate
+        contactPersonDTO.clearanceLevel &&
+        contactPersonDTO.clearanceGrantedDate &&
+        contactPersonDTO.clearanceExpiryDate
       ) {
-        contactPersonObj.clearanceLevel = contactPerson.clearanceLevel;
+        contactPersonObj.clearanceLevel = contactPersonDTO.clearanceLevel;
         contactPersonObj.clearanceGrantedDate = new Date(
-          contactPerson.clearanceGrantedDate
+          contactPersonDTO.clearanceGrantedDate
         );
         contactPersonObj.clearanceExpiryDate = new Date(
-          contactPerson.clearanceExpiryDate
+          contactPersonDTO.clearanceExpiryDate
         );
       }
 
       let clearanceSponsor: Organization | undefined;
-      if (contactPerson.clearanceSponsorId) {
+      if (contactPersonDTO.clearanceSponsorId) {
         clearanceSponsor = await this.manager.findOne(
           Organization,
-          contactPerson.clearanceSponsorId
+          contactPersonDTO.clearanceSponsorId
         );
         if (!clearanceSponsor) {
           throw new Error('Clearance Sponsor not found');
@@ -59,7 +62,7 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
       let standardSkillStandardLevelList =
         await transactionalEntityManager.findByIds(
           StandardSkillStandardLevel,
-          contactPerson.standardSkillStandardLevelIds
+          contactPersonDTO.standardSkillStandardLevelIds
         );
       console.log(
         'standardSkillStandardLevelList.length: ',
@@ -72,7 +75,7 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
       );
       id = contactPersonObj.id;
       let contactPersonOrganizationPromises =
-        contactPerson.contactPersonOrganizations.map(
+        contactPersonDTO.contactPersonOrganizations.map(
           async (contactPersonOrganization) => {
             let contactPersonOrganizationObj = new ContactPersonOrganization();
             contactPersonOrganizationObj.startDate = new Date(
@@ -116,23 +119,36 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
 
   async updateAndReturn(
     id: number,
-    contactPerson: ContactPersonDTO
+    contactPersonDTO: ContactPersonDTO
   ): Promise<any | undefined> {
-    console.log(contactPerson);
     await this.manager.transaction(async (transactionalEntityManager) => {
-      let contactPersonObj = await this.findOneCustom(id);
-      contactPersonObj.firstName = contactPerson.firstName;
-      contactPersonObj.lastName = contactPerson.lastName;
-      contactPersonObj.email = contactPerson.email;
-      contactPersonObj.address = contactPerson.address;
-      contactPersonObj.gender = contactPerson.gender;
-      contactPersonObj.phoneNumber = contactPerson.phoneNumber;
-      if (contactPerson.dateOfBirth)
-        contactPersonObj.dateOfBirth = new Date(contactPerson.dateOfBirth);
+      var contactPersonObj = await transactionalEntityManager.findOne(
+        ContactPerson,
+        id,
+        {
+          relations: [
+            'contactPersonOrganizations',
+            'contactPersonOrganizations.employee',
+          ],
+        }
+      );
+
+      if (!contactPersonObj) {
+        throw new Error('Contact person not found');
+      }
+
+      contactPersonObj.firstName = contactPersonDTO.firstName;
+      contactPersonObj.lastName = contactPersonDTO.lastName;
+      contactPersonObj.email = contactPersonDTO.email;
+      contactPersonObj.address = contactPersonDTO.address;
+      contactPersonObj.gender = contactPersonDTO.gender;
+      contactPersonObj.phoneNumber = contactPersonDTO.phoneNumber;
+      if (contactPersonDTO.dateOfBirth)
+        contactPersonObj.dateOfBirth = new Date(contactPersonDTO.dateOfBirth);
 
       let state: State | undefined;
-      if (contactPerson.stateId) {
-        state = await this.manager.findOne(State, contactPerson.stateId);
+      if (contactPersonDTO.stateId) {
+        state = await this.manager.findOne(State, contactPersonDTO.stateId);
         if (!state) {
           throw new Error('State not found');
         }
@@ -140,24 +156,24 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
       }
 
       if (
-        contactPerson.clearanceLevel &&
-        contactPerson.clearanceGrantedDate &&
-        contactPerson.clearanceExpiryDate
+        contactPersonDTO.clearanceLevel &&
+        contactPersonDTO.clearanceGrantedDate &&
+        contactPersonDTO.clearanceExpiryDate
       ) {
-        contactPersonObj.clearanceLevel = contactPerson.clearanceLevel;
+        contactPersonObj.clearanceLevel = contactPersonDTO.clearanceLevel;
         contactPersonObj.clearanceGrantedDate = new Date(
-          contactPerson.clearanceGrantedDate
+          contactPersonDTO.clearanceGrantedDate
         );
         contactPersonObj.clearanceExpiryDate = new Date(
-          contactPerson.clearanceExpiryDate
+          contactPersonDTO.clearanceExpiryDate
         );
       }
 
       let clearanceSponsor: Organization | undefined;
-      if (contactPerson.clearanceSponsorId) {
+      if (contactPersonDTO.clearanceSponsorId) {
         clearanceSponsor = await this.manager.findOne(
           Organization,
-          contactPerson.clearanceSponsorId
+          contactPersonDTO.clearanceSponsorId
         );
         if (!clearanceSponsor) {
           throw new Error('Clearance Sponsor not found');
@@ -168,7 +184,7 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
       let standardSkillStandardLevelList =
         await transactionalEntityManager.findByIds(
           StandardSkillStandardLevel,
-          contactPerson.standardSkillStandardLevelIds
+          contactPersonDTO.standardSkillStandardLevelIds
         );
       console.log(
         'standardSkillStandardLevelList.length: ',
@@ -181,48 +197,63 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
       );
       id = contactPersonObj.id;
 
-      let contactPersonOrganizationPromises =
-        contactPerson.contactPersonOrganizations.map(
-          async (contactPersonOrganization) => {
-            let contactPersonOrganizationObj:
-              | ContactPersonOrganization
-              | undefined;
-            let contactPersonOrganizationObjFound =
-              await transactionalEntityManager.find(ContactPersonOrganization, {
-                relations: ['organization', 'contactPerson'],
-                where: {
-                  id: contactPersonOrganization.id,
-                },
-              });
-            if (!contactPersonOrganizationObjFound.length) {
-              contactPersonOrganizationObj = new ContactPersonOrganization();
-              // contactPersonOrganizationObj.contactPerson = contactPersonObj;
-            } else {
-              contactPersonOrganizationObj =
-                contactPersonOrganizationObjFound[0];
-            }
-            contactPersonOrganizationObj.startDate = new Date(
-              contactPersonOrganization.startDate
-            );
-            if (contactPersonOrganization.endDate)
-              contactPersonOrganizationObj.endDate = new Date(
-                contactPersonOrganization.endDate
-              );
-            contactPersonOrganizationObj.designation =
-              contactPersonOrganization.designation;
-            let organization = await transactionalEntityManager.findOne(
-              Organization,
-              contactPersonOrganization.organizationId
-            );
-            if (!organization) {
-              throw new Error('Organization not found!');
-            }
-            contactPersonOrganizationObj.organizationId = organization.id;
-            contactPersonOrganizationObj.contactPersonId = contactPersonObj.id;
-            return contactPersonOrganizationObj;
-          }
-        );
+      let includedAssociations: number[] = [];
+      let contactPersonOrganizationPromises: ContactPersonOrganization[] = [];
+      for (let contactPersonOrganization of contactPersonDTO.contactPersonOrganizations) {
+        let contactPersonOrganizationObj: ContactPersonOrganization | undefined;
+        let contactPersonOrganizationObjFound =
+          await transactionalEntityManager.find(ContactPersonOrganization, {
+            relations: ['organization', 'contactPerson', 'employee'],
+            where: {
+              id: contactPersonOrganization.id,
+            },
+          });
 
+        if (!contactPersonOrganizationObjFound.length) {
+          contactPersonOrganizationObj = new ContactPersonOrganization();
+          // contactPersonOrganizationObj.contactPerson = contactPersonObj;
+        } else {
+          console.log('I FOUND ONE ');
+          includedAssociations.push(contactPersonOrganizationObjFound[0].id);
+          contactPersonOrganizationObj = contactPersonOrganizationObjFound[0];
+        }
+        contactPersonOrganizationObj.startDate = new Date(
+          contactPersonOrganization.startDate
+        );
+        if (contactPersonOrganization.endDate)
+          contactPersonOrganizationObj.endDate = new Date(
+            contactPersonOrganization.endDate
+          );
+        contactPersonOrganizationObj.designation =
+          contactPersonOrganization.designation;
+        let organization = await transactionalEntityManager.findOne(
+          Organization,
+          contactPersonOrganization.organizationId
+        );
+        if (!organization) {
+          throw new Error('Organization not found!');
+        }
+        contactPersonOrganizationObj.organizationId = organization.id;
+        contactPersonOrganizationObj.contactPersonId = id;
+        contactPersonOrganizationPromises.push(contactPersonOrganizationObj);
+      }
+
+      console.log('INCLUDED ASSOCIATIONS = ', includedAssociations);
+      let leftAssoications = await transactionalEntityManager.find(
+        ContactPersonOrganization,
+        {
+          where: { id: Not(In(includedAssociations)), contactPersonId: id },
+          relations: ['employee'],
+        }
+      );
+
+      for (let association of leftAssoications) {
+        if (association.employee) {
+          throw new Error('Deleted association was used in Employee');
+        }
+      }
+
+      console.log('LEFT ASSOCIATIONS');
       let contactPersonOrganizations = await Promise.all(
         contactPersonOrganizationPromises
       );
@@ -240,6 +271,48 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
   }
 
   async deleteCustom(id: number): Promise<any | undefined> {
-    return this.softDelete(id);
+    return this.manager.transaction(async (transactionalEntityManager) => {
+      let contactPerson = await transactionalEntityManager.findOne(
+        ContactPerson,
+        id,
+        {
+          relations: [
+            'contactPersonOrganizations',
+            'standardSkillStandardLevels',
+          ],
+        }
+      );
+      if (!contactPerson) {
+        throw new Error('Contact Person not found');
+      }
+      if (contactPerson.contactPersonOrganizations.length) {
+        throw new Error('Contact Person is Employee');
+      }
+
+      let allocations = await transactionalEntityManager.find(
+        OpportunityResourceAllocation,
+        {
+          where: { opportunityResourceId: id },
+          relations: ['opportunityResource'],
+        }
+      );
+
+      if (allocations.length > 0) {
+        throw new Error('Contact person is allocated in opportunity');
+      }
+
+      let works = await transactionalEntityManager.find(Opportunity, {
+        where: { contactPersonId: id },
+      });
+
+      if (works.length > 0) {
+        throw new Error('Contact person is delected to opportunity');
+      }
+
+      return transactionalEntityManager.softRemove(
+        ContactPerson,
+        contactPerson
+      );
+    });
   }
 }
