@@ -40,7 +40,7 @@ export class TimesheetEntry extends Base {
   submitter: Employee;
 
   @Column({ name: 'approved_by', nullable: true })
-  approvedBy: number;
+  approvedBy: number | null;
 
   @ManyToOne(() => Employee)
   @JoinColumn({ name: 'approved_by' })

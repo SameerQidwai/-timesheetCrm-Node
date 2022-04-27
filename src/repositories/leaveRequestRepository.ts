@@ -10,6 +10,8 @@ import {
   LessThan,
   MoreThan,
   Between,
+  Not,
+  IsNull,
 } from 'typeorm';
 import { LeaveRequest } from '../entities/leaveRequest';
 import { LeaveRequestEntry } from '../entities/leaveRequestEntry';
@@ -686,6 +688,73 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     // milestoneEntry.entries.map(entry => entry.submittedAt = )
   }
 
+  async unapproveAnyLeaveRequest(
+    authId: number,
+    leaveRequestApproveDTO: LeaveRequestApproveRejectDTO
+  ): Promise<any | undefined> {
+    let leaveRequests = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let leaveRequests = await transactionalEntityManager.find(
+          LeaveRequest,
+          {
+            where: {
+              id: In(leaveRequestApproveDTO.leaveRequests),
+            },
+            relations: ['entries'],
+          }
+        );
+
+        if (leaveRequests.length < 1) {
+          throw new Error('Leave Requests not found');
+        }
+
+        for (let leaveRequest of leaveRequests) {
+          if (leaveRequest.approvedAt == null) {
+            throw new Error('Cannot perform this action');
+          }
+          if (leaveRequest.typeId != null) {
+            let _oldHours = 0;
+            leaveRequest.entries.forEach((entry) => {
+              _oldHours += parseFloat(entry.hours as any);
+            });
+
+            let leaveRequestBalance = await transactionalEntityManager.findOne(
+              LeaveRequestBalance,
+              {
+                where: {
+                  typeId: leaveRequest.typeId,
+                  employeeId: leaveRequest.employeeId,
+                },
+              }
+            );
+
+            if (!leaveRequestBalance) {
+              throw new Error('Leave Request Balance not found');
+            }
+            leaveRequestBalance.balanceHours =
+              leaveRequestBalance.balanceHours + _oldHours;
+            leaveRequestBalance.used = leaveRequestBalance.used - _oldHours;
+
+            leaveRequestBalance = await transactionalEntityManager.save(
+              leaveRequestBalance
+            );
+          }
+
+          leaveRequest.approvedAt = null;
+          leaveRequest.approvedBy = null;
+          leaveRequest.note = leaveRequestApproveDTO.note;
+        }
+
+        leaveRequests = await transactionalEntityManager.save(leaveRequests);
+
+        return leaveRequests;
+      }
+    );
+
+    return leaveRequests;
+    // milestoneEntry.entries.map(entry => entry.submittedAt = )
+  }
+
   async approveManageLeaveRequest(
     authId: number,
     leaveRequestApproveDTO: LeaveRequestApproveRejectDTO
@@ -803,6 +872,84 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
           leaveRequest.rejectedAt = moment().toDate();
           leaveRequest.rejectedBy = authId;
+          leaveRequest.note = leaveRequestApproveDTO.note;
+        }
+
+        leaveRequests = await transactionalEntityManager.save(leaveRequests);
+
+        return leaveRequests;
+      }
+    );
+
+    return leaveRequests;
+    // milestoneEntry.entries.map(entry => entry.submittedAt = )
+  }
+
+  async unapproveManageLeaveRequest(
+    authId: number,
+    leaveRequestApproveDTO: LeaveRequestApproveRejectDTO
+  ): Promise<any | undefined> {
+    let leaveRequests = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let employeeIds = await this._userManagesEmployeeIds(authId);
+        let projectIds = await this._userManagesProjectIds(authId);
+
+        let leaveRequests = await transactionalEntityManager.find(
+          LeaveRequest,
+          {
+            where: [
+              {
+                id: In(leaveRequestApproveDTO.leaveRequests),
+                employeeId: In(employeeIds),
+              },
+              {
+                id: In(leaveRequestApproveDTO.leaveRequests),
+                workId: In(projectIds),
+              },
+            ],
+            relations: ['entries'],
+          }
+        );
+
+        if (leaveRequests.length < 1) {
+          throw new Error('Leave Requests not found');
+        }
+
+        for (let leaveRequest of leaveRequests) {
+          if (leaveRequest.approvedAt != null) {
+            throw new Error('Cannot perform this action');
+          }
+
+          if (leaveRequest.typeId != null) {
+            let _oldHours = 0;
+            leaveRequest.entries.forEach((entry) => {
+              _oldHours += parseFloat(entry.hours as any);
+            });
+
+            let leaveRequestBalance = await transactionalEntityManager.findOne(
+              LeaveRequestBalance,
+              {
+                where: {
+                  typeId: leaveRequest.typeId,
+                  employeeId: leaveRequest.employeeId,
+                },
+              }
+            );
+
+            if (!leaveRequestBalance) {
+              throw new Error('Leave Request Balance not found');
+            }
+            leaveRequestBalance.balanceHours =
+              leaveRequestBalance.balanceHours + _oldHours;
+            leaveRequestBalance.used = leaveRequestBalance.used - _oldHours;
+
+            leaveRequestBalance = await transactionalEntityManager.save(
+              leaveRequestBalance
+            );
+          }
+
+          leaveRequest.approvedAt = null;
+          leaveRequest.approvedBy = null;
           leaveRequest.note = leaveRequestApproveDTO.note;
         }
 

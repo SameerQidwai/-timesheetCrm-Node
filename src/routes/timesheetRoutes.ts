@@ -62,6 +62,13 @@ router
   );
 
 router
+  .route('/:startDate&:endDate&:userId/milestoneEntriesUnapprove/')
+  .post(
+    [isLoggedIn, can(Action.UNAPPROVAL, Resource.TIMESHEETS)],
+    contr.unapproveTimesheetMilestoneEntry.bind(contr)
+  );
+
+router
   .route('/:startDate&:endDate&:userId/milestoneEntriesDelete/')
   .post([isLoggedIn], contr.deleteTimesheetMilestoneEntry.bind(contr));
 

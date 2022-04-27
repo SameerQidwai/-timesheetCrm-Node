@@ -50,4 +50,11 @@ router
     contr.rejectLeaveRequests.bind(contr)
   );
 
+router
+  .route('/leaveRequestsUnapprove')
+  .post(
+    [isLoggedIn, can(Action.UNAPPROVAL, Resource.LEAVE_REQUESTS)],
+    contr.unapproveLeaveRequests.bind(contr)
+  );
+
 export default router;
