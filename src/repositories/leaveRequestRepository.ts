@@ -200,7 +200,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
                 contactPersonId:
                   employee.contactPersonOrganization.contactPerson.id,
               },
-              relations: ['OpportunityResource'],
+              relations: ['opportunityResource'],
             }
           );
 
