@@ -1287,6 +1287,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
               milestoneEntry.entries.map((entry) => {
                 entry.approvedAt = null;
                 entry.approvedBy = null;
+                entry.rejectedAt = moment().toDate();
+                // entry.rejectedBy = authId;
               });
               milestoneEntry.actionNotes = rejectEntryDTO.note;
               responseEntries.push(milestoneEntry);
@@ -1368,6 +1370,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
           milestoneEntry.entries.map((entry) => {
             entry.approvedAt = null;
             entry.approvedBy = null;
+            entry.rejectedAt = moment().toDate();
           });
           milestoneEntry.actionNotes = rejectEntryDTO.note;
           responseEntries.push(milestoneEntry);

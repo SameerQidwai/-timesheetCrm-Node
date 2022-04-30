@@ -742,6 +742,8 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
           leaveRequest.approvedAt = null;
           leaveRequest.approvedBy = null;
+          leaveRequest.rejectedAt = moment().toDate();
+          leaveRequest.rejectedBy = authId;
           leaveRequest.note = leaveRequestApproveDTO.note;
         }
 
@@ -950,6 +952,8 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
           leaveRequest.approvedAt = null;
           leaveRequest.approvedBy = null;
+          leaveRequest.rejectedAt = moment().toDate();
+          leaveRequest.rejectedBy = authId;
           leaveRequest.note = leaveRequestApproveDTO.note;
         }
 
