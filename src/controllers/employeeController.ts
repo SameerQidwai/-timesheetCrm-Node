@@ -27,13 +27,16 @@ export class EmployeeController extends BaseController<
     try {
       const repository = getCustomRepository(EmployeeRepository);
       let panelSkillStandardLevelId = req.query.psslId?.toString();
+      let workType = req.query.workType?.toString() ?? 'O';
+
       if (!panelSkillStandardLevelId) {
         throw new Error('panelSkillStandardLevelId is required');
       }
       // console.log("req.params.panelSkillStandardLevelId: ", req.query.panelSkillStandardLevelId);
 
       let records = await repository.getEmployeesBySkill(
-        parseInt(panelSkillStandardLevelId)
+        parseInt(panelSkillStandardLevelId),
+        workType
       );
       console.log('records: ', records);
       res.status(200).json({

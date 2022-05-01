@@ -31,6 +31,7 @@ import {
   LeaveRequestTriggerFrequency,
   SuperannuationType,
 } from '../constants/constants';
+import moment from 'moment';
 
 @EntityRepository(Employee)
 export class EmployeeRepository extends Repository<Employee> {
@@ -513,7 +514,7 @@ export class EmployeeRepository extends Repository<Employee> {
   }
 
   async findOneCustom(id: number): Promise<any | undefined> {
-    return this.findOne(id, {
+    let employee = await this.findOne(id, {
       relations: [
         'contactPersonOrganization',
         'contactPersonOrganization.contactPerson',
@@ -523,6 +524,58 @@ export class EmployeeRepository extends Repository<Employee> {
         'employmentContracts.file',
       ],
     });
+
+    if (!employee) {
+      throw new Error('Employee not found');
+    }
+
+    let pastContracts: EmploymentContract[] = [];
+    let currentContract: EmploymentContract[] = [];
+    let futureContracts: EmploymentContract[] = [];
+
+    for (let contract of employee.employmentContracts) {
+      let dateCarrier = {
+        startDate: contract.startDate,
+        endDate: contract.endDate,
+      };
+
+      if (dateCarrier.startDate == null) {
+        dateCarrier.startDate = moment().subtract(100, 'years').toDate();
+      }
+      if (dateCarrier.endDate == null) {
+        dateCarrier.endDate = moment().add(100, 'years').toDate();
+      }
+
+      if (
+        moment().isAfter(moment(dateCarrier.startDate), 'date') &&
+        moment().isAfter(moment(dateCarrier.endDate), 'date')
+      ) {
+        pastContracts.push(contract);
+      } else if (
+        moment().isBetween(
+          moment(dateCarrier.startDate),
+          moment(dateCarrier.endDate),
+          'date'
+        )
+      ) {
+        currentContract.push(contract);
+      } else if (
+        moment().isBefore(moment(dateCarrier.startDate), 'date') &&
+        moment().isBefore(moment(dateCarrier.endDate), 'date')
+      ) {
+        futureContracts.push(contract);
+      }
+    }
+
+    if (currentContract.length) {
+      employee.employmentContracts = [currentContract[0]];
+    } else if (futureContracts.length) {
+      employee.employmentContracts = [futureContracts[0]];
+    } else if (pastContracts.length) {
+      employee.employmentContracts = [pastContracts[pastContracts.length - 1]];
+    }
+
+    return employee;
   }
 
   async deleteCustom(id: number): Promise<any | undefined> {
@@ -809,7 +862,10 @@ export class EmployeeRepository extends Repository<Employee> {
     return this.manager.softRemove(lease);
   }
 
-  async getEmployeesBySkill(panelSkillStandardLevelId: number): Promise<any[]> {
+  async getEmployeesBySkill(
+    panelSkillStandardLevelId: number,
+    workType: string
+  ): Promise<any[]> {
     let panelSkillStandardLevels = await this.manager.find(
       PanelSkillStandardLevel,
       {
@@ -876,17 +932,15 @@ export class EmployeeRepository extends Repository<Employee> {
           cpRole =
             contactPersonActiveAssociation.organizationId == 1
               ? '(Employee)'
-              : cp.contactPersonOrganizations.filter(
-                  (org) => org.status == true
-                )[0].organizationId != 1
+              : contactPersonActiveAssociation.organizationId != 1
               ? '(Sub Contractor)'
               : '(Contact Person)';
-
-          Obj.value = cp.id;
-          Obj.label = `${cp.firstName} ${cp.lastName} ${cpRole}`;
-
-          filtered.push(Obj);
         }
+        if (contactPersonActiveAssociation || workType == 'O')
+          Obj.value = cp.id;
+        Obj.label = `${cp.firstName} ${cp.lastName} ${cpRole}`;
+
+        filtered.push(Obj);
       }
     });
     console.log('employees: ', contactPersons);

@@ -5,6 +5,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { EmployeeRepository } from './../repositories/employeeRepository';
 import { ProjectRepository } from '../repositories/projectRepository';
+import { EmploymentContract } from '../entities/employmentContract';
+import moment from 'moment';
 
 export class AuthController {
   async login(req: Request, res: Response, next: NextFunction) {
@@ -117,7 +119,7 @@ export class AuthController {
       //Get userId from JWT
       const userId = res.locals.jwtPayload.id;
 
-      let user: any = await repository.findOne({
+      let user = await repository.findOne({
         where: { id: userId },
         relations: [
           'contactPersonOrganization',
@@ -128,10 +130,47 @@ export class AuthController {
           'employmentContracts',
         ],
       });
-      if (user) {
-        user.contactPersonOrganization.organizationId != 1
-          ? delete user['employmentContracts']
-          : '';
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      let pastContracts: EmploymentContract[] = [];
+      let currentContract: EmploymentContract[] = [];
+      let futureContracts: EmploymentContract[] = [];
+      if (user.contactPersonOrganization.organizationId != 1) {
+        delete (user as any).employmentContracts;
+      } else {
+        for (let contract of user.employmentContracts) {
+          if (
+            moment().isAfter(moment(contract.startDate), 'date') &&
+            moment().isAfter(moment(contract.endDate), 'date')
+          ) {
+            pastContracts.push(contract);
+          } else if (
+            moment().isBetween(
+              moment(contract.startDate),
+              moment(contract.endDate),
+              'date'
+            )
+          ) {
+            currentContract.push(contract);
+          } else if (
+            moment().isBefore(moment(contract.startDate), 'date') &&
+            moment().isBefore(moment(contract.endDate), 'date')
+          ) {
+            futureContracts.push(contract);
+          }
+        }
+        if (currentContract.length) {
+          user.employmentContracts = [currentContract[0]];
+        } else if (futureContracts.length) {
+          user.employmentContracts = [
+            futureContracts[futureContracts.length - 1],
+          ];
+        } else if (pastContracts.length) {
+          user.employmentContracts = [pastContracts[pastContracts.length - 1]];
+        }
       }
 
       res.status(200).json({

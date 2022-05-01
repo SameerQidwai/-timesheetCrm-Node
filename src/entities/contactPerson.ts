@@ -89,10 +89,14 @@ export class ContactPerson extends Base {
   )
   contactPersonOrganizations: ContactPersonOrganization[];
 
-  public get getEmployee(): Employee {
+  public get getEmployee(): Employee | null {
     let activeOrganization = this.contactPersonOrganizations.filter(
       (contactPersonOrganization) => contactPersonOrganization.status == true
     );
+
+    if (activeOrganization.length < 1) {
+      return null;
+    }
     return activeOrganization[0].employee;
   }
 }

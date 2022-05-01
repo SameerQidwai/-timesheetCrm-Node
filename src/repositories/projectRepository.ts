@@ -1065,6 +1065,10 @@ export class ProjectRepository extends Repository<Opportunity> {
           throw new Error('Allocation not found');
         }
 
+        if (!allocation.contactPerson.getEmployee) {
+          throw new Error('Employee not found');
+        }
+
         let timesheets = await transactionalEntityManager.find(Timesheet, {
           where: { employeeId: allocation.contactPerson.getEmployee.id },
           relations: ['milestoneEntries'],
