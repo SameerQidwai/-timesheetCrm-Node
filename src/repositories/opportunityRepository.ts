@@ -1282,7 +1282,17 @@ export class OpportunityRepository extends Repository<Opportunity> {
       let opportunityObj = await transactionalEntityManager.findOne(
         Opportunity,
         id,
-        { relations: ['organization', 'contactPerson', 'milestones'] }
+        {
+          relations: [
+            'organization',
+            'contactPerson',
+            'milestones',
+            'milestones.opportunityResources',
+            'milestones.opportunityResources.opportunityResourceAllocations',
+            'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
+            'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations',
+          ],
+        }
       );
 
       if (!opportunityObj) {
@@ -1414,6 +1424,18 @@ export class OpportunityRepository extends Repository<Opportunity> {
           throw new Error('Opportunity Manager not found');
         }
         opportunityObj.projectManagerId = opportunityManager.id;
+      }
+
+      for (let milestone of opportunityObj.milestones) {
+        for (let position of milestone.opportunityResources) {
+          for (let allocation of position.opportunityResourceAllocations) {
+            if (!allocation.contactPerson.getEmployee) {
+              throw new Error(
+                'Cannot convert opportunity to project with contact person in allocations'
+              );
+            }
+          }
+        }
       }
 
       opportunityObj.status = 'P';

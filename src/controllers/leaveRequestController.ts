@@ -185,6 +185,47 @@ export class LeaveRequestController {
     }
   }
 
+  async unapproveLeaveRequests(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const repository = getCustomRepository(LeaveRequestRepository);
+
+      const { user } = res.locals;
+      const { grantLevel } = res.locals;
+      let authId = parseInt(user.id) as number;
+
+      let records: any = [];
+      // console.log(req.body);
+
+      let requestEntries = req.body.leaveRequests;
+
+      if (!requestEntries || requestEntries.length == 0) {
+        throw new Error('Entries not found');
+      }
+
+      if (grantLevel.includes('ANY')) {
+        records = await repository.unapproveAnyLeaveRequest(authId, req.body);
+      } else if (grantLevel.includes('MANAGE')) {
+        records = await repository.unapproveManageLeaveRequest(
+          authId,
+          req.body
+        );
+      }
+
+      console.log('record: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'Timesheet Reject',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
   async editLeaveRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(LeaveRequestRepository);

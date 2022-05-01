@@ -4,6 +4,7 @@ export enum Action {
   READ = 'READ',
   DELETE = 'DELETE',
   APPROVAL = 'APPROVAL',
+  UNAPPROVAL = 'UNAPPROVAL',
 }
 
 export enum Resource {

@@ -297,6 +297,56 @@ export class TimesheetController {
     }
   }
 
+  async unapproveTimesheetMilestoneEntry(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const repository = getCustomRepository(TimesheetRepository);
+      let startDate = req.params.startDate as string;
+      let endDate = req.params.endDate as string;
+      let userId = parseInt(req.params.userId) as number;
+
+      let record: any = [];
+      const { grantLevel } = res.locals;
+      const { user } = res.locals;
+      // console.log(req.body);
+
+      let requestEntries = req.body.milestoneEntries;
+
+      if (!requestEntries || requestEntries.length == 0) {
+        throw new Error('Entries not foun');
+      }
+
+      if (grantLevel.includes('ANY')) {
+        record = await repository.unapproveAnyMilestoneTimesheetEntry(
+          startDate,
+          endDate,
+          userId,
+          req.body
+        );
+      } else if (grantLevel.includes('MANAGE')) {
+        record = await repository.unapproveManageMilestoneTimesheetEntry(
+          startDate,
+          endDate,
+          userId,
+          req.body,
+          user.id
+        );
+      }
+
+      console.log('record: ', record);
+      res.status(200).json({
+        success: true,
+        message: 'Timesheet Rejected',
+        data: record,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
   async deleteTimesheetEntry(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(TimesheetRepository);

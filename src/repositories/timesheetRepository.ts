@@ -1243,6 +1243,148 @@ export class TimesheetRepository extends Repository<Timesheet> {
     // milestoneEntry.entries.map(entry => entry.submittedAt = )
   }
 
+  async unapproveAnyMilestoneTimesheetEntry(
+    startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
+    endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
+    userId: number,
+    rejectEntryDTO: TimesheetEntryApproveRejectDTO
+  ): Promise<any | undefined> {
+    let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
+      'YYYY-MM-DD HH:mm:ss'
+    );
+    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+
+    let milestoneEntries = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let timesheets = await this.find({
+          where: {
+            startDate: cStartDate,
+            endDate: cEndDate,
+          },
+          relations: [
+            'milestoneEntries',
+            'milestoneEntries.milestone',
+            'milestoneEntries.entries',
+          ],
+        });
+
+        if (!timesheets) {
+          throw new Error('Timesheet not found!');
+        }
+
+        let _flagNotFound = true;
+
+        let responseEntries: TimesheetMilestoneEntry[] = [];
+
+        for (const requestEntry of rejectEntryDTO.milestoneEntries) {
+          timesheets.forEach((timesheet) => {
+            let milestoneEntry = timesheet.milestoneEntries.filter(
+              (entry) => entry.id === requestEntry
+            )[0];
+
+            if (milestoneEntry) {
+              _flagNotFound = false;
+              milestoneEntry.entries.map((entry) => {
+                entry.approvedAt = null;
+                entry.approvedBy = null;
+                entry.rejectedAt = moment().toDate();
+                // entry.rejectedBy = authId;
+              });
+              milestoneEntry.actionNotes = rejectEntryDTO.note;
+              responseEntries.push(milestoneEntry);
+            }
+          });
+        }
+
+        if (_flagNotFound == true) {
+          throw new Error('Entry not found!');
+        }
+
+        await transactionalEntityManager.save(timesheets);
+
+        return responseEntries;
+      }
+    );
+
+    return milestoneEntries;
+  }
+
+  async unapproveManageMilestoneTimesheetEntry(
+    startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
+    endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
+    userId: number,
+    rejectEntryDTO: TimesheetEntryApproveRejectDTO,
+    authId: number
+  ): Promise<any | undefined> {
+    let flagUserIsAllowed = 0;
+    let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
+      'YYYY-MM-DD HH:mm:ss'
+    );
+    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+
+    let milestoneEntries = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let timesheet = await this.findOne({
+          where: {
+            startDate: cStartDate,
+            endDate: cEndDate,
+            employeeId: userId,
+          },
+          relations: [
+            'milestoneEntries',
+            'milestoneEntries.milestone',
+            'milestoneEntries.entries',
+          ],
+        });
+
+        if (!timesheet) {
+          throw new Error('Timesheet not found!');
+        }
+
+        let responseEntries: TimesheetMilestoneEntry[] = [];
+
+        for (const requestEntry of rejectEntryDTO.milestoneEntries) {
+          let milestoneEntry = timesheet.milestoneEntries.filter(
+            (entry) => entry.id === requestEntry
+          )[0];
+
+          if (!milestoneEntry) {
+            throw new Error('Entry not found!');
+          }
+
+          let users: [] = await this.getUserManageUsers(authId);
+
+          if (!users.length) {
+            throw new Error('No users to manage');
+          }
+          users.forEach((user: any) => {
+            if (user.value == userId) {
+              flagUserIsAllowed = 1;
+            }
+          });
+
+          if (flagUserIsAllowed == 0) {
+            throw new Error('User is not allowed to change');
+          }
+
+          milestoneEntry.entries.map((entry) => {
+            entry.approvedAt = null;
+            entry.approvedBy = null;
+            entry.rejectedAt = moment().toDate();
+          });
+          milestoneEntry.actionNotes = rejectEntryDTO.note;
+          responseEntries.push(milestoneEntry);
+        }
+        await transactionalEntityManager.save(timesheet);
+
+        return responseEntries;
+      }
+    );
+
+    return milestoneEntries;
+    // milestoneEntry.entries.map(entry => entry.submittedAt = )
+  }
+
   async deleteAnyMilestoneTimesheetEntry(
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
