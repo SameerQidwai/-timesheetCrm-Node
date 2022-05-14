@@ -1026,6 +1026,8 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           authId,
           {
             relations: [
+              'contactPersonOrganization',
+              'contactPersonOrganization.contactPerson',
               'employmentContracts',
               'employmentContracts.leaveRequestPolicy',
               'employmentContracts.leaveRequestPolicy.leaveRequestPolicyLeaveRequestTypes',
@@ -1107,7 +1109,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
                 contactPersonId:
                   employee.contactPersonOrganization.contactPerson.id,
               },
-              relations: ['OpportunityResource'],
+              relations: ['opportunityResource'],
             }
           );
 
