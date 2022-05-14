@@ -231,6 +231,10 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
   }
 
   async deleteCustom(id: number): Promise<any | undefined> {
-    return this.softDelete(id);
+    let contract = await this.findOne(id);
+    if (!contract) {
+      throw new Error('Contract not found');
+    }
+    return this.softRemove(contract);
   }
 }
