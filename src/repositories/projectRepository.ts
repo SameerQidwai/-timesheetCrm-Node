@@ -1239,6 +1239,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       order.value = purchaseOrderDTO.value;
       order.comment = purchaseOrderDTO.comment;
       order.expense = purchaseOrderDTO.expense;
+      order.orderNo = purchaseOrderDTO.orderNo;
       order.projectId = projectId;
 
       await transactionalEntityManager.save(order);
@@ -1495,7 +1496,7 @@ export class ProjectRepository extends Repository<Opportunity> {
     timesheetMilestoneEntries: TimesheetMilestoneEntry[],
     leaveRequests: LeaveRequest[]
   ) {
-    if (moment(startDate).isAfter(moment(endDate))) {
+    if (moment(startDate).isAfter(moment(endDate), 'date')) {
       throw new Error('Invalid date input');
     }
 
@@ -1534,14 +1535,14 @@ export class ProjectRepository extends Repository<Opportunity> {
     }
     if (endDate) {
       for (let milestone of milestones) {
-        if (moment(endDate).isBefore(moment(milestone.endDate))) {
+        if (moment(endDate).isBefore(moment(milestone.endDate), 'date')) {
           throw new Error(
             'Opportunity End Date cannot be before Milestone End Date'
           );
         }
       }
       for (let poisition of resources) {
-        if (moment(endDate).isBefore(moment(poisition.endDate))) {
+        if (moment(endDate).isBefore(moment(poisition.endDate), 'date')) {
           throw new Error(
             'Opportunity End Date cannot be before Resource / Position End Date'
           );
@@ -1580,7 +1581,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       throw new Error('Opportunity end date is not set');
     }
 
-    if (moment(startDate).isAfter(moment(endDate))) {
+    if (moment(startDate).isAfter(moment(endDate), 'date')) {
       throw new Error('Invalid date input');
     }
 
@@ -1686,7 +1687,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       throw new Error('Milestone end date is not set');
     }
 
-    if (moment(startDate).isAfter(moment(endDate))) {
+    if (moment(startDate).isAfter(moment(endDate), 'date')) {
       throw new Error('Invalid date input');
     }
 

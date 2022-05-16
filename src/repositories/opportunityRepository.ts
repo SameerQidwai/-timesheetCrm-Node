@@ -1680,14 +1680,14 @@ export class OpportunityRepository extends Repository<Opportunity> {
     }
     if (endDate) {
       for (let milestone of milestones) {
-        if (moment(endDate).isBefore(moment(milestone.endDate))) {
+        if (moment(endDate).isBefore(moment(milestone.endDate), 'date')) {
           throw new Error(
             'Opportunity End Date cannot be before Milestone End Date'
           );
         }
       }
       for (let poisition of resources) {
-        if (moment(endDate).isBefore(moment(poisition.endDate))) {
+        if (moment(endDate).isBefore(moment(poisition.endDate), 'date')) {
           throw new Error(
             'Opportunity End Date cannot be before Resource / Position End Date'
           );
@@ -1709,7 +1709,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
       throw new Error('Opportunity end date is not set');
     }
 
-    if (moment(startDate).isAfter(moment(endDate))) {
+    if (moment(startDate).isAfter(moment(endDate), 'date')) {
       throw new Error('Invalid date input');
     }
 
@@ -1783,7 +1783,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
       throw new Error('Milestone end date is not set');
     }
 
-    if (moment(startDate).isAfter(moment(endDate))) {
+    if (moment(startDate).isAfter(moment(endDate), 'date')) {
       throw new Error('Invalid date input');
     }
 
