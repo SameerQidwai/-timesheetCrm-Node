@@ -1178,6 +1178,7 @@ export class ProjectRepository extends Repository<Opportunity> {
         order.value = purchaseOrderDTO.value;
         order.comment = purchaseOrderDTO.comment;
         order.expense = purchaseOrderDTO.expense;
+        order.orderNo = purchaseOrderDTO.orderNo;
         order.projectId = projectId;
 
         order = await transactionalEntityManager.save(order);

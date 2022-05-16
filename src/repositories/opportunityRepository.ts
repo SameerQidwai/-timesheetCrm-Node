@@ -1287,6 +1287,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
             'milestones.opportunityResources.opportunityResourceAllocations',
             'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
             'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations',
+            'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations.employee',
           ],
         }
       );

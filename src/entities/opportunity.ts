@@ -66,7 +66,13 @@ export class Opportunity extends Base {
   @Column({ name: 'get_percentage', nullable: true })
   getPercentage: number;
 
-  @Column({ name: 'hours_per_day', nullable: true })
+  @Column({
+    name: 'hours_per_day',
+    nullable: true,
+    type: 'float',
+    precision: 11,
+    scale: 1,
+  })
   hoursPerDay: number;
 
   @Column({ name: 'linked_work_id', nullable: true })
