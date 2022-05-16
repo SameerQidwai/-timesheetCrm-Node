@@ -1641,14 +1641,14 @@ export class ProjectRepository extends Repository<Opportunity> {
         if (poisition.startDate) {
           if (moment(endDate).isAfter(moment(poisition.startDate), 'date')) {
             throw new Error(
-              'Milestone Start Date cannot be After Resource / Position Start Date'
+              'Milestone End Date cannot be After Resource / Position Start Date'
             );
           }
         }
         if (poisition.endDate) {
           if (moment(endDate).isBefore(moment(project.endDate), 'date')) {
             throw new Error(
-              'Milestone Start Date cannot be Before Resource / Position End Date'
+              'Milestone End Date cannot be Before Resource / Position End Date'
             );
           }
         }
@@ -1662,7 +1662,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       }
       for (let leaveRequest of leaveRequests) {
         let details = leaveRequest.getEntriesDetails;
-        if (moment(startDate).isBefore(moment(details.startDate), 'date')) {
+        if (moment(endDate).isBefore(moment(details.startDate), 'date')) {
           throw new Error(
             'Milestone End Date cannot be Before Timesheet End Date'
           );

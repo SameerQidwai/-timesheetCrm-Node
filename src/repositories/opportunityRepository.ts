@@ -917,11 +917,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
       throw new Error('Resource not found');
     }
 
-    if (resource[0].opportunityResourceAllocations.length > 0) {
-      throw new Error('Resource has allocations');
-    }
-
-    return await this.manager.delete(OpportunityResource, resource[0].id);
+    return await this.manager.remove(OpportunityResource, resource[0]);
   }
 
   async addResourceAllocation(
@@ -1735,38 +1731,38 @@ export class OpportunityRepository extends Repository<Opportunity> {
             );
           }
         }
-        if (poisition.endDate) {
-          if (moment(startDate).isBefore(moment(opportunity.endDate), 'date')) {
-            throw new Error(
-              'Milestone End Date cannot be Before Resource / Position End Date'
-            );
-          }
-        }
+        // if (poisition.endDate) {
+        //   if (moment(startDate).isBefore(moment(poisition.endDate), 'date')) {
+        //     throw new Error(
+        //       'Milestone Start Date cannot be Before Resource / Position End Date'
+        //     );
+        //   }
+        // }
       }
     }
     if (endDate) {
       if (moment(endDate).isBefore(moment(opportunity.startDate), 'date')) {
         throw new Error(
-          'Milestone Start Date cannot be Before Milestone Start Date'
+          'Milestone End Date cannot be Before Opportunity Start Date'
         );
       }
       if (moment(endDate).isAfter(moment(opportunity.endDate), 'date')) {
         throw new Error(
-          'Milestone Start Date cannot be After Milestone End Date'
+          'Milestone End Date cannot be After Opportunity End Date'
         );
       }
       for (let poisition of resources) {
         if (poisition.startDate) {
-          if (moment(endDate).isAfter(moment(poisition.startDate), 'date')) {
-            throw new Error(
-              'Milestone Start Date cannot be After Resource / Position Start Date'
-            );
-          }
+          // if (moment(endDate).isAfter(moment(poisition.startDate), 'date')) {
+          //   throw new Error(
+          //     'Milestone End Date cannot be After Resource / Position Start Date'
+          //   );
+          // }
         }
         if (poisition.endDate) {
-          if (moment(endDate).isBefore(moment(opportunity.endDate), 'date')) {
+          if (moment(endDate).isBefore(moment(poisition.endDate), 'date')) {
             throw new Error(
-              'Milestone Start Date cannot be Before Resource / Position End Date'
+              'Milestone End Date cannot be Before Resource / Position End Date'
             );
           }
         }

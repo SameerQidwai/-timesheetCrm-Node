@@ -936,11 +936,12 @@ export class EmployeeRepository extends Repository<Employee> {
               ? '(Sub Contractor)'
               : '(Contact Person)';
         }
-        if (contactPersonActiveAssociation || workType == 'O')
+        if (contactPersonActiveAssociation || workType == 'O') {
           Obj.value = cp.id;
-        Obj.label = `${cp.firstName} ${cp.lastName} ${cpRole}`;
+          Obj.label = `${cp.firstName} ${cp.lastName} ${cpRole}`;
 
-        filtered.push(Obj);
+          filtered.push(Obj);
+        }
       }
     });
     console.log('employees: ', contactPersons);
