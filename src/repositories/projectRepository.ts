@@ -517,7 +517,7 @@ export class ProjectRepository extends Repository<Opportunity> {
         relations: [
           'purchaseOrders',
           'milestones',
-          'milestones.timesheetEntries',
+          'milestones.timesheetMilestoneEntries',
           'milestones.opportunityResources',
         ],
       });

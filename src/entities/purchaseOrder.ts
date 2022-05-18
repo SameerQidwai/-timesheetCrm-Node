@@ -22,7 +22,7 @@ export class PurchaseOrder extends Base {
   @Column({ name: 'expense' })
   expense: number;
 
-  @Column({ name: 'order_no' })
+  @Column({ name: 'order_no', nullable: true })
   orderNo: string;
 
   @Column({ name: 'project_id' })
