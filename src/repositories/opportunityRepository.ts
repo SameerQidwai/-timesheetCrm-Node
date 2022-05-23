@@ -503,10 +503,15 @@ export class OpportunityRepository extends Repository<Opportunity> {
   async getAllActiveMilestones(
     opportunityId: number
   ): Promise<any | undefined> {
-    let results = await this.manager.find(Milestone, {
-      where: { projectId: opportunityId },
+    let opportunity = await this.findOne(opportunityId, {
+      relations: ['milestones'],
     });
-    return results;
+
+    if (!opportunity) {
+      throw new Error('Opportunity not found');
+    }
+
+    return opportunity.milestones;
   }
 
   async addMilestone(
@@ -1536,6 +1541,29 @@ export class OpportunityRepository extends Repository<Opportunity> {
       relations: ['organization', 'milestones'],
     });
     return result;
+  }
+
+  async getHierarchy(opportunityId: number): Promise<any | undefined> {
+    if (!opportunityId || isNaN(opportunityId)) {
+      throw new Error('Opportunity not found ');
+    }
+
+    let opportunity = await this.findOne(opportunityId, {
+      relations: [
+        'milestones',
+        'milestones.opportunityResources',
+        'milestones.opportunityResources.panelSkill',
+        'milestones.opportunityResources.panelSkillStandardLevel',
+        'milestones.opportunityResources.opportunityResourceAllocations',
+        'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
+    });
+
+    if (!opportunity) {
+      throw new Error('Opportunity not found');
+    }
+
+    return opportunity.milestones;
   }
 
   async helperGetAllWork(

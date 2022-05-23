@@ -38,4 +38,21 @@ export class ProjectController extends BaseController<
       next(e);
     }
   }
+
+  async hierarchy(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(ProjectRepository);
+      let id = req.params.projectId;
+      let records: any = [];
+      records = await repository.getHierarchy(parseInt(id));
+      console.log('records: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'Project Hierarchy',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

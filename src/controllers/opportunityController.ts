@@ -72,4 +72,21 @@ export class OpportunityController extends BaseController<
       next(e);
     }
   }
+
+  async hierarchy(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(OpportunityRepository);
+      let id = req.params.opportunityId;
+      let records: any = [];
+      records = await repository.getHierarchy(parseInt(id));
+      console.log('records: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'Opportunity Hierarchy',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

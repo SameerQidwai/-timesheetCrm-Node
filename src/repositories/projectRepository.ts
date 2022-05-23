@@ -1268,6 +1268,47 @@ export class ProjectRepository extends Repository<Opportunity> {
     return await this.manager.softDelete(PurchaseOrder, deletedOrder);
   }
 
+  async getHierarchy(projectId: number): Promise<any | undefined> {
+    if (!projectId || isNaN(projectId)) {
+      throw new Error('Opportunity not found ');
+    }
+
+    let opportunity = await this.findOne(projectId, {
+      relations: [
+        'milestones',
+        'milestones.opportunityResources',
+        'milestones.opportunityResources.panelSkill',
+        'milestones.opportunityResources.panelSkillStandardLevel',
+        'milestones.opportunityResources.opportunityResourceAllocations',
+        'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
+    });
+
+    if (!opportunity) {
+      throw new Error('Opportunity not found');
+    }
+
+    let newResources: any[] = [];
+
+    for (let milestone of opportunity.milestones) {
+      for (let resource of milestone.opportunityResources) {
+        let newResource: any = {};
+        let allocation = resource.opportunityResourceAllocations.filter(
+          (x) => x.isMarkedAsSelected
+        )[0];
+        newResource.resourceId = resource.id;
+        newResource.allocationId = allocation?.id;
+        newResource = { ...newResource, ...resource, ...allocation };
+        delete newResource.id;
+        delete newResource.opportunityResourceAllocations;
+        newResources.push(newResource);
+      }
+      milestone.opportunityResources = newResources;
+    }
+
+    return opportunity.milestones;
+  }
+
   async helperGetProjectsByUserId(employeeId: number, mode: string) {
     let response: any = [];
 

@@ -54,6 +54,10 @@ router
   );
 
 router
+  .route('/:opportunityId/hierarchy')
+  .get([isLoggedIn], contr.hierarchy.bind(contr));
+
+router
   .route('/:opportunityId/milestones')
   .get([isLoggedIn], milestoneContr.index.bind(milestoneContr))
   .post([isLoggedIn], milestoneContr.create.bind(milestoneContr));
