@@ -1295,9 +1295,8 @@ export class ProjectRepository extends Repository<Opportunity> {
       throw new Error('Opportunity not found');
     }
 
-    let newResources: any[] = [];
-
     for (let milestone of opportunity.milestones) {
+      let newResources: any[] = [];
       for (let resource of milestone.opportunityResources) {
         let newResource: any = {};
         let allocation = resource.opportunityResourceAllocations.filter(
