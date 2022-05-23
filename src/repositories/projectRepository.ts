@@ -572,10 +572,15 @@ export class ProjectRepository extends Repository<Opportunity> {
   }
 
   async getAllActiveMilestones(projectId: number): Promise<any | undefined> {
-    let results = await this.manager.find(Milestone, {
-      where: { projectId: projectId },
+    let project = await this.findOne(projectId, {
+      relations: ['milestones'],
     });
-    return results;
+
+    if (!project) {
+      throw new Error('Project not found');
+    }
+
+    return project.milestones;
   }
 
   async addMilestone(
