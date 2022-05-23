@@ -323,6 +323,7 @@ export interface ProjectResourceDTO extends Base {
   panelSkillId: number;
   panelSkillStandardLevelId: number;
   billableHours: number;
+  title: string;
   buyingRate: number;
   sellingRate: number;
   startDate: Date | null;

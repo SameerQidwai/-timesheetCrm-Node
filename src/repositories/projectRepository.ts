@@ -850,6 +850,7 @@ export class ProjectRepository extends Repository<Opportunity> {
         resource.billableHours = projectResourceDTO.billableHours ?? 0;
         resource.opportunityId = projectId;
         resource.milestoneId = milestoneId;
+        resource.title = projectResourceDTO.title;
 
         if (projectResourceDTO.startDate) {
           resource.startDate = new Date(projectResourceDTO.startDate);
@@ -945,6 +946,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       }
 
       resource.billableHours = projectResourceDTO.billableHours;
+      resource.title = projectResourceDTO.title;
 
       if (projectResourceDTO.startDate) {
         resource.startDate = new Date(projectResourceDTO.startDate);
