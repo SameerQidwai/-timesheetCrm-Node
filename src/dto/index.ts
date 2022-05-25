@@ -341,6 +341,7 @@ export interface PurchaseOrderDTO extends Base {
   comment: string;
   expense: number;
   orderNo: string;
+  fileId: number;
 }
 
 export interface TimesheetDTO extends Base {
@@ -410,6 +411,13 @@ export interface RoleDTO extends Base {
 
 export interface GlobalVariableValueDTO extends Base {
   globalVariableId: number;
+  value: number;
+  startDate: Date;
+  endDate: Date;
+}
+
+export interface GlobalVariableLabelValueDTO extends Base {
+  name: string;
   value: number;
   startDate: Date;
   endDate: Date;

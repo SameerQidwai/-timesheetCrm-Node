@@ -1187,6 +1187,7 @@ export class ProjectRepository extends Repository<Opportunity> {
         order.comment = purchaseOrderDTO.comment;
         order.expense = purchaseOrderDTO.expense;
         order.orderNo = purchaseOrderDTO.orderNo;
+        order.fileId = purchaseOrderDTO.fileId;
         order.projectId = projectId;
 
         order = await transactionalEntityManager.save(order);
@@ -1206,7 +1207,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       throw new Error('Project not found!');
     }
     let project = await this.findOne(projectId, {
-      relations: ['purchaseOrders'],
+      relations: ['purchaseOrders', 'purchaseOrders.file'],
     });
     if (!project) {
       throw new Error('Project not found!');
@@ -1248,6 +1249,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       order.comment = purchaseOrderDTO.comment;
       order.expense = purchaseOrderDTO.expense;
       order.orderNo = purchaseOrderDTO.orderNo;
+      order.fileId = purchaseOrderDTO.fileId;
       order.projectId = projectId;
 
       await transactionalEntityManager.save(order);
@@ -1644,20 +1646,20 @@ export class ProjectRepository extends Repository<Opportunity> {
           'Milestone Start Date cannot be After Project End Date'
         );
       }
-      for (let poisition of resources) {
-        if (poisition.startDate) {
-          if (moment(startDate).isAfter(moment(poisition.startDate), 'date')) {
+      for (let position of resources) {
+        if (position.startDate) {
+          if (moment(startDate).isAfter(moment(position.startDate), 'date')) {
             throw new Error(
               'Milestone Start Date cannot be After Resource / Position Start Date'
             );
           }
         }
-        if (poisition.endDate) {
-          if (moment(startDate).isBefore(moment(project.endDate), 'date')) {
-            throw new Error(
-              'Milestone Start Date cannot be Before Resource / Position End Date'
-            );
-          }
+        if (position.endDate) {
+          // if (moment(startDate).isBefore(moment(position.endDate), 'date')) {
+          //   throw new Error(
+          //     'Milestone Start Date cannot be Before Resource / Position End Date'
+          //   );
+          // }
         }
       }
       for (let entry of timesheetMilestoneEntries) {
@@ -1687,16 +1689,16 @@ export class ProjectRepository extends Repository<Opportunity> {
       if (moment(endDate).isAfter(moment(project.endDate), 'date')) {
         throw new Error('Milestone End Date cannot be After Project End Date');
       }
-      for (let poisition of resources) {
-        if (poisition.startDate) {
-          if (moment(endDate).isAfter(moment(poisition.startDate), 'date')) {
-            throw new Error(
-              'Milestone End Date cannot be After Resource / Position Start Date'
-            );
-          }
+      for (let position of resources) {
+        if (position.startDate) {
+          // if (moment(endDate).isAfter(moment(position.startDate), 'date')) {
+          //   throw new Error(
+          //     'Milestone End Date cannot be After Resource / Position Start Date'
+          //   );
+          // }
         }
-        if (poisition.endDate) {
-          if (moment(endDate).isBefore(moment(project.endDate), 'date')) {
+        if (position.endDate) {
+          if (moment(endDate).isBefore(moment(position.endDate), 'date')) {
             throw new Error(
               'Milestone End Date cannot be Before Resource / Position End Date'
             );
