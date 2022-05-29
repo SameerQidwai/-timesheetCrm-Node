@@ -26,6 +26,10 @@ import { OpportunityResourceAllocation } from '../entities/opportunityResourceAl
 import { Opportunity } from '../entities/opportunity';
 import { Attachment } from '../entities/attachment';
 import { Comment } from '../entities/comment';
+import { GlobalVariableLabel } from '../entities/globalVariableLabel';
+import { GlobalVariableValue } from '../entities/globalVariableValue';
+import { CalendarHoliday } from '../entities/calendarHoliday';
+
 import {
   EntityType,
   LeaveRequestTriggerFrequency,
@@ -1211,4 +1215,68 @@ export class EmployeeRepository extends Repository<Employee> {
 
     return contactPerson.standardSkillStandardLevels;
   }
+
+  async costCalculator(id: number){
+    let employee = await this.findOne(id,{
+      relations:[
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+        'contactPersonOrganization.contactPerson.state',
+        'employmentContracts',
+        'leaveRequestBalances',
+        'leaveRequestBalances.type',
+        'leaveRequestBalances.type.leaveRequestType',
+    ]
+    })
+    let variables: any = [
+      {name: 'Superannuation'},
+      {name: employee?.contactPersonOrganization.contactPerson?.state?.label}]
+    employee?.leaveRequestBalances.forEach(el=>{
+      variables.push({name: el.type.leaveRequestType.label})
+    })
+    let currentContract: EmploymentContract[] = [];
+
+    employee?.employmentContracts.forEach(el=> {
+      let dateCarrier = {
+        startDate: el.startDate,
+        endDate: el.endDate,
+      };
+
+      if (dateCarrier.startDate == null) {
+        dateCarrier.startDate = moment().subtract(100, 'years').toDate();
+      }
+      if (dateCarrier.endDate == null) {
+        dateCarrier.endDate = moment().add(100, 'years').toDate();
+      }
+      if ( moment().isBetween( moment(dateCarrier.startDate), moment(dateCarrier.endDate), 'date' ) ) {
+        currentContract.push(el);
+      }
+    })
+
+    let golobalVariables: any = await this.manager.find(GlobalVariableLabel,
+      {
+      where : variables, 
+      relations: ['values']
+    })
+
+    let calendar = await this.manager.find(CalendarHoliday, {
+      relations: ['holidayType'],
+    });
+
+    golobalVariables = golobalVariables.map((variable : any) => {
+      let value: any = variable.values?.[0]
+      return {name: variable.name, variableId: variable.id, valueId: value.id, value: value.value }
+    })
+    
+    let holidays: any = [];
+
+    if (calendar[0]) {
+      calendar.forEach((holiday) => {
+        holidays.push(moment(holiday.date).format('M D YYYY'))
+      });
+    }
+    
+    return {contract: currentContract[0], golobalVariables, holidays}
+  }
+
 }

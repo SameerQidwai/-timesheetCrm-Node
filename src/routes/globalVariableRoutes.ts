@@ -4,6 +4,8 @@ import { GlobalVariableController } from '../controllers/globalVariableControlle
 const router = Router();
 const contr = new GlobalVariableController();
 
+router.route('/').get(contr.index.bind(contr));
+
 router.route('/create').post(contr.addGlobalValue.bind(contr));
 router
   .route('/create-update')

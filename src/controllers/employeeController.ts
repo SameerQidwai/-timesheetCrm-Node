@@ -48,4 +48,20 @@ export class EmployeeController extends BaseController<
       next(e);
     }
   }
+
+  async getEmployeeByCost(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(EmployeeRepository);
+      let employeeId = req.params.employeeId;
+      let record = await repository.costCalculator( parseInt(employeeId), );
+      if (!record) throw new Error('not found');
+      res.status(200).json({
+        success: true,
+        message: `Get ${req.params.id}`,
+        data: record,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

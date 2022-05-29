@@ -7,13 +7,13 @@ export class GlobalVariableValue extends Base {
   @Column({ name: 'global_variable_id' })
   globalVariableId: number;
 
-  @Column({ name: 'value' })
+  @Column({ name: 'value', nullable: true })
   value: number;
 
-  @Column({ name: 'start_date' })
+  @Column({ name: 'start_date', nullable: true })
   startDate: Date;
 
-  @Column({ name: 'end_date' })
+  @Column({ name: 'end_date', nullable: true })
   endDate: Date;
 
   @ManyToOne(() => GlobalVariableLabel)

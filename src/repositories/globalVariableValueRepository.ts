@@ -5,9 +5,23 @@ import { GlobalVariableLabel } from '../entities/globalVariableLabel';
 
 @EntityRepository(GlobalVariableValue)
 export class GlobalVariableValueRepository extends Repository<GlobalVariableValue> {
+
+  async getAllActive(): Promise<any[]> {
+    let result = await this.find({
+      relations: ['variable']
+    });
+    let variables:any = {}
+    for (var {variable, globalVariableId, value, startDate, endDate} of result){
+      variables[variable?.name] = {globalVariableId, value, startDate, endDate}
+    }
+
+    return variables
+  }
+
   async addOrUpdate(
     globalVariableLabelValueDTO: GlobalVariableLabelValueDTO
   ): Promise<any> {
+    
     let entity = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let globalVariable: GlobalVariableLabel | undefined;
@@ -33,12 +47,16 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
 
         globalVariableValue.globalVariableId = globalVariable.id;
         globalVariableValue.value = globalVariableLabelValueDTO.value;
-        globalVariableValue.startDate = new Date(
-          globalVariableLabelValueDTO.startDate
-        );
-        globalVariableValue.endDate = new Date(
-          globalVariableLabelValueDTO.endDate
-        );
+        if (globalVariableLabelValueDTO.startDate){
+          globalVariableValue.startDate = new Date(
+            globalVariableLabelValueDTO.startDate
+          );
+        }
+        if (globalVariableLabelValueDTO.endDate){
+          globalVariableValue.endDate = new Date(
+            globalVariableLabelValueDTO.endDate
+          );
+        }
 
         await transactionalEntityManager.save(globalVariableValue);
 
