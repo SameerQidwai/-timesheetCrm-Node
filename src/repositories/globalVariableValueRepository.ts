@@ -10,12 +10,8 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
     let result = await this.find({
       relations: ['variable']
     });
-    let variables:any = {}
-    for (var {variable, globalVariableId, value, startDate, endDate} of result){
-      variables[variable?.name] = {globalVariableId, value, startDate, endDate}
-    }
 
-    return variables
+    return result
   }
 
   async addOrUpdate(

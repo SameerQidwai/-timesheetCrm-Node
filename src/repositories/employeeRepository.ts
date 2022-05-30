@@ -1228,13 +1228,8 @@ export class EmployeeRepository extends Repository<Employee> {
         'leaveRequestBalances.type.leaveRequestType',
     ]
     })
-    let variables: any = [
-      {name: 'Superannuation'},
-      {name: employee?.contactPersonOrganization.contactPerson?.state?.label}]
-    employee?.leaveRequestBalances.forEach(el=>{
-      variables.push({name: el.type.leaveRequestType.label})
-    })
-    let currentContract: EmploymentContract[] = [];
+    
+    let currentContract: EmploymentContract[]= [];
 
     employee?.employmentContracts.forEach(el=> {
       let dateCarrier = {
@@ -1253,20 +1248,35 @@ export class EmployeeRepository extends Repository<Employee> {
       }
     })
 
+    let variables: any = [
+      {name: 'Superannuation'},
+      {name: employee?.contactPersonOrganization.contactPerson?.state?.label}
+    ]
+    employee?.leaveRequestBalances.forEach(el=>{
+      variables.push({name: el.type.leaveRequestType.label})
+    })
+
     let golobalVariables: any = await this.manager.find(GlobalVariableLabel,
       {
       where : variables, 
       relations: ['values']
     })
 
-    let calendar = await this.manager.find(CalendarHoliday, {
-      relations: ['holidayType'],
-    });
+    
 
     golobalVariables = golobalVariables.map((variable : any) => {
       let value: any = variable.values?.[0]
       return {name: variable.name, variableId: variable.id, valueId: value.id, value: value.value }
     })
+
+    let find_superannuation = golobalVariables.findIndex((el: any) => el.name === variables[0].name)
+    let find_state = golobalVariables.findIndex((el: any) => el.name === variables[1].name)
+
+    golobalVariables = this._swapElements(golobalVariables, find_superannuation, find_state)
+
+    let calendar = await this.manager.find(CalendarHoliday, {
+      relations: ['holidayType'],
+    });
     
     let holidays: any = [];
 
@@ -1279,4 +1289,35 @@ export class EmployeeRepository extends Repository<Employee> {
     return {contract: currentContract[0], golobalVariables, holidays}
   }
 
+  //!--------------------------- HELPER FUNCTIONS ----------------------------//
+  _swapElements(array: any, find_1: number, find_2: number) {
+    //replacing superannuation and state so they will always at position 0 and 1
+    let on_index_0 = array[0]
+    let on_index_find_1 = array[find_1]
+    let on_index_1 = array[1]
+    let on_index_find_2 = array[find_2]
+    array[0] = on_index_find_1
+    array[find_1] = on_index_0
+
+    array[1] = on_index_find_2
+    array[find_2] = on_index_1
+    return array
+  }
+
 }
+
+
+/**
+ * function swapElements(array, source, dest) {
+    return source === dest ? 
+        array 
+    : 
+        array.map((item, index) => index === source ? 
+            array[dest] 
+        : 
+            index === dest ? 
+                array[source] 
+            : item
+        );
+}
+ */
