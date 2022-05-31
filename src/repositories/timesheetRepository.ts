@@ -849,7 +849,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
         let milestone = await transactionalEntityManager.findOne(
           Milestone,
-          entry.milestoneEntry.milestoneId
+          entry.milestoneEntry.milestoneId,
+          { relations: ['opportunityResources'] }
         );
 
         if (!milestone) {
@@ -2237,12 +2238,12 @@ export class TimesheetRepository extends Repository<Timesheet> {
     resource: OpportunityResource,
     timesheet: Timesheet
   ) {
-    if (
-      moment(date).isBefore(timesheet.startDate) ||
-      moment(date).isAfter(timesheet.endDate)
-    ) {
-      throw new Error('Entry date is out of timesheet range');
-    }
+    // if (
+    //   moment(date).isBefore(timesheet.startDate) ||
+    //   moment(date).isAfter(timesheet.endDate)
+    // ) {
+    //   throw new Error('Entry date is out of timesheet range');
+    // }
 
     if (resource.startDate) {
       if (moment(date).isBefore(moment(resource.startDate), 'date')) {
@@ -2265,13 +2266,13 @@ export class TimesheetRepository extends Repository<Timesheet> {
         );
       }
     }
-    if (
-      moment(date).isBefore(timesheet.startDate) ||
-      moment(date).isAfter(timesheet.endDate)
-    ) {
-      throw new Error(
-        'Entry date should be in range of timesheet start and end date'
-      );
-    }
+    // if (
+    //   moment(date).isBefore(timesheet.startDate) ||
+    //   moment(date).isAfter(timesheet.endDate)
+    // ) {
+    //   throw new Error(
+    //     'Entry date should be in range of timesheet start and end date'
+    //   );
+    // }
   }
 }
