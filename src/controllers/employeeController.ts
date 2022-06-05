@@ -49,7 +49,7 @@ export class EmployeeController extends BaseController<
     }
   }
 
-  async getEmployeeByCost(req: Request, res: Response, next: NextFunction) {
+  async getEmployeeCost(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(EmployeeRepository);
       let employeeId = req.params.employeeId;

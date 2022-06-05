@@ -21,4 +21,8 @@ router
   .route('/get/contact-persons')
   .get([isLoggedIn], contr.contactPersons.bind(contr));
 
+router
+  .route('/:contractorId/buy-cost')
+  .get([isLoggedIn], contr.getContractorCost.bind(contr));
+
 export default router;

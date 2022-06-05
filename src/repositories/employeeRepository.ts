@@ -1281,9 +1281,7 @@ export class EmployeeRepository extends Repository<Employee> {
     golobalVariables = this._swapElements(golobalVariables, find_superannuation, find_state, find_workCover,
       find_publicHoildays)
 
-    let calendar = await this.manager.find(CalendarHoliday, {
-      relations: ['holidayType'],
-    });
+    let calendar = await this.manager.find(CalendarHoliday);
     
     let holidays: any = [];
 

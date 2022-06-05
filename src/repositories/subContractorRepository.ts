@@ -15,6 +15,10 @@ import { Comment } from '../entities/comment';
 import { EntityType } from '../constants/constants';
 import { OpportunityResourceAllocation } from '../entities/opportunityResourceAllocation';
 import { Opportunity } from '../entities/opportunity';
+import { GlobalVariableLabel } from '../entities/globalVariableLabel';
+import { CalendarHoliday } from '../entities/calendarHoliday';
+
+import moment from 'moment';
 
 @EntityRepository(Employee)
 export class SubContractorRepository extends Repository<Employee> {
@@ -439,4 +443,51 @@ export class SubContractorRepository extends Repository<Employee> {
       return transactionalEntityManager.softRemove(Employee, subContract);
     });
   }
+
+  async costCalculator(id: number){
+    let subContractor = await this.findOne(id,{
+      relations:[
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+        'contactPersonOrganization.contactPerson.state',
+        'employmentContracts'
+    ]
+    })
+    
+    let currentContract: EmploymentContract[]= [];
+
+    subContractor?.employmentContracts.forEach(el=> {
+      let dateCarrier = {
+        startDate: el.startDate,
+        endDate: el.endDate,
+      };
+
+      if (dateCarrier.startDate == null) {
+        dateCarrier.startDate = moment().subtract(100, 'years').toDate();
+      }
+      if (dateCarrier.endDate == null) {
+        dateCarrier.endDate = moment().add(100, 'years').toDate();
+      }
+      if ( moment().isBetween( moment(dateCarrier.startDate), moment(dateCarrier.endDate), 'date' ) ) {
+        currentContract.push(el);
+      }
+    })
+
+    let stateName: string| undefined = subContractor?.contactPersonOrganization.contactPerson?.state?.label
+
+    
+    let golobalVariables: any = await this.manager.find(GlobalVariableLabel,
+      {
+      where : {name: stateName}, 
+      relations: ['values']
+    })
+
+    golobalVariables = golobalVariables.map((variable : any) => {
+      let value: any = variable.values?.[0]
+      return {name: variable.name, variableId: variable.id, valueId: value.id, value: value.value }
+    })
+    
+    return {contract: currentContract[0], golobalVariables}
+  }
+
 }

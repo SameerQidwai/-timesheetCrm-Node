@@ -28,4 +28,20 @@ export class SubContractorController extends BaseController<
       next(e);
     }
   }
+  async getContractorCost(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(SubContractorRepository);
+      let contractorId = req.params.contractorId;
+      if (!contractorId) throw new Error('not found');
+      let record = await repository.costCalculator( parseInt(contractorId), );
+      if (!record) throw new Error('not found');
+      res.status(200).json({
+        success: true,
+        message: `Get ${req.params.id}`,
+        data: record,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

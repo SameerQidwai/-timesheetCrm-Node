@@ -39,7 +39,7 @@ router
 
   router
   .route('/:employeeId/buy-cost')
-  .get([isLoggedIn], contr.getEmployeeByCost.bind(contr));
+  .get([isLoggedIn], contr.getEmployeeCost.bind(contr));
 
 
 export default router;
