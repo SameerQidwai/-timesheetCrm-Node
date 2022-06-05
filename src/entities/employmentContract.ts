@@ -33,7 +33,13 @@ export class EmploymentContract extends Base {
   })
   type: EmploymentType;
 
-  @Column({ name: 'no_of_hours', nullable: true, type: 'float' })
+  @Column({
+    name: 'no_of_hours',
+    nullable: true,
+    type: 'float',
+    precision: 11,
+    scale: 2,
+  })
   noOfHours: number;
 
   @Column({ name: 'no_of_days', default: 5 })
