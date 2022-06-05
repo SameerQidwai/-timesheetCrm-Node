@@ -1191,12 +1191,12 @@ export class EmployeeRepository extends Repository<Employee> {
     let employeeContactPerson =
       employee.contactPersonOrganization.contactPerson;
 
-    employeeContactPerson.standardSkillStandardLevels =
-      standardSkillStandardLevelList;
+    // employeeContactPerson.standardSkillStandardLevels =
+    //   standardSkillStandardLevelList;
 
-    // employeeContactPerson.standardSkillStandardLevels.push(
-    //   ...standardSkillStandardLevelList
-    // );
+    employeeContactPerson.standardSkillStandardLevels.push(
+      ...standardSkillStandardLevelList
+    );
 
     // employeeContactPerson.standardSkillStandardLevels = [
     //   ...new Set(employeeContactPerson.standardSkillStandardLevels),
