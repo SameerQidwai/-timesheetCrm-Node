@@ -423,6 +423,10 @@ export interface GlobalVariableLabelValueDTO extends Base {
   endDate: Date;
 }
 
+export interface GlobalVariableLabelValueArrayDTO extends Base {
+  variables: Array<GlobalVariableLabelValueDTO>;
+}
+
 export interface MilestoneDTO extends Base {
   title: string;
   description: string;

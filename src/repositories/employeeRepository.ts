@@ -1191,9 +1191,12 @@ export class EmployeeRepository extends Repository<Employee> {
     let employeeContactPerson =
       employee.contactPersonOrganization.contactPerson;
 
-    employeeContactPerson.standardSkillStandardLevels.push(
-      ...standardSkillStandardLevelList
-    );
+    employeeContactPerson.standardSkillStandardLevels =
+      standardSkillStandardLevelList;
+
+    // employeeContactPerson.standardSkillStandardLevels.push(
+    //   ...standardSkillStandardLevelList
+    // );
 
     // employeeContactPerson.standardSkillStandardLevels = [
     //   ...new Set(employeeContactPerson.standardSkillStandardLevels),
@@ -1216,9 +1219,9 @@ export class EmployeeRepository extends Repository<Employee> {
     return contactPerson.standardSkillStandardLevels;
   }
 
-  async costCalculator(id: number){
-    let employee = await this.findOne(id,{
-      relations:[
+  async costCalculator(id: number) {
+    let employee = await this.findOne(id, {
+      relations: [
         'contactPersonOrganization',
         'contactPersonOrganization.contactPerson',
         'contactPersonOrganization.contactPerson.state',
@@ -1226,12 +1229,12 @@ export class EmployeeRepository extends Repository<Employee> {
         'leaveRequestBalances',
         'leaveRequestBalances.type',
         'leaveRequestBalances.type.leaveRequestType',
-    ]
-    })
-    
-    let currentContract: EmploymentContract[]= [];
+      ],
+    });
 
-    employee?.employmentContracts.forEach(el=> {
+    let currentContract: EmploymentContract[] = [];
+
+    employee?.employmentContracts.forEach((el) => {
       let dateCarrier = {
         startDate: el.startDate,
         endDate: el.endDate,
@@ -1243,96 +1246,122 @@ export class EmployeeRepository extends Repository<Employee> {
       if (dateCarrier.endDate == null) {
         dateCarrier.endDate = moment().add(100, 'years').toDate();
       }
-      if ( moment().isBetween( moment(dateCarrier.startDate), moment(dateCarrier.endDate), 'date' ) ) {
+      if (
+        moment().isBetween(
+          moment(dateCarrier.startDate),
+          moment(dateCarrier.endDate),
+          'date'
+        )
+      ) {
         currentContract.push(el);
       }
-    })
+    });
 
-    let stateName: string| undefined = employee?.contactPersonOrganization.contactPerson?.state?.label
+    let stateName: string | undefined =
+      employee?.contactPersonOrganization.contactPerson?.state?.label;
 
     let variables: any = [
-      {name: 'Superannuation'},
-      {name: stateName},
-      {name: 'WorkCover'},
-      {name: 'Public Hoildays'},
-    ]
-    employee?.leaveRequestBalances.forEach(el=>{
-      variables.push({name: el.type.leaveRequestType.label})
-    })
-    
-    let golobalVariables: any = await this.manager.find(GlobalVariableLabel,
-      {
-      where : variables, 
-      relations: ['values']
-    })
+      { name: 'Superannuation' },
+      { name: stateName },
+      { name: 'WorkCover' },
+      { name: 'Public Hoildays' },
+    ];
+    employee?.leaveRequestBalances.forEach((el) => {
+      variables.push({ name: el.type.leaveRequestType.label });
+    });
 
-    
+    let golobalVariables: any = await this.manager.find(GlobalVariableLabel, {
+      where: variables,
+      relations: ['values'],
+    });
 
-    golobalVariables = golobalVariables.map((variable : any) => {
-      let value: any = variable.values?.[0]
-      return {name: variable.name, variableId: variable.id, valueId: value.id, value: value.value }
-    })
+    golobalVariables = golobalVariables.map((variable: any) => {
+      let value: any = variable.values?.[0];
+      return {
+        name: variable.name,
+        variableId: variable.id,
+        valueId: value.id,
+        value: value.value,
+      };
+    });
 
-    let find_superannuation = golobalVariables.findIndex((el: any) => el.name === 'Superannuation')
-    let find_state = golobalVariables.findIndex((el: any) => el.name === stateName)
-    let find_workCover = golobalVariables.findIndex((el: any) => el.name === 'WorkCover')
-    let find_publicHoildays = golobalVariables.findIndex((el: any) => el.name === 'Public Hoildays')
+    let find_superannuation = golobalVariables.findIndex(
+      (el: any) => el.name === 'Superannuation'
+    );
+    let find_state = golobalVariables.findIndex(
+      (el: any) => el.name === stateName
+    );
+    let find_workCover = golobalVariables.findIndex(
+      (el: any) => el.name === 'WorkCover'
+    );
+    let find_publicHoildays = golobalVariables.findIndex(
+      (el: any) => el.name === 'Public Hoildays'
+    );
 
-    golobalVariables = this._swapElements(golobalVariables, find_superannuation, find_state, find_workCover,
-      find_publicHoildays)
+    golobalVariables = this._swapElements(
+      golobalVariables,
+      find_superannuation,
+      find_state,
+      find_workCover,
+      find_publicHoildays
+    );
 
     let calendar = await this.manager.find(CalendarHoliday);
-    
+
     let holidays: any = [];
 
     if (calendar[0]) {
       calendar.forEach((holiday) => {
-        holidays.push(moment(holiday.date).format('M D YYYY'))
+        holidays.push(moment(holiday.date).format('M D YYYY'));
       });
     }
-    
-    return {contract: currentContract[0], golobalVariables, holidays}
+
+    return { contract: currentContract[0], golobalVariables, holidays };
   }
 
   //!--------------------------- HELPER FUNCTIONS ----------------------------//
 
   /**NEED TO CHANGE THI FUNXTION ASAP.... */
-  _swapElements(array: any, find_1: number, find_2: number, find_3: number, find_4: number) {
+  _swapElements(
+    array: any,
+    find_1: number,
+    find_2: number,
+    find_3: number,
+    find_4: number
+  ) {
     //replacing superannuation and state so they will always at position 0 and 1
     //replacing Work cover and Public holidays
-    
-    let last_array =array.length -1
-    /** */
-    let on_index_0 = array[0]
-    let on_index_find_1 = array[find_1]
-    // console.log(find_1, array[find_1])
-    array[0] = on_index_find_1
-    array[find_1] = on_index_0
 
-    let on_index_1 = array[1]
-    let on_index_find_2 = array[find_2]
+    let last_array = array.length - 1;
+    /** */
+    let on_index_0 = array[0];
+    let on_index_find_1 = array[find_1];
+    // console.log(find_1, array[find_1])
+    array[0] = on_index_find_1;
+    array[find_1] = on_index_0;
+
+    let on_index_1 = array[1];
+    let on_index_find_2 = array[find_2];
     // console.log(find_2, array[find_2])
-    array[1] = on_index_find_2
-    array[find_2] = on_index_1
-    
-    let on_index_2 = array[2]
-    let on_index_find_3 = array[find_3]
+    array[1] = on_index_find_2;
+    array[find_2] = on_index_1;
+
+    let on_index_2 = array[2];
+    let on_index_find_3 = array[find_3];
     // console.log(find_3, array[find_3])
-    array[2] = on_index_find_3
-    array[find_3] = on_index_2
-    
-    let on_index_last = array[last_array]
-    let on_index_find_4 = array[find_4]
+    array[2] = on_index_find_3;
+    array[find_3] = on_index_2;
+
+    let on_index_last = array[last_array];
+    let on_index_find_4 = array[find_4];
     // console.log(find_4, array[find_4])
-    array[last_array] = on_index_find_4
-    array[find_4] = on_index_last
+    array[last_array] = on_index_find_4;
+    array[find_4] = on_index_last;
     // console.log(last_array, array[last_array])
 
-    return array
+    return array;
   }
-
 }
-
 
 /**
  * function swapElements(array, source, dest) {

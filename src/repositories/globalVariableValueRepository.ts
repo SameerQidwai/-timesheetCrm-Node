@@ -1,69 +1,58 @@
-import { GlobalVariableLabelValueDTO, GlobalVariableValueDTO } from '../dto';
+import {
+  GlobalVariableLabelValueArrayDTO,
+  GlobalVariableLabelValueDTO,
+  GlobalVariableValueDTO,
+} from '../dto';
 import { EntityRepository, Repository } from 'typeorm';
 import { GlobalVariableValue } from '../entities/globalVariableValue';
 import { GlobalVariableLabel } from '../entities/globalVariableLabel';
 
 @EntityRepository(GlobalVariableValue)
 export class GlobalVariableValueRepository extends Repository<GlobalVariableValue> {
-
-  async getAllActive(): Promise<any[]> {
-    let result = await this.find({
-      relations: ['variable']
-    });
-
-    return result
-  }
-
   async addOrUpdate(
-    globalVariableLabelValueDTO: GlobalVariableLabelValueDTO
+    globalVariableLabelValueArrayDTO: GlobalVariableLabelValueArrayDTO
   ): Promise<any> {
-    
     let entity = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let globalVariable: GlobalVariableLabel | undefined;
         let globalVariableValue: GlobalVariableValue;
 
-        globalVariable = await this.manager.findOne(
-          GlobalVariableLabel,
-          {
-            name: globalVariableLabelValueDTO.name,
-          },
-          { relations: ['values'] }
-        );
+        for (let globalVariableLabelValueDTO of globalVariableLabelValueArrayDTO.variables) {
+          globalVariable = await this.manager.findOne(
+            GlobalVariableLabel,
+            {
+              name: globalVariableLabelValueDTO.name,
+            },
+            { relations: ['values'] }
+          );
 
-        if (!globalVariable) {
-          globalVariable = new GlobalVariableLabel();
-          globalVariable.name = globalVariableLabelValueDTO.name;
-          await transactionalEntityManager.save(globalVariable);
+          if (!globalVariable) {
+            globalVariable = new GlobalVariableLabel();
+            globalVariable.name = globalVariableLabelValueDTO.name;
+            await transactionalEntityManager.save(globalVariable);
 
-          globalVariableValue = new GlobalVariableValue();
-        } else {
-          globalVariableValue = globalVariable.values[0];
-        }
+            globalVariableValue = new GlobalVariableValue();
+          } else {
+            globalVariableValue = globalVariable.values[0];
+          }
 
-        globalVariableValue.globalVariableId = globalVariable.id;
-        globalVariableValue.value = globalVariableLabelValueDTO.value;
-        if (globalVariableLabelValueDTO.startDate){
+          globalVariableValue.globalVariableId = globalVariable.id;
+          globalVariableValue.value = globalVariableLabelValueDTO.value;
           globalVariableValue.startDate = new Date(
             globalVariableLabelValueDTO.startDate
           );
-        }
-        if (globalVariableLabelValueDTO.endDate){
           globalVariableValue.endDate = new Date(
             globalVariableLabelValueDTO.endDate
           );
+
+          await transactionalEntityManager.save(globalVariableValue);
         }
 
-        await transactionalEntityManager.save(globalVariableValue);
-
-        return {
-          name: globalVariable.name,
-          ...globalVariableValue,
-        };
+        return true;
       }
     );
 
-    return entity;
+    return this.manager.find(GlobalVariableLabel, { relations: ['values'] });
   }
 
   async addValueRow(

@@ -390,7 +390,7 @@ export class AuthController {
 
       res.status(200).json({
         success: true,
-        message: 'Add Skill',
+        message: 'Skills Added Successfully',
         data: records,
       });
     } catch (e) {
