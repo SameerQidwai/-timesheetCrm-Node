@@ -745,7 +745,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
                 employee.contactPersonOrganization.contactPersonId
               ) {
                 this._validateEntryDates(
-                  moment(timesheetDTO.date).toDate(),
+                  moment(timesheetDTO.date, 'DD-MM-YYYY').toDate(),
                   resource,
                   timesheet
                 );
@@ -865,7 +865,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
                 employee.contactPersonOrganization.contactPersonId
               ) {
                 this._validateEntryDates(
-                  moment(timesheetDTO.date).toDate(),
+                  moment(timesheetDTO.date, 'DD-MM-YYYY').toDate(),
                   resource,
                   entry.milestoneEntry.timesheet
                 );
@@ -2247,24 +2247,24 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
     if (resource.startDate) {
       if (moment(date).isBefore(moment(resource.startDate), 'date')) {
-        throw new Error('Timesheet Date cannot be Before Milestone Start Date');
+        throw new Error('Timesheet Date cannot be Before Resource Start Date');
       }
-      if (moment(date).isBefore(moment(resource.startDate), 'date')) {
-        throw new Error(
-          'Milestone Start Date cannot be Before Project Start Date'
-        );
-      }
+      // if (moment(date).isBefore(moment(resource.startDate), 'date')) {
+      //   throw new Error(
+      //     'Milestone Start Date cannot be Before Project Start Date'
+      //   );
+      // }
     }
     if (resource.endDate) {
       if (moment(date).isAfter(moment(resource.endDate), 'date')) {
-        throw new Error('Timesheet Date cannot be After Milestone End Date');
+        throw new Error('Timesheet Date cannot be After Resource End Date');
       }
 
-      if (moment(date).isAfter(moment(resource.endDate), 'date')) {
-        throw new Error(
-          'Milestone Start Date cannot be After Project End Date'
-        );
-      }
+      // if (moment(date).isAfter(moment(resource.endDate), 'date')) {
+      //   throw new Error(
+      //     'Milestone Start Date cannot be After Project End Date'
+      //   );
+      // }
     }
     // if (
     //   moment(date).isBefore(timesheet.startDate) ||

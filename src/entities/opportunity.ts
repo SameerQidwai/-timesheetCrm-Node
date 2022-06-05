@@ -71,7 +71,7 @@ export class Opportunity extends Base {
     nullable: true,
     type: 'float',
     precision: 11,
-    scale: 1,
+    scale: 2,
   })
   hoursPerDay: number;
 
