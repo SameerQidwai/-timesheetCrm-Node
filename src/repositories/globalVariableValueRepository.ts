@@ -9,6 +9,14 @@ import { GlobalVariableLabel } from '../entities/globalVariableLabel';
 
 @EntityRepository(GlobalVariableValue)
 export class GlobalVariableValueRepository extends Repository<GlobalVariableValue> {
+  async getAllActive(): Promise<any[]> {
+    let result = await this.find({
+      relations: ['variable'],
+    });
+
+    return result;
+  }
+
   async addOrUpdate(
     globalVariableLabelValueArrayDTO: GlobalVariableLabelValueArrayDTO
   ): Promise<any> {
