@@ -38,4 +38,17 @@ export class TimesheetMilestoneEntry extends Base {
     }
   )
   entries: TimesheetEntry[];
+
+  public get getEntriesDetails(): any {
+    let startDate, endDate;
+    this.entries.forEach((entry, index) => {
+      index == 0 ? (startDate = entry.date) : '';
+      index == this.entries.length - 1 ? (endDate = entry.date) : '';
+    });
+
+    return {
+      startDate: startDate,
+      endDate: endDate,
+    };
+  }
 }
