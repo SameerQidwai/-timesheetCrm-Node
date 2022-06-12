@@ -383,7 +383,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       if (projectDTO.startDate) {
         projectObj.startDate = new Date(projectDTO.startDate);
         if (projectDTO.type == ProjectType.TIME_BASE) {
-          projectObj.milestones[0].startDate == new Date(projectDTO.startDate);
+          projectObj.milestones[0].startDate = new Date(projectDTO.startDate);
         }
       } else {
         throw new Error('Project start date Cannot be null');
@@ -391,7 +391,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       if (projectDTO.endDate) {
         projectObj.endDate = new Date(projectDTO.endDate);
         if (projectDTO.type == ProjectType.TIME_BASE) {
-          projectObj.milestones[0].startDate == new Date(projectDTO.endDate);
+          projectObj.milestones[0].endDate = new Date(projectDTO.endDate);
         }
       } else {
         throw new Error('Project end date Cannot be null');
