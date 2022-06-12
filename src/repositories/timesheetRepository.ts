@@ -850,7 +850,12 @@ export class TimesheetRepository extends Repository<Timesheet> {
         let milestone = await transactionalEntityManager.findOne(
           Milestone,
           entry.milestoneEntry.milestoneId,
-          { relations: ['opportunityResources'] }
+          {
+            relations: [
+              'opportunityResources',
+              'opportunityResources.opportunityResourceAllocations',
+            ],
+          }
         );
 
         if (!milestone) {
