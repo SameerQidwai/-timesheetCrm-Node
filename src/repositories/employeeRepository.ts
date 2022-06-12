@@ -1234,7 +1234,7 @@ export class EmployeeRepository extends Repository<Employee> {
 
     let currentContract: EmploymentContract[] = [];
 
-    employee?.employmentContracts.forEach((el) => {
+    employee?.employmentContracts.forEach((el: any) => {
       let dateCarrier = {
         startDate: el.startDate,
         endDate: el.endDate,
@@ -1253,19 +1253,28 @@ export class EmployeeRepository extends Repository<Employee> {
           'date'
         )
       ) {
+        /** doing neccesary calculation */
+        el.dailyHours = el?.noOfHours / el?.noOfDays
+        el.hourlyBaseRate = (el?.type=== 1 ? 
+            el?.remunerationAmount : 
+            (el?.remunerationAmount / 52 / el?.noOfHours))
         currentContract.push(el);
       }
     });
 
-    let stateName: string | undefined =
+    let stateName: any =
       employee?.contactPersonOrganization.contactPerson?.state?.label;
 
     let variables: any = [
       { name: 'Superannuation' },
       { name: stateName },
       { name: 'WorkCover' },
-      { name: 'Public Hoildays' },
     ];
+    
+    if(currentContract?.[0]?.type !==1){      
+      variables.push({ name: 'Public Holidays' })
+    }
+
     employee?.leaveRequestBalances.forEach((el) => {
       variables.push({ name: el.type.leaveRequestType.label });
     });
@@ -1275,36 +1284,54 @@ export class EmployeeRepository extends Repository<Employee> {
       relations: ['values'],
     });
 
-    golobalVariables = golobalVariables.map((variable: any) => {
-      let value: any = variable.values?.[0];
-      return {
+    
+    let sortIndex: any ={
+      'Superannuation': 0,
+      [stateName]: 1,
+      'WorkCover': 2,
+      'Public Holidays': golobalVariables.length -1 ,
+    }
+       /**Sorting Data As our Need */
+    let setGolobalVariables: any = []
+    golobalVariables.forEach((variable: any, index: number) => {
+      let value: any =variable.values?.[0];
+      let manipulateVariable: any = {
         name: variable.name,
         variableId: variable.id,
         valueId: value.id,
         value: value.value,
-      };
+      }
+      /** Checking if element is from a sort variables */
+      if (variable.name === 'Superannuation' || 
+        variable.name === stateName ||   
+        variable.name === 'WorkCover' ||
+        variable.name === 'Public Holidays'){
+          /** if index and sortIndex has same index means this is where sort element belong */
+        if (index === sortIndex[variable.name] ){
+          setGolobalVariables.push(manipulateVariable)
+        }else{
+          /**checking if index has pass sort variable index means the element is already been manipulated */
+          if (index > sortIndex[variable.name]){
+            /** Saving element to be sawp as temp variable */
+            let swapElement = setGolobalVariables[sortIndex[variable.name]]
+            
+            /** change index with sorted element */
+            setGolobalVariables[sortIndex[variable.name]] = manipulateVariable
+            /** returning the already manipulated element to this index */
+            setGolobalVariables.push(swapElement)
+            /**checking if index has not yet passed sort variable index means the element will later get sort and just swap it */
+          }else if (index < sortIndex[variable.name]){
+            /** returning the not manipulated element to sort variable index */
+            setGolobalVariables[sortIndex[variable.name]] = variable
+            /** returning the manipulated element to this index */
+          
+          }
+        }
+      }else{
+        setGolobalVariables.push(manipulateVariable)
+      }
     });
-
-    let find_superannuation = golobalVariables.findIndex(
-      (el: any) => el.name === 'Superannuation'
-    );
-    let find_state = golobalVariables.findIndex(
-      (el: any) => el.name === stateName
-    );
-    let find_workCover = golobalVariables.findIndex(
-      (el: any) => el.name === 'WorkCover'
-    );
-    let find_publicHoildays = golobalVariables.findIndex(
-      (el: any) => el.name === 'Public Hoildays'
-    );
-
-    golobalVariables = this._swapElements(
-      golobalVariables,
-      find_superannuation,
-      find_state,
-      find_workCover,
-      find_publicHoildays
-    );
+    
 
     let calendar = await this.manager.find(CalendarHoliday);
 
@@ -1315,65 +1342,8 @@ export class EmployeeRepository extends Repository<Employee> {
         holidays.push(moment(holiday.date).format('M D YYYY'));
       });
     }
-
-    return { contract: currentContract[0], golobalVariables, holidays };
+    return { contract: currentContract[0], golobalVariables: setGolobalVariables, holidays };
   }
 
-  //!--------------------------- HELPER FUNCTIONS ----------------------------//
-
-  /**NEED TO CHANGE THI FUNXTION ASAP.... */
-  _swapElements(
-    array: any,
-    find_1: number,
-    find_2: number,
-    find_3: number,
-    find_4: number
-  ) {
-    //replacing superannuation and state so they will always at position 0 and 1
-    //replacing Work cover and Public holidays
-
-    let last_array = array.length - 1;
-    /** */
-    let on_index_0 = array[0];
-    let on_index_find_1 = array[find_1];
-    // console.log(find_1, array[find_1])
-    array[0] = on_index_find_1;
-    array[find_1] = on_index_0;
-
-    let on_index_1 = array[1];
-    let on_index_find_2 = array[find_2];
-    // console.log(find_2, array[find_2])
-    array[1] = on_index_find_2;
-    array[find_2] = on_index_1;
-
-    let on_index_2 = array[2];
-    let on_index_find_3 = array[find_3];
-    // console.log(find_3, array[find_3])
-    array[2] = on_index_find_3;
-    array[find_3] = on_index_2;
-
-    let on_index_last = array[last_array];
-    let on_index_find_4 = array[find_4];
-    // console.log(find_4, array[find_4])
-    array[last_array] = on_index_find_4;
-    array[find_4] = on_index_last;
-    // console.log(last_array, array[last_array])
-
-    return array;
-  }
+  
 }
-
-/**
- * function swapElements(array, source, dest) {
-    return source === dest ? 
-        array 
-    : 
-        array.map((item, index) => index === source ? 
-            array[dest] 
-        : 
-            index === dest ? 
-                array[source] 
-            : item
-        );
-}
- */
