@@ -1302,10 +1302,7 @@ export class EmployeeRepository extends Repository<Employee> {
         value: value.value,
       }
       /** Checking if element is from a sort variables */
-      if (variable.name === 'Superannuation' || 
-        variable.name === stateName ||   
-        variable.name === 'WorkCover' ||
-        variable.name === 'Public Holidays'){
+      if (!!sortIndex[variable.name]){
           /** if index and sortIndex has same index means this is where sort element belong */
         if (index === sortIndex[variable.name] ){
           setGolobalVariables.push(manipulateVariable)
