@@ -241,6 +241,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
               endDate: Not(IsNull()),
               projectId: id,
             },
+            relations: ['project'],
           });
         }
         resources = await transactionalEntityManager.find(OpportunityResource, {
@@ -1692,7 +1693,10 @@ export class OpportunityRepository extends Repository<Opportunity> {
   ) {
     if (startDate) {
       for (let milestone of milestones) {
-        if (moment(startDate).isAfter(moment(milestone.startDate), 'date')) {
+        if (
+          moment(startDate).isAfter(moment(milestone.startDate), 'date') &&
+          milestone.project.type == ProjectType.MILESTONE_BASE
+        ) {
           throw new Error(
             'Opportunity Start Date cannot be after Milestone Start Date'
           );
@@ -1708,7 +1712,10 @@ export class OpportunityRepository extends Repository<Opportunity> {
     }
     if (endDate) {
       for (let milestone of milestones) {
-        if (moment(endDate).isBefore(moment(milestone.endDate), 'date')) {
+        if (
+          moment(endDate).isBefore(moment(milestone.endDate), 'date') &&
+          milestone.project.type == ProjectType.MILESTONE_BASE
+        ) {
           throw new Error(
             'Opportunity End Date cannot be before Milestone End Date'
           );

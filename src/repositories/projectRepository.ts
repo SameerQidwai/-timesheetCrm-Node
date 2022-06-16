@@ -342,6 +342,7 @@ export class ProjectRepository extends Repository<Opportunity> {
           endDate: Not(IsNull()),
           projectId: id,
         },
+        relations: ['project'],
       });
       let milestoneIds = milestones.map((milestone) => milestone.id);
 
@@ -1555,7 +1556,10 @@ export class ProjectRepository extends Repository<Opportunity> {
 
     if (startDate) {
       for (let milestone of milestones) {
-        if (moment(startDate).isAfter(moment(milestone.startDate), 'date')) {
+        if (
+          moment(startDate).isAfter(moment(milestone.startDate), 'date') &&
+          milestone.project.type == ProjectType.MILESTONE_BASE
+        ) {
           throw new Error(
             'Opportunity Start Date cannot be after Milestone Start Date'
           );
@@ -1596,7 +1600,10 @@ export class ProjectRepository extends Repository<Opportunity> {
     }
     if (endDate) {
       for (let milestone of milestones) {
-        if (moment(endDate).isBefore(moment(milestone.endDate), 'date')) {
+        if (
+          moment(endDate).isBefore(moment(milestone.endDate), 'date') &&
+          milestone.project.type == ProjectType.MILESTONE_BASE
+        ) {
           throw new Error(
             'Opportunity End Date cannot be before Milestone End Date'
           );
