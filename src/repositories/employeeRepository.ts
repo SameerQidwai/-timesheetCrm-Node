@@ -1232,7 +1232,7 @@ export class EmployeeRepository extends Repository<Employee> {
       ],
     });
 
-    let currentContract: EmploymentContract[] = [];
+    let currentContract: any = {};
 
     employee?.employmentContracts.forEach((el: any) => {
       let dateCarrier = {
@@ -1256,91 +1256,108 @@ export class EmployeeRepository extends Repository<Employee> {
         /** doing neccesary calculation */
         el.dailyHours = el?.noOfHours / el?.noOfDays
         el.hourlyBaseRate = (el?.type=== 1 ? 
-            el?.remunerationAmount : 
-            (el?.remunerationAmount / 52 / el?.noOfHours))
-        currentContract.push(el);
+            el?.remunerationAmount 
+            : 
+            (el?.remunerationAmount / 52 / el?.noOfHours)
+          )
+        currentContract = el;
       }
     });
-
-    let stateName: any =
-      employee?.contactPersonOrganization.contactPerson?.state?.label;
-
-    let variables: any = [
-      { name: 'Superannuation' },
-      { name: stateName },
-      { name: 'WorkCover' },
-    ];
-    
-    if(currentContract?.[0]?.type !==1){      
-      variables.push({ name: 'Public Holidays' })
-    }
-
-    employee?.leaveRequestBalances.forEach((el) => {
-      variables.push({ name: el.type.leaveRequestType.label });
-    });
-
-    let golobalVariables: any = await this.manager.find(GlobalVariableLabel, {
-      where: variables,
-      relations: ['values'],
-    });
-
-    
-    let sortIndex: any ={
-      'Superannuation': 0,
-      [stateName]: 1,
-      'WorkCover': 2,
-      'Public Holidays': golobalVariables.length -1 ,
-    }
-       /**Sorting Data As our Need */
+    let buyRate: any = 0
     let setGolobalVariables: any = []
-    golobalVariables.forEach((variable: any, index: number) => {
-      let value: any =variable.values?.[0];
-      let manipulateVariable: any = {
-        name: variable.name,
-        variableId: variable.id,
-        valueId: value.id,
-        value: value.value,
+       // if coontract is found
+    if (currentContract?.hourlyBaseRate){
+      let stateName: any =
+        employee?.contactPersonOrganization.contactPerson?.state?.label;
+
+      let variables: any = [
+        { name: 'Superannuation' },
+        { name: stateName },
+        { name: 'WorkCover' },
+      ];
+      
+      if(currentContract?.type !==1){      
+        variables.push({ name: 'Public Holidays' })
       }
-      /** Checking if element is from a sort variables */
-      if (!!sortIndex[variable.name]){
-          /** if index and sortIndex has same index means this is where sort element belong */
-        if (index === sortIndex[variable.name] ){
-          setGolobalVariables.push(manipulateVariable)
-        }else{
-          /**checking if index has pass sort variable index means the element is already been manipulated */
-          if (index > sortIndex[variable.name]){
-            /** Saving element to be sawp as temp variable */
-            let swapElement = setGolobalVariables[sortIndex[variable.name]]
-            
-            /** change index with sorted element */
-            setGolobalVariables[sortIndex[variable.name]] = manipulateVariable
-            /** returning the already manipulated element to this index */
-            setGolobalVariables.push(swapElement)
-            /**checking if index has not yet passed sort variable index means the element will later get sort and just swap it */
-          }else if (index < sortIndex[variable.name]){
-            /** returning the not manipulated element to sort variable index */
-            setGolobalVariables[sortIndex[variable.name]] = variable
-            /** returning the manipulated element to this index */
-          
-          }
-        }
-      }else{
-        setGolobalVariables.push(manipulateVariable)
-      }
-    });
-    
 
-    let calendar = await this.manager.find(CalendarHoliday);
-
-    let holidays: any = [];
-
-    if (calendar[0]) {
-      calendar.forEach((holiday) => {
-        holidays.push(moment(holiday.date).format('M D YYYY'));
+      employee?.leaveRequestBalances.forEach((el) => {
+        variables.push({ name: el.type.leaveRequestType.label });
       });
+
+      let golobalVariables: any = await this.manager.find(GlobalVariableLabel, {
+        where: variables,
+        relations: ['values'],
+      });
+
+      
+      let sortIndex: any ={
+        'Superannuation': 0,
+        [stateName]: 1,
+        'WorkCover': 2,
+        'Public Holidays': golobalVariables.length -1 ,
+      }
+        /**Sorting Data As our Need */
+      
+      golobalVariables.forEach((variable: any, index: number) => {
+        let value: any =variable.values?.[0];
+        let manipulateVariable: any = {
+          name: variable.name,
+          variableId: variable.id,
+          valueId: value.id,
+          value: value.value,
+        }
+        /** Checking if element is from a sort variables */
+        if (!!sortIndex[variable.name]){
+            /** if index and sortIndex has same index means this is where sort element belong */
+          if (index === sortIndex[variable.name] ){
+            setGolobalVariables.push(manipulateVariable)
+          }else{
+            /**checking if index has pass sort variable index means the element is already been manipulated */
+            if (index > sortIndex[variable.name]){
+              /** Saving element to be sawp as temp variable */
+              let swapElement = setGolobalVariables[sortIndex[variable.name]]
+              
+              /** change index with sorted element */
+              setGolobalVariables[sortIndex[variable.name]] = manipulateVariable
+              /** returning the already manipulated element to this index */
+              setGolobalVariables.push(swapElement)
+              /**checking if index has not yet passed sort variable index means the element will later get sort and just swap it */
+            }else if (index < sortIndex[variable.name]){
+              /** returning the not manipulated element to sort variable index */
+              setGolobalVariables[sortIndex[variable.name]] = variable
+              /** returning the manipulated element to this index */
+            
+            }
+          }
+        }else{
+          setGolobalVariables.push(manipulateVariable)
+        }
+      });
+      
+      //** Calculation to get cost Rate for the employee **//
+      buyRate = currentContract?.hourlyBaseRate
+      setGolobalVariables = setGolobalVariables.map((el: any , index: number)=>{
+          if (index === 0){
+              el.amount = currentContract?.hourlyBaseRate * el?.value/100
+          }else{
+              el.amount = ((currentContract?.hourlyBaseRate + setGolobalVariables?.[0].amount) * el.value )/100
+          }
+          el.apply = 'Yes'
+          buyRate += el.amount
+          return el
+      })
+
+      /**let calendar = await this.manager.find(CalendarHoliday);
+
+      let holidays: any = [];
+
+      if (calendar[0]) {
+        calendar.forEach((holiday) => {
+          holidays.push(moment(holiday.date).format('M D YYYY'));
+        });
+      }**/
     }
-    return { contract: currentContract[0], golobalVariables: setGolobalVariables, holidays };
+    return { contract: currentContract, golobalVariables: setGolobalVariables, employeeBuyRate: buyRate };
   }
 
-  
 }

@@ -454,9 +454,9 @@ export class SubContractorRepository extends Repository<Employee> {
     ]
     })
     
-    let currentContract: EmploymentContract[]= [];
-
-    subContractor?.employmentContracts.forEach(el=> {
+    let currentContract: any = {};
+    let buyRate: any = 0
+    subContractor?.employmentContracts.forEach((el: any)=> {
       let dateCarrier = {
         startDate: el.startDate,
         endDate: el.endDate,
@@ -469,25 +469,50 @@ export class SubContractorRepository extends Repository<Employee> {
         dateCarrier.endDate = moment().add(100, 'years').toDate();
       }
       if ( moment().isBetween( moment(dateCarrier.startDate), moment(dateCarrier.endDate), 'date' ) ) {
-        currentContract.push(el);
+        el.dailyHours = el?.noOfHours / el?.noOfDays
+        el.hourlyBaseRate = ( //HOURLY RATE
+          el.remunerationAmountPer === 1 ? el?.remunerationAmount
+          :  //DAILY RATE
+          el.remunerationAmountPer === 2 ? (el?.remunerationAmount * el.dailyHours)
+          : //WEEKLY RATE
+          el.remunerationAmountPer === 3 ? (el?.remunerationAmount * el?.noOfHours)
+          : //FORTNIGLTY RATE
+          el.remunerationAmountPer === 4 ? (el?.remunerationAmount * (el?.dailyHours * 11))
+          : //MONTHLY RATE
+          el.remunerationAmountPer === 5 && (el?.remunerationAmount * (el?.dailyHours * 22))
+        )
+        currentContract = el;
       }
     })
-
-    let stateName: string| undefined = subContractor?.contactPersonOrganization.contactPerson?.state?.label
+    let golobalVariables: any = []
+    if (currentContract?.hourlyBaseRate){
+      let stateName: string| undefined = subContractor?.contactPersonOrganization.contactPerson?.state?.label
 
     
-    let golobalVariables: any = await this.manager.find(GlobalVariableLabel,
-      {
-      where : {name: stateName}, 
-      relations: ['values']
-    })
+      golobalVariables= await this.manager.find(GlobalVariableLabel,
+        {
+        where : {name: stateName}, 
+        relations: ['values']
+      })
+      
+      buyRate = currentContract?.hourlyBaseRate
+      golobalVariables = golobalVariables.map((variable : any) => {
+        let value: any = variable.values?.[0]
+        buyRate += currentContract?.hourlyBaseRate * value.value/100
+        return {
+          name: variable.name, 
+          variableId: variable.id, 
+          valueId: value.id, 
+          value: value.value, 
+          apply: 'Yes',
+          amount: currentContract?.hourlyBaseRate * value.value/100,
+        }
+      })
+    }
 
-    golobalVariables = golobalVariables.map((variable : any) => {
-      let value: any = variable.values?.[0]
-      return {name: variable.name, variableId: variable.id, valueId: value.id, value: value.value }
-    })
     
-    return {contract: currentContract[0], golobalVariables}
+    
+    return {contract: currentContract, golobalVariables, employeeBuyRate: buyRate}
   }
 
 }
