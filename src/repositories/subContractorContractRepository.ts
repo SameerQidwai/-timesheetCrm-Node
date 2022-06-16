@@ -2,6 +2,7 @@ import { ContractDTO } from '../dto';
 import { EntityRepository, Repository } from 'typeorm';
 import { EmploymentContract } from './../entities/employmentContract';
 import { Employee } from './../entities/employee';
+import moment from 'moment';
 
 @EntityRepository(EmploymentContract)
 export class SubContractorContractRepository extends Repository<EmploymentContract> {
@@ -14,17 +15,29 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
       throw new Error('Employee not found');
     }
 
+    let subContractorContractStartDate = moment(contract.startDate).format(
+      'YYYY-MM-DD'
+    );
+    let subContractorContractEndDate;
+    if (contract.endDate != null) {
+      subContractorContractEndDate = moment(contract.endDate).format(
+        'YYYY-MM-DD'
+      );
+    } else {
+      subContractorContractEndDate = null;
+    }
+
     // check any overlapping contract
     let { count } = await this.createQueryBuilder('employmentContract')
       .select('Count(*)', 'count')
       .where('employee_id = ' + contract.subContractorId)
       .andWhere(
         '(end_date is NULL OR FROM_UNIXTIME(' +
-          contract.startDate +
+          subContractorContractStartDate +
           '/1000) <= end_date) AND (' +
-          (contract.endDate || 'NULL') +
+          (subContractorContractEndDate || 'NULL') +
           ' is NULL OR start_date <= FROM_UNIXTIME(' +
-          contract.endDate +
+          subContractorContractEndDate +
           '/1000))'
       )
       .getRawOne();
@@ -36,9 +49,11 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
     }
     let obj = new EmploymentContract();
     obj.employee = employee;
-    obj.startDate = new Date(contract.startDate);
-    if (contract.endDate) {
-      obj.endDate = new Date(contract.endDate);
+    obj.startDate = new Date(subContractorContractStartDate);
+    if (subContractorContractEndDate) {
+      obj.endDate = new Date(subContractorContractEndDate);
+    } else {
+      (obj.endDate as any) = null;
     }
     obj.comments = contract.comments;
     obj.noOfHours = contract.noOfHours;
@@ -79,17 +94,30 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
       throw new Error('Employee not found');
     }
 
+    let subContractorContractStartDate = moment(contract.startDate).format(
+      'YYYY-MM-DD'
+    );
+    let subContractorContractEndDate;
+    if (contract.endDate != null) {
+      subContractorContractEndDate = moment(contract.endDate).format(
+        'YYYY-MM-DD'
+      );
+    } else {
+      subContractorContractEndDate = null;
+    }
+
+    console.log(subContractorContractStartDate, subContractorContractEndDate);
     // check any overlapping contract
     let { count } = await this.createQueryBuilder('employmentContract')
       .select('Count(*)', 'count')
       .where('(employee_id = ' + employee.id + ' AND id <> ' + id + ')')
       .andWhere(
         '(end_date is NULL OR FROM_UNIXTIME(' +
-          contract.startDate +
+          subContractorContractStartDate +
           '/1000) <= end_date) AND (' +
-          (contract.endDate || 'NULL') +
+          (subContractorContractEndDate || 'NULL') +
           ' is NULL OR start_date <= FROM_UNIXTIME(' +
-          contract.endDate +
+          subContractorContractEndDate +
           '/1000))'
       )
       .getRawOne();
@@ -101,9 +129,11 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
     }
 
     employmentContractObj.employeeId = employee.id;
-    employmentContractObj.startDate = new Date(contract.startDate);
-    if (contract.endDate) {
-      employmentContractObj.endDate = new Date(contract.endDate);
+    employmentContractObj.startDate = new Date(subContractorContractStartDate);
+    if (subContractorContractEndDate) {
+      employmentContractObj.endDate = new Date(subContractorContractEndDate);
+    } else {
+      (employmentContractObj.endDate as any) = null;
     }
     employmentContractObj.comments = contract.comments;
     employmentContractObj.noOfHours = contract.noOfHours;
