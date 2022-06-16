@@ -30,6 +30,7 @@ import globalRoutes from './globalRoutes';
 import globalVariableRoutes from './globalVariableRoutes';
 import leaveRequests from './leaveRequestRoutes';
 import leaveRequestBalances from './leaveRequestBalanceRoutes';
+import exportRoutes from './exportRoutes';
 
 const router: Router = Router();
 router.use('', authRoutes);
@@ -62,6 +63,7 @@ router.use('/global-setting', globalRoutes);
 router.use('/global-variables', globalVariableRoutes);
 router.use('/leave-requests', leaveRequests);
 router.use('/leave-request-balances', leaveRequestBalances);
+router.use('/export', exportRoutes);
 // router.use("/opportunity-resources", opportunityResourceRoutes);
 
 // console.log("router: ", router);
