@@ -449,7 +449,7 @@ export class SubContractorRepository extends Repository<Employee> {
       relations:[
         'contactPersonOrganization',
         'contactPersonOrganization.contactPerson',
-        'contactPersonOrganization.contactPerson.state',
+        'contactPersonOrganization.contactPerson.state' ,
         'employmentContracts'
     ]
     })
