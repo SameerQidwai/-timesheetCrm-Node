@@ -1219,8 +1219,32 @@ export class EmployeeRepository extends Repository<Employee> {
     return contactPerson.standardSkillStandardLevels;
   }
 
-  async costCalculator(id: number) {
-    let employee = await this.findOne(id, {
+  async costCalculator(id: number, searchIn: boolean) {
+    let searchId: number = id 
+    console.log(id, searchIn);
+    if (searchIn){
+      console.log(id, searchIn, 'sameer');
+      
+      let contactPerson = await this.manager.findOne( ContactPerson, id,
+        {
+          relations: [
+            'contactPersonOrganizations',
+            'contactPersonOrganizations.employee'
+          ],
+        });
+        if (!contactPerson){
+          throw new Error('Employee not found');
+        }
+        let emp = contactPerson.getEmployee
+
+        if (!emp){
+          throw new Error('Employee not found');
+        }
+        searchId = emp.id
+    }
+    console.log(searchId);
+    
+    let employee = await this.findOne(searchId, {
       relations: [
         'contactPersonOrganization',
         'contactPersonOrganization.contactPerson',
@@ -1232,37 +1256,23 @@ export class EmployeeRepository extends Repository<Employee> {
       ],
     });
 
-    let currentContract: any = {};
+    if (!employee){
+      throw new Error('Employee not found');
+    }
+    
+    let currentContract: any = employee.getActiveContract;
+    
+    if (!currentContract){
+      throw new Error('Employee not found');
+    }
+     /** doing neccesary calculation */
+    currentContract.dailyHours = currentContract?.noOfHours / currentContract?.noOfDays
+    currentContract.hourlyBaseRate = (currentContract?.type=== 1 ? 
+      currentContract?.remunerationAmount 
+      : 
+      (currentContract?.remunerationAmount / 52 / currentContract?.noOfHours)
+    )
 
-    employee?.employmentContracts.forEach((el: any) => {
-      let dateCarrier = {
-        startDate: el.startDate,
-        endDate: el.endDate,
-      };
-
-      if (dateCarrier.startDate == null) {
-        dateCarrier.startDate = moment().subtract(100, 'years').toDate();
-      }
-      if (dateCarrier.endDate == null) {
-        dateCarrier.endDate = moment().add(100, 'years').toDate();
-      }
-      if (
-        moment().isBetween(
-          moment(dateCarrier.startDate),
-          moment(dateCarrier.endDate),
-          'date'
-        )
-      ) {
-        /** doing neccesary calculation */
-        el.dailyHours = el?.noOfHours / el?.noOfDays
-        el.hourlyBaseRate = (el?.type=== 1 ? 
-            el?.remunerationAmount 
-            : 
-            (el?.remunerationAmount / 52 / el?.noOfHours)
-          )
-        currentContract = el;
-      }
-    });
     let buyRate: any = 0
     let setGolobalVariables: any = []
        // if coontract is found
@@ -1307,7 +1317,7 @@ export class EmployeeRepository extends Repository<Employee> {
           value: value.value,
         }
         /** Checking if element is from a sort variables */
-        if (!!sortIndex[variable.name]){
+        if (sortIndex[variable.name] >= 0){
             /** if index and sortIndex has same index means this is where sort element belong */
           if (index === sortIndex[variable.name] ){
             setGolobalVariables.push(manipulateVariable)
