@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "tsc": "tsc",
     "start": "ts-node src/server.ts",
+    "watch": "nodemon src/server.ts",
     "start:watch": "nodemon src/server.ts",
     "typeorm": "ts-node ./node_modules/typeorm/cli.js",
     "generateMigration": "ts-node ./node_modules/typeorm/cli.js migration:generate -n Onelm",
@@ -41,7 +42,6 @@
     "bcrypt": "^5.0.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
-    "csv": "^6.1.2",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
@@ -53,6 +53,7 @@
     "nodemon": "^2.0.6",
     "path": "^0.12.7",
     "reflect-metadata": "^0.1.13",
-    "typeorm": "^0.2.28"
+    "typeorm": "^0.2.28",
+    "xlsx": "^0.18.5"
   }
 }

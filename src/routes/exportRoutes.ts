@@ -5,6 +5,6 @@ import { ExportController } from '../controllers/exportController';
 const router = Router();
 const contr = new ExportController();
 
-router.route('/').get([], contr.export.bind(contr));
+router.route('/').post([], contr.export.bind(contr));
 
 export default router;
