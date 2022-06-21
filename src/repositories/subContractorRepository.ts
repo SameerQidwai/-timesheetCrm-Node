@@ -444,48 +444,60 @@ export class SubContractorRepository extends Repository<Employee> {
     });
   }
 
-  async costCalculator(id: number){
-    let subContractor = await this.findOne(id,{
+  async costCalculator(id: number, searchIn: boolean){
+    let searchId: number = id 
+    
+    if (searchIn){      
+      let contactPerson = await this.manager.findOne( ContactPerson, id,
+        {
+          relations: [
+            'contactPersonOrganizations',
+            'contactPersonOrganizations.employee'
+          ],
+        });
+        if (!contactPerson){
+          throw new Error('Employee not found');
+        }
+        let sub = contactPerson.getEmployee
+
+        if (!sub){
+          throw new Error('Employee not found');
+        }
+        searchId = sub.id
+    }
+    let subContractor = await this.findOne(searchId,{
       relations:[
         'contactPersonOrganization',
         'contactPersonOrganization.contactPerson',
         'contactPersonOrganization.contactPerson.state' ,
         'employmentContracts'
-    ]
+      ]
     })
-    
-    let currentContract: any = {};
-    let buyRate: any = 0
-    subContractor?.employmentContracts.forEach((el: any)=> {
-      let dateCarrier = {
-        startDate: el.startDate,
-        endDate: el.endDate,
-      };
+    if (!subContractor){
+      throw new Error('Employee not found');
+    }
 
-      if (dateCarrier.startDate == null) {
-        dateCarrier.startDate = moment().subtract(100, 'years').toDate();
-      }
-      if (dateCarrier.endDate == null) {
-        dateCarrier.endDate = moment().add(100, 'years').toDate();
-      }
-      if ( moment().isBetween( moment(dateCarrier.startDate), moment(dateCarrier.endDate), 'date' ) ) {
-        el.dailyHours = el?.noOfHours / el?.noOfDays
-        el.hourlyBaseRate = ( //HOURLY RATE
-          el.remunerationAmountPer === 1 ? el?.remunerationAmount
-          :  //DAILY RATE
-          el.remunerationAmountPer === 2 ? (el?.remunerationAmount * el.dailyHours)
-          : //WEEKLY RATE
-          el.remunerationAmountPer === 3 ? (el?.remunerationAmount * el?.noOfHours)
-          : //FORTNIGLTY RATE
-          el.remunerationAmountPer === 4 ? (el?.remunerationAmount * (el?.dailyHours * 11))
-          : //MONTHLY RATE
-          el.remunerationAmountPer === 5 && (el?.remunerationAmount * (el?.dailyHours * 22))
-        )
-        currentContract = el;
-      }
-    })
+    let currentContract: any = subContractor.getActiveContract;
+    
+    if (!currentContract){
+      throw new Error('No Active Contract');
+    }
+
+    currentContract.dailyHours = currentContract?.noOfHours / currentContract?.noOfDays
+    currentContract.hourlyBaseRate = ( //HOURLY RATE
+      currentContract.remunerationAmountPer === 1 ? currentContract?.remunerationAmount
+      :  //DAILY RATE
+      currentContract.remunerationAmountPer === 2 ? (currentContract?.remunerationAmount * currentContract.dailyHours)
+      : //WEEKLY RATE
+      currentContract.remunerationAmountPer === 3 ? (currentContract?.remunerationAmount * currentContract?.noOfHours)
+      : //FORTNIGLTY RATE
+      currentContract.remunerationAmountPer === 4 ? (currentContract?.remunerationAmount * (currentContract?.dailyHours * 11))
+      : //MONTHLY RATE
+      currentContract.remunerationAmountPer === 5 && (currentContract?.remunerationAmount * (currentContract?.dailyHours * 22))
+    )
+    let buyRate: any = 0
     let golobalVariables: any = []
-    if (currentContract?.hourlyBaseRate){
+    // if (currentContract?.hourlyBaseRate){
       let stateName: string| undefined = subContractor?.contactPersonOrganization.contactPerson?.state?.label
 
     
@@ -497,7 +509,7 @@ export class SubContractorRepository extends Repository<Employee> {
       
       buyRate = currentContract?.hourlyBaseRate
       golobalVariables = golobalVariables.map((variable : any) => {
-        let value: any = variable.values?.[0]
+        let value: any = variable?.values?.[0]
         buyRate += currentContract?.hourlyBaseRate * value.value/100
         return {
           name: variable.name, 
@@ -508,11 +520,8 @@ export class SubContractorRepository extends Repository<Employee> {
           amount: currentContract?.hourlyBaseRate * value.value/100,
         }
       })
-    }
+    // }
 
-    
-    
     return {contract: currentContract, golobalVariables, employeeBuyRate: buyRate}
   }
-
 }

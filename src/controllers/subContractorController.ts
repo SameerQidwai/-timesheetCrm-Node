@@ -33,7 +33,8 @@ export class SubContractorController extends BaseController<
       const repository = getCustomRepository(SubContractorRepository);
       let contractorId = req.params.contractorId;
       if (!contractorId) throw new Error('not found');
-      let record = await repository.costCalculator( parseInt(contractorId), );
+      let searchIn = !!(req.query.searchIn === 'contactPerson')
+      let record = await repository.costCalculator( parseInt(contractorId), searchIn);
       if (!record) throw new Error('not found');
       res.status(200).json({
         success: true,
