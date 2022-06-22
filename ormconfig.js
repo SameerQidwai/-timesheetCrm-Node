@@ -13,6 +13,7 @@ module.exports = {
     entitiesDir: 'src/entities',
     migrationsDir: 'src/migrations',
   },
+  timezone: 'Z',
 };
 
 // "port": 3306,

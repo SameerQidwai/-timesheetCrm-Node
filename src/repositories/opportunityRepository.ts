@@ -241,6 +241,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
               endDate: Not(IsNull()),
               projectId: id,
             },
+            relations: ['project'],
           });
         }
         resources = await transactionalEntityManager.find(OpportunityResource, {
@@ -698,6 +699,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
         'milestones.opportunityResources.panelSkillStandardLevel',
         'milestones.opportunityResources.opportunityResourceAllocations',
         'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
+        'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations',
       ],
     });
     if (!opportunity) {
@@ -710,6 +712,31 @@ export class OpportunityRepository extends Repository<Opportunity> {
     if (!milestone) {
       throw new Error('Milestone not found');
     }
+
+    let cpRole: string = 'Contact Person';
+    milestone.opportunityResources.forEach((resource, rindex) => {
+      resource.opportunityResourceAllocations.forEach((allocation, aindex) => {
+        let cp = allocation.contactPerson;
+        if (cp.contactPersonOrganizations.length > 0) {
+          let contactPersonActiveAssociation =
+            cp.contactPersonOrganizations.filter(
+              (org) => org.status == true
+            )[0];
+          if (contactPersonActiveAssociation) {
+            cpRole =
+              contactPersonActiveAssociation.organizationId == 1
+                ? 'Employee'
+                : contactPersonActiveAssociation.organizationId != 1
+                ? 'Sub Contractor'
+                : 'Contact Person';
+            (
+              milestone.opportunityResources[rindex]
+                .opportunityResourceAllocations[aindex] as any
+            ).role = cpRole;
+          }
+        }
+      });
+    });
 
     return milestone.opportunityResources;
   }
@@ -862,6 +889,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
         'milestones.opportunityResources.panelSkillStandardLevel',
         'milestones.opportunityResources.opportunityResourceAllocations',
         'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
+        'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations',
       ],
     });
     if (!opportunity) {
@@ -871,14 +899,17 @@ export class OpportunityRepository extends Repository<Opportunity> {
     let milestone = opportunity.milestones.filter(
       (x) => x.id === milestoneId
     )[0];
+
     if (!milestone) {
       throw new Error('Milestone not found');
     }
 
-    let resource = milestone.opportunityResources.filter((x) => x.id === id);
+    let resource = milestone.opportunityResources.filter((x) => x.id === id)[0];
+
     if (!resource) {
       throw new Error('Resource not found');
     }
+
     return resource;
   }
 
@@ -1692,7 +1723,10 @@ export class OpportunityRepository extends Repository<Opportunity> {
   ) {
     if (startDate) {
       for (let milestone of milestones) {
-        if (moment(startDate).isAfter(moment(milestone.startDate), 'date')) {
+        if (
+          moment(startDate).isAfter(moment(milestone.startDate), 'date') &&
+          milestone.project.type == ProjectType.MILESTONE_BASE
+        ) {
           throw new Error(
             'Opportunity Start Date cannot be after Milestone Start Date'
           );
@@ -1708,7 +1742,10 @@ export class OpportunityRepository extends Repository<Opportunity> {
     }
     if (endDate) {
       for (let milestone of milestones) {
-        if (moment(endDate).isBefore(moment(milestone.endDate), 'date')) {
+        if (
+          moment(endDate).isBefore(moment(milestone.endDate), 'date') &&
+          milestone.project.type == ProjectType.MILESTONE_BASE
+        ) {
           throw new Error(
             'Opportunity End Date cannot be before Milestone End Date'
           );
