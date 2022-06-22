@@ -1218,8 +1218,27 @@ export class EmployeeRepository extends Repository<Employee> {
     return contactPerson.standardSkillStandardLevels;
   }
 
-  async costCalculator(id: number) {
-    let employee = await this.findOne(id, {
+  async costCalculator(id: number, searchIn: boolean) {
+    let searchId: number = id;
+    if (searchIn) {
+      let contactPerson = await this.manager.findOne(ContactPerson, id, {
+        relations: [
+          'contactPersonOrganizations',
+          'contactPersonOrganizations.employee',
+        ],
+      });
+      if (!contactPerson) {
+        throw new Error('Employee not found');
+      }
+      let emp = contactPerson.getEmployee;
+
+      if (!emp) {
+        throw new Error('Employee not found');
+      }
+      searchId = emp.id;
+    }
+
+    let employee = await this.findOne(searchId, {
       relations: [
         'contactPersonOrganization',
         'contactPersonOrganization.contactPerson',
@@ -1231,40 +1250,28 @@ export class EmployeeRepository extends Repository<Employee> {
       ],
     });
 
-    let currentContract: any = {};
-
     if (!employee) {
       throw new Error('Employee not found');
     }
 
-    employee.employmentContracts.forEach((el: any) => {
-      let dateCarrier = {
-        startDate: el.startDate,
-        endDate: el.endDate,
-      };
+    let currentContract: any = employee.getActiveContract;
 
-      if (dateCarrier.startDate == null) {
-        dateCarrier.startDate = moment().subtract(100, 'years').toDate();
-      }
-      if (dateCarrier.endDate == null) {
-        dateCarrier.endDate = moment().add(100, 'years').toDate();
-      }
-      if (
-        moment().isBetween(
-          moment(dateCarrier.startDate),
-          moment(dateCarrier.endDate),
-          'date'
-        )
-      ) {
-        /** doing neccesary calculation */
-        el.dailyHours = el?.noOfHours / el?.noOfDays;
-        el.hourlyBaseRate =
-          el?.type === 1
-            ? el?.remunerationAmount
-            : el?.remunerationAmount / 52 / el?.noOfHours;
-        currentContract = el;
-      }
-    });
+    if (!currentContract) {
+      throw new Error('No Active Contract');
+    }
+    /** doing neccesary calculation */
+    currentContract.dailyHours =
+      currentContract?.noOfHours / currentContract?.noOfDays;
+    currentContract.hourlyBaseRate =
+      currentContract?.type === 1
+        ? currentContract?.remunerationAmount
+        : currentContract?.remunerationAmount / 52 / currentContract?.noOfHours;
+    console.log(
+      currentContract.dailyHours,
+      currentContract.hourlyBaseRate,
+      currentContract?.remunerationAmount
+    );
+
     let buyRate: any = 0;
     let setGolobalVariables: any = [];
     // if coontract is found
@@ -1297,8 +1304,8 @@ export class EmployeeRepository extends Repository<Employee> {
         WorkCover: 2,
         'Public Holidays': golobalVariables.length - 1,
       };
-      /**Sorting Data As our Need */
 
+      /**Sorting Data As our Need */
       golobalVariables.forEach((variable: any, index: number) => {
         let value: any = variable.values?.[0];
         let manipulateVariable: any = {
@@ -1307,8 +1314,9 @@ export class EmployeeRepository extends Repository<Employee> {
           valueId: value.id,
           value: value.value,
         };
+
         /** Checking if element is from a sort variables */
-        if (!!sortIndex[variable.name]) {
+        if (sortIndex[variable.name] >= 0) {
           /** if index and sortIndex has same index means this is where sort element belong */
           if (index === sortIndex[variable.name]) {
             setGolobalVariables.push(manipulateVariable);
@@ -1317,16 +1325,20 @@ export class EmployeeRepository extends Repository<Employee> {
             if (index > sortIndex[variable.name]) {
               /** Saving element to be sawp as temp variable */
               let swapElement = setGolobalVariables[sortIndex[variable.name]];
-
               /** change index with sorted element */
+
               setGolobalVariables[sortIndex[variable.name]] =
                 manipulateVariable;
               /** returning the already manipulated element to this index */
-              setGolobalVariables.push(swapElement);
+              if (swapElement) {
+                setGolobalVariables.push(swapElement);
+              }
               /**checking if index has not yet passed sort variable index means the element will later get sort and just swap it */
             } else if (index < sortIndex[variable.name]) {
               /** returning the not manipulated element to sort variable index */
-              setGolobalVariables[sortIndex[variable.name]] = variable;
+
+              setGolobalVariables[sortIndex[variable.name]] =
+                manipulateVariable;
               /** returning the manipulated element to this index */
             }
           }
@@ -1337,11 +1349,16 @@ export class EmployeeRepository extends Repository<Employee> {
 
       //** Calculation to get cost Rate for the employee **//
       buyRate = currentContract?.hourlyBaseRate;
+      // console.log(setGolobalVariables);
+
+      // console.log(setGolobalVariables)
       setGolobalVariables = setGolobalVariables.map(
         (el: any, index: number) => {
           if (index === 0) {
             el.amount = (currentContract?.hourlyBaseRate * el?.value) / 100;
           } else {
+            // console.log(el.name, el.value);
+
             el.amount =
               ((currentContract?.hourlyBaseRate +
                 setGolobalVariables?.[0].amount) *
@@ -1349,11 +1366,11 @@ export class EmployeeRepository extends Repository<Employee> {
               100;
           }
           el.apply = 'Yes';
+
           buyRate += el.amount;
           return el;
         }
       );
-
       /**let calendar = await this.manager.find(CalendarHoliday);
 
       let holidays: any = [];
