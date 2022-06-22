@@ -482,6 +482,14 @@ export class SubContractorRepository extends Repository<Employee> {
       throw new Error('No Active Contract');
     }
 
+    if (!currentContract.noOfHours) {
+      throw new Error('Hours not defined');
+    }
+
+    if (!currentContract.noOfDays) {
+      throw new Error('Days not defined');
+    }
+
     currentContract.dailyHours =
       currentContract?.noOfHours / currentContract?.noOfDays;
     currentContract.hourlyBaseRate = //HOURLY RATE

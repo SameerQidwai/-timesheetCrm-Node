@@ -1259,6 +1259,15 @@ export class EmployeeRepository extends Repository<Employee> {
     if (!currentContract) {
       throw new Error('No Active Contract');
     }
+
+    if (!currentContract.noOfHours) {
+      throw new Error('Hours not defined');
+    }
+
+    if (!currentContract.noOfDays) {
+      throw new Error('Days not defined');
+    }
+
     /** doing neccesary calculation */
     currentContract.dailyHours =
       currentContract?.noOfHours / currentContract?.noOfDays;
