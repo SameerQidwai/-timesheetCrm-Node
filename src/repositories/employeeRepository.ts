@@ -929,10 +929,8 @@ export class EmployeeRepository extends Repository<Employee> {
       let Obj: any = {};
       let cpRole: string = '(Contact Person)';
       if (cp.contactPersonOrganizations.length > 0) {
-        //TODO: FILTER CONTACTPERSON AND EMPLOYEE BASED ON API
         let contactPersonActiveAssociation =
           cp.contactPersonOrganizations.filter((org) => org.status == true)[0];
-        //? ONLY EMPLOYEES ARE BEING FILTERED DOWN
         if (contactPersonActiveAssociation) {
           cpRole =
             contactPersonActiveAssociation.organizationId == 1
