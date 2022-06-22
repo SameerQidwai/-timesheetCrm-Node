@@ -17,6 +17,7 @@
     "updateResourcesDates": "ts-node src/resourcesDateScript.ts",
     "startCrons": "ts-node src/cronScript.ts",
     "stopCrons": "ts-node src/cronStopScript.ts",
+    "dateFix": "ts-node src/datefixScript.ts",
     "instantMonthCron": "ts-node src/instantMonthCronScript.ts",
     "instantYearCron": "ts-node src/instantYearCronScript.ts",
     "updateEmployeeBalance": "ts-node src/employeeBalanceScript.ts"
