@@ -145,6 +145,10 @@ export class Opportunity extends Base {
   stage: string;
   //L = Lead // TR = Tender Released //BS = Bid Submitted
 
+  @Column({ name: 'phase', nullable: false, default: 1 })
+  phase: boolean;
+  // Project (1) Open /  (0) Closed
+
   @Column({ name: 'reason', nullable: true })
   reason: string;
 

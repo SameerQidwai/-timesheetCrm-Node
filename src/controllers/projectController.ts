@@ -39,6 +39,38 @@ export class ProjectController extends BaseController<
     }
   }
 
+  async markAsOpen(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(ProjectRepository);
+      let id = req.params.id;
+      let record = await repository.markProjectAsOpen(parseInt(id));
+      res.status(200).json({
+        success: true,
+        // message: `Win Opportunity ${req.params.id}`,
+        message: 'Project set as Open',
+        data: record,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async markAsClosed(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(ProjectRepository);
+      let id = req.params.id;
+      let record = await repository.markProjectAsClosed(parseInt(id));
+      res.status(200).json({
+        success: true,
+        // message: `Win Opportunity ${req.params.id}`,
+        message: 'Project set as Closed',
+        data: record,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
   async hierarchy(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(ProjectRepository);

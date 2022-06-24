@@ -1327,6 +1327,42 @@ export class ProjectRepository extends Repository<Opportunity> {
     return await this.manager.softDelete(PurchaseOrder, deletedOrder);
   }
 
+  async markProjectAsOpen(id: number): Promise<any | undefined> {
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      let projectObj = await transactionalEntityManager.findOne(
+        Opportunity,
+        id
+      );
+
+      if (!projectObj) {
+        throw new Error('Opportunity not found');
+      }
+
+      projectObj.phase = true;
+
+      await transactionalEntityManager.save(projectObj);
+    });
+    return this.findOneCustom(id);
+  }
+
+  async markProjectAsClosed(id: number): Promise<any | undefined> {
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      let projectObj = await transactionalEntityManager.findOne(
+        Opportunity,
+        id
+      );
+
+      if (!projectObj) {
+        throw new Error('Opportunity not found');
+      }
+
+      projectObj.phase = false;
+
+      await transactionalEntityManager.save(projectObj);
+    });
+    return this.findOneCustom(id);
+  }
+
   async getHierarchy(projectId: number): Promise<any | undefined> {
     if (!projectId || isNaN(projectId)) {
       throw new Error('Opportunity not found ');
