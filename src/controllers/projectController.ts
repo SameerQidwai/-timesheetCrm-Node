@@ -42,7 +42,7 @@ export class ProjectController extends BaseController<
   async markAsOpen(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(ProjectRepository);
-      let id = req.params.id;
+      let id = req.params.projectId;
       let record = await repository.markProjectAsOpen(parseInt(id));
       res.status(200).json({
         success: true,
@@ -58,7 +58,7 @@ export class ProjectController extends BaseController<
   async markAsClosed(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(ProjectRepository);
-      let id = req.params.id;
+      let id = req.params.projectId;
       let record = await repository.markProjectAsClosed(parseInt(id));
       res.status(200).json({
         success: true,
