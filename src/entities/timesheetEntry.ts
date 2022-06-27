@@ -69,53 +69,53 @@ export class TimesheetEntry extends Base {
   @JoinColumn({ name: 'milestone_entry_id' })
   milestoneEntry: TimesheetMilestoneEntry;
 
-  @BeforeInsert()
-  async insert() {
-    let milestoneEntry = await getManager().findOne(
-      TimesheetMilestoneEntry,
-      this.milestoneEntryId,
-      {
-        relations: ['milestone', 'milestone.project'],
-      }
-    );
+  // @BeforeInsert()
+  // async insert() {
+  //   let milestoneEntry = await getManager().findOne(
+  //     TimesheetMilestoneEntry,
+  //     this.milestoneEntryId,
+  //     {
+  //       relations: ['milestone', 'milestone.project'],
+  //     }
+  //   );
 
-    if (!milestoneEntry) {
-      throw new Error('Milestone not found');
-    }
-    if (!milestoneEntry.milestone.project.phase) {
-      throw new Error('Opportunity / Project is closed');
-    }
-  }
-  @BeforeUpdate()
-  async update() {
-    let milestoneEntry = await getManager().findOne(
-      TimesheetMilestoneEntry,
-      this.milestoneEntryId,
-      {
-        relations: ['milestone', 'milestone.project'],
-      }
-    );
-    if (!milestoneEntry) {
-      throw new Error('Milestone not found');
-    }
-    if (!milestoneEntry.milestone.project.phase) {
-      throw new Error('Opportunity / Project is closed');
-    }
-  }
-  @BeforeRemove()
-  async delete() {
-    let milestoneEntry = await getManager().findOne(
-      TimesheetMilestoneEntry,
-      this.milestoneEntryId,
-      {
-        relations: ['milestone', 'milestone.project'],
-      }
-    );
-    if (!milestoneEntry) {
-      throw new Error('Milestone not found');
-    }
-    if (!milestoneEntry.milestone.project.phase) {
-      throw new Error('Opportunity / Project is closed');
-    }
-  }
+  //   if (!milestoneEntry) {
+  //     throw new Error('Milestone not found');
+  //   }
+  //   if (!milestoneEntry.milestone.project.phase) {
+  //     throw new Error('Opportunity / Project is closed');
+  //   }
+  // }
+  // @BeforeUpdate()
+  // async update() {
+  //   let milestoneEntry = await getManager().findOne(
+  //     TimesheetMilestoneEntry,
+  //     this.milestoneEntryId,
+  //     {
+  //       relations: ['milestone', 'milestone.project'],
+  //     }
+  //   );
+  //   if (!milestoneEntry) {
+  //     throw new Error('Milestone not found');
+  //   }
+  //   if (!milestoneEntry.milestone.project.phase) {
+  //     throw new Error('Opportunity / Project is closed');
+  //   }
+  // }
+  // @BeforeRemove()
+  // async delete() {
+  //   let milestoneEntry = await getManager().findOne(
+  //     TimesheetMilestoneEntry,
+  //     this.milestoneEntryId,
+  //     {
+  //       relations: ['milestone', 'milestone.project'],
+  //     }
+  //   );
+  //   if (!milestoneEntry) {
+  //     throw new Error('Milestone not found');
+  //   }
+  //   if (!milestoneEntry.milestone.project.phase) {
+  //     throw new Error('Opportunity / Project is closed');
+  //   }
+  // }
 }
