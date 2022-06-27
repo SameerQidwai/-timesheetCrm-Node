@@ -77,4 +77,12 @@ router
   .get([isLoggedIn], orderContr.get.bind(orderContr))
   .delete([isLoggedIn], orderContr.delete.bind(orderContr));
 
+router
+  .route('/:projectId/phase/open')
+  .post([isLoggedIn], contr.markAsOpen.bind(contr));
+
+router
+  .route('/:projectId/phase/close')
+  .post([isLoggedIn], contr.markAsClosed.bind(contr));
+
 export default router;

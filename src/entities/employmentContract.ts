@@ -52,7 +52,12 @@ export class EmploymentContract extends Base {
   // })
   // noOfHoursPer: Frequency;
 
-  @Column({ name: 'remuneration_amount' })
+  @Column({
+    name: 'remuneration_amount',
+    type: 'float',
+    precision: 11,
+    scale: 2,
+  })
   remunerationAmount: number;
 
   @Column({

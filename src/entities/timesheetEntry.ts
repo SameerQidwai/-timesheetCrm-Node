@@ -1,4 +1,13 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  BeforeInsert,
+  BeforeUpdate,
+  BeforeRemove,
+  getManager,
+} from 'typeorm';
 import { Base } from './common/base';
 import { Employee } from './employee';
 import { TimesheetMilestoneEntry } from './timesheetMilestoneEntry';
@@ -59,4 +68,54 @@ export class TimesheetEntry extends Base {
   @ManyToOne(() => TimesheetMilestoneEntry)
   @JoinColumn({ name: 'milestone_entry_id' })
   milestoneEntry: TimesheetMilestoneEntry;
+
+  // @BeforeInsert()
+  // async insert() {
+  //   let milestoneEntry = await getManager().findOne(
+  //     TimesheetMilestoneEntry,
+  //     this.milestoneEntryId,
+  //     {
+  //       relations: ['milestone', 'milestone.project'],
+  //     }
+  //   );
+
+  //   if (!milestoneEntry) {
+  //     throw new Error('Milestone not found');
+  //   }
+  //   if (!milestoneEntry.milestone.project.phase) {
+  //     throw new Error('Opportunity / Project is closed');
+  //   }
+  // }
+  // @BeforeUpdate()
+  // async update() {
+  //   let milestoneEntry = await getManager().findOne(
+  //     TimesheetMilestoneEntry,
+  //     this.milestoneEntryId,
+  //     {
+  //       relations: ['milestone', 'milestone.project'],
+  //     }
+  //   );
+  //   if (!milestoneEntry) {
+  //     throw new Error('Milestone not found');
+  //   }
+  //   if (!milestoneEntry.milestone.project.phase) {
+  //     throw new Error('Opportunity / Project is closed');
+  //   }
+  // }
+  // @BeforeRemove()
+  // async delete() {
+  //   let milestoneEntry = await getManager().findOne(
+  //     TimesheetMilestoneEntry,
+  //     this.milestoneEntryId,
+  //     {
+  //       relations: ['milestone', 'milestone.project'],
+  //     }
+  //   );
+  //   if (!milestoneEntry) {
+  //     throw new Error('Milestone not found');
+  //   }
+  //   if (!milestoneEntry.milestone.project.phase) {
+  //     throw new Error('Opportunity / Project is closed');
+  //   }
+  // }
 }

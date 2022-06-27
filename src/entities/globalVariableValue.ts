@@ -7,7 +7,13 @@ export class GlobalVariableValue extends Base {
   @Column({ name: 'global_variable_id' })
   globalVariableId: number;
 
-  @Column({ name: 'value', nullable: true })
+  @Column({
+    name: 'value',
+    nullable: true,
+    type: 'float',
+    precision: 11,
+    scale: 2,
+  })
   value: number;
 
   @Column({ name: 'start_date', nullable: true })
