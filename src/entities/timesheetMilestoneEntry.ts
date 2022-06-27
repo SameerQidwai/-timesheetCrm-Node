@@ -62,44 +62,44 @@ export class TimesheetMilestoneEntry extends Base {
     };
   }
 
-  @BeforeInsert()
-  async insert() {
-    let milestone = await getManager().findOne(Milestone, this.milestoneId, {
-      relations: ['project'],
-    });
-    console.log(
-      '🚀 ~ file: timesheetMilestoneEntry.ts ~ line 70 ~ TimesheetMilestoneEntry ~ milestone ~ milestone',
-      milestone
-    );
-    if (!milestone) {
-      throw new Error('Milestone not found');
-    }
-    if (!milestone.project.phase) {
-      throw new Error('Opportunity / Project is closed');
-    }
-  }
-  @BeforeUpdate()
-  async update() {
-    let milestone = await getManager().findOne(Milestone, this.milestoneId, {
-      relations: ['project'],
-    });
-    if (!milestone) {
-      throw new Error('Milestone not found');
-    }
-    if (!milestone.project.phase) {
-      throw new Error('Opportunity / Project is closed');
-    }
-  }
-  @BeforeRemove()
-  async delete() {
-    let milestone = await getManager().findOne(Milestone, this.milestoneId, {
-      relations: ['project'],
-    });
-    if (!milestone) {
-      throw new Error('Milestone not found');
-    }
-    if (!milestone.project.phase) {
-      throw new Error('Opportunity / Project is closed');
-    }
-  }
+  // @BeforeInsert()
+  // async insert() {
+  //   let milestone = await getManager().findOne(Milestone, this.milestoneId, {
+  //     relations: ['project'],
+  //   });
+  //   console.log(
+  //     '🚀 ~ file: timesheetMilestoneEntry.ts ~ line 70 ~ TimesheetMilestoneEntry ~ milestone ~ milestone',
+  //     milestone
+  //   );
+  //   if (!milestone) {
+  //     throw new Error('Milestone not found');
+  //   }
+  //   if (!milestone.project.phase) {
+  //     throw new Error('Opportunity / Project is closed');
+  //   }
+  // }
+  // @BeforeUpdate()
+  // async update() {
+  //   let milestone = await getManager().findOne(Milestone, this.milestoneId, {
+  //     relations: ['project'],
+  //   });
+  //   if (!milestone) {
+  //     throw new Error('Milestone not found');
+  //   }
+  //   if (!milestone.project.phase) {
+  //     throw new Error('Opportunity / Project is closed');
+  //   }
+  // }
+  // @BeforeRemove()
+  // async delete() {
+  //   let milestone = await getManager().findOne(Milestone, this.milestoneId, {
+  //     relations: ['project'],
+  //   });
+  //   if (!milestone) {
+  //     throw new Error('Milestone not found');
+  //   }
+  //   if (!milestone.project.phase) {
+  //     throw new Error('Opportunity / Project is closed');
+  //   }
+  // }
 }
