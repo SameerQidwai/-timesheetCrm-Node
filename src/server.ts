@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import * as bodyParser from 'body-parser';
 import { createConnection } from 'typeorm';
 import allRoutes from './routes';
+import moment from 'moment-timezone';
 
 const corsOptions = {
   exposedHeaders: 'Authorization',
@@ -18,7 +19,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(require('cors')(corsOptions));
 const connection = createConnection();
 
-//Seeders
+//Moment Config
+moment.tz.setDefault('Etc/UTC');
 
 //register routes
 app.use('/api/v1', allRoutes);

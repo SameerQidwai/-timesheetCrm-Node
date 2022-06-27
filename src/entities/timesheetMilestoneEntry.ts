@@ -1,4 +1,14 @@
-import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+  BeforeUpdate,
+  BeforeInsert,
+  BeforeRemove,
+  getManager,
+} from 'typeorm';
 import { Base } from './common/base';
 import { Opportunity } from './opportunity';
 import { Milestone } from './milestone';
@@ -50,5 +60,46 @@ export class TimesheetMilestoneEntry extends Base {
       startDate: startDate,
       endDate: endDate,
     };
+  }
+
+  @BeforeInsert()
+  async insert() {
+    let milestone = await getManager().findOne(Milestone, this.milestoneId, {
+      relations: ['project'],
+    });
+    console.log(
+      '🚀 ~ file: timesheetMilestoneEntry.ts ~ line 70 ~ TimesheetMilestoneEntry ~ milestone ~ milestone',
+      milestone
+    );
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+    if (!milestone.project.phase) {
+      throw new Error('Opportunity / Project is closed');
+    }
+  }
+  @BeforeUpdate()
+  async update() {
+    let milestone = await getManager().findOne(Milestone, this.milestoneId, {
+      relations: ['project'],
+    });
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+    if (!milestone.project.phase) {
+      throw new Error('Opportunity / Project is closed');
+    }
+  }
+  @BeforeRemove()
+  async delete() {
+    let milestone = await getManager().findOne(Milestone, this.milestoneId, {
+      relations: ['project'],
+    });
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+    if (!milestone.project.phase) {
+      throw new Error('Opportunity / Project is closed');
+    }
   }
 }
