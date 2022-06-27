@@ -1,4 +1,12 @@
-import { Entity, Column, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+  BeforeInsert,
+  getManager,
+} from 'typeorm';
 import { Base } from './common/base';
 import { Opportunity } from './opportunity';
 import { Employee } from './employee';
@@ -97,5 +105,17 @@ export class LeaveRequest extends Base {
       : this.approvedAt
       ? LeaveRequestStatus.APPROVED
       : LeaveRequestStatus.SUBMITTED;
+  }
+
+  @BeforeInsert()
+  async insert() {
+    if (this.workId) {
+      let work = await getManager().findOne(Opportunity, this.workId);
+      if (work) {
+        if (!work.phase) {
+          throw new Error('Opportunity / Project is closed');
+        }
+      }
+    }
   }
 }
