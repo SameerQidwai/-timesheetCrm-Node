@@ -103,12 +103,14 @@ export class HelperController {
       throw new Error('Employee Id is required');
     }
     let mode = req.query.mode?.toString() ?? '';
+    let phase = parseInt(req.query.phase?.toString() ?? '');
 
     try {
       const repository = getCustomRepository(ProjectRepository);
       let records = await repository.helperGetProjectsByUserId(
         employeeId,
-        mode
+        mode,
+        isNaN(phase) ? 1 : phase
       );
       res.status(200).json({
         success: true,
@@ -126,12 +128,16 @@ export class HelperController {
     next: NextFunction
   ) {
     let employeeId = parseInt(req.query.userId?.toString() ?? '');
+    let phase = parseInt(req.query.phase?.toString() ?? '');
     if (isNaN(employeeId) || employeeId == 0) {
       throw new Error('Employee Id is required');
     }
     try {
       const repository = getCustomRepository(ProjectRepository);
-      let records = await repository.helperGetMilestonesByUserId(employeeId);
+      let records = await repository.helperGetMilestonesByUserId(
+        employeeId,
+        isNaN(phase) ? 1 : phase
+      );
       res.status(200).json({
         success: true,
         message: 'Get All Milestones By Id',

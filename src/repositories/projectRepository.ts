@@ -1403,7 +1403,11 @@ export class ProjectRepository extends Repository<Opportunity> {
     return opportunity.milestones;
   }
 
-  async helperGetProjectsByUserId(employeeId: number, mode: string) {
+  async helperGetProjectsByUserId(
+    employeeId: number,
+    mode: string,
+    phase: number
+  ) {
     let response: any = [];
 
     let employee = await this.manager.findOne(Employee, employeeId, {
@@ -1435,32 +1439,36 @@ export class ProjectRepository extends Repository<Opportunity> {
 
     projects.map((project) => {
       let add_flag = 0;
-      if (mode == 'O' || mode == 'o' || mode == '') {
-        project.opportunityResources.map((resource) => {
-          resource.opportunityResourceAllocations.filter((allocation) => {
-            if (
-              allocation.contactPersonId === employeeContactPersonId &&
-              allocation.isMarkedAsSelected
-            ) {
-              add_flag = 1;
-            }
+      if (project.phase || phase === 1) {
+        if (mode == 'O' || mode == 'o' || mode == '') {
+          project.opportunityResources.map((resource) => {
+            resource.opportunityResourceAllocations.filter((allocation) => {
+              if (
+                allocation.contactPersonId === employeeContactPersonId &&
+                allocation.isMarkedAsSelected
+              ) {
+                add_flag = 1;
+              }
+            });
           });
-        });
-        if (add_flag === 1)
-          response.push({ value: project.id, label: project.title });
+          if (add_flag === 1)
+            response.push({ value: project.id, label: project.title });
+        }
+        if ((mode == 'M' || mode == 'm' || mode == '') && add_flag === 0) {
+          if (project.projectManagerId == employeeId) {
+            response.push({
+              value: project.id,
+              label: project.title,
+            });
+          }
+        }
       }
-      if ((mode == 'M' || mode == 'm' || mode == '') && add_flag === 0)
-        if (project.projectManagerId == employeeId)
-          response.push({
-            value: project.id,
-            label: project.title,
-          });
     });
 
     return response;
   }
 
-  async helperGetMilestonesByUserId(employeeId: number) {
+  async helperGetMilestonesByUserId(employeeId: number, phase: number) {
     let response: any = [];
 
     let employee = await this.manager.findOne(Employee, employeeId, {
@@ -1492,31 +1500,33 @@ export class ProjectRepository extends Repository<Opportunity> {
     // console.log('result', result);
 
     result.map((project) => {
-      project.milestones.map((milestone) => {
-        let add_flag = 0;
-        milestone.opportunityResources.map((resource) => {
-          resource.opportunityResourceAllocations.filter((allocation) => {
-            if (
-              allocation.contactPersonId === employeeContactPersonId &&
-              allocation.isMarkedAsSelected
-            ) {
-              add_flag = 1;
-            }
+      if (project.phase || phase == 1) {
+        project.milestones.map((milestone) => {
+          let add_flag = 0;
+          milestone.opportunityResources.map((resource) => {
+            resource.opportunityResourceAllocations.filter((allocation) => {
+              if (
+                allocation.contactPersonId === employeeContactPersonId &&
+                allocation.isMarkedAsSelected
+              ) {
+                add_flag = 1;
+              }
+            });
           });
+          if (add_flag === 1)
+            if (project.type == 2) {
+              response.push({
+                value: milestone.id,
+                label: project.title,
+              });
+            } else if (project.type == 1) {
+              response.push({
+                value: milestone.id,
+                label: `${project.title} - (${milestone.title})`,
+              });
+            }
         });
-        if (add_flag === 1)
-          if (project.type == 2) {
-            response.push({
-              value: milestone.id,
-              label: project.title,
-            });
-          } else if (project.type == 1) {
-            response.push({
-              value: milestone.id,
-              label: `${project.title} - (${milestone.title})`,
-            });
-          }
-      });
+      }
     });
 
     return response;
