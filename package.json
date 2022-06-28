@@ -20,7 +20,8 @@
     "stopCrons": "ts-node src/cronStopScript.ts",
     "instantMonthCron": "ts-node src/instantMonthCronScript.ts",
     "instantYearCron": "ts-node src/instantYearCronScript.ts",
-    "updateEmployeeBalance": "ts-node src/employeeBalanceScript.ts"
+    "updateEmployeeBalance": "ts-node src/employeeBalanceScript.ts",
+    "imexBaseSeed": "ts-node src/importsExportsSeed.ts"
   },
   "author": "",
   "license": "ISC",
