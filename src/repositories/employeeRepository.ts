@@ -559,7 +559,8 @@ export class EmployeeRepository extends Repository<Employee> {
         moment().isBetween(
           moment(dateCarrier.startDate),
           moment(dateCarrier.endDate),
-          'date'
+          'date',
+          '[]'
         )
       ) {
         currentContract.push(contract);
@@ -928,10 +929,8 @@ export class EmployeeRepository extends Repository<Employee> {
       let Obj: any = {};
       let cpRole: string = '(Contact Person)';
       if (cp.contactPersonOrganizations.length > 0) {
-        //TODO: FILTER CONTACTPERSON AND EMPLOYEE BASED ON API
         let contactPersonActiveAssociation =
           cp.contactPersonOrganizations.filter((org) => org.status == true)[0];
-        //? ONLY EMPLOYEES ARE BEING FILTERED DOWN
         if (contactPersonActiveAssociation) {
           cpRole =
             contactPersonActiveAssociation.organizationId == 1
@@ -1219,8 +1218,27 @@ export class EmployeeRepository extends Repository<Employee> {
     return contactPerson.standardSkillStandardLevels;
   }
 
-  async costCalculator(id: number) {
-    let employee = await this.findOne(id, {
+  async costCalculator(id: number, searchIn: boolean) {
+    let searchId: number = id;
+    if (searchIn) {
+      let contactPerson = await this.manager.findOne(ContactPerson, id, {
+        relations: [
+          'contactPersonOrganizations',
+          'contactPersonOrganizations.employee',
+        ],
+      });
+      if (!contactPerson) {
+        throw new Error('Employee not found');
+      }
+      let emp = contactPerson.getEmployee;
+
+      if (!emp) {
+        throw new Error('Employee not found');
+      }
+      searchId = emp.id;
+    }
+
+    let employee = await this.findOne(searchId, {
       relations: [
         'contactPersonOrganization',
         'contactPersonOrganization.contactPerson',
@@ -1232,148 +1250,150 @@ export class EmployeeRepository extends Repository<Employee> {
       ],
     });
 
-    let currentContract: EmploymentContract[] = [];
-
-    employee?.employmentContracts.forEach((el) => {
-      let dateCarrier = {
-        startDate: el.startDate,
-        endDate: el.endDate,
-      };
-
-      if (dateCarrier.startDate == null) {
-        dateCarrier.startDate = moment().subtract(100, 'years').toDate();
-      }
-      if (dateCarrier.endDate == null) {
-        dateCarrier.endDate = moment().add(100, 'years').toDate();
-      }
-      if (
-        moment().isBetween(
-          moment(dateCarrier.startDate),
-          moment(dateCarrier.endDate),
-          'date'
-        )
-      ) {
-        currentContract.push(el);
-      }
-    });
-
-    let stateName: string | undefined =
-      employee?.contactPersonOrganization.contactPerson?.state?.label;
-
-    let variables: any = [
-      { name: 'Superannuation' },
-      { name: stateName },
-      { name: 'WorkCover' },
-      { name: 'Public Hoildays' },
-    ];
-    employee?.leaveRequestBalances.forEach((el) => {
-      variables.push({ name: el.type.leaveRequestType.label });
-    });
-
-    let golobalVariables: any = await this.manager.find(GlobalVariableLabel, {
-      where: variables,
-      relations: ['values'],
-    });
-
-    golobalVariables = golobalVariables.map((variable: any) => {
-      let value: any = variable.values?.[0];
-      return {
-        name: variable.name,
-        variableId: variable.id,
-        valueId: value.id,
-        value: value.value,
-      };
-    });
-
-    let find_superannuation = golobalVariables.findIndex(
-      (el: any) => el.name === 'Superannuation'
-    );
-    let find_state = golobalVariables.findIndex(
-      (el: any) => el.name === stateName
-    );
-    let find_workCover = golobalVariables.findIndex(
-      (el: any) => el.name === 'WorkCover'
-    );
-    let find_publicHoildays = golobalVariables.findIndex(
-      (el: any) => el.name === 'Public Hoildays'
-    );
-
-    golobalVariables = this._swapElements(
-      golobalVariables,
-      find_superannuation,
-      find_state,
-      find_workCover,
-      find_publicHoildays
-    );
-
-    let calendar = await this.manager.find(CalendarHoliday);
-
-    let holidays: any = [];
-
-    if (calendar[0]) {
-      calendar.forEach((holiday) => {
-        holidays.push(moment(holiday.date).format('M D YYYY'));
-      });
+    if (!employee) {
+      throw new Error('Employee not found');
     }
 
-    return { contract: currentContract[0], golobalVariables, holidays };
-  }
+    let currentContract: any = employee.getActiveContract;
 
-  //!--------------------------- HELPER FUNCTIONS ----------------------------//
+    if (!currentContract) {
+      throw new Error('No Active Contract');
+    }
 
-  /**NEED TO CHANGE THI FUNXTION ASAP.... */
-  _swapElements(
-    array: any,
-    find_1: number,
-    find_2: number,
-    find_3: number,
-    find_4: number
-  ) {
-    //replacing superannuation and state so they will always at position 0 and 1
-    //replacing Work cover and Public holidays
+    if (!currentContract.noOfHours) {
+      throw new Error('Hours not defined');
+    }
 
-    let last_array = array.length - 1;
-    /** */
-    let on_index_0 = array[0];
-    let on_index_find_1 = array[find_1];
-    // console.log(find_1, array[find_1])
-    array[0] = on_index_find_1;
-    array[find_1] = on_index_0;
+    if (!currentContract.noOfDays) {
+      throw new Error('Days not defined');
+    }
 
-    let on_index_1 = array[1];
-    let on_index_find_2 = array[find_2];
-    // console.log(find_2, array[find_2])
-    array[1] = on_index_find_2;
-    array[find_2] = on_index_1;
+    /** doing neccesary calculation */
+    currentContract.dailyHours =
+      currentContract?.noOfHours / currentContract?.noOfDays;
+    currentContract.hourlyBaseRate =
+      currentContract?.type === 1
+        ? currentContract?.remunerationAmount
+        : currentContract?.remunerationAmount / 52 / currentContract?.noOfHours;
+    console.log(
+      currentContract.dailyHours,
+      currentContract.hourlyBaseRate,
+      currentContract?.remunerationAmount
+    );
 
-    let on_index_2 = array[2];
-    let on_index_find_3 = array[find_3];
-    // console.log(find_3, array[find_3])
-    array[2] = on_index_find_3;
-    array[find_3] = on_index_2;
+    let buyRate: any = 0;
+    let setGolobalVariables: any = [];
+    // if coontract is found
+    if (currentContract?.hourlyBaseRate) {
+      let stateName: any =
+        employee?.contactPersonOrganization.contactPerson?.state?.label;
 
-    let on_index_last = array[last_array];
-    let on_index_find_4 = array[find_4];
-    // console.log(find_4, array[find_4])
-    array[last_array] = on_index_find_4;
-    array[find_4] = on_index_last;
-    // console.log(last_array, array[last_array])
+      let variables: any = [
+        { name: 'Superannuation' },
+        { name: stateName },
+        { name: 'WorkCover' },
+      ];
 
-    return array;
+      if (currentContract?.type !== 1) {
+        variables.push({ name: 'Public Holidays' });
+      }
+
+      employee?.leaveRequestBalances.forEach((el) => {
+        variables.push({ name: el.type.leaveRequestType.label });
+      });
+
+      let golobalVariables: any = await this.manager.find(GlobalVariableLabel, {
+        where: variables,
+        relations: ['values'],
+      });
+
+      let sortIndex: any = {
+        Superannuation: 0,
+        [stateName]: 1,
+        WorkCover: 2,
+        'Public Holidays': golobalVariables.length - 1,
+      };
+
+      /**Sorting Data As our Need */
+      golobalVariables.forEach((variable: any, index: number) => {
+        let value: any = variable.values?.[0];
+        let manipulateVariable: any = {
+          name: variable.name,
+          variableId: variable.id,
+          valueId: value.id,
+          value: value.value,
+        };
+
+        /** Checking if element is from a sort variables */
+        if (sortIndex[variable.name] >= 0) {
+          /** if index and sortIndex has same index means this is where sort element belong */
+          if (index === sortIndex[variable.name]) {
+            setGolobalVariables.push(manipulateVariable);
+          } else {
+            /**checking if index has pass sort variable index means the element is already been manipulated */
+            if (index > sortIndex[variable.name]) {
+              /** Saving element to be sawp as temp variable */
+              let swapElement = setGolobalVariables[sortIndex[variable.name]];
+              /** change index with sorted element */
+
+              setGolobalVariables[sortIndex[variable.name]] =
+                manipulateVariable;
+              /** returning the already manipulated element to this index */
+              if (swapElement) {
+                setGolobalVariables.push(swapElement);
+              }
+              /**checking if index has not yet passed sort variable index means the element will later get sort and just swap it */
+            } else if (index < sortIndex[variable.name]) {
+              /** returning the not manipulated element to sort variable index */
+
+              setGolobalVariables[sortIndex[variable.name]] =
+                manipulateVariable;
+              /** returning the manipulated element to this index */
+            }
+          }
+        } else {
+          setGolobalVariables.push(manipulateVariable);
+        }
+      });
+
+      //** Calculation to get cost Rate for the employee **//
+      buyRate = currentContract?.hourlyBaseRate;
+      // console.log(setGolobalVariables);
+
+      // console.log(setGolobalVariables)
+      setGolobalVariables = setGolobalVariables.map(
+        (el: any, index: number) => {
+          if (index === 0) {
+            el.amount = (currentContract?.hourlyBaseRate * el?.value) / 100;
+          } else {
+            // console.log(el.name, el.value);
+
+            el.amount =
+              ((currentContract?.hourlyBaseRate +
+                setGolobalVariables?.[0].amount) *
+                el.value) /
+              100;
+          }
+          el.apply = 'Yes';
+
+          buyRate += el.amount;
+          return el;
+        }
+      );
+      /**let calendar = await this.manager.find(CalendarHoliday);
+
+      let holidays: any = [];
+
+      if (calendar[0]) {
+        calendar.forEach((holiday) => {
+          holidays.push(moment(holiday.date).format('M D YYYY'));
+        });
+      }**/
+    }
+    return {
+      contract: currentContract,
+      golobalVariables: setGolobalVariables,
+      employeeBuyRate: buyRate,
+    };
   }
 }
-
-/**
- * function swapElements(array, source, dest) {
-    return source === dest ? 
-        array 
-    : 
-        array.map((item, index) => index === source ? 
-            array[dest] 
-        : 
-            index === dest ? 
-                array[source] 
-            : item
-        );
-}
- */

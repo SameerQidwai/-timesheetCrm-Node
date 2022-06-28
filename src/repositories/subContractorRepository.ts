@@ -444,50 +444,101 @@ export class SubContractorRepository extends Repository<Employee> {
     });
   }
 
-  async costCalculator(id: number){
-    let subContractor = await this.findOne(id,{
-      relations:[
+  async costCalculator(id: number, searchIn: boolean) {
+    let searchId: number = id;
+
+    if (searchIn) {
+      let contactPerson = await this.manager.findOne(ContactPerson, id, {
+        relations: [
+          'contactPersonOrganizations',
+          'contactPersonOrganizations.employee',
+        ],
+      });
+      if (!contactPerson) {
+        throw new Error('Employee not found');
+      }
+      let sub = contactPerson.getEmployee;
+
+      if (!sub) {
+        throw new Error('Employee not found');
+      }
+      searchId = sub.id;
+    }
+    let subContractor = await this.findOne(searchId, {
+      relations: [
         'contactPersonOrganization',
         'contactPersonOrganization.contactPerson',
         'contactPersonOrganization.contactPerson.state',
-        'employmentContracts'
-    ]
-    })
-    
-    let currentContract: EmploymentContract[]= [];
+        'employmentContracts',
+      ],
+    });
+    if (!subContractor) {
+      throw new Error('Employee not found');
+    }
 
-    subContractor?.employmentContracts.forEach(el=> {
-      let dateCarrier = {
-        startDate: el.startDate,
-        endDate: el.endDate,
+    let currentContract: any = subContractor.getActiveContract;
+
+    if (!currentContract) {
+      throw new Error('No Active Contract');
+    }
+
+    if (!currentContract.noOfHours) {
+      throw new Error('Hours not defined');
+    }
+
+    if (!currentContract.noOfDays) {
+      throw new Error('Days not defined');
+    }
+
+    currentContract.dailyHours =
+      currentContract?.noOfHours / currentContract?.noOfDays;
+    currentContract.hourlyBaseRate = //HOURLY RATE
+      currentContract.remunerationAmountPer === 1
+        ? currentContract?.remunerationAmount
+        : //DAILY RATE
+        currentContract.remunerationAmountPer === 2
+        ? currentContract?.remunerationAmount * currentContract.dailyHours
+        : //WEEKLY RATE
+        currentContract.remunerationAmountPer === 3
+        ? currentContract?.remunerationAmount * currentContract?.noOfHours
+        : //FORTNIGLTY RATE
+        currentContract.remunerationAmountPer === 4
+        ? currentContract?.remunerationAmount *
+          (currentContract?.dailyHours * 11)
+        : //MONTHLY RATE
+          currentContract.remunerationAmountPer === 5 &&
+          currentContract?.remunerationAmount *
+            (currentContract?.dailyHours * 22);
+    let buyRate: any = 0;
+    let golobalVariables: any = [];
+    // if (currentContract?.hourlyBaseRate){
+    let stateName: string | undefined =
+      subContractor?.contactPersonOrganization.contactPerson?.state?.label;
+
+    golobalVariables = await this.manager.find(GlobalVariableLabel, {
+      where: { name: stateName },
+      relations: ['values'],
+    });
+
+    buyRate = currentContract?.hourlyBaseRate;
+    golobalVariables = golobalVariables.map((variable: any) => {
+      let value: any = variable?.values?.[0];
+      buyRate += (currentContract?.hourlyBaseRate * value.value) / 100;
+      return {
+        name: variable.name,
+        variableId: variable.id,
+        valueId: value.id,
+        value: value.value,
+        apply: 'Yes',
+        amount: (currentContract?.hourlyBaseRate * value.value) / 100,
       };
+    });
+    // }
 
-      if (dateCarrier.startDate == null) {
-        dateCarrier.startDate = moment().subtract(100, 'years').toDate();
-      }
-      if (dateCarrier.endDate == null) {
-        dateCarrier.endDate = moment().add(100, 'years').toDate();
-      }
-      if ( moment().isBetween( moment(dateCarrier.startDate), moment(dateCarrier.endDate), 'date' ) ) {
-        currentContract.push(el);
-      }
-    })
-
-    let stateName: string| undefined = subContractor?.contactPersonOrganization.contactPerson?.state?.label
-
-    
-    let golobalVariables: any = await this.manager.find(GlobalVariableLabel,
-      {
-      where : {name: stateName}, 
-      relations: ['values']
-    })
-
-    golobalVariables = golobalVariables.map((variable : any) => {
-      let value: any = variable.values?.[0]
-      return {name: variable.name, variableId: variable.id, valueId: value.id, value: value.value }
-    })
-    
-    return {contract: currentContract[0], golobalVariables}
+    return {
+      contract: currentContract,
+      golobalVariables,
+      employeeBuyRate: buyRate,
+    };
   }
-
 }

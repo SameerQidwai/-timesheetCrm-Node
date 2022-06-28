@@ -995,6 +995,7 @@ export class ProjectRepository extends Repository<Opportunity> {
         'milestones.opportunityResources.panelSkillStandardLevel',
         'milestones.opportunityResources.opportunityResourceAllocations',
         'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
+        'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations',
       ],
     });
     if (!project) {
@@ -1012,6 +1013,24 @@ export class ProjectRepository extends Repository<Opportunity> {
       resource.opportunityResourceAllocations.filter((x) => {
         return x.isMarkedAsSelected;
       });
+
+    let cpRole = 'Contact Person';
+    let allocation = resource.opportunityResourceAllocations[0];
+    let cp = allocation.contactPerson;
+    if (cp.contactPersonOrganizations.length > 0) {
+      let contactPersonActiveAssociation = cp.contactPersonOrganizations.filter(
+        (org) => org.status == true
+      )[0];
+      if (contactPersonActiveAssociation) {
+        cpRole =
+          contactPersonActiveAssociation.organizationId == 1
+            ? 'Employee'
+            : contactPersonActiveAssociation.organizationId != 1
+            ? 'Sub Contractor'
+            : 'Contact Person';
+        (resource.opportunityResourceAllocations[0] as any).role = cpRole;
+      }
+    }
     return resource;
   }
 
@@ -1125,6 +1144,7 @@ export class ProjectRepository extends Repository<Opportunity> {
         'milestones.opportunityResources.panelSkillStandardLevel',
         'milestones.opportunityResources.opportunityResourceAllocations',
         'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
+        'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations',
       ],
     });
 
@@ -1147,6 +1167,32 @@ export class ProjectRepository extends Repository<Opportunity> {
           }),
       };
     });
+
+    let cpRole: string = 'Contact Person';
+    selectedResources.forEach((resource, rindex) => {
+      resource.opportunityResourceAllocations.forEach((allocation, aindex) => {
+        let cp = allocation.contactPerson;
+        if (cp.contactPersonOrganizations.length > 0) {
+          let contactPersonActiveAssociation =
+            cp.contactPersonOrganizations.filter(
+              (org) => org.status == true
+            )[0];
+          if (contactPersonActiveAssociation) {
+            cpRole =
+              contactPersonActiveAssociation.organizationId == 1
+                ? 'Employee'
+                : contactPersonActiveAssociation.organizationId != 1
+                ? 'Sub Contractor'
+                : 'Contact Person';
+            (
+              milestone.opportunityResources[rindex]
+                .opportunityResourceAllocations[aindex] as any
+            ).role = cpRole;
+          }
+        }
+      });
+    });
+
     return selectedResources;
   }
 
@@ -1281,6 +1327,42 @@ export class ProjectRepository extends Repository<Opportunity> {
     return await this.manager.softDelete(PurchaseOrder, deletedOrder);
   }
 
+  async markProjectAsOpen(id: number): Promise<any | undefined> {
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      let projectObj = await transactionalEntityManager.findOne(
+        Opportunity,
+        id
+      );
+
+      if (!projectObj) {
+        throw new Error('Opportunity not found');
+      }
+
+      projectObj.phase = true;
+
+      await transactionalEntityManager.save(projectObj);
+    });
+    return this.findOneCustom(id);
+  }
+
+  async markProjectAsClosed(id: number): Promise<any | undefined> {
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      let projectObj = await transactionalEntityManager.findOne(
+        Opportunity,
+        id
+      );
+
+      if (!projectObj) {
+        throw new Error('Opportunity not found');
+      }
+
+      projectObj.phase = false;
+
+      await transactionalEntityManager.save(projectObj);
+    });
+    return this.findOneCustom(id);
+  }
+
   async getHierarchy(projectId: number): Promise<any | undefined> {
     if (!projectId || isNaN(projectId)) {
       throw new Error('Opportunity not found ');
@@ -1321,7 +1403,11 @@ export class ProjectRepository extends Repository<Opportunity> {
     return opportunity.milestones;
   }
 
-  async helperGetProjectsByUserId(employeeId: number, mode: string) {
+  async helperGetProjectsByUserId(
+    employeeId: number,
+    mode: string,
+    phase: number
+  ) {
     let response: any = [];
 
     let employee = await this.manager.findOne(Employee, employeeId, {
@@ -1353,32 +1439,36 @@ export class ProjectRepository extends Repository<Opportunity> {
 
     projects.map((project) => {
       let add_flag = 0;
-      if (mode == 'O' || mode == 'o' || mode == '') {
-        project.opportunityResources.map((resource) => {
-          resource.opportunityResourceAllocations.filter((allocation) => {
-            if (
-              allocation.contactPersonId === employeeContactPersonId &&
-              allocation.isMarkedAsSelected
-            ) {
-              add_flag = 1;
-            }
+      if (project.phase || phase === 1) {
+        if (mode == 'O' || mode == 'o' || mode == '') {
+          project.opportunityResources.map((resource) => {
+            resource.opportunityResourceAllocations.filter((allocation) => {
+              if (
+                allocation.contactPersonId === employeeContactPersonId &&
+                allocation.isMarkedAsSelected
+              ) {
+                add_flag = 1;
+              }
+            });
           });
-        });
-        if (add_flag === 1)
-          response.push({ value: project.id, label: project.title });
+          if (add_flag === 1)
+            response.push({ value: project.id, label: project.title });
+        }
+        if ((mode == 'M' || mode == 'm' || mode == '') && add_flag === 0) {
+          if (project.projectManagerId == employeeId) {
+            response.push({
+              value: project.id,
+              label: project.title,
+            });
+          }
+        }
       }
-      if ((mode == 'M' || mode == 'm' || mode == '') && add_flag === 0)
-        if (project.projectManagerId == employeeId)
-          response.push({
-            value: project.id,
-            label: project.title,
-          });
     });
 
     return response;
   }
 
-  async helperGetMilestonesByUserId(employeeId: number) {
+  async helperGetMilestonesByUserId(employeeId: number, phase: number) {
     let response: any = [];
 
     let employee = await this.manager.findOne(Employee, employeeId, {
@@ -1410,31 +1500,33 @@ export class ProjectRepository extends Repository<Opportunity> {
     // console.log('result', result);
 
     result.map((project) => {
-      project.milestones.map((milestone) => {
-        let add_flag = 0;
-        milestone.opportunityResources.map((resource) => {
-          resource.opportunityResourceAllocations.filter((allocation) => {
-            if (
-              allocation.contactPersonId === employeeContactPersonId &&
-              allocation.isMarkedAsSelected
-            ) {
-              add_flag = 1;
-            }
+      if (project.phase || phase == 1) {
+        project.milestones.map((milestone) => {
+          let add_flag = 0;
+          milestone.opportunityResources.map((resource) => {
+            resource.opportunityResourceAllocations.filter((allocation) => {
+              if (
+                allocation.contactPersonId === employeeContactPersonId &&
+                allocation.isMarkedAsSelected
+              ) {
+                add_flag = 1;
+              }
+            });
           });
+          if (add_flag === 1)
+            if (project.type == 2) {
+              response.push({
+                value: milestone.id,
+                label: project.title,
+              });
+            } else if (project.type == 1) {
+              response.push({
+                value: milestone.id,
+                label: `${project.title} - (${milestone.title})`,
+              });
+            }
         });
-        if (add_flag === 1)
-          if (project.type == 2) {
-            response.push({
-              value: milestone.id,
-              label: project.title,
-            });
-          } else if (project.type == 1) {
-            response.push({
-              value: milestone.id,
-              label: `${project.title} - (${milestone.title})`,
-            });
-          }
-      });
+      }
     });
 
     return response;
@@ -1561,14 +1653,14 @@ export class ProjectRepository extends Repository<Opportunity> {
           milestone.project.type == ProjectType.MILESTONE_BASE
         ) {
           throw new Error(
-            'Opportunity Start Date cannot be after Milestone Start Date'
+            'Project Start Date cannot be after Milestone Start Date'
           );
         }
       }
       for (let poisition of resources) {
         if (moment(startDate).isAfter(moment(poisition.startDate), 'date')) {
           throw new Error(
-            'Opportunity Start Date cannot be after Resource / Position Start Date'
+            'Project Start Date cannot be after Resource / Position Start Date'
           );
         }
       }
@@ -1582,7 +1674,7 @@ export class ProjectRepository extends Repository<Opportunity> {
             )
           ) {
             throw new Error(
-              'Milestone Start Date cannot be After Timesheet Start Date'
+              'Project Start Date cannot be After Timesheet Start Date'
             );
           }
         }
@@ -1592,7 +1684,7 @@ export class ProjectRepository extends Repository<Opportunity> {
           let details = leaveRequest.getEntriesDetails;
           if (moment(startDate).isAfter(moment(details.startDate), 'date')) {
             throw new Error(
-              'Milestone Start Date cannot be After Leave Request Start Date'
+              'Project Start Date cannot be After Leave Request Start Date'
             );
           }
         }
@@ -1605,14 +1697,14 @@ export class ProjectRepository extends Repository<Opportunity> {
           milestone.project.type == ProjectType.MILESTONE_BASE
         ) {
           throw new Error(
-            'Opportunity End Date cannot be before Milestone End Date'
+            'Project End Date cannot be before Milestone End Date'
           );
         }
       }
       for (let poisition of resources) {
         if (moment(endDate).isBefore(moment(poisition.endDate), 'date')) {
           throw new Error(
-            'Opportunity End Date cannot be before Resource / Position End Date'
+            'Project End Date cannot be before Resource / Position End Date'
           );
         }
       }
@@ -1626,7 +1718,7 @@ export class ProjectRepository extends Repository<Opportunity> {
             )
           ) {
             throw new Error(
-              'Milestone End Date cannot be Before Timesheet End Date'
+              'Project End Date cannot be Before Timesheet End Date'
             );
           }
         }
@@ -1636,7 +1728,7 @@ export class ProjectRepository extends Repository<Opportunity> {
           let details = leaveRequest.getEntriesDetails;
           if (moment(endDate).isBefore(moment(details.endDate), 'date')) {
             throw new Error(
-              'Milestone End Date cannot be Before Leave Request End Date'
+              'Project End Date cannot be Before Leave Request End Date'
             );
           }
         }
@@ -1691,20 +1783,29 @@ export class ProjectRepository extends Repository<Opportunity> {
         }
       }
       for (let entry of timesheetMilestoneEntries) {
-        if (
-          moment(startDate).isAfter(moment(entry.timesheet.startDate), 'date')
-        ) {
-          throw new Error(
-            'Milestone Start Date cannot be After Timesheet Start Date'
-          );
+        if (entry.entries.length) {
+          let details = entry.getEntriesDetails;
+          if (
+            moment(endDate).isBefore(
+              moment(details.endDate, 'DD-MM-YYYY'),
+              'date'
+            )
+          ) {
+            throw new Error(
+              'Milestone End Date cannot be Before Timesheet End Date'
+            );
+          }
         }
       }
+
       for (let leaveRequest of leaveRequests) {
-        let details = leaveRequest.getEntriesDetails;
-        if (moment(startDate).isAfter(moment(details.startDate), 'date')) {
-          throw new Error(
-            'Milestone Start Date cannot be After Leave Request Start Date'
-          );
+        if (leaveRequest.entries.length) {
+          let details = leaveRequest.getEntriesDetails;
+          if (moment(startDate).isBefore(moment(details.startDate), 'date')) {
+            throw new Error(
+              'Milestone End Date cannot be Before Leave Request End Date'
+            );
+          }
         }
       }
     }
@@ -1741,11 +1842,13 @@ export class ProjectRepository extends Repository<Opportunity> {
         }
       }
       for (let leaveRequest of leaveRequests) {
-        let details = leaveRequest.getEntriesDetails;
-        if (moment(endDate).isBefore(moment(details.endDate), 'date')) {
-          throw new Error(
-            'Milestone End Date cannot be Before Timesheet End Date'
-          );
+        if (leaveRequest.entries.length) {
+          let details = leaveRequest.getEntriesDetails;
+          if (moment(endDate).isBefore(moment(details.endDate), 'date')) {
+            throw new Error(
+              'Project End Date cannot be Before Leave Request End Date'
+            );
+          }
         }
       }
     }

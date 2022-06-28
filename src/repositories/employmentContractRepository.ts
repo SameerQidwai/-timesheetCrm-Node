@@ -3,6 +3,7 @@ import { EntityRepository, Repository } from 'typeorm';
 import { EmploymentContract } from './../entities/employmentContract';
 import { Employee } from './../entities/employee';
 import { LeaveRequestBalance } from '../entities/leaveRequestBalance';
+import moment from 'moment';
 
 @EntityRepository(EmploymentContract)
 export class EmploymentContractRepository extends Repository<EmploymentContract> {
@@ -18,17 +19,29 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
           throw new Error('Employee not found');
         }
 
+        let employeeContractStartDate = moment(
+          employmentContract.startDate
+        ).format('YYYY-MM-DD');
+        let employeeContractEndDate;
+        if (employmentContract.endDate != null) {
+          employeeContractEndDate = moment(employmentContract.endDate).format(
+            'YYYY-MM-DD'
+          );
+        } else {
+          employeeContractEndDate = null;
+        }
+
         // check any overlapping contract
         let { count } = await this.createQueryBuilder('employmentContract')
           .select('Count(*)', 'count')
           .where('employee_id = ' + employmentContract.employeeId)
           .andWhere(
             '(end_date is NULL OR FROM_UNIXTIME(' +
-              employmentContract.startDate +
+              employeeContractStartDate +
               '/1000) <= end_date) AND (' +
-              (employmentContract.endDate || 'NULL') +
+              (employeeContractEndDate || 'NULL') +
               ' is NULL OR start_date <= FROM_UNIXTIME(' +
-              employmentContract.endDate +
+              employeeContractEndDate +
               '/1000))'
           )
           .getRawOne();
@@ -43,9 +56,11 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
         obj.comments = employmentContract.comments;
         obj.payslipEmail = employmentContract.payslipEmail;
         obj.payFrequency = employmentContract.payFrequency;
-        obj.startDate = new Date(employmentContract.startDate);
-        if (employmentContract.endDate) {
-          obj.endDate = new Date(employmentContract.endDate);
+        obj.startDate = new Date(employeeContractStartDate);
+        if (employeeContractEndDate) {
+          obj.endDate = new Date(employeeContractEndDate);
+        } else {
+          (obj.endDate as any) = null;
         }
         obj.type = employmentContract.type;
         obj.noOfHours = employmentContract.noOfHours;
@@ -134,17 +149,29 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
           throw new Error('Employee not found');
         }
 
+        let employeeContractStartDate = moment(
+          employmentContract.startDate
+        ).format('YYYY-MM-DD');
+        let employeeContractEndDate;
+        if (employmentContract.endDate != null) {
+          employeeContractEndDate = moment(employmentContract.endDate).format(
+            'YYYY-MM-DD'
+          );
+        } else {
+          employeeContractEndDate = null;
+        }
+
         // check any overlapping contract
         let { count } = await this.createQueryBuilder('employmentContract')
           .select('Count(*)', 'count')
           .where('(employee_id = ' + employee.id + ' AND id <> ' + id + ')')
           .andWhere(
             '(end_date is NULL OR FROM_UNIXTIME(' +
-              employmentContract.startDate +
+              employeeContractStartDate +
               '/1000) <= end_date) AND (' +
-              (employmentContract.endDate || 'NULL') +
+              (employeeContractEndDate || 'NULL') +
               ' is NULL OR start_date <= FROM_UNIXTIME(' +
-              employmentContract.endDate +
+              employeeContractEndDate +
               '/1000))'
           )
           .getRawOne();
@@ -159,11 +186,11 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
         employmentContractObj.comments = employmentContract.comments;
         employmentContractObj.payslipEmail = employmentContract.payslipEmail;
         employmentContractObj.payFrequency = employmentContract.payFrequency;
-        employmentContractObj.startDate = new Date(
-          employmentContract.startDate
-        );
-        if (employmentContract.endDate) {
-          employmentContractObj.endDate = new Date(employmentContract.endDate);
+        employmentContractObj.startDate = new Date(employeeContractStartDate);
+        if (employeeContractEndDate) {
+          employmentContractObj.endDate = new Date(employeeContractEndDate);
+        } else {
+          (employmentContractObj.endDate as any) = null;
         }
         employmentContractObj.type = employmentContract.type;
         employmentContractObj.noOfHours = employmentContract.noOfHours;
