@@ -132,6 +132,10 @@ export class ExportController {
         throw new Error('Type is Required');
       }
       let entities, name;
+      let employees = await manager.find(Employee, {
+        relations: ['contactPersonOrganization'],
+      });
+
       switch (type) {
         case Entities.ORGANIZATION:
           entities = await manager.find(Organization);
@@ -156,11 +160,17 @@ export class ExportController {
           name = ExportFileName.OPPORTUNITY;
           break;
         case Entities.EMPLOYEE:
-          entities = await manager.find(Employee, { where: { roleId: 2 } });
+          entities = employees.filter(
+            (emp) => emp.contactPersonOrganization.organizationId === 1
+          );
+          // entities = await manager.find(Employee, { where: { roleId: 2 } });
           name = ExportFileName.EMPLOYEE;
           break;
         case Entities.SUB_CONTRACTOR:
-          entities = await manager.find(Employee, { where: { roleId: 3 } });
+          entities = employees.filter(
+            (emp) => emp.contactPersonOrganization.organizationId !== 1
+          );
+          // entities = await manager.find(Employee, { where: { roleId: 3 } });
           name = ExportFileName.SUB_CONTRACTOR;
           break;
         default:

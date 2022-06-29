@@ -10,6 +10,7 @@ import { Opportunity } from '../entities/opportunity';
 import { ContactPerson } from '../entities/contactPerson';
 import { DataImport } from '../entities/dataImport';
 import moment from 'moment';
+import { ContactPersonOrganization } from '../entities/contactPersonOrganization';
 
 export class ImportController {
   async import(req: Request, res: Response, next: NextFunction) {
@@ -20,7 +21,7 @@ export class ImportController {
         throw new Error('Type is Required');
       }
 
-      let workbook = xlsx.read(req.file.buffer),
+      let workbook = xlsx.read(req.file.buffer, { cellDates: true }),
         jsonData = xlsx.utils.sheet_to_json(
           workbook.Sheets[workbook.SheetNames[0]]
         ),
@@ -46,68 +47,13 @@ export class ImportController {
           for (let entry of jsonData as Organization[]) {
             try {
               if (entry.id) {
-                if (entry.id == 87) {
-                  console.log(
-                    '🚀 ~ file: importController.ts ~ line 50 ~ ImportController ~ import ~ entry',
-                    entry
-                  );
-                }
                 let org = await manager.findOne(Organization, entry.id);
                 org = entry;
-                org.createdAt = moment(
-                  entry.createdAt,
-                  'MM/DD/YYYY H:i:s A'
-                ).toDate();
-                org.updatedAt = moment(
-                  entry.updatedAt,
-                  'MM/DD/YYYY H:i:s A'
-                ).toDate();
-                (org as any).deletedAt = entry.deletedAt
-                  ? moment(entry.deletedAt, 'MM/DD/YYYY H:i:s A').toDate()
-                  : null;
-                (org as any).piInsuranceExpiry = entry.piInsuranceExpiry
-                  ? moment(
-                      entry.piInsuranceExpiry,
-                      'MM/DD/YYYY H:i:s A'
-                    ).toDate()
-                  : null;
-                (org as any).plInsuranceExpiry = entry.plInsuranceExpiry
-                  ? moment(
-                      entry.plInsuranceExpiry,
-                      'MM/DD/YYYY H:i:s A'
-                    ).toDate()
-                  : null;
-                (org as any).wcInsuranceExpiry = entry.wcInsuranceExpiry
-                  ? moment(
-                      entry.wcInsuranceExpiry,
-                      'MM/DD/YYYY H:i:s A'
-                    ).toDate()
-                  : null;
                 await manager.save(Organization, org);
                 (entry as any).logStatus = 'UPDATED';
               } else {
                 let org = new Organization();
                 org = entry;
-                org.createdAt = moment().toDate();
-                org.updatedAt = moment().toDate();
-                (org as any).piInsuranceExpiry = entry.piInsuranceExpiry
-                  ? moment(
-                      entry.piInsuranceExpiry,
-                      'MM/DD/YYYY H:i:s A'
-                    ).toDate()
-                  : null;
-                (org as any).plInsuranceExpiry = entry.plInsuranceExpiry
-                  ? moment(
-                      entry.plInsuranceExpiry,
-                      'MM/DD/YYYY H:i:s A'
-                    ).toDate()
-                  : null;
-                (org as any).wcInsuranceExpiry = entry.wcInsuranceExpiry
-                  ? moment(
-                      entry.wcInsuranceExpiry,
-                      'MM/DD/YYYY H:i:s A'
-                    ).toDate()
-                  : null;
                 await manager.save(Organization, org);
                 (entry as any).logStatus = 'CREATED';
               }
@@ -123,15 +69,26 @@ export class ImportController {
           for (let entry of jsonData as ContactPerson[]) {
             try {
               if (entry.id) {
-                let org = await manager.findOne(ContactPerson, entry.id);
-                org = entry;
-                await manager.save(ContactPerson, org);
-                (entry as any).logStatus = 'CREATED';
+                // let cp = await manager.findOne(ContactPerson, entry.id);
+                // cp = entry;
+                // await manager.save(ContactPerson, cp);
+                (entry as any).logStatus = 'SKIPPED';
               } else {
-                let org = new ContactPerson();
-                org = entry;
-                await manager.save(ContactPerson, org);
-                (entry as any).logStatus = 'UPDATED';
+                let contactPersonObj = new ContactPerson();
+                contactPersonObj = entry;
+                let contactPerson = await manager.save(
+                  ContactPerson,
+                  contactPersonObj
+                );
+                if ((entry as any).organizationId) {
+                  let asso = new ContactPersonOrganization();
+                  asso.contactPersonId = contactPerson.id;
+                  asso.organizationId = (entry as any).organizationId;
+                  asso.startDate = moment().toDate();
+                  asso.status = true;
+                  await manager.save(ContactPersonOrganization, asso);
+                }
+                (entry as any).logStatus = 'CREATED';
               }
             } catch (e) {
               (entry as any).logStatus = 'FAILED';
@@ -145,15 +102,15 @@ export class ImportController {
           for (let entry of jsonData as Opportunity[]) {
             try {
               if (entry.id) {
-                let org = await manager.findOne(Opportunity, entry.id);
-                org = entry;
-                await manager.save(Opportunity, org);
-                (entry as any).logStatus = 'CREATED';
+                // let org = await manager.findOne(Opportunity, entry.id);
+                // org = entry;
+                // await manager.save(Opportunity, org);
+                (entry as any).logStatus = 'SKIPPED';
               } else {
                 let org = new Opportunity();
                 org = entry;
                 await manager.save(Opportunity, org);
-                (entry as any).logStatus = 'UPDATED';
+                (entry as any).logStatus = 'CREATED';
               }
             } catch (e) {
               (entry as any).logStatus = 'FAILED';
@@ -167,15 +124,15 @@ export class ImportController {
           for (let entry of jsonData as Opportunity[]) {
             try {
               if (entry.id) {
-                let org = await manager.findOne(Opportunity, entry.id);
-                org = entry;
-                await manager.save(Opportunity, org);
-                (entry as any).logStatus = 'CREATED';
+                // let org = await manager.findOne(Opportunity, entry.id);
+                // org = entry;
+                // await manager.save(Opportunity, org);
+                (entry as any).logStatus = 'SKIPPED';
               } else {
                 let org = new Opportunity();
                 org = entry;
                 await manager.save(Opportunity, org);
-                (entry as any).logStatus = 'UPDATED';
+                (entry as any).logStatus = 'CREATED';
               }
             } catch (e) {
               (entry as any).logStatus = 'FAILED';
@@ -189,15 +146,34 @@ export class ImportController {
           for (let entry of jsonData as Employee[]) {
             try {
               if (entry.id) {
-                let org = await manager.findOne(Employee, entry.id);
-                org = entry;
-                await manager.save(Employee, org);
-                (entry as any).logStatus = 'CREATED';
+                // let org = await manager.findOne(Employee, entry.id);
+                // org = entry;
+                // await manager.save(Employee, org);
+                (entry as any).logStatus = 'SKIPPED';
               } else {
-                let org = new Employee();
-                org = entry;
-                await manager.save(Employee, org);
-                (entry as any).logStatus = 'UPDATED';
+                let employeeObj = new Employee();
+                employeeObj = entry;
+                if (
+                  (entry as any).organizationId &&
+                  (entry as any).contactPersonId
+                ) {
+                  let associations = await manager.find(
+                    ContactPersonOrganization,
+                    {
+                      where: {
+                        contactPersonId: (entry as any).contactPersonId,
+                        organizationId: (entry as any).organizationId,
+                      },
+                    }
+                  );
+                  let association = associations[0];
+                  if (!association) {
+                    throw new Error('Associaton not found');
+                  }
+                  employeeObj.contactPersonOrganizationId = association.id;
+                }
+                await manager.save(Employee, employeeObj);
+                (entry as any).logStatus = 'CREATED';
               }
             } catch (e) {
               (entry as any).logStatus = 'FAILED';
@@ -211,15 +187,34 @@ export class ImportController {
           for (let entry of jsonData as Employee[]) {
             try {
               if (entry.id) {
-                let org = await manager.findOne(Employee, entry.id);
-                org = entry;
-                await manager.save(Employee, org);
-                (entry as any).logStatus = 'CREATED';
+                // let org = await manager.findOne(Employee, entry.id);
+                // org = entry;
+                // await manager.save(Employee, org);
+                (entry as any).logStatus = 'SKIPPED';
               } else {
-                let org = new Employee();
-                org = entry;
-                await manager.save(Employee, org);
-                (entry as any).logStatus = 'UPDATED';
+                let subcontractorObj = new Employee();
+                subcontractorObj = entry;
+                if (
+                  (entry as any).organizationId &&
+                  (entry as any).contactPersonId
+                ) {
+                  let associations = await manager.find(
+                    ContactPersonOrganization,
+                    {
+                      where: {
+                        contactPersonId: (entry as any).contactPersonId,
+                        organizationId: (entry as any).organizationId,
+                      },
+                    }
+                  );
+                  let association = associations[0];
+                  if (!association) {
+                    throw new Error('Associaton not found');
+                  }
+                  subcontractorObj.contactPersonOrganizationId = association.id;
+                }
+                await manager.save(Employee, subcontractorObj);
+                (entry as any).logStatus = 'CREATED';
               }
             } catch (e) {
               (entry as any).logStatus = 'FAILED';
