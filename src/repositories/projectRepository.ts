@@ -615,7 +615,7 @@ export class ProjectRepository extends Repository<Opportunity> {
 
     for (let project of projects) {
       for (let milestone of project.milestones) {
-        if (milestone.progress != 100) {
+        if (milestone.progress == 100) {
           let file = await this.manager.findOne(File, milestone.fileId);
           response.push({
             projectId: project.id,
