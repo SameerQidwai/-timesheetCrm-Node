@@ -38,10 +38,7 @@ router.route('/auth/users').get([isLoggedIn], contr.getUserUsers.bind(contr));
 
 router
   .route('/auth/projects')
-  .get(
-    [isLoggedIn, can(Action.READ, Resource.PROJECTS)],
-    contr.getUserProjects.bind(contr)
-  );
+  .get([isLoggedIn, canCustom(Action.READ)], contr.getUserProjects.bind(contr));
 
 router.route('/auth/addSkill').post([isLoggedIn], contr.addSkill.bind(contr));
 
