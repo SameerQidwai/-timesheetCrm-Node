@@ -616,7 +616,11 @@ export class ProjectRepository extends Repository<Opportunity> {
     for (let project of projects) {
       for (let milestone of project.milestones) {
         if (milestone.progress == 100) {
-          let file = await this.manager.findOne(File, milestone.fileId);
+          let file: File | undefined = undefined;
+          if (milestone.fileId) {
+            file = await this.manager.findOne(File, milestone.fileId);
+          }
+
           response.push({
             projectId: project.id,
             projectName: project.title,
@@ -626,6 +630,7 @@ export class ProjectRepository extends Repository<Opportunity> {
             endDate: milestone.endDate,
             progress: milestone.progress,
             isApproved: milestone.isApproved,
+
             phase: project.phase,
             fileName: file?.uniqueName ?? null,
           });
@@ -677,7 +682,10 @@ export class ProjectRepository extends Repository<Opportunity> {
       if (project.projectManagerId == authId) {
         for (let milestone of project.milestones) {
           if (milestone.progress == 100) {
-            let file = await this.manager.findOne(File, milestone.fileId);
+            let file: File | undefined = undefined;
+            if (milestone.fileId) {
+              file = await this.manager.findOne(File, milestone.fileId);
+            }
             response.push({
               projectId: project.id,
               projectName: project.title,
