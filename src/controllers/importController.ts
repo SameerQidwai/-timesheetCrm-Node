@@ -408,7 +408,16 @@ export class ImportController {
       opportunityObj.goPercentage = body.Go;
       opportunityObj.getPercentage = body.Get;
       opportunityObj.stage = body.Stage;
-      opportunityObj.linkedWorkId = body['Linked Project ID'];
+
+      if (body['Linked Project ID']) {
+        let linkedProject = await manager.findOne(
+          Opportunity,
+          body['Linked Project ID'],
+          { where: { status: In(['P', 'C']) } }
+        );
+        if (linkedProject)
+          opportunityObj.linkedWorkId = body['Linked Project ID'];
+      }
 
       // validate organization
       let organization: Organization | undefined;
@@ -552,7 +561,15 @@ export class ImportController {
       projectObj.hoursPerDay = body['Work Hours Per Day'];
       projectObj.cmPercentage = body['Contribution Margin as a %'];
       projectObj.stage = body.Stage;
-      projectObj.linkedWorkId = body['Linked Project ID'];
+
+      if (body['Linked Project ID']) {
+        let linkedProject = await manager.findOne(
+          Opportunity,
+          body['Linked Project ID'],
+          { where: { status: In(['P', 'C']) } }
+        );
+        if (linkedProject) projectObj.linkedWorkId = body['Linked Project ID'];
+      }
 
       // validate organization
       let organization: Organization | undefined;
@@ -737,6 +754,16 @@ export class ImportController {
       //   employeeObj.lineManagerId = null;
       // }
       employeeObj = await transactionalEntityManager.save(employeeObj);
+
+      let bankAccount = new BankAccount();
+      bankAccount.name = body['Bank Account Holder Name'] ?? '';
+      bankAccount.accountNo = body['Bank Account Number'] ?? '';
+      bankAccount.bsb = body['BSB Number'] ?? '';
+      bankAccount.employeeId = employeeObj.id;
+
+      await transactionalEntityManager.save(bankAccount);
+
+      return 1;
     });
   }
 

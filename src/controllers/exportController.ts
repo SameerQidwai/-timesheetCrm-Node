@@ -505,6 +505,7 @@ export class ExportController {
         'lineManager',
         'lineManager.contactPersonOrganization',
         'lineManager.contactPersonOrganization.contactPerson',
+        'bankAccounts',
       ],
     });
 
@@ -527,6 +528,9 @@ export class ExportController {
         'Next Of Kin Phone': employee.nextOfKinPhoneNumber,
         'Next Of Kin Email': employee.nextOfKinEmail,
         'Next Of Kin Relationship': employee.nextOfKinRelation,
+        'Bank Account Holder Name': employee.bankAccounts[0].name,
+        'Bank Account Number': employee.bankAccounts[0].accountNo,
+        'BSB Number': employee.bankAccounts[0].bsb,
         TFN: employee.tfn,
         'Tax-free Threshold': employee.taxFreeThreshold,
         'Help (HECS)': employee.helpHECS,

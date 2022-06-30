@@ -625,6 +625,9 @@ export interface EmployeeEntity {
   'Next Of Kin Email': string;
   'Next Of Kin Relationship': string;
   TFN: string;
+  'Bank Account Holder Name': String | null;
+  'Bank Account Number': String | null;
+  'BSB Number': string | null;
   'Tax-free Threshold': boolean | string;
   'Help (HECS)': boolean | string;
   Training: string;
