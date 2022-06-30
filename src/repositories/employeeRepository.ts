@@ -433,10 +433,9 @@ export class EmployeeRepository extends Repository<Employee> {
         })
         .andWhere('employee_id = ' + employeeObj.id)
         .getOne();
-      console.log('employmentContract: ', employmentContract);
 
       if (!employmentContract) {
-        throw new Error('Contract Not found');
+        employmentContract = new EmploymentContract();
       }
       employmentContract.payslipEmail = payslipEmail;
       employmentContract.comments = comments;
@@ -504,11 +503,11 @@ export class EmployeeRepository extends Repository<Employee> {
           },
         });
       if (!bankAccount) {
-        throw new Error('Bank Account not found');
+        bankAccount = new BankAccount()
       }
 
       bankAccount.accountNo = bankAccountNo;
-      bankAccount.bsb = bankBsb;
+      bankAccount.bsb = bankBsb ;
       bankAccount.name = bankName;
       bankAccount.employeeId = employeeObj.id;
       await transactionalEntityManager.save(bankAccount);
