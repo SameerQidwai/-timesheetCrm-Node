@@ -30,6 +30,7 @@ import {
   OpportunityStatus,
   ProjectType,
 } from '../constants/constants';
+import { File } from '../entities/file';
 
 @EntityRepository(Opportunity)
 export class ProjectRepository extends Repository<Opportunity> {
@@ -604,9 +605,18 @@ export class ProjectRepository extends Repository<Opportunity> {
       relations: ['milestones'],
     });
 
+    let milestoneIds: number[] = [];
+
     projects.forEach((project) => {
       project.milestones.forEach((milestone) => {
-        if (milestone.progress == 100)
+        milestoneIds.push(milestone.id);
+      });
+    });
+
+    for (let project of projects) {
+      for (let milestone of project.milestones) {
+        if (milestone.progress != 100) {
+          let file = await this.manager.findOne(File, milestone.fileId);
           response.push({
             projectId: project.id,
             projectName: project.title,
@@ -616,10 +626,12 @@ export class ProjectRepository extends Repository<Opportunity> {
             endDate: milestone.endDate,
             progress: milestone.progress,
             isApproved: milestone.isApproved,
-            phase: milestone.project.phase,
+            phase: project.phase,
+            fileName: file?.uniqueName ?? null,
           });
-      });
-    });
+        }
+      }
+    }
 
     return response;
   }
@@ -641,12 +653,31 @@ export class ProjectRepository extends Repository<Opportunity> {
       relations: ['milestones'],
     });
 
-    // console.log('result', result);
+    // let milestoneIds: number[] = [];
 
-    projects.forEach((project) => {
-      if (project.projectManagerId == authId)
-        project.milestones.forEach((milestone) => {
-          if (milestone.progress == 100)
+    // projects.forEach((project) => {
+    //   if (project.projectManagerId == authId) {
+    //     project.milestones.forEach((milestone) => {
+    //       milestoneIds.push(milestone.id);
+    //     });
+    //   }
+    // });
+
+    // let attachments = await this.manager.find(Attachment, {
+    //   where: { targetType: 'MIL', targetId: In(milestoneIds) },
+    //   relations: ['file'],
+    // });
+
+    // let milestoneAttachments: Attachment[] = [];
+    // attachments.forEach((attachment) => {
+    //   milestoneAttachments[attachment.targetId] = attachment;
+    // });
+
+    for (let project of projects) {
+      if (project.projectManagerId == authId) {
+        for (let milestone of project.milestones) {
+          if (milestone.progress == 100) {
+            let file = await this.manager.findOne(File, milestone.fileId);
             response.push({
               projectId: project.id,
               projectName: project.title,
@@ -656,10 +687,13 @@ export class ProjectRepository extends Repository<Opportunity> {
               endDate: milestone.endDate,
               progress: milestone.progress,
               isApproved: milestone.isApproved,
-              phase: milestone.project.phase,
+              phase: project.phase,
+              fileName: file?.uniqueName ?? null,
             });
-        });
-    });
+          }
+        }
+      }
+    }
 
     return response;
   }
