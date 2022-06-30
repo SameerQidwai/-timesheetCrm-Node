@@ -335,10 +335,9 @@ export class SubContractorRepository extends Repository<Employee> {
         })
         .andWhere('employee_id = ' + subContractorObj.id)
         .getOne();
-      console.log('subContractorContract: ', subContractorContract);
 
       if (!subContractorContract) {
-        throw new Error('Contract Not found');
+        subContractorContract = new EmploymentContract();
       }
       subContractorContract.startDate = new Date(startDate);
       if (endDate) {

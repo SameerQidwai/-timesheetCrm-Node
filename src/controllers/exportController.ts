@@ -235,6 +235,7 @@ export class ExportController {
     let organizations: OrganizationEntity[] = [];
 
     dbOrganizations.forEach((org) => {
+      
       let entity: OrganizationEntity = {
         ID: org.id,
         Name: org.name,
@@ -247,7 +248,7 @@ export class ExportController {
         'Parent Organization ID': org.parentOrganizationId,
         'Parent Organization': org.parentOrganization?.name,
         'Delegate Contact Person ID': org.delegateContactPersonId,
-        'Delegate Contact Person': `${org.delegateContactPerson?.firstName} ${org.delegateContactPerson?.lastName}`,
+        'Delegate Contact Person': `${org.delegateContactPerson?.firstName?? ''} ${org.delegateContactPerson?.lastName ?? ''}`,
         ABN: org.abn,
         'Tax Code': org.taxCode,
         'Email for Invoices': org.invoiceEmail,
@@ -356,7 +357,7 @@ export class ExportController {
         'Organization ID': opportunity.organizationId,
         Organization: opportunity.organization.title,
         'Delegate Contact Person ID': opportunity.contactPersonId,
-        'Delegate Contact Person': `${opportunity.contactPerson?.firstName} ${opportunity.contactPerson?.lastName}`,
+        'Delegate Contact Person': `${opportunity.contactPerson?.firstName?? ''} ${opportunity.contactPerson?.lastName?? ''}`,
         Name: opportunity.title,
         'Type ID': opportunity.type,
         'State ID': opportunity.stateId,
@@ -425,7 +426,7 @@ export class ExportController {
         'Organization ID': project.organizationId,
         Organization: project.organization.title,
         'Delegate Contact Person ID': project.contactPersonId,
-        'Delegate Contact Person': `${project.contactPerson?.firstName} ${project.contactPerson?.lastName}`,
+        'Delegate Contact Person': `${project.contactPerson?.firstName?? ''} ${project.contactPerson?.lastName?? ''}`,
         Name: project.title,
         'Type ID': project.type,
         'State ID': project.stateId,
@@ -501,7 +502,7 @@ export class ExportController {
         'Line Manager ID': employee.lineManagerId,
         'Line Manager': employee.lineManager?.getFullName,
         'Contact Person ID': employee.contactPersonOrganization.contactPersonId,
-        'Contact Person': `${employee.contactPersonOrganization.contactPerson?.firstName} ${employee.contactPersonOrganization.contactPerson?.lastName}`,
+        'Contact Person': `${employee.contactPersonOrganization.contactPerson?.firstName?? ''} ${employee.contactPersonOrganization.contactPerson?.lastName?? ''}`,
       };
 
       employees.push(entity);
@@ -555,7 +556,7 @@ export class ExportController {
         'Contractor Manager': subContractor.lineManager?.getFullName,
         'Contact Person ID':
           subContractor.contactPersonOrganization.contactPersonId,
-        'Contact Person': `${subContractor.contactPersonOrganization.contactPerson?.firstName} ${subContractor.contactPersonOrganization.contactPerson?.lastName}`,
+        'Contact Person': `${subContractor.contactPersonOrganization.contactPerson?.firstName?? ''} ${subContractor.contactPersonOrganization.contactPerson?.lastName?? ''}`,
         'Organization ID':
           subContractor.contactPersonOrganization.organizationId,
         Organization:

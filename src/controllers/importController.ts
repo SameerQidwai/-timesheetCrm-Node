@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction, json } from 'express';
-import { getManager, In } from 'typeorm';
+import { getManager, In, RelationId } from 'typeorm';
 import xlsx from 'xlsx';
 import fs, { stat } from 'fs';
 import path from 'path';
@@ -19,10 +19,12 @@ import {
   OrganizationEntity,
   ProjectEntity,
   SubContractorEntity,
+  
 } from '../dto';
 import { State } from '../entities/state';
 import { Panel } from '../entities/panel';
 import { Milestone } from '../entities/milestone';
+import { BankAccount } from '../entities/bankAccount';
 import {
   contactPersonXLSXValidator,
   employeeXLSXValidator,
@@ -251,20 +253,42 @@ export class ImportController {
         organizationObj.wcInsuranceExpiry = new Date(
           body["Worker's Compensation Expiry"]
         );
-      if (body['Parent Organization ID'])
+      if (body['Parent Organization ID'] )
         organizationObj.parentOrganization = await manager.findOne(
           Organization,
           body['Parent Organization ID']
         );
-
-      return await transactionalEntityManager.save(organizationObj);
+      if (body['Delegate Contact Person ID'] && organizationObj.id){
+              let contactPersonOrganizationObjFound =
+            await manager.find(ContactPersonOrganization, {
+              where: {
+                contactPersonId: body['Delegate Contact Person ID'],
+                organizationId: organizationObj.id
+              },
+            });
+            if (contactPersonOrganizationObjFound.length >0){
+              organizationObj.delegateContactPersonId = body['Delegate Contact Person ID'] || null
+            }
+        }
+        
+        organizationObj = await transactionalEntityManager.save(organizationObj);
+        if (!organization){
+          let bankAccount = new BankAccount();
+            bankAccount.accountNo = '';
+            bankAccount.bsb = '';
+            bankAccount.name = '';
+            bankAccount.organizationId = organizationObj.id;
+            await transactionalEntityManager.save(bankAccount);
+          }
+      return 
     });
   }
 
   async _setContactPerson(body: ContactPersonEntity) {
+    console.log(body['Clearance Date Granted'], 'date Granted')
     let manager = getManager();
     return await manager.transaction(async (transactionalEntityManager) => {
-      await organizationXLSXValidator.validateCreate.validateAsync(body);
+      await contactPersonXLSXValidator.validateCreate.validateAsync(body);
 
       let contactPersonObj = new ContactPerson();
       contactPersonObj.firstName = body['First Name'];
@@ -289,6 +313,7 @@ export class ImportController {
         body['Clearance Expiry Date']
       ) {
         contactPersonObj.clearanceLevel = body['Clearance Level'];
+        
         contactPersonObj.clearanceGrantedDate = new Date(
           body['Clearance Date Granted']
         );
@@ -313,6 +338,7 @@ export class ImportController {
         let association = new ContactPersonOrganization();
         association.contactPersonId = contactPersonObj.id;
         association.organizationId = body['Organization ID'];
+        association.designation = '';
         association.startDate = moment().toDate();
         contactPersonObj.contactPersonOrganizations = [association];
       }
