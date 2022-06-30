@@ -587,6 +587,182 @@ export class ProjectRepository extends Repository<Opportunity> {
     return project.milestones;
   }
 
+  async getAllApprovalMilestones(
+    projectId: number | null = null
+  ): Promise<any | undefined> {
+    let response: any = [];
+
+    let whereCondition = {
+      status: In([OpportunityStatus.WON, OpportunityStatus.COMPLETED]),
+    };
+
+    if (projectId) (whereCondition as any).id = projectId;
+
+    let projects = await this.find({
+      where: whereCondition,
+      relations: ['milestones'],
+    });
+
+    projects.forEach((project) => {
+      project.milestones.forEach((milestone) => {
+        if (milestone.progress == 100)
+          response.push({
+            projectId: project.id,
+            projectName: project.title,
+            milestoneId: milestone.id,
+            milestoneName: milestone.title,
+            startDate: milestone.startDate,
+            endDate: milestone.endDate,
+            progress: milestone.progress,
+            isApproved: milestone.isApproved,
+          });
+      });
+    });
+
+    return response;
+  }
+
+  async getManagerApprovalMilestones(
+    authId: number,
+    projectId: number | null = null
+  ): Promise<any | undefined> {
+    let response: any = [];
+
+    let whereCondition = {
+      status: In([OpportunityStatus.WON, OpportunityStatus.COMPLETED]),
+      projectManagerId: authId,
+    };
+    if (projectId) (whereCondition as any).id = projectId;
+
+    let projects = await this.find({
+      where: whereCondition,
+      relations: ['milestones'],
+    });
+
+    // console.log('result', result);
+
+    projects.forEach((project) => {
+      if (project.projectManagerId == authId)
+        project.milestones.forEach((milestone) => {
+          if (milestone.progress == 100)
+            response.push({
+              projectId: project.id,
+              projectName: project.title,
+              milestoneId: milestone.id,
+              milestoneName: milestone.title,
+              startDate: milestone.startDate,
+              endDate: milestone.endDate,
+              progress: milestone.progress,
+              isApproved: milestone.isApproved,
+            });
+        });
+    });
+
+    return response;
+  }
+
+  async approveAnyMilestone(milestoneId: number): Promise<any | undefined> {
+    let milestone = await this.manager.findOne(Milestone, milestoneId, {
+      relations: ['project'],
+    });
+
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    milestone.isApproved = true;
+
+    return this.manager.save(milestone);
+  }
+
+  async approveManageMilestone(
+    authId: number,
+    milestoneId: number
+  ): Promise<any | undefined> {
+    let milestone = await this.manager.findOne(Milestone, milestoneId, {
+      relations: ['project'],
+    });
+
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    if (milestone.project.projectManagerId !== authId) {
+      throw new Error('Not Authorized');
+    }
+
+    milestone.isApproved = true;
+
+    return this.manager.save(milestone);
+  }
+
+  async exportAnyMilestone(milestoneId: number): Promise<any | undefined> {
+    let milestone = await this.manager.findOne(Milestone, milestoneId, {
+      relations: ['project', 'project.organization'],
+    });
+
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    let purchaseOrders = await this.manager.find(PurchaseOrder, {
+      where: { projectId: milestone.projectId },
+      order: { issueDate: 'DESC' },
+    });
+
+    let purchaseOrder = purchaseOrders[0];
+
+    if (!purchaseOrder) {
+      throw new Error('Purchase Order not found');
+    }
+
+    return {
+      projectName: milestone.project.title,
+      purchaseOrderNo: purchaseOrder.orderNo ?? '---',
+      purchaseOrderDate: purchaseOrder.issueDate,
+      milestoneName: milestone.title,
+      milestoneDesc: milestone.description,
+      organizationName: milestone.project.organization.name,
+    };
+  }
+
+  async exportManageMilestone(
+    authId: number,
+    milestoneId: number
+  ): Promise<any | undefined> {
+    let milestone = await this.manager.findOne(Milestone, milestoneId, {
+      relations: ['project', 'project.organization'],
+    });
+
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    if (milestone.project.projectManagerId !== authId) {
+      throw new Error('Not Authorized');
+    }
+
+    let purchaseOrders = await this.manager.find(PurchaseOrder, {
+      where: { projectId: milestone.projectId },
+      order: { issueDate: 'DESC' },
+    });
+
+    let purchaseOrder = purchaseOrders[0];
+
+    if (!purchaseOrder) {
+      throw new Error('Purchase Order not found');
+    }
+
+    return {
+      projectName: milestone.project.title,
+      purchaseOrderNo: purchaseOrder.orderNo ?? '---',
+      purchaseOrderDate: purchaseOrder.issueDate,
+      milestoneName: milestone.title,
+      milestoneDesc: milestone.description,
+      organizationName: milestone.project.organization.name,
+    };
+  }
+
   async addMilestone(
     projectId: number,
     milestoneDTO: MilestoneDTO
@@ -1556,14 +1732,6 @@ export class ProjectRepository extends Repository<Opportunity> {
       where: [
         { status: OpportunityStatus.WON },
         { status: OpportunityStatus.COMPLETED },
-      ],
-      relations: [
-        'organization',
-        'opportunityResources',
-        'opportunityResources.panelSkill',
-        'opportunityResources.panelSkillStandardLevel',
-        'opportunityResources.opportunityResourceAllocations',
-        'opportunityResources.opportunityResourceAllocations.contactPerson',
       ],
     });
 

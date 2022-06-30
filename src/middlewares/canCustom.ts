@@ -29,7 +29,7 @@ export const canCustom = (action: Action) => {
     // if (grant) {
     //   permissions = permissions.filter(permission => permission.grant == grant);
     // }
-    console.log('can.ts -- Permission Length =>', permissions.length);
+    console.log('canCustom.ts -- Permission Length =>', permissions.length);
     if (permissions.length) {
       res.locals.grantLevel = permissions.map((x) => x.grant).join('|');
       return next();

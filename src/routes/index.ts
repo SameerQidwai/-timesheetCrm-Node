@@ -30,6 +30,7 @@ import globalRoutes from './globalRoutes';
 import globalVariableRoutes from './globalVariableRoutes';
 import leaveRequests from './leaveRequestRoutes';
 import leaveRequestBalances from './leaveRequestBalanceRoutes';
+import milestoneRoutes from './milestoneRoutes';
 
 const router: Router = Router();
 router.use('', authRoutes);
@@ -52,6 +53,7 @@ router.use('/employment-contracts', employmentContractRoutes);
 router.use('/sub-contractors-contracts', subContractorContractRoutes);
 router.use('/opportunities', opportunityRoutes);
 router.use('/projects', projectRoutes);
+router.use('/milestones', milestoneRoutes);
 router.use('/timesheets', timesheetRoutes);
 router.use('/files', fileRoutes);
 router.use('/attachments', attachmentRoutes);
