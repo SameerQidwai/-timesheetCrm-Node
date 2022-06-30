@@ -759,8 +759,8 @@ export class ProjectRepository extends Repository<Opportunity> {
 
     return {
       projectName: milestone.project.title,
-      purchaseOrderNo: purchaseOrder?.orderNo ?? '---',
-      purchaseOrderDate: purchaseOrder?.issueDate ?? '---',
+      purchaseOrderNo: purchaseOrder?.orderNo ?? null,
+      purchaseOrderDate: purchaseOrder?.issueDate ?? null,
       milestoneName: milestone.title,
       milestoneDesc: milestone.description,
       organizationName: milestone.project.organization.name,
@@ -792,8 +792,8 @@ export class ProjectRepository extends Repository<Opportunity> {
 
     return {
       projectName: milestone.project.title,
-      purchaseOrderNo: purchaseOrder?.orderNo ?? '---',
-      purchaseOrderDate: purchaseOrder?.issueDate ?? '---',
+      purchaseOrderNo: purchaseOrder?.orderNo ?? null,
+      purchaseOrderDate: purchaseOrder?.issueDate ?? null,
       milestoneName: milestone.title,
       milestoneDesc: milestone.description,
       organizationName: milestone.project.organization.name,
