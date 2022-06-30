@@ -912,7 +912,10 @@ export class ProjectRepository extends Repository<Opportunity> {
 
       let timesheetMilestoneEntries = await transactionalEntityManager.find(
         TimesheetMilestoneEntry,
-        { where: { milestoneId: milestone.id }, relations: ['timesheet'] }
+        {
+          where: { milestoneId: milestone.id },
+          relations: ['timesheet', 'entries'],
+        }
       );
 
       let leaveRequests = await transactionalEntityManager.find(LeaveRequest, {
