@@ -19,7 +19,6 @@ import {
   OrganizationEntity,
   ProjectEntity,
   SubContractorEntity,
-  
 } from '../dto';
 import { State } from '../entities/state';
 import { Panel } from '../entities/panel';
@@ -42,9 +41,12 @@ export class ImportController {
         throw new Error('Type is Required');
       }
 
-      let workbook = xlsx.read(req.file.buffer, { cellDates: true }),
+      let workbook = xlsx.read(req.file.buffer, {
+          cellDates: true,
+        }),
         jsonData = xlsx.utils.sheet_to_json(
-          workbook.Sheets[workbook.SheetNames[0]]
+          workbook.Sheets[workbook.SheetNames[0]],
+          { raw: false, dateNF: 'dd/mm/yyyy' }
         ),
         name = '',
         logsData: any = [];
@@ -88,6 +90,7 @@ export class ImportController {
           for (let entry of jsonData as ContactPersonEntity[]) {
             try {
               if (!entry.ID) {
+                console.log(entry);
                 await this._setContactPerson(entry);
                 (entry as any)['Log Status'] = 'CREATED';
               } else {
@@ -103,9 +106,13 @@ export class ImportController {
           break;
         case Entities.PROJECT:
           name = ImportLogName.PROJECT;
-          for (let entry of jsonData as Opportunity[]) {
+          for (let entry of jsonData as ProjectEntity[]) {
             try {
-              if (entry.id) {
+              if (!entry.ID) {
+                await this._setProject(entry);
+                (entry as any)['Log Status'] = 'CREATED';
+              } else {
+                (entry as any)['Log Status'] = 'SKIPPED';
               }
             } catch (e) {
               (entry as any).Reason = (e as any).message;
@@ -117,9 +124,14 @@ export class ImportController {
           break;
         case Entities.OPPORTUNITY:
           name = ImportLogName.OPPORTUNITY;
-          for (let entry of jsonData as Opportunity[]) {
+          for (let entry of jsonData as OpportunityEntity[]) {
             try {
-              if (entry.id) {
+              console.log(entry);
+              if (!entry.ID) {
+                await this._setOpportunity(entry);
+                (entry as any)['Log Status'] = 'CREATED';
+              } else {
+                (entry as any)['Log Status'] = 'SKIPPED';
               }
             } catch (e) {
               (entry as any).Reason = (e as any).message;
@@ -242,50 +254,55 @@ export class ImportController {
       organizationObj.wcPolicyNumber =
         body["Worker's Compensation Policy Number"];
       if (body['Professional Indemnity Expiry'])
-        organizationObj.piInsuranceExpiry = new Date(
-          body['Professional Indemnity Expiry']
-        );
+        organizationObj.piInsuranceExpiry = moment(
+          body['Professional Indemnity Expiry'],
+          'DD//MM//YYYY'
+        ).toDate();
       if (body['Public Liability Expiry'])
-        organizationObj.plInsuranceExpiry = new Date(
-          body['Public Liability Expiry']
-        );
+        organizationObj.plInsuranceExpiry = moment(
+          body['Public Liability Expiry'],
+          'DD//MM//YYYY'
+        ).toDate();
       if (body["Worker's Compensation Expiry"])
-        organizationObj.wcInsuranceExpiry = new Date(
-          body["Worker's Compensation Expiry"]
-        );
-      if (body['Parent Organization ID'] )
+        organizationObj.wcInsuranceExpiry = moment(
+          body["Worker's Compensation Expiry"],
+          'DD//MM//YYYY'
+        ).toDate();
+      if (body['Parent Organization ID'])
         organizationObj.parentOrganization = await manager.findOne(
           Organization,
           body['Parent Organization ID']
         );
-      if (body['Delegate Contact Person ID'] && organizationObj.id){
-              let contactPersonOrganizationObjFound =
-            await manager.find(ContactPersonOrganization, {
-              where: {
-                contactPersonId: body['Delegate Contact Person ID'],
-                organizationId: organizationObj.id
-              },
-            });
-            if (contactPersonOrganizationObjFound.length >0){
-              organizationObj.delegateContactPersonId = body['Delegate Contact Person ID'] || null
-            }
-        }
-        
-        organizationObj = await transactionalEntityManager.save(organizationObj);
-        if (!organization){
-          let bankAccount = new BankAccount();
-            bankAccount.accountNo = '';
-            bankAccount.bsb = '';
-            bankAccount.name = '';
-            bankAccount.organizationId = organizationObj.id;
-            await transactionalEntityManager.save(bankAccount);
+      if (body['Delegate Contact Person ID'] && organizationObj.id) {
+        let contactPersonOrganizationObjFound = await manager.find(
+          ContactPersonOrganization,
+          {
+            where: {
+              contactPersonId: body['Delegate Contact Person ID'],
+              organizationId: organizationObj.id,
+            },
           }
-      return 
+        );
+        if (contactPersonOrganizationObjFound.length > 0) {
+          organizationObj.delegateContactPersonId =
+            body['Delegate Contact Person ID'] || null;
+        }
+      }
+
+      organizationObj = await transactionalEntityManager.save(organizationObj);
+      if (!organization) {
+        let bankAccount = new BankAccount();
+        bankAccount.accountNo = '';
+        bankAccount.bsb = '';
+        bankAccount.name = '';
+        bankAccount.organizationId = organizationObj.id;
+        await transactionalEntityManager.save(bankAccount);
+      }
+      return;
     });
   }
 
   async _setContactPerson(body: ContactPersonEntity) {
-    console.log(body['Clearance Date Granted'], 'date Granted')
     let manager = getManager();
     return await manager.transaction(async (transactionalEntityManager) => {
       await contactPersonXLSXValidator.validateCreate.validateAsync(body);
@@ -313,13 +330,15 @@ export class ImportController {
         body['Clearance Expiry Date']
       ) {
         contactPersonObj.clearanceLevel = body['Clearance Level'];
-        
-        contactPersonObj.clearanceGrantedDate = new Date(
-          body['Clearance Date Granted']
-        );
-        contactPersonObj.clearanceExpiryDate = new Date(
-          body['Clearance Expiry Date']
-        );
+
+        contactPersonObj.clearanceGrantedDate = moment(
+          body['Clearance Date Granted'],
+          'DD//MM//YYYY'
+        ).toDate();
+        contactPersonObj.clearanceExpiryDate = moment(
+          body['Clearance Expiry Date'],
+          'DD//MM//YYYY'
+        ).toDate();
       }
 
       let clearanceSponsor: Organization | undefined;
@@ -355,16 +374,28 @@ export class ImportController {
       let opportunityObj = new Opportunity();
       opportunityObj.title = body.Name;
       if (body['Expected Start Date']) {
-        opportunityObj.startDate = new Date(body['Expected Start Date']);
+        opportunityObj.startDate = moment(
+          body['Expected Start Date'],
+          'DD//MM//YYYY'
+        ).toDate();
       }
       if (body['Expected End Date']) {
-        opportunityObj.endDate = new Date(body['Expected End Date']);
+        opportunityObj.endDate = moment(
+          body['Expected End Date'],
+          'DD//MM//YYYY'
+        ).toDate();
       }
       if (body['Bid Due Date']) {
-        opportunityObj.bidDate = new Date(body['Bid Due Date']);
+        opportunityObj.bidDate = moment(
+          body['Bid Due Date'],
+          'DD//MM//YYYY'
+        ).toDate();
       }
       if (body['Entry Date']) {
-        opportunityObj.entryDate = new Date(body['Entry Date']);
+        opportunityObj.entryDate = moment(
+          body['Entry Date'],
+          'DD//MM//YYYY'
+        ).toDate();
       }
       opportunityObj.qualifiedOps =
         body['Qualified Ops'] === 'TRUE' ? true : false;
@@ -494,18 +525,24 @@ export class ImportController {
       let projectObj = new Opportunity();
       projectObj.title = body.Name;
       if (body['Start Date']) {
-        projectObj.startDate = new Date(body['Start Date']);
+        projectObj.startDate = moment(
+          body['Start Date'],
+          'DD//MM//YYYY'
+        ).toDate();
       } else {
         throw new Error('Start date is required in project');
       }
       if (body['End Date']) {
-        projectObj.endDate = new Date(body['End Date']);
+        projectObj.endDate = moment(body['End Date'], 'DD//MM//YYYY').toDate();
       } else {
         throw new Error('End date is required in project');
       }
 
       if (body['Entry Date']) {
-        projectObj.entryDate = new Date(body['Entry Date']);
+        projectObj.entryDate = moment(
+          body['Entry Date'],
+          'DD//MM//YYYY'
+        ).toDate();
       }
       projectObj.qualifiedOps = body['Qualified Ops'] == 'TRUE' ? true : false;
       projectObj.value = body['Estimated Value'];

@@ -26,6 +26,7 @@ import {
   ProjectEntity,
   SubContractorEntity,
 } from '../dto';
+import moment from 'moment';
 
 export class ExportController {
   async status(req: Request, res: Response, next: NextFunction) {
@@ -235,7 +236,6 @@ export class ExportController {
     let organizations: OrganizationEntity[] = [];
 
     dbOrganizations.forEach((org) => {
-      
       let entity: OrganizationEntity = {
         ID: org.id,
         Name: org.name,
@@ -248,7 +248,9 @@ export class ExportController {
         'Parent Organization ID': org.parentOrganizationId,
         'Parent Organization': org.parentOrganization?.name,
         'Delegate Contact Person ID': org.delegateContactPersonId,
-        'Delegate Contact Person': `${org.delegateContactPerson?.firstName?? ''} ${org.delegateContactPerson?.lastName ?? ''}`,
+        'Delegate Contact Person': `${
+          org.delegateContactPerson?.firstName ?? ''
+        } ${org.delegateContactPerson?.lastName ?? ''}`,
         ABN: org.abn,
         'Tax Code': org.taxCode,
         'Email for Invoices': org.invoiceEmail,
@@ -256,15 +258,21 @@ export class ExportController {
         'Professional Indemnity Insurer': org.piInsurer,
         'Professional Indemnity Policy Number': org.piPolicyNumber,
         'Professional Indemnity Sum Insured': org.piSumInsured,
-        'Professional Indemnity Expiry': org.plInsuranceExpiry,
+        'Professional Indemnity Expiry': org.plInsuranceExpiry
+          ? moment(org.plInsuranceExpiry).format('DD//MM//YYYY')
+          : null,
         'Public Liability Insurer': org.plInsurer,
         'Public Liability Policy Number': org.plPolicyNumber,
         'Public Liability Sum Insured': org.plSumInsured,
-        'Public Liability Expiry': org.plInsuranceExpiry,
+        'Public Liability Expiry': org.plInsuranceExpiry
+          ? moment(org.plInsuranceExpiry).format('DD//MM//YYYY')
+          : null,
         "Worker's Compensation Insurer": org.wcInsurer,
         "Worker's Compensation Policy Number": org.wcPolicyNumber,
         "Worker's Compensation Sum Insured": org.wcSumInsured,
-        "Worker's Compensation Expiry": org.wcInsuranceExpiry,
+        "Worker's Compensation Expiry": org.wcInsuranceExpiry
+          ? moment(org.wcInsuranceExpiry).format('DD//MM//YYYY')
+          : null,
         'Current Year Forecast': org.currentFinancialYearTotalForecast,
         'Next Year Forecast': org.nextFinancialYearTotalForecast,
       };
@@ -304,8 +312,12 @@ export class ExportController {
         State: cp.state.label,
         Address: cp.address,
         'Clearance Level': cp.clearanceLevel,
-        'Clearance Date Granted': cp.clearanceGrantedDate,
-        'Clearance Expiry Date': cp.clearanceExpiryDate,
+        'Clearance Date Granted': cp.clearanceGrantedDate
+          ? moment(cp.clearanceGrantedDate).format('DD//MM//YYYY')
+          : null,
+        'Clearance Expiry Date': cp.clearanceExpiryDate
+          ? moment(cp.clearanceExpiryDate).format('DD//MM//YYYY')
+          : null,
         'Current Sponsor ID': cp.clearanceSponsorId,
         'Current Sponsor': cp.clearanceSponsor?.name,
         'Organization ID':
@@ -357,7 +369,9 @@ export class ExportController {
         'Organization ID': opportunity.organizationId,
         Organization: opportunity.organization.title,
         'Delegate Contact Person ID': opportunity.contactPersonId,
-        'Delegate Contact Person': `${opportunity.contactPerson?.firstName?? ''} ${opportunity.contactPerson?.lastName?? ''}`,
+        'Delegate Contact Person': `${
+          opportunity.contactPerson?.firstName ?? ''
+        } ${opportunity.contactPerson?.lastName ?? ''}`,
         Name: opportunity.title,
         'Type ID': opportunity.type,
         'State ID': opportunity.stateId,
@@ -368,11 +382,19 @@ export class ExportController {
         'Linked Project': opportunity.linkedWork?.title,
         'Tender Title': opportunity.tender,
         'Tender Number': opportunity.tenderNumber,
-        'Expected Start Date': opportunity.startDate,
-        'Expected End Date': opportunity.endDate,
+        'Expected Start Date': opportunity.startDate
+          ? moment(opportunity.startDate).format('DD//MM//YYYY')
+          : null,
+        'Expected End Date': opportunity.endDate
+          ? moment(opportunity.endDate).format('DD//MM//YYYY')
+          : null,
         'Work Hours Per Day': opportunity.hoursPerDay,
-        'Bid Due Date': opportunity.bidDate,
-        'Entry Date': opportunity.entryDate,
+        'Bid Due Date': opportunity.bidDate
+          ? moment(opportunity.bidDate).format('DD//MM//YYYY')
+          : null,
+        'Entry Date': opportunity.entryDate
+          ? moment(opportunity.entryDate).format('DD//MM//YYYY')
+          : null,
         'Estimated Value': opportunity.value,
         'Contribution Margin as a %': opportunity.cmPercentage,
         Go: opportunity.goPercentage,
@@ -426,7 +448,9 @@ export class ExportController {
         'Organization ID': project.organizationId,
         Organization: project.organization.title,
         'Delegate Contact Person ID': project.contactPersonId,
-        'Delegate Contact Person': `${project.contactPerson?.firstName?? ''} ${project.contactPerson?.lastName?? ''}`,
+        'Delegate Contact Person': `${project.contactPerson?.firstName ?? ''} ${
+          project.contactPerson?.lastName ?? ''
+        }`,
         Name: project.title,
         'Type ID': project.type,
         'State ID': project.stateId,
@@ -436,11 +460,19 @@ export class ExportController {
         'Linked Project ID': project.linkedWorkId,
         'Tender Title': project.tender,
         'Tender Number': project.tenderNumber,
-        'Start Date': project.startDate,
-        'End Date': project.endDate,
+        'Start Date': project.startDate
+          ? moment(project.startDate).format('DD//MM//YYYY')
+          : null,
+        'End Date': project.endDate
+          ? moment(project.endDate).format('DD//MM//YYYY')
+          : null,
         'Work Hours Per Day': project.hoursPerDay,
-        'Bid Due Date': project.bidDate,
-        'Entry Date': project.entryDate,
+        'Bid Due Date': project.bidDate
+          ? moment(project.bidDate).format('DD//MM//YYYY')
+          : null,
+        'Entry Date': project.entryDate
+          ? moment(project.entryDate).format('DD//MM//YYYY')
+          : null,
         'Estimated Value': project.value,
         'Contribution Margin as a %': project.cmPercentage,
         Go: project.goPercentage,
@@ -502,7 +534,9 @@ export class ExportController {
         'Line Manager ID': employee.lineManagerId,
         'Line Manager': employee.lineManager?.getFullName,
         'Contact Person ID': employee.contactPersonOrganization.contactPersonId,
-        'Contact Person': `${employee.contactPersonOrganization.contactPerson?.firstName?? ''} ${employee.contactPersonOrganization.contactPerson?.lastName?? ''}`,
+        'Contact Person': `${
+          employee.contactPersonOrganization.contactPerson?.firstName ?? ''
+        } ${employee.contactPersonOrganization.contactPerson?.lastName ?? ''}`,
       };
 
       employees.push(entity);
@@ -556,7 +590,11 @@ export class ExportController {
         'Contractor Manager': subContractor.lineManager?.getFullName,
         'Contact Person ID':
           subContractor.contactPersonOrganization.contactPersonId,
-        'Contact Person': `${subContractor.contactPersonOrganization.contactPerson?.firstName?? ''} ${subContractor.contactPersonOrganization.contactPerson?.lastName?? ''}`,
+        'Contact Person': `${
+          subContractor.contactPersonOrganization.contactPerson?.firstName ?? ''
+        } ${
+          subContractor.contactPersonOrganization.contactPerson?.lastName ?? ''
+        }`,
         'Organization ID':
           subContractor.contactPersonOrganization.organizationId,
         Organization:
