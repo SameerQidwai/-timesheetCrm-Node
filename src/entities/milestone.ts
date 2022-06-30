@@ -27,6 +27,9 @@ export class Milestone extends Base {
   @Column({ name: 'project_id' })
   projectId: number;
 
+  @Column({ name: 'file_id', nullable: true })
+  fileId: number;
+
   @ManyToOne(() => Opportunity)
   @JoinColumn({ name: 'project_id' })
   project: Opportunity;

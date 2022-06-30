@@ -6,6 +6,7 @@ import {
   ProjectResourceDTO,
   PurchaseOrderDTO,
   MilestoneDTO,
+  MilestoneUploadDTO,
 } from '../dto';
 import { EntityRepository, In, IsNull, Not, Repository } from 'typeorm';
 import { Organization } from './../entities/organization';
@@ -615,6 +616,7 @@ export class ProjectRepository extends Repository<Opportunity> {
             endDate: milestone.endDate,
             progress: milestone.progress,
             isApproved: milestone.isApproved,
+            phase: milestone.project.phase,
           });
       });
     });
@@ -654,6 +656,7 @@ export class ProjectRepository extends Repository<Opportunity> {
               endDate: milestone.endDate,
               progress: milestone.progress,
               isApproved: milestone.isApproved,
+              phase: milestone.project.phase,
             });
         });
     });
@@ -712,14 +715,10 @@ export class ProjectRepository extends Repository<Opportunity> {
 
     let purchaseOrder = purchaseOrders[0];
 
-    if (!purchaseOrder) {
-      throw new Error('Purchase Order not found');
-    }
-
     return {
       projectName: milestone.project.title,
-      purchaseOrderNo: purchaseOrder.orderNo ?? '---',
-      purchaseOrderDate: purchaseOrder.issueDate,
+      purchaseOrderNo: purchaseOrder?.orderNo ?? '---',
+      purchaseOrderDate: purchaseOrder?.issueDate ?? '---',
       milestoneName: milestone.title,
       milestoneDesc: milestone.description,
       organizationName: milestone.project.organization.name,
@@ -749,18 +748,53 @@ export class ProjectRepository extends Repository<Opportunity> {
 
     let purchaseOrder = purchaseOrders[0];
 
-    if (!purchaseOrder) {
-      throw new Error('Purchase Order not found');
-    }
-
     return {
       projectName: milestone.project.title,
-      purchaseOrderNo: purchaseOrder.orderNo ?? '---',
-      purchaseOrderDate: purchaseOrder.issueDate,
+      purchaseOrderNo: purchaseOrder?.orderNo ?? '---',
+      purchaseOrderDate: purchaseOrder?.issueDate ?? '---',
       milestoneName: milestone.title,
       milestoneDesc: milestone.description,
       organizationName: milestone.project.organization.name,
     };
+  }
+
+  async uploadAnyMilestoneFile(
+    milestoneId: number,
+    milestoneUploadDTO: MilestoneUploadDTO
+  ): Promise<any | undefined> {
+    let milestone = await this.manager.findOne(Milestone, milestoneId, {
+      relations: ['project', 'project.organization'],
+    });
+
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    milestone.fileId = milestoneUploadDTO.fileId;
+
+    return this.manager.save(milestone);
+  }
+
+  async uploadManageMilestoneFile(
+    authId: number,
+    milestoneId: number,
+    milestoneUploadDTO: MilestoneUploadDTO
+  ): Promise<any | undefined> {
+    let milestone = await this.manager.findOne(Milestone, milestoneId, {
+      relations: ['project', 'project.organization'],
+    });
+
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    if (milestone.project.projectManagerId !== authId) {
+      throw new Error('Not Authorized');
+    }
+
+    milestone.fileId = milestoneUploadDTO.fileId;
+
+    return this.manager.save(milestone);
   }
 
   async addMilestone(

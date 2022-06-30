@@ -73,7 +73,7 @@ export class ProjectMilestoneController {
 
       res.status(200).json({
         success: true,
-        message: 'Milestones Approved',
+        message: 'Milestone Approved',
         data: records,
       });
     } catch (e) {
@@ -99,6 +99,35 @@ export class ProjectMilestoneController {
       res.status(200).json({
         success: true,
         message: 'Milestones Approval',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async uploadMilestoneFile(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(ProjectRepository);
+      let records: any = [];
+      let milestoneId = req.params.id;
+      const { grantLevel, user } = res.locals;
+      if (grantLevel.includes('ANY')) {
+        records = await repository.uploadAnyMilestoneFile(
+          parseInt(milestoneId),
+          req.body
+        );
+      } else if (grantLevel.includes('MANAGE')) {
+        records = await repository.uploadManageMilestoneFile(
+          user.id,
+          parseInt(milestoneId),
+          req.body
+        );
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Milestone File Uploaded',
         data: records,
       });
     } catch (e) {

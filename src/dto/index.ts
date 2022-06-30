@@ -491,3 +491,7 @@ export interface AddressDTO {
 export interface TrainingDTO {
   training: string;
 }
+
+export interface MilestoneUploadDTO {
+  fileId: number;
+}

@@ -22,6 +22,13 @@ router
   );
 
 router
+  .route('/:id/upload')
+  .put(
+    [isLoggedIn, can(Action.UPDATE, Resource.PROJECTS)],
+    contr.uploadMilestoneFile.bind(contr)
+  );
+
+router
   .route('/:id/export')
   .get(
     [isLoggedIn, can(Action.APPROVAL, Resource.TIMESHEETS)],

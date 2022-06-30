@@ -12,7 +12,7 @@ export class GlobalVariableValue extends Base {
     nullable: true,
     type: 'float',
     precision: 11,
-    scale: 2,
+    scale: 4,
   })
   value: number;
 

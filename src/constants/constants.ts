@@ -71,6 +71,7 @@ export enum EntityType {
   COMMENT = 'COM',
   PROJECT_ENTRY = 'PEN',
   LEAVE_REQUEST = 'LRE',
+  MILESTONE = 'MIL',
 }
 
 export enum OpportunityStatus {
