@@ -444,10 +444,10 @@ export class ImportController {
       }
 
       let contactPerson: ContactPerson | undefined;
-      if (body['Delegate Contact Person']) {
+      if (body['Delegate Contact Person ID']) {
         contactPerson = await manager.findOne(
           ContactPerson,
-          body['Delegate Contact Person']
+          body['Delegate Contact Person ID']
         );
         if (!contactPerson) {
           throw new Error('Contact Person not found');
@@ -596,10 +596,10 @@ export class ImportController {
       }
 
       let contactPerson: ContactPerson | undefined;
-      if (body['Delegate Contact Person']) {
+      if (body['Delegate Contact Person ID']) {
         contactPerson = await manager.findOne(
           ContactPerson,
-          body['Delegate Contact Person']
+          body['Delegate Contact Person ID']
         );
         if (!contactPerson) {
           throw new Error('Contact Person not found');
