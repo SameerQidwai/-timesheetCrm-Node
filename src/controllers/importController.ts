@@ -27,6 +27,7 @@ import { BankAccount } from '../entities/bankAccount';
 import {
   contactPersonXLSXValidator,
   employeeXLSXValidator,
+  opportunityXLSXValidator,
   organizationXLSXValidator,
   projectXLSXValidator,
   subContractorXLSXValidator,
@@ -370,7 +371,7 @@ export class ImportController {
     let manager = getManager();
 
     return await manager.transaction(async (transactionalEntityManager) => {
-      await contactPersonXLSXValidator.validateCreate.validateAsync(body);
+      await opportunityXLSXValidator.validateCreate.validateAsync(body);
       let opportunityObj = new Opportunity();
       opportunityObj.title = body.Name;
       if (body['Expected Start Date']) {

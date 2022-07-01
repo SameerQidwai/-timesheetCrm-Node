@@ -7,8 +7,8 @@ let opportunityXLSXRules: BaseRule = {
     'Organization ID': Joi.number().required(),
     Name: Joi.string().required(),
     'Type ID': Joi.number().required(),
-    'Expected Start Date': Joi.date().required(),
-    'Expected End Date': Joi.date().required(),
+    'Expected Start Date': Joi.required(),
+    'Expected End Date': Joi.required(),
     'Work Hours Per Day': Joi.number().required(),
   }).unknown(true),
 
