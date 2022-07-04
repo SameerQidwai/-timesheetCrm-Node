@@ -524,7 +524,7 @@ export class SubContractorRepository extends Repository<Employee> {
       .andWhere('values.end_date >= :endDate', {
         endDate: moment().endOf('day').toDate(),
       })
-      .getOne();
+      .getMany();
 
     buyRate = currentContract?.hourlyBaseRate;
     golobalVariables = golobalVariables.map((variable: any) => {
