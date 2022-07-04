@@ -30,12 +30,21 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
         let globalVariableValue: GlobalVariableValue;
 
         for (let globalVariableLabelValueDTO of globalVariableLabelValueArrayDTO.variables) {
-          globalVariable = await this.manager.getRepository(GlobalVariableLabel).createQueryBuilder("variable")
-          .innerJoinAndSelect("variable.values", "values")
-          .where("name = :name", { name:  globalVariableLabelValueDTO.name})
-          .andWhere('values.start_date <= :startDate', {startDate: moment().startOf('day').toDate()})
-          .andWhere('values.end_date >= :endDate', {endDate: moment().endOf('day').toDate()})
-          .getOne()
+          // globalVariable = await this.manager.getRepository(GlobalVariableLabel).createQueryBuilder("variable")
+          // .innerJoinAndSelect("variable.values", "values")
+          // .where("name = :name", { name:  globalVariableLabelValueDTO.name})
+          // .andWhere('values.start_date <= :startDate', {startDate: moment().startOf('day').toDate()})
+          // .andWhere('values.end_date >= :endDate', {endDate: moment().endOf('day').toDate()})
+          // .getOne()
+
+          globalVariable = await this.manager.findOne(
+            GlobalVariableLabel,
+            {
+              name: globalVariableLabelValueDTO.name,
+            },
+            { relations: ['values'] }
+          );
+
 
           if (!globalVariable) {
             globalVariable = new GlobalVariableLabel();
@@ -44,7 +53,14 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
 
             globalVariableValue = new GlobalVariableValue();
           } else {
-            globalVariableValue = globalVariable.values[0];
+            globalVariableValue = globalVariable.values.filter(el=> 
+              moment(el.startDate).isSameOrBefore(moment(), 'date') &&
+              moment(el.endDate).isSameOrAfter(moment(), 'date')
+            )[0]
+            if (!globalVariableValue){
+              globalVariableValue = new GlobalVariableValue();
+            }
+            // globalVariableValue = globalVariable.values[0];
           }
 
           globalVariableValue.globalVariableId = globalVariable.id;
@@ -63,7 +79,13 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
       }
     );
 
-    return this.manager.find(GlobalVariableLabel, { relations: ['values'] });
+    // return this.manager.find(GlobalVariableLabel, { relations: ['values'] });
+    return await this.manager.getRepository(GlobalVariableLabel)
+    .createQueryBuilder("variable")
+    .innerJoinAndSelect("variable.values", "values")
+    .andWhere('values.start_date <= :startDate', {startDate: moment().startOf('day').toDate()})
+    .andWhere('values.end_date >= :endDate', {endDate: moment().endOf('day').toDate()})
+    .getMany()
   }
 
   async addValueRow(
