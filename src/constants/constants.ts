@@ -71,6 +71,7 @@ export enum EntityType {
   COMMENT = 'COM',
   PROJECT_ENTRY = 'PEN',
   LEAVE_REQUEST = 'LRE',
+  MILESTONE = 'MIL',
 }
 
 export enum OpportunityStatus {
@@ -86,4 +87,36 @@ export enum LeaveRequestStatus {
   SUBMITTED = 'SB',
   REJECTED = 'RJ',
   APPROVED = 'AP',
+}
+
+export enum Entities {
+  ORGANIZATION = 'ORG',
+  CONTACT_PERSON = 'CPE',
+  OPPORTUNITY = 'OPP',
+  PROJECT = 'PRO',
+  EMPLOYEE = 'EMP',
+  SUB_CONTRACTOR = 'SCO',
+  TIMESHEET = 'TSH',
+  PURCHASE_ORDER = 'POR',
+  COMMENT = 'COM',
+  PROJECT_ENTRY = 'PEN',
+  LEAVE_REQUEST = 'LRE',
+}
+
+export enum ExportFileName {
+  ORGANIZATION = 'organizations.xlsx',
+  CONTACT_PERSON = 'contact_persons.xlsx',
+  OPPORTUNITY = 'opportunities.xlsx',
+  PROJECT = 'projects.xlsx',
+  EMPLOYEE = 'employees.xlsx',
+  SUB_CONTRACTOR = 'subcontractors.xlsx',
+}
+
+export enum ImportLogName {
+  ORGANIZATION = 'organizations_logs.xlsx',
+  CONTACT_PERSON = 'contact_persons_logs.xlsx',
+  OPPORTUNITY = 'opportunities_logs.xlsx',
+  PROJECT = 'projects_logs.xlsx',
+  EMPLOYEE = 'employees_logs.xlsx',
+  SUB_CONTRACTOR = 'subcontractors_logs.xlsx',
 }

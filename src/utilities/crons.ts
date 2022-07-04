@@ -4,13 +4,12 @@ import { Employee } from '../entities/employee';
 import { LeaveRequestBalance } from '../entities/leaveRequestBalance';
 import { LeaveRequestTriggerFrequency } from '../constants/constants';
 
-let monthCronString = '1 0 0 30 */1 *';
-let yearCronString = '1 0 0 1 7 *';
+let monthCronString = '1 0 0 1 */1 *';
+let yearCronString = '1 10 0 1 7 *';
 
 export const leaveRequestMonthlyCron = cron.schedule(
   monthCronString,
   () => {
-    console.log('Monthly Cron Ran');
     getManager().transaction(async (transactionalEntityManager) => {
       let employees = await transactionalEntityManager.find(Employee, {
         relations: [
@@ -92,6 +91,7 @@ export const leaveRequestMonthlyCron = cron.schedule(
       });
       let balances = await Promise.all(promises);
       await transactionalEntityManager.save(balances);
+      console.log('Monthly Cron Ran');
     });
   },
   {
@@ -103,7 +103,6 @@ export const leaveRequestMonthlyCron = cron.schedule(
 export const leaveRequestYearlyCron = cron.schedule(
   yearCronString,
   () => {
-    console.log('Yearly Cron Ran');
     getManager().transaction(async (transactionalEntityManager) => {
       let employees = await transactionalEntityManager.find(Employee, {
         relations: [
@@ -184,6 +183,16 @@ export const leaveRequestYearlyCron = cron.schedule(
 
       let balances = await Promise.all(promises);
       await transactionalEntityManager.save(balances);
+
+      for (let employee of employees) {
+        for (let balance of employee.leaveRequestBalances) {
+          balance.carryForward = balance.balanceHours;
+          balance.used = 0;
+          await transactionalEntityManager.save(balance);
+        }
+      }
+
+      console.log('Yearly Cron Ran');
     });
   },
   {

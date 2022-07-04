@@ -2113,6 +2113,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
             projectId: milestoneEntry.milestone.projectId,
             projectType: milestoneEntry.milestone.project.type,
             project: milestoneEntry.milestone.project.title,
+            phase:milestoneEntry.milestone.project.phase,
             isManaged: authHaveThisMilestone,
             notes: milestoneEntry.notes,
             actionNotes: milestoneEntry.actionNotes,

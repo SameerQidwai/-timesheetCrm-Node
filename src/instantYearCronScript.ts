@@ -92,6 +92,14 @@ let runYearly = async () => {
 
     let balances = await Promise.all(promises);
     await transactionalEntityManager.save(balances);
+
+    for (let employee of employees) {
+      for (let balance of employee.leaveRequestBalances) {
+        balance.carryForward = balance.balanceHours;
+        balance.used = 0;
+        await transactionalEntityManager.save(balance);
+      }
+    }
   });
 
   console.log('Yearly Cron Ends');
