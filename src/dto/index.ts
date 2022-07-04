@@ -491,3 +491,174 @@ export interface AddressDTO {
 export interface TrainingDTO {
   training: string;
 }
+
+export interface MilestoneUploadDTO {
+  fileId: number;
+}
+
+//----------------------IMPORT EXPORT DTO---------------------------------------
+
+export interface OrganizationEntity {
+  ID: number;
+  Name: string;
+  Title: string;
+  Phone: string;
+  Email: string;
+  'Business Type': BusinessType;
+  Address: string;
+  Website: string;
+  'Parent Organization ID': number | null;
+  'Parent Organization': string | undefined;
+  'Delegate Contact Person ID': number | null;
+  'Delegate Contact Person': string | null;
+  ABN: string;
+  'Tax Code': string;
+  'Email for Invoices': string;
+  'Contact Number for Invoices': string;
+  'Professional Indemnity Insurer': string;
+  'Professional Indemnity Policy Number': string;
+  'Professional Indemnity Sum Insured': number;
+  'Professional Indemnity Expiry': string | null;
+  'Public Liability Insurer': string;
+  'Public Liability Policy Number': string;
+  'Public Liability Sum Insured': number;
+  'Public Liability Expiry': string | null;
+  "Worker's Compensation Insurer": string;
+  "Worker's Compensation Policy Number": string;
+  "Worker's Compensation Sum Insured": number;
+  "Worker's Compensation Expiry": string | null;
+  'Current Year Forecast': number;
+  'Next Year Forecast': number;
+}
+
+export interface ContactPersonEntity {
+  ID: number;
+  'First Name': String;
+  'Last Name': String;
+  Phone: string;
+  Email: string;
+  Gender: Gender;
+  'State ID': number;
+  State: string;
+  Address: String;
+  'Clearance Level': ClearanceLevel;
+  'Clearance Date Granted': string | null;
+  'Clearance Expiry Date': string | null;
+  'Current Sponsor ID': number | null;
+  'Current Sponsor': string | null;
+  'Organization ID': number | null | undefined;
+  Organization: string | null | undefined;
+}
+
+export interface OpportunityEntity {
+  ID: number;
+  'Panel ID': number;
+  Panel: string;
+  'Organization ID': number;
+  Organization: string;
+  'Delegate Contact Person ID': number | null;
+  'Delegate Contact Person': string | null;
+  Name: String;
+  'Type ID': ProjectType;
+  'State ID': number;
+  State: string;
+  'Qualified Ops': boolean | string;
+  Stage: string;
+  'Linked Project ID': number | null;
+  'Linked Project': String | null;
+  'Tender Title': string;
+  'Tender Number': String;
+  'Expected Start Date': string | null;
+  'Expected End Date': string | null;
+  'Work Hours Per Day': number;
+  'Bid Due Date': string | null;
+  'Entry Date': string | null;
+  'Estimated Value': number;
+  'Contribution Margin as a %': number;
+  Go: number;
+  Get: number;
+  'Account Director ID': number | null;
+  'Account Director': string | null;
+  'Account Manager ID': number | null;
+  'Account Manager': string | null;
+  'Opportunity Manager ID': number | null;
+  'Opportunity Manager': string | null;
+}
+export interface ProjectEntity {
+  ID: number;
+  'Panel ID': number;
+  Panel: string;
+  'Organization ID': number;
+  Organization: string;
+  'Delegate Contact Person ID': number | null;
+  'Delegate Contact Person': string | null;
+  Name: String;
+  'Type ID': ProjectType;
+  'State ID': number;
+  State: string;
+  'Qualified Ops': boolean | string;
+  Stage: string;
+  'Linked Project ID': number | null;
+  'Tender Title': string;
+  'Tender Number': String;
+  'Start Date': string | null;
+  'End Date': string | null;
+  'Work Hours Per Day': number;
+  'Bid Due Date': string | null;
+  'Entry Date': string | null;
+  'Estimated Value': number;
+  'Contribution Margin as a %': number;
+  Go: number;
+  Get: number;
+  'Account Director ID': number | null;
+  'Account Director': string | null;
+  'Account Manager ID': number | null;
+  'Account Manager': string | null;
+  'Project Manager ID': number | null;
+  'Project Manager': string | null;
+}
+
+export interface EmployeeEntity {
+  ID: number;
+  Email: String;
+  Password: string;
+  'Role ID': number;
+  Role: string;
+  'Next Of Kin Name': string;
+  'Next Of Kin Phone': string;
+  'Next Of Kin Email': string;
+  'Next Of Kin Relationship': string;
+  TFN: string;
+  'Bank Account Holder Name': String | null;
+  'Bank Account Number': String | null;
+  'BSB Number': string | null;
+  'Tax-free Threshold': boolean | string;
+  'Help (HECS)': boolean | string;
+  Training: string;
+  'Line Manager ID': number | null;
+  'Line Manager': string | null;
+  'Contact Person ID': number;
+  'Contact Person': string;
+}
+
+export interface SubContractorEntity {
+  ID: number;
+  Email: String;
+  Password: string;
+  'Role ID': number;
+  Role: string;
+  'Next Of Kin Name': string;
+  'Next Of Kin Phone': string;
+  'Next Of Kin Email': string;
+  'Next Of Kin Relationship': string;
+  TFN: string;
+  'Tax-free Threshold': boolean | string;
+  'Help (HECS)': boolean | string;
+  Training: string;
+  'Contractor Manager ID': number | null;
+  'Contractor Manager': string | null;
+  'Contact Person ID': number;
+  'Contact Person': string;
+  'Organization ID': number;
+  Organization: string;
+}

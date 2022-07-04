@@ -30,6 +30,8 @@ import globalRoutes from './globalRoutes';
 import globalVariableRoutes from './globalVariableRoutes';
 import leaveRequests from './leaveRequestRoutes';
 import leaveRequestBalances from './leaveRequestBalanceRoutes';
+import milestoneRoutes from './milestoneRoutes';
+import importExportRoutes from './importExportRoutes';
 
 const router: Router = Router();
 router.use('', authRoutes);
@@ -52,6 +54,7 @@ router.use('/employment-contracts', employmentContractRoutes);
 router.use('/sub-contractors-contracts', subContractorContractRoutes);
 router.use('/opportunities', opportunityRoutes);
 router.use('/projects', projectRoutes);
+router.use('/milestones', milestoneRoutes);
 router.use('/timesheets', timesheetRoutes);
 router.use('/files', fileRoutes);
 router.use('/attachments', attachmentRoutes);
@@ -62,6 +65,7 @@ router.use('/global-setting', globalRoutes);
 router.use('/global-variables', globalVariableRoutes);
 router.use('/leave-requests', leaveRequests);
 router.use('/leave-request-balances', leaveRequestBalances);
+router.use('/data', importExportRoutes);
 // router.use("/opportunity-resources", opportunityResourceRoutes);
 
 // console.log("router: ", router);

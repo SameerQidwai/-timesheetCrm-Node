@@ -6,6 +6,7 @@ import {
   ProjectResourceDTO,
   PurchaseOrderDTO,
   MilestoneDTO,
+  MilestoneUploadDTO,
 } from '../dto';
 import { EntityRepository, In, IsNull, Not, Repository } from 'typeorm';
 import { Organization } from './../entities/organization';
@@ -29,6 +30,7 @@ import {
   OpportunityStatus,
   ProjectType,
 } from '../constants/constants';
+import { File } from '../entities/file';
 
 @EntityRepository(Opportunity)
 export class ProjectRepository extends Repository<Opportunity> {
@@ -587,6 +589,256 @@ export class ProjectRepository extends Repository<Opportunity> {
     return project.milestones;
   }
 
+  async getAllApprovalMilestones(
+    projectId: number | null = null
+  ): Promise<any | undefined> {
+    let response: any = [];
+
+    let whereCondition = {
+      status: In([OpportunityStatus.WON, OpportunityStatus.COMPLETED]),
+    };
+
+    if (projectId) (whereCondition as any).id = projectId;
+
+    let projects = await this.find({
+      where: whereCondition,
+      relations: ['milestones'],
+    });
+
+    let milestoneIds: number[] = [];
+
+    projects.forEach((project) => {
+      project.milestones.forEach((milestone) => {
+        milestoneIds.push(milestone.id);
+      });
+    });
+
+    for (let project of projects) {
+      for (let milestone of project.milestones) {
+        if (milestone.progress == 100) {
+          let file: File | undefined = undefined;
+          if (milestone.fileId) {
+            file = await this.manager.findOne(File, milestone.fileId);
+          }
+
+          response.push({
+            projectId: project.id,
+            projectName: project.title,
+            milestoneId: milestone.id,
+            milestoneName: milestone.title,
+            startDate: milestone.startDate,
+            endDate: milestone.endDate,
+            progress: milestone.progress,
+            isApproved: milestone.isApproved,
+
+            phase: project.phase,
+            fileName: file?.uniqueName ?? null,
+          });
+        }
+      }
+    }
+
+    return response;
+  }
+
+  async getManagerApprovalMilestones(
+    authId: number,
+    projectId: number | null = null
+  ): Promise<any | undefined> {
+    let response: any = [];
+
+    let whereCondition = {
+      status: In([OpportunityStatus.WON, OpportunityStatus.COMPLETED]),
+      projectManagerId: authId,
+    };
+    if (projectId) (whereCondition as any).id = projectId;
+
+    let projects = await this.find({
+      where: whereCondition,
+      relations: ['milestones'],
+    });
+
+    // let milestoneIds: number[] = [];
+
+    // projects.forEach((project) => {
+    //   if (project.projectManagerId == authId) {
+    //     project.milestones.forEach((milestone) => {
+    //       milestoneIds.push(milestone.id);
+    //     });
+    //   }
+    // });
+
+    // let attachments = await this.manager.find(Attachment, {
+    //   where: { targetType: 'MIL', targetId: In(milestoneIds) },
+    //   relations: ['file'],
+    // });
+
+    // let milestoneAttachments: Attachment[] = [];
+    // attachments.forEach((attachment) => {
+    //   milestoneAttachments[attachment.targetId] = attachment;
+    // });
+
+    for (let project of projects) {
+      if (project.projectManagerId == authId) {
+        for (let milestone of project.milestones) {
+          if (milestone.progress == 100) {
+            let file: File | undefined = undefined;
+            if (milestone.fileId) {
+              file = await this.manager.findOne(File, milestone.fileId);
+            }
+            response.push({
+              projectId: project.id,
+              projectName: project.title,
+              milestoneId: milestone.id,
+              milestoneName: milestone.title,
+              startDate: milestone.startDate,
+              endDate: milestone.endDate,
+              progress: milestone.progress,
+              isApproved: milestone.isApproved,
+              phase: project.phase,
+              fileName: file?.uniqueName ?? null,
+            });
+          }
+        }
+      }
+    }
+
+    return response;
+  }
+
+  async approveAnyMilestone(milestoneId: number): Promise<any | undefined> {
+    let milestone = await this.manager.findOne(Milestone, milestoneId, {
+      relations: ['project'],
+    });
+
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    milestone.isApproved = true;
+
+    return this.manager.save(milestone);
+  }
+
+  async approveManageMilestone(
+    authId: number,
+    milestoneId: number
+  ): Promise<any | undefined> {
+    let milestone = await this.manager.findOne(Milestone, milestoneId, {
+      relations: ['project'],
+    });
+
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    if (milestone.project.projectManagerId !== authId) {
+      throw new Error('Not Authorized');
+    }
+
+    milestone.isApproved = true;
+
+    return this.manager.save(milestone);
+  }
+
+  async exportAnyMilestone(milestoneId: number): Promise<any | undefined> {
+    let milestone = await this.manager.findOne(Milestone, milestoneId, {
+      relations: ['project', 'project.organization'],
+    });
+
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    let purchaseOrders = await this.manager.find(PurchaseOrder, {
+      where: { projectId: milestone.projectId },
+      order: { issueDate: 'DESC' },
+    });
+
+    let purchaseOrder = purchaseOrders[0];
+
+    return {
+      projectName: milestone.project.title,
+      purchaseOrderNo: purchaseOrder?.orderNo ?? null,
+      purchaseOrderDate: purchaseOrder?.issueDate ?? null,
+      milestoneName: milestone.title,
+      milestoneDesc: milestone.description,
+      organizationName: milestone.project.organization.name,
+    };
+  }
+
+  async exportManageMilestone(
+    authId: number,
+    milestoneId: number
+  ): Promise<any | undefined> {
+    let milestone = await this.manager.findOne(Milestone, milestoneId, {
+      relations: ['project', 'project.organization'],
+    });
+
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    if (milestone.project.projectManagerId !== authId) {
+      throw new Error('Not Authorized');
+    }
+
+    let purchaseOrders = await this.manager.find(PurchaseOrder, {
+      where: { projectId: milestone.projectId },
+      order: { issueDate: 'DESC' },
+    });
+
+    let purchaseOrder = purchaseOrders[0];
+
+    return {
+      projectName: milestone.project.title,
+      purchaseOrderNo: purchaseOrder?.orderNo ?? null,
+      purchaseOrderDate: purchaseOrder?.issueDate ?? null,
+      milestoneName: milestone.title,
+      milestoneDesc: milestone.description,
+      organizationName: milestone.project.organization.name,
+    };
+  }
+
+  async uploadAnyMilestoneFile(
+    milestoneId: number,
+    milestoneUploadDTO: MilestoneUploadDTO
+  ): Promise<any | undefined> {
+    let milestone = await this.manager.findOne(Milestone, milestoneId, {
+      relations: ['project', 'project.organization'],
+    });
+
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    milestone.fileId = milestoneUploadDTO.fileId;
+
+    return this.manager.save(milestone);
+  }
+
+  async uploadManageMilestoneFile(
+    authId: number,
+    milestoneId: number,
+    milestoneUploadDTO: MilestoneUploadDTO
+  ): Promise<any | undefined> {
+    let milestone = await this.manager.findOne(Milestone, milestoneId, {
+      relations: ['project', 'project.organization'],
+    });
+
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    if (milestone.project.projectManagerId !== authId) {
+      throw new Error('Not Authorized');
+    }
+
+    milestone.fileId = milestoneUploadDTO.fileId;
+
+    return this.manager.save(milestone);
+  }
+
   async addMilestone(
     projectId: number,
     milestoneDTO: MilestoneDTO
@@ -702,7 +954,10 @@ export class ProjectRepository extends Repository<Opportunity> {
 
       let timesheetMilestoneEntries = await transactionalEntityManager.find(
         TimesheetMilestoneEntry,
-        { where: { milestoneId: milestone.id }, relations: ['timesheet'] }
+        {
+          where: { milestoneId: milestone.id },
+          relations: ['timesheet', 'entries'],
+        }
       );
 
       let leaveRequests = await transactionalEntityManager.find(LeaveRequest, {
@@ -1556,14 +1811,6 @@ export class ProjectRepository extends Repository<Opportunity> {
       where: [
         { status: OpportunityStatus.WON },
         { status: OpportunityStatus.COMPLETED },
-      ],
-      relations: [
-        'organization',
-        'opportunityResources',
-        'opportunityResources.panelSkill',
-        'opportunityResources.panelSkillStandardLevel',
-        'opportunityResources.opportunityResourceAllocations',
-        'opportunityResources.opportunityResourceAllocations.contactPerson',
       ],
     });
 
