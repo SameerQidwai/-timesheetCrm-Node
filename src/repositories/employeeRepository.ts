@@ -1274,11 +1274,6 @@ export class EmployeeRepository extends Repository<Employee> {
       currentContract?.type === 1
         ? currentContract?.remunerationAmount
         : currentContract?.remunerationAmount / 52 / currentContract?.noOfHours;
-    console.log(
-      currentContract.dailyHours,
-      currentContract.hourlyBaseRate,
-      currentContract?.remunerationAmount
-    );
 
     let buyRate: any = 0;
     let setGolobalVariables: any = [];
@@ -1287,25 +1282,47 @@ export class EmployeeRepository extends Repository<Employee> {
       let stateName: any =
         employee?.contactPersonOrganization.contactPerson?.state?.label;
 
+      // let variables: any = [
+      //   { name: 'Superannuation' },
+      //   { name: stateName },
+      //   { name: 'WorkCover' },
+      // ];
+
+      // if (currentContract?.type !== 1) {
+      //   variables.push({ name: 'Public Holidays' });
+      // }
+
+      // employee?.leaveRequestBalances.forEach((el) => {
+      //   variables.push({ name: el.type.leaveRequestType.label });
+      // });
+
+      // let golobalVariables: any = await this.manager.find(GlobalVariableLabel, {
+      //   where: variables,
+      //   relations: ['values'],
+      // });
+
       let variables: any = [
-        { name: 'Superannuation' },
-        { name: stateName },
-        { name: 'WorkCover' },
+        'Superannuation',
+        stateName,
+        'WorkCover',
       ];
 
       if (currentContract?.type !== 1) {
-        variables.push({ name: 'Public Holidays' });
+        variables.push('Public Holidays');
       }
 
       employee?.leaveRequestBalances.forEach((el) => {
-        variables.push({ name: el.type.leaveRequestType.label });
+        variables.push(el.type.leaveRequestType.label);
       });
 
-      let golobalVariables: any = await this.manager.find(GlobalVariableLabel, {
-        where: variables,
-        relations: ['values'],
-      });
-
+      let golobalVariables: any = await this.manager.getRepository(GlobalVariableLabel)
+      .createQueryBuilder("variable")
+      .innerJoinAndSelect("variable.values", "values")
+      .where("name IN (:...name)", { name: variables })
+      .andWhere('values.start_date <= :startDate', {startDate: moment().startOf('day').toDate()})
+      .andWhere('values.end_date >= :endDate', {endDate: moment().endOf('day').toDate()})
+      .getMany()
+      
       let sortIndex: any = {
         Superannuation: 0,
         [stateName]: 1,
