@@ -509,15 +509,22 @@ export class SubContractorRepository extends Repository<Employee> {
           currentContract?.remunerationAmount *
             (currentContract?.dailyHours * 22);
     let buyRate: any = 0;
-    let golobalVariables: any = [];
     // if (currentContract?.hourlyBaseRate){
     let stateName: string | undefined =
       subContractor?.contactPersonOrganization.contactPerson?.state?.label;
 
-    golobalVariables = await this.manager.find(GlobalVariableLabel, {
-      where: { name: stateName },
-      relations: ['values'],
-    });
+    let golobalVariables: any = await this.manager
+      .getRepository(GlobalVariableLabel)
+      .createQueryBuilder('variable')
+      .innerJoinAndSelect('variable.values', 'values')
+      .where('name = :name', { name: stateName })
+      .andWhere('values.start_date <= :startDate', {
+        startDate: moment().startOf('day').toDate(),
+      })
+      .andWhere('values.end_date >= :endDate', {
+        endDate: moment().endOf('day').toDate(),
+      })
+      .getOne();
 
     buyRate = currentContract?.hourlyBaseRate;
     golobalVariables = golobalVariables.map((variable: any) => {
