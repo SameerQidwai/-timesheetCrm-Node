@@ -6,14 +6,18 @@ import {
 import { EntityRepository, Repository } from 'typeorm';
 import { GlobalVariableValue } from '../entities/globalVariableValue';
 import { GlobalVariableLabel } from '../entities/globalVariableLabel';
+import moment from 'moment';
 
 @EntityRepository(GlobalVariableValue)
 export class GlobalVariableValueRepository extends Repository<GlobalVariableValue> {
   async getAllActive(): Promise<any[]> {
-    let result = await this.find({
-      relations: ['variable'],
-    });
 
+    let result = await this.createQueryBuilder("values")
+    .innerJoinAndSelect("values.variable", "variable")
+    .andWhere('start_Date <= :startDate', {startDate: moment().startOf('day').toDate()})
+    .andWhere('end_date >= :endDate', {endDate: moment().endOf('day').toDate()})
+    .getMany()
+    
     return result;
   }
 
@@ -26,13 +30,12 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
         let globalVariableValue: GlobalVariableValue;
 
         for (let globalVariableLabelValueDTO of globalVariableLabelValueArrayDTO.variables) {
-          globalVariable = await this.manager.findOne(
-            GlobalVariableLabel,
-            {
-              name: globalVariableLabelValueDTO.name,
-            },
-            { relations: ['values'] }
-          );
+          globalVariable = await this.manager.getRepository(GlobalVariableLabel).createQueryBuilder("variable")
+          .innerJoinAndSelect("variable.values", "values")
+          .where("name = :name", { name:  globalVariableLabelValueDTO.name})
+          .andWhere('values.start_date <= :startDate', {startDate: moment().startOf('day').toDate()})
+          .andWhere('values.end_date >= :endDate', {endDate: moment().endOf('day').toDate()})
+          .getOne()
 
           if (!globalVariable) {
             globalVariable = new GlobalVariableLabel();
