@@ -1309,11 +1309,12 @@ export class EmployeeRepository extends Repository<Employee> {
 
       if (currentContract?.type !== 1) {
         variables.push('Public Holidays');
-      }
 
-      employee?.leaveRequestBalances.forEach((el) => {
-        variables.push(el.type.leaveRequestType.label);
-      });
+        employee?.leaveRequestBalances.forEach((el) => {
+          variables.push(el.type.leaveRequestType.label);
+        });
+
+      }
 
       let golobalVariables: any = await this.manager.getRepository(GlobalVariableLabel)
       .createQueryBuilder("variable")
@@ -1356,7 +1357,11 @@ export class EmployeeRepository extends Repository<Employee> {
                 manipulateVariable;
               /** returning the already manipulated element to this index */
               if (swapElement) {
-                setGolobalVariables.push(swapElement);
+                if (index === sortIndex['Public Holidays']){
+                  setGolobalVariables[index-1] = swapElement
+                }else{
+                  setGolobalVariables.push(swapElement);
+                }
               }
               /**checking if index has not yet passed sort variable index means the element will later get sort and just swap it */
             } else if (index < sortIndex[variable.name]) {
