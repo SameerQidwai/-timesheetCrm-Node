@@ -130,19 +130,14 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
     });
 
     contracts.forEach((contract) => {
-      if (
-        moment(subContractorContractStartDate, 'YYYY-MM-DD').isBetween(
-          moment(contract.startDate),
-          moment(contract.endDate),
-          'date',
-          '[]'
-        )
-      ) {
-        throw new Error('Overlapping contract found');
-      }
-      if (subContractorContractEndDate) {
+      if (contract.id != id) {
+        console.log({
+          current: moment(subContractorContractStartDate),
+          startDate: moment(contract.startDate),
+          endDate: moment(contract.endDate),
+        });
         if (
-          moment(subContractorContractEndDate, 'YYYY-MM-DD').isBetween(
+          moment(subContractorContractStartDate).isBetween(
             moment(contract.startDate),
             moment(contract.endDate),
             'date',
@@ -151,9 +146,21 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
         ) {
           throw new Error('Overlapping contract found');
         }
-      } else {
-        if (!contract.endDate) {
-          throw new Error('Overlapping contract found');
+        if (subContractorContractEndDate) {
+          if (
+            moment(subContractorContractEndDate).isBetween(
+              moment(contract.startDate),
+              moment(contract.endDate),
+              'date',
+              '[]'
+            )
+          ) {
+            throw new Error('Overlapping contract found');
+          }
+        } else {
+          if (!contract.endDate) {
+            throw new Error('Overlapping contract found');
+          }
         }
       }
     });
