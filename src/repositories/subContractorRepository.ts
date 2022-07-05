@@ -358,7 +358,7 @@ export class SubContractorRepository extends Repository<Employee> {
   }
 
   async findOneCustom(id: number): Promise<any | undefined> {
-    return this.findOne(id, {
+    let subcontractor = await this.findOne(id, {
       relations: [
         'contactPersonOrganization',
         'contactPersonOrganization.contactPerson',
@@ -367,6 +367,61 @@ export class SubContractorRepository extends Repository<Employee> {
         'employmentContracts.file',
       ],
     });
+
+    if (!subcontractor) {
+      throw new Error('Employee not found');
+    }
+
+    let pastContracts: EmploymentContract[] = [];
+    let currentContract: EmploymentContract[] = [];
+    let futureContracts: EmploymentContract[] = [];
+
+    for (let contract of subcontractor.employmentContracts) {
+      let dateCarrier = {
+        startDate: contract.startDate,
+        endDate: contract.endDate,
+      };
+
+      if (dateCarrier.startDate == null) {
+        dateCarrier.startDate = moment().subtract(100, 'years').toDate();
+      }
+      if (dateCarrier.endDate == null) {
+        dateCarrier.endDate = moment().add(100, 'years').toDate();
+      }
+
+      if (
+        moment().isAfter(moment(dateCarrier.startDate), 'date') &&
+        moment().isAfter(moment(dateCarrier.endDate), 'date')
+      ) {
+        pastContracts.push(contract);
+      } else if (
+        moment().isBetween(
+          moment(dateCarrier.startDate),
+          moment(dateCarrier.endDate),
+          'date',
+          '[]'
+        )
+      ) {
+        currentContract.push(contract);
+      } else if (
+        moment().isBefore(moment(dateCarrier.startDate), 'date') &&
+        moment().isBefore(moment(dateCarrier.endDate), 'date')
+      ) {
+        futureContracts.push(contract);
+      }
+    }
+
+    if (currentContract.length) {
+      subcontractor.employmentContracts = [currentContract[0]];
+    } else if (futureContracts.length) {
+      subcontractor.employmentContracts = [futureContracts[0]];
+    } else if (pastContracts.length) {
+      subcontractor.employmentContracts = [
+        pastContracts[pastContracts.length - 1],
+      ];
+    }
+
+    return subcontractor;
   }
 
   async deleteCustom(id: number): Promise<any | undefined> {
