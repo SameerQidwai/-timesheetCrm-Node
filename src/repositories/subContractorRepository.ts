@@ -243,12 +243,26 @@ export class SubContractorRepository extends Repository<Employee> {
     subContractor: SubContractorDTO
   ): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
-      let subContractorObj = await this.findOneCustom(id);
+      if (!id) {
+        throw new Error('Sub Contractor not found');
+      }
+
+      let subContractorObj = await this.findOne(id, {
+        relations: [
+          'contactPersonOrganization',
+          'contactPersonOrganization.contactPerson',
+          'contactPersonOrganization.organization',
+          'employmentContracts',
+          'employmentContracts.file',
+        ],
+      });
+
       console.log('subContractorObj: ', subContractorObj);
 
       if (!subContractorObj) {
         throw new Error('Sub Contractor not found');
       }
+
       let contactPersonObj = await transactionalEntityManager.findOne(
         ContactPerson,
         subContractorObj.contactPersonOrganization.contactPerson.id
@@ -299,6 +313,7 @@ export class SubContractorRepository extends Repository<Employee> {
       } else {
         subContractorObj.lineManagerId = null;
       }
+
       subContractorObj = await transactionalEntityManager.save(
         subContractorObj
       );
@@ -318,27 +333,104 @@ export class SubContractorRepository extends Repository<Employee> {
         fileId,
       } = subContractor.latestContract;
 
+      let subContractorContractStartDate =
+        moment(startDate).format('YYYY-MM-DD');
+      let subContractorContractEndDate: string | null;
+      if (endDate != null) {
+        subContractorContractEndDate = moment(endDate).format('YYYY-MM-DD');
+      } else {
+        subContractorContractEndDate = null;
+      }
+
       // find latest contract here
-      let subContractorContract = await transactionalEntityManager
-        .getRepository(EmploymentContract)
-        .createQueryBuilder('employmentContract')
-        .where((qb) => {
-          return (
-            'start_date = ' +
-            qb
-              .subQuery()
-              .select('Max(start_date)')
-              .from('employment_contracts', 'e')
-              .where('employee_id = ' + subContractorObj.id)
-              .getSql()
-          );
-        })
-        .andWhere('employee_id = ' + subContractorObj.id)
-        .getOne();
+      let subContractorContract: EmploymentContract;
+
+      let pastContracts: EmploymentContract[] = [];
+      let currentContract: EmploymentContract[] = [];
+      let futureContracts: EmploymentContract[] = [];
+
+      for (let contract of subContractorObj.employmentContracts) {
+        let dateCarrier = {
+          startDate: contract.startDate,
+          endDate: contract.endDate,
+        };
+
+        if (dateCarrier.startDate == null) {
+          dateCarrier.startDate = moment().subtract(100, 'years').toDate();
+        }
+        if (dateCarrier.endDate == null) {
+          dateCarrier.endDate = moment().add(100, 'years').toDate();
+        }
+
+        if (
+          moment().isAfter(moment(dateCarrier.startDate), 'date') &&
+          moment().isAfter(moment(dateCarrier.endDate), 'date')
+        ) {
+          pastContracts.push(contract);
+        } else if (
+          moment().isBetween(
+            moment(dateCarrier.startDate),
+            moment(dateCarrier.endDate),
+            'date',
+            '[]'
+          )
+        ) {
+          currentContract.push(contract);
+        } else if (
+          moment().isBefore(moment(dateCarrier.startDate), 'date') &&
+          moment().isBefore(moment(dateCarrier.endDate), 'date')
+        ) {
+          futureContracts.push(contract);
+        }
+      }
+
+      if (currentContract.length) {
+        subContractorContract = currentContract[0];
+      } else if (futureContracts.length) {
+        subContractorContract = futureContracts[0];
+      } else {
+        subContractorContract = pastContracts[pastContracts.length - 1];
+      }
+
+      if (subContractorContract) {
+        subContractorObj.employmentContracts.forEach((contract) => {
+          if (contract.id != subContractorContract.id) {
+            if (
+              moment(subContractorContractStartDate).isBetween(
+                moment(contract.startDate),
+                moment(contract.endDate ?? moment().add(100, 'years').toDate()),
+                'date',
+                '[]'
+              )
+            ) {
+              throw new Error('Overlapping contract found');
+            }
+            if (subContractorContractEndDate) {
+              if (
+                moment(subContractorContractEndDate).isBetween(
+                  moment(contract.startDate),
+                  moment(
+                    contract.endDate ?? moment().add(100, 'years').toDate()
+                  ),
+                  'date',
+                  '[]'
+                )
+              ) {
+                throw new Error('Overlapping contract found');
+              }
+            } else {
+              if (!contract.endDate) {
+                throw new Error('Overlapping contract found');
+              }
+            }
+          }
+        });
+      }
 
       if (!subContractorContract) {
         subContractorContract = new EmploymentContract();
       }
+
       subContractorContract.startDate = new Date(startDate);
       if (endDate) {
         subContractorContract.endDate = new Date(endDate);
@@ -369,7 +461,7 @@ export class SubContractorRepository extends Repository<Employee> {
     });
 
     if (!subcontractor) {
-      throw new Error('Employee not found');
+      throw new Error('Sub-Contractor not found');
     }
 
     let pastContracts: EmploymentContract[] = [];

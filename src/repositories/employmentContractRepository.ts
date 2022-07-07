@@ -47,7 +47,7 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
           if (
             moment(employeeContractStartDate, 'YYYY-MM-DD').isBetween(
               moment(contract.startDate),
-              moment(contract.endDate),
+              moment(contract.endDate ?? moment().add(100, 'years').toDate()),
               'date',
               '[]'
             )
@@ -58,7 +58,7 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
             if (
               moment(employeeContractEndDate, 'YYYY-MM-DD').isBetween(
                 moment(contract.startDate),
-                moment(contract.endDate),
+                moment(contract.endDate ?? moment().add(100, 'years').toDate()),
                 'date',
                 '[]'
               )
@@ -192,14 +192,16 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
         contracts.forEach((contract) => {
           if (contract.id != id) {
             console.log({
-              current: moment(employeeContractStartDate),
+              currentStart: moment(employeeContractStartDate),
+              currentEnd: moment(employeeContractEndDate),
               startDate: moment(contract.startDate),
               endDate: moment(contract.endDate),
             });
+
             if (
               moment(employeeContractStartDate).isBetween(
                 moment(contract.startDate),
-                moment(contract.endDate),
+                moment(contract.endDate ?? moment().add(100, 'years').toDate()),
                 'date',
                 '[]'
               )
@@ -210,7 +212,9 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
               if (
                 moment(employeeContractEndDate).isBetween(
                   moment(contract.startDate),
-                  moment(contract.endDate),
+                  moment(
+                    contract.endDate ?? moment().add(100, 'years').toDate()
+                  ),
                   'date',
                   '[]'
                 )

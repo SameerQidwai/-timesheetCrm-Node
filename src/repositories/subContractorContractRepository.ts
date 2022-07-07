@@ -38,7 +38,7 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
       if (
         moment(subContractorContractStartDate, 'YYYY-MM-DD').isBetween(
           moment(contract.startDate),
-          moment(contract.endDate),
+          moment(contract.endDate ?? moment().add(100, 'years').toDate()),
           'date',
           '[]'
         )
@@ -49,7 +49,7 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
         if (
           moment(subContractorContractEndDate, 'YYYY-MM-DD').isBetween(
             moment(contract.startDate),
-            moment(contract.endDate),
+            moment(contract.endDate ?? moment().add(100, 'years').toDate()),
             'date',
             '[]'
           )
@@ -131,15 +131,10 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
 
     contracts.forEach((contract) => {
       if (contract.id != id) {
-        console.log({
-          current: moment(subContractorContractStartDate),
-          startDate: moment(contract.startDate),
-          endDate: moment(contract.endDate),
-        });
         if (
           moment(subContractorContractStartDate).isBetween(
             moment(contract.startDate),
-            moment(contract.endDate),
+            moment(contract.endDate ?? moment().add(100, 'years').toDate()),
             'date',
             '[]'
           )
@@ -150,7 +145,7 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
           if (
             moment(subContractorContractEndDate).isBetween(
               moment(contract.startDate),
-              moment(contract.endDate),
+              moment(contract.endDate ?? moment().add(100, 'years').toDate()),
               'date',
               '[]'
             )
