@@ -315,7 +315,7 @@ export class EmployeeRepository extends Repository<Employee> {
     employeeDTO: EmployeeDTO
   ): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
-      let employeeObj: any = await this.findOne(id, {
+      let employeeObj = await this.findOne(id, {
         relations: [
           'employmentContracts',
           'employmentContracts.leaveRequestPolicy',
@@ -363,8 +363,10 @@ export class EmployeeRepository extends Repository<Employee> {
       employeeObj.nextOfKinEmail = employeeDTO.nextOfKinEmail;
       employeeObj.nextOfKinRelation = employeeDTO.nextOfKinRelation;
       employeeObj.tfn = employeeDTO.tfn;
-      employeeObj.taxFreeThreshold = employeeDTO.taxFreeThreshold;
-      employeeObj.helpHECS = employeeDTO.helpHECS;
+      employeeObj.taxFreeThreshold = employeeDTO.taxFreeThreshold
+        ? true
+        : false;
+      employeeObj.helpHECS = employeeDTO.helpHECS ? true : false;
       employeeObj.superannuationName = employeeDTO.superannuationName;
       if (employeeDTO.superannuationType) {
         employeeObj.superannuationType =
@@ -417,22 +419,97 @@ export class EmployeeRepository extends Repository<Employee> {
       } = employeeDTO.latestEmploymentContract;
 
       // find latest contract here
-      let employmentContract = await transactionalEntityManager
-        .getRepository(EmploymentContract)
-        .createQueryBuilder('employmentContract')
-        .where((qb) => {
-          return (
-            'start_date = ' +
-            qb
-              .subQuery()
-              .select('Max(start_date)')
-              .from('employment_contracts', 'e')
-              .where('employee_id = ' + employeeObj.id)
-              .getSql()
-          );
-        })
-        .andWhere('employee_id = ' + employeeObj.id)
-        .getOne();
+      let employmentContract: EmploymentContract;
+
+      let pastContracts: EmploymentContract[] = [];
+      let currentContract: EmploymentContract[] = [];
+      let futureContracts: EmploymentContract[] = [];
+
+      let employeeContractStartDate = moment(startDate).format('YYYY-MM-DD');
+      let employeeContractEndDate: string | null;
+      if (endDate != null) {
+        employeeContractEndDate = moment(endDate).format('YYYY-MM-DD');
+      } else {
+        employeeContractEndDate = null;
+      }
+
+      for (let contract of employeeObj.employmentContracts) {
+        let dateCarrier = {
+          startDate: contract.startDate,
+          endDate: contract.endDate,
+        };
+
+        if (dateCarrier.startDate == null) {
+          dateCarrier.startDate = moment().subtract(100, 'years').toDate();
+        }
+        if (dateCarrier.endDate == null) {
+          dateCarrier.endDate = moment().add(100, 'years').toDate();
+        }
+
+        if (
+          moment().isAfter(moment(dateCarrier.startDate), 'date') &&
+          moment().isAfter(moment(dateCarrier.endDate), 'date')
+        ) {
+          pastContracts.push(contract);
+        } else if (
+          moment().isBetween(
+            moment(dateCarrier.startDate),
+            moment(dateCarrier.endDate),
+            'date',
+            '[]'
+          )
+        ) {
+          currentContract.push(contract);
+        } else if (
+          moment().isBefore(moment(dateCarrier.startDate), 'date') &&
+          moment().isBefore(moment(dateCarrier.endDate), 'date')
+        ) {
+          futureContracts.push(contract);
+        }
+      }
+
+      if (currentContract.length) {
+        employmentContract = currentContract[0];
+      } else if (futureContracts.length) {
+        employmentContract = futureContracts[0];
+      } else {
+        employmentContract = pastContracts[pastContracts.length - 1];
+      }
+
+      if (employmentContract) {
+        employeeObj.employmentContracts.forEach((contract) => {
+          if (contract.id != employmentContract.id) {
+            if (
+              moment(employeeContractStartDate).isBetween(
+                moment(contract.startDate),
+                moment(contract.endDate ?? moment().add(100, 'years').toDate()),
+                'date',
+                '[]'
+              )
+            ) {
+              throw new Error('Overlapping contract found');
+            }
+            if (employeeContractEndDate) {
+              if (
+                moment(employeeContractEndDate).isBetween(
+                  moment(contract.startDate),
+                  moment(
+                    contract.endDate ?? moment().add(100, 'years').toDate()
+                  ),
+                  'date',
+                  '[]'
+                )
+              ) {
+                throw new Error('Overlapping contract found');
+              }
+            } else {
+              if (!contract.endDate) {
+                throw new Error('Overlapping contract found');
+              }
+            }
+          }
+        });
+      }
 
       if (!employmentContract) {
         employmentContract = new EmploymentContract();
@@ -503,11 +580,11 @@ export class EmployeeRepository extends Repository<Employee> {
           },
         });
       if (!bankAccount) {
-        bankAccount = new BankAccount()
+        bankAccount = new BankAccount();
       }
 
       bankAccount.accountNo = bankAccountNo;
-      bankAccount.bsb = bankBsb ;
+      bankAccount.bsb = bankBsb;
       bankAccount.name = bankName;
       bankAccount.employeeId = employeeObj.id;
       await transactionalEntityManager.save(bankAccount);
@@ -1301,28 +1378,29 @@ export class EmployeeRepository extends Repository<Employee> {
       //   relations: ['values'],
       // });
 
-      let variables: any = [
-        'Superannuation',
-        stateName,
-        'WorkCover',
-      ];
+      let variables: any = ['Superannuation', stateName, 'WorkCover'];
 
       if (currentContract?.type !== 1) {
         variables.push('Public Holidays');
+
+        employee?.leaveRequestBalances.forEach((el) => {
+          variables.push(el.type.leaveRequestType.label);
+        });
       }
 
-      employee?.leaveRequestBalances.forEach((el) => {
-        variables.push(el.type.leaveRequestType.label);
-      });
+      let golobalVariables: any = await this.manager
+        .getRepository(GlobalVariableLabel)
+        .createQueryBuilder('variable')
+        .innerJoinAndSelect('variable.values', 'values')
+        .where('name IN (:...name)', { name: variables })
+        .andWhere('values.start_date <= :startDate', {
+          startDate: moment().startOf('day').toDate(),
+        })
+        .andWhere('values.end_date >= :endDate', {
+          endDate: moment().endOf('day').toDate(),
+        })
+        .getMany();
 
-      let golobalVariables: any = await this.manager.getRepository(GlobalVariableLabel)
-      .createQueryBuilder("variable")
-      .innerJoinAndSelect("variable.values", "values")
-      .where("name IN (:...name)", { name: variables })
-      .andWhere('values.start_date <= :startDate', {startDate: moment().startOf('day').toDate()})
-      .andWhere('values.end_date >= :endDate', {endDate: moment().endOf('day').toDate()})
-      .getMany()
-      
       let sortIndex: any = {
         Superannuation: 0,
         [stateName]: 1,
@@ -1356,7 +1434,11 @@ export class EmployeeRepository extends Repository<Employee> {
                 manipulateVariable;
               /** returning the already manipulated element to this index */
               if (swapElement) {
-                setGolobalVariables.push(swapElement);
+                if (index === sortIndex['Public Holidays']) {
+                  setGolobalVariables[index - 1] = swapElement;
+                } else {
+                  setGolobalVariables.push(swapElement);
+                }
               }
               /**checking if index has not yet passed sort variable index means the element will later get sort and just swap it */
             } else if (index < sortIndex[variable.name]) {
