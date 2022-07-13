@@ -18,7 +18,7 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
     let subContractorContractStartDate = moment(contract.startDate).format(
       'YYYY-MM-DD'
     );
-    let subContractorContractEndDate;
+    let subContractorContractEndDate: string | null;
     if (contract.endDate != null) {
       subContractorContractEndDate = moment(contract.endDate).format(
         'YYYY-MM-DD'
@@ -28,25 +28,41 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
     }
 
     // check any overlapping contract
-    let { count } = await this.createQueryBuilder('employmentContract')
-      .select('Count(*)', 'count')
-      .where('employee_id = ' + contract.subContractorId)
-      .andWhere(
-        '(end_date is NULL OR FROM_UNIXTIME(' +
-          subContractorContractStartDate +
-          '/1000) <= end_date) AND (' +
-          (subContractorContractEndDate || 'NULL') +
-          ' is NULL OR start_date <= FROM_UNIXTIME(' +
-          subContractorContractEndDate +
-          '/1000))'
-      )
-      .getRawOne();
+    let contracts = await this.manager.find(EmploymentContract, {
+      where: {
+        employeeId: employee.id,
+      },
+    });
 
-    console.log('count: ', count);
+    contracts.forEach((contract) => {
+      if (
+        moment(subContractorContractStartDate, 'YYYY-MM-DD').isBetween(
+          moment(contract.startDate),
+          moment(contract.endDate ?? moment().add(100, 'years').toDate()),
+          'date',
+          '[]'
+        )
+      ) {
+        throw new Error('Overlapping contract found');
+      }
+      if (subContractorContractEndDate) {
+        if (
+          moment(subContractorContractEndDate, 'YYYY-MM-DD').isBetween(
+            moment(contract.startDate),
+            moment(contract.endDate ?? moment().add(100, 'years').toDate()),
+            'date',
+            '[]'
+          )
+        ) {
+          throw new Error('Overlapping contract found');
+        }
+      } else {
+        if (!contract.endDate) {
+          throw new Error('Overlapping contract found');
+        }
+      }
+    });
 
-    if (count > 0) {
-      throw new Error('overlapping contract found');
-    }
     let obj = new EmploymentContract();
     obj.employee = employee;
     obj.startDate = new Date(subContractorContractStartDate);
@@ -97,7 +113,7 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
     let subContractorContractStartDate = moment(contract.startDate).format(
       'YYYY-MM-DD'
     );
-    let subContractorContractEndDate;
+    let subContractorContractEndDate: string | null;
     if (contract.endDate != null) {
       subContractorContractEndDate = moment(contract.endDate).format(
         'YYYY-MM-DD'
@@ -106,27 +122,43 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
       subContractorContractEndDate = null;
     }
 
-    console.log(subContractorContractStartDate, subContractorContractEndDate);
     // check any overlapping contract
-    let { count } = await this.createQueryBuilder('employmentContract')
-      .select('Count(*)', 'count')
-      .where('(employee_id = ' + employee.id + ' AND id <> ' + id + ')')
-      .andWhere(
-        '(end_date is NULL OR FROM_UNIXTIME(' +
-          subContractorContractStartDate +
-          '/1000) <= end_date) AND (' +
-          (subContractorContractEndDate || 'NULL') +
-          ' is NULL OR start_date <= FROM_UNIXTIME(' +
-          subContractorContractEndDate +
-          '/1000))'
-      )
-      .getRawOne();
+    let contracts = await this.manager.find(EmploymentContract, {
+      where: {
+        employeeId: employee.id,
+      },
+    });
 
-    console.log('count: ', count);
-
-    if (count > 0) {
-      throw new Error('overlapping contract found');
-    }
+    contracts.forEach((contract) => {
+      if (contract.id != id) {
+        if (
+          moment(subContractorContractStartDate).isBetween(
+            moment(contract.startDate),
+            moment(contract.endDate ?? moment().add(100, 'years').toDate()),
+            'date',
+            '[]'
+          )
+        ) {
+          throw new Error('Overlapping contract found');
+        }
+        if (subContractorContractEndDate) {
+          if (
+            moment(subContractorContractEndDate).isBetween(
+              moment(contract.startDate),
+              moment(contract.endDate ?? moment().add(100, 'years').toDate()),
+              'date',
+              '[]'
+            )
+          ) {
+            throw new Error('Overlapping contract found');
+          }
+        } else {
+          if (!contract.endDate) {
+            throw new Error('Overlapping contract found');
+          }
+        }
+      }
+    });
 
     employmentContractObj.employeeId = employee.id;
     employmentContractObj.startDate = new Date(subContractorContractStartDate);
