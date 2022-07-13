@@ -1658,6 +1658,52 @@ export class ProjectRepository extends Repository<Opportunity> {
     return opportunity.milestones;
   }
 
+  async getProfitLoss(projectId: number): Promise<any | undefined> {
+    if (!projectId || isNaN(projectId)) {
+      throw new Error('Opportunity not found ');
+    }
+
+    const data = await this.query(`
+      SELECT *, SUM(buying_rate * actual ) month_total_buy, SUM(selling_rate * actual  ) month_total_sell, DATE_FORMAT(STR_TO_DATE(e_date,'%e-%m-%Y'), '%m-%Y') month
+        FROM (
+            Select o_r.opportunity_id, o_r.milestone_id, o_r.start_date, o_r.end_date, ora.buying_rate, ora.selling_rate, ora.contact_person_id, e.id employee_id, o.cm_percentage cm
+            FROM opportunities o 
+              JOIN opportunity_resources o_r ON 
+              o_r.opportunity_id = o.id 
+                JOIN opportunity_resource_allocations ora ON 
+                ora.opportunity_resource_id = o_r.id 
+                  JOIN contact_person_organizations cpo ON 
+                  cpo.contact_person_id = ora.contact_person_id 
+                    JOIN employees e ON 
+                    e.contact_person_organization_id = cpo.id 
+            WHERE o.id = ${projectId} AND ora.is_marked_as_selected = 1) as project 
+
+        JOIN (
+            Select t.employee_id, tpe.milestone_id , te.date e_date, te.id entry_id, te.actual_hours actual 
+            From timesheets t 
+              JOIN timesheet_project_entries tpe ON 
+              tpe.timesheet_id = t.id 
+                JOIN timesheet_entries te ON 
+                te.milestone_entry_id = tpe.id 
+            WHERE STR_TO_DATE(te.date,'%e-%m-%Y') BETWEEN STR_TO_DATE('1-07-2022' ,'%e-%m-%Y') AND STR_TO_DATE('30-06-2023' ,'%e-%m-%Y'))as times 
+        ON 
+          project.employee_id = times.employee_id
+        AND
+          DATE_FORMAT(STR_TO_DATE(times.e_date,'%e-%m-%Y'), '%e-%m-%Y') BETWEEN DATE_FORMAT(project.start_date, '%e-%m-%Y') AND DATE_FORMAT(project.end_date, '%e-%m-%Y')
+        GROUP BY month;
+      `)
+   
+    let statement: any ={}
+
+    if (data) {
+       data.forEach((el: any) =>{
+        statement[el.month] = {cm: el.cm, month: el.month, monthTotalBuy: el.month_total_buy, monthTotalSell: el.month_total_sell, projectId: el.opportunity_id}
+      })
+    }
+
+    return statement
+  }
+
   async helperGetProjectsByUserId(
     employeeId: number,
     mode: string,

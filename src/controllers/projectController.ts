@@ -87,4 +87,21 @@ export class ProjectController extends BaseController<
       next(e);
     }
   }
+
+  async profit_loss(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(ProjectRepository);
+      let id = req.params.projectId;
+      let records: any = [];
+      records = await repository.getProfitLoss(parseInt(id));
+      console.log('records: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'Profit & Loss Statment',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

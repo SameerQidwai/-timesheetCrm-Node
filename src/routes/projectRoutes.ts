@@ -41,6 +41,10 @@ router
   );
 
 router
+  .route('/:projectId/profit-loss')
+  .get([isLoggedIn], contr.profit_loss.bind(contr));
+
+router
   .route('/:projectId/hierarchy')
   .get([isLoggedIn], contr.hierarchy.bind(contr));
 
