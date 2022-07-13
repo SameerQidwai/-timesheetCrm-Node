@@ -433,10 +433,9 @@ export class EmployeeRepository extends Repository<Employee> {
         })
         .andWhere('employee_id = ' + employeeObj.id)
         .getOne();
-      console.log('employmentContract: ', employmentContract);
 
       if (!employmentContract) {
-        throw new Error('Contract Not found');
+        employmentContract = new EmploymentContract();
       }
       employmentContract.payslipEmail = payslipEmail;
       employmentContract.comments = comments;
@@ -504,11 +503,11 @@ export class EmployeeRepository extends Repository<Employee> {
           },
         });
       if (!bankAccount) {
-        throw new Error('Bank Account not found');
+        bankAccount = new BankAccount()
       }
 
       bankAccount.accountNo = bankAccountNo;
-      bankAccount.bsb = bankBsb;
+      bankAccount.bsb = bankBsb ;
       bankAccount.name = bankName;
       bankAccount.employeeId = employeeObj.id;
       await transactionalEntityManager.save(bankAccount);
@@ -1275,11 +1274,6 @@ export class EmployeeRepository extends Repository<Employee> {
       currentContract?.type === 1
         ? currentContract?.remunerationAmount
         : currentContract?.remunerationAmount / 52 / currentContract?.noOfHours;
-    console.log(
-      currentContract.dailyHours,
-      currentContract.hourlyBaseRate,
-      currentContract?.remunerationAmount
-    );
 
     let buyRate: any = 0;
     let setGolobalVariables: any = [];
@@ -1288,25 +1282,48 @@ export class EmployeeRepository extends Repository<Employee> {
       let stateName: any =
         employee?.contactPersonOrganization.contactPerson?.state?.label;
 
+      // let variables: any = [
+      //   { name: 'Superannuation' },
+      //   { name: stateName },
+      //   { name: 'WorkCover' },
+      // ];
+
+      // if (currentContract?.type !== 1) {
+      //   variables.push({ name: 'Public Holidays' });
+      // }
+
+      // employee?.leaveRequestBalances.forEach((el) => {
+      //   variables.push({ name: el.type.leaveRequestType.label });
+      // });
+
+      // let golobalVariables: any = await this.manager.find(GlobalVariableLabel, {
+      //   where: variables,
+      //   relations: ['values'],
+      // });
+
       let variables: any = [
-        { name: 'Superannuation' },
-        { name: stateName },
-        { name: 'WorkCover' },
+        'Superannuation',
+        stateName,
+        'WorkCover',
       ];
 
       if (currentContract?.type !== 1) {
-        variables.push({ name: 'Public Holidays' });
+        variables.push('Public Holidays');
+
+        employee?.leaveRequestBalances.forEach((el) => {
+          variables.push(el.type.leaveRequestType.label);
+        });
+
       }
 
-      employee?.leaveRequestBalances.forEach((el) => {
-        variables.push({ name: el.type.leaveRequestType.label });
-      });
-
-      let golobalVariables: any = await this.manager.find(GlobalVariableLabel, {
-        where: variables,
-        relations: ['values'],
-      });
-
+      let golobalVariables: any = await this.manager.getRepository(GlobalVariableLabel)
+      .createQueryBuilder("variable")
+      .innerJoinAndSelect("variable.values", "values")
+      .where("name IN (:...name)", { name: variables })
+      .andWhere('values.start_date <= :startDate', {startDate: moment().startOf('day').toDate()})
+      .andWhere('values.end_date >= :endDate', {endDate: moment().endOf('day').toDate()})
+      .getMany()
+      
       let sortIndex: any = {
         Superannuation: 0,
         [stateName]: 1,
@@ -1340,7 +1357,11 @@ export class EmployeeRepository extends Repository<Employee> {
                 manipulateVariable;
               /** returning the already manipulated element to this index */
               if (swapElement) {
-                setGolobalVariables.push(swapElement);
+                if (index === sortIndex['Public Holidays']){
+                  setGolobalVariables[index-1] = swapElement
+                }else{
+                  setGolobalVariables.push(swapElement);
+                }
               }
               /**checking if index has not yet passed sort variable index means the element will later get sort and just swap it */
             } else if (index < sortIndex[variable.name]) {

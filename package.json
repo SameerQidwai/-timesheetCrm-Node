@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "tsc": "tsc",
     "start": "ts-node src/server.ts",
+    "watch": "nodemon src/server.ts",
     "start:watch": "nodemon src/server.ts",
     "typeorm": "ts-node ./node_modules/typeorm/cli.js",
     "generateMigration": "ts-node ./node_modules/typeorm/cli.js migration:generate -n Onelm",
@@ -20,7 +21,8 @@
     "dateFix": "ts-node src/datefixScript.ts",
     "instantMonthCron": "ts-node src/instantMonthCronScript.ts",
     "instantYearCron": "ts-node src/instantYearCronScript.ts",
-    "updateEmployeeBalance": "ts-node src/employeeBalanceScript.ts"
+    "updateEmployeeBalance": "ts-node src/employeeBalanceScript.ts",
+    "imexBaseSeed": "ts-node src/importsExportsSeed.ts"
   },
   "author": "",
   "license": "ISC",
@@ -44,6 +46,7 @@
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "joi": "^17.6.0",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.34",
@@ -54,6 +57,7 @@
     "nodemon": "^2.0.6",
     "path": "^0.12.7",
     "reflect-metadata": "^0.1.13",
-    "typeorm": "^0.2.28"
+    "typeorm": "^0.2.28",
+    "xlsx": "^0.18.5"
   }
 }

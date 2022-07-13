@@ -26,7 +26,7 @@ export class Opportunity extends Base {
   @Column({ name: 'title' })
   title: String;
 
-  @Column({ name: 'value' })
+  @Column({ name: 'value', type: 'float', precision: 11, scale: 2 })
   value: number;
 
   @Column({
@@ -57,13 +57,31 @@ export class Opportunity extends Base {
   @Column({ name: 'tender_number', nullable: true })
   tenderNumber: String;
 
-  @Column({ name: 'cm_percentage', nullable: true })
+  @Column({
+    name: 'cm_percentage',
+    nullable: true,
+    type: 'float',
+    precision: 11,
+    scale: 2,
+  })
   cmPercentage: number;
 
-  @Column({ name: 'go_percentage', nullable: true })
+  @Column({
+    name: 'go_percentage',
+    nullable: true,
+    type: 'float',
+    precision: 11,
+    scale: 2,
+  })
   goPercentage: number;
 
-  @Column({ name: 'get_percentage', nullable: true })
+  @Column({
+    name: 'get_percentage',
+    nullable: true,
+    type: 'float',
+    precision: 11,
+    scale: 2,
+  })
   getPercentage: number;
 
   @Column({

@@ -21,13 +21,13 @@ export class PurchaseOrder extends Base {
   @Column({ name: 'expiry_date' })
   expiryDate: Date;
 
-  @Column({ name: 'value' })
+  @Column({ name: 'value', type: 'float', precision: 11, scale: 2 })
   value: number;
 
   @Column({ name: 'comment', nullable: true })
   comment: string;
 
-  @Column({ name: 'expense' })
+  @Column({ name: 'expense', type: 'float', precision: 11, scale: 2 })
   expense: number;
 
   @Column({ name: 'order_no', nullable: true })
