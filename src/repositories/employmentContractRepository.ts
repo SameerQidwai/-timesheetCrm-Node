@@ -12,28 +12,28 @@ import moment from 'moment';
 
 @EntityRepository(EmploymentContract)
 export class EmploymentContractRepository extends Repository<EmploymentContract> {
-  async createAndSave(employmentContract: EmploymentContractDTO): Promise<any> {
+  async createAndSave(
+    employmentContractDTO: EmploymentContractDTO
+  ): Promise<any> {
     let contract = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let employee = await this.manager.findOne(
           Employee,
-          employmentContract.employeeId,
+          employmentContractDTO.employeeId,
           { relations: ['leaveRequestBalances'] }
         );
         if (!employee) {
           throw new Error('Employee not found');
         }
 
-        let employeeContractStartDate = moment(
-          employmentContract.startDate
-        ).format('YYYY-MM-DD');
-        let employeeContractEndDate: string | null;
-        if (employmentContract.endDate != null) {
-          employeeContractEndDate = moment(employmentContract.endDate).format(
-            'YYYY-MM-DD'
-          );
+        let cEmployeeContractStartDate = moment(
+          employmentContractDTO.startDate
+        );
+        let cEmployeeContractEndDate: moment.Moment;
+        if (employmentContractDTO.endDate != null) {
+          cEmployeeContractEndDate = moment(employmentContractDTO.endDate);
         } else {
-          employeeContractEndDate = null;
+          cEmployeeContractEndDate = moment().add(100, 'years');
         }
 
         // check any overlapping contract
@@ -45,51 +45,59 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
 
         contracts.forEach((contract) => {
           if (
-            moment(employeeContractStartDate, 'YYYY-MM-DD').isBetween(
+            cEmployeeContractStartDate.isBetween(
               moment(contract.startDate),
               moment(contract.endDate ?? moment().add(100, 'years').toDate()),
+              'date',
+              '[]'
+            ) ||
+            moment(contract.startDate).isBetween(
+              cEmployeeContractStartDate,
+              cEmployeeContractEndDate,
               'date',
               '[]'
             )
           ) {
             throw new Error('Overlapping contract found');
           }
-          if (employeeContractEndDate) {
-            if (
-              moment(employeeContractEndDate, 'YYYY-MM-DD').isBetween(
-                moment(contract.startDate),
-                moment(contract.endDate ?? moment().add(100, 'years').toDate()),
-                'date',
-                '[]'
-              )
-            ) {
-              throw new Error('Overlapping contract found');
-            }
-          } else {
-            if (!contract.endDate) {
-              throw new Error('Overlapping contract found');
-            }
+          if (
+            cEmployeeContractEndDate.isBetween(
+              moment(contract.startDate),
+              moment(contract.endDate ?? moment().add(100, 'years').toDate()),
+              'date',
+              '[]'
+            ) ||
+            moment(
+              contract.endDate ?? moment().add(100, 'years').toDate()
+            ).isBetween(
+              cEmployeeContractStartDate,
+              cEmployeeContractEndDate,
+              'date',
+              '[]'
+            )
+          ) {
+            throw new Error('Overlapping contract found');
           }
         });
 
         let obj = new EmploymentContract();
         obj.employee = employee;
-        obj.comments = employmentContract.comments;
-        obj.payslipEmail = employmentContract.payslipEmail;
-        obj.payFrequency = employmentContract.payFrequency;
-        obj.startDate = new Date(employeeContractStartDate);
-        if (employeeContractEndDate) {
-          obj.endDate = new Date(employeeContractEndDate);
+        obj.comments = employmentContractDTO.comments;
+        obj.payslipEmail = employmentContractDTO.payslipEmail;
+        obj.payFrequency = employmentContractDTO.payFrequency;
+        obj.startDate = moment(employmentContractDTO.startDate).toDate();
+        if (employmentContractDTO.endDate) {
+          obj.endDate = moment(employmentContractDTO.endDate).toDate();
         } else {
           (obj.endDate as any) = null;
         }
-        obj.type = employmentContract.type;
-        obj.noOfHours = employmentContract.noOfHours;
-        obj.noOfDays = employmentContract.noOfDays;
-        obj.remunerationAmount = employmentContract.remunerationAmount;
-        obj.remunerationAmountPer = employmentContract.remunerationAmountPer;
-        obj.leaveRequestPolicyId = employmentContract.leaveRequestPolicyId;
-        obj.fileId = employmentContract.fileId;
+        obj.type = employmentContractDTO.type;
+        obj.noOfHours = employmentContractDTO.noOfHours;
+        obj.noOfDays = employmentContractDTO.noOfDays;
+        obj.remunerationAmount = employmentContractDTO.remunerationAmount;
+        obj.remunerationAmountPer = employmentContractDTO.remunerationAmountPer;
+        obj.leaveRequestPolicyId = employmentContractDTO.leaveRequestPolicyId;
+        obj.fileId = employmentContractDTO.fileId;
         await transactionalEntityManager.save(obj);
 
         let contract = await transactionalEntityManager.findOne(
@@ -153,7 +161,7 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
 
   async updateAndReturn(
     id: number,
-    employmentContract: EmploymentContractDTO
+    employmentContractDTO: EmploymentContractDTO
   ): Promise<any | undefined> {
     let contract = await this.manager.transaction(
       async (transactionalEntityManager) => {
@@ -163,23 +171,21 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
         }
         let employee = await this.manager.findOne(
           Employee,
-          employmentContractObj?.employeeId,
+          employmentContractObj.employeeId,
           { relations: ['leaveRequestBalances'] }
         );
         if (!employee) {
           throw new Error('Employee not found');
         }
 
-        let employeeContractStartDate = moment(
-          employmentContract.startDate
-        ).format('YYYY-MM-DD');
-        let employeeContractEndDate: string | null;
-        if (employmentContract.endDate != null) {
-          employeeContractEndDate = moment(employmentContract.endDate).format(
-            'YYYY-MM-DD'
-          );
+        let cEmployeeContractStartDate = moment(
+          employmentContractDTO.startDate
+        );
+        let cEmployeeContractEndDate: moment.Moment;
+        if (employmentContractDTO.endDate != null) {
+          cEmployeeContractEndDate = moment(employmentContractDTO.endDate);
         } else {
-          employeeContractEndDate = null;
+          cEmployeeContractEndDate = moment().add(100, 'years');
         }
 
         // check any overlapping contract
@@ -191,69 +197,68 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
 
         contracts.forEach((contract) => {
           if (contract.id != id) {
-            console.log({
-              currentStart: moment(employeeContractStartDate),
-              currentEnd: moment(employeeContractEndDate),
-              startDate: moment(contract.startDate),
-              endDate: moment(contract.endDate),
-            });
-
             if (
-              moment(employeeContractStartDate).isBetween(
+              cEmployeeContractStartDate.isBetween(
                 moment(contract.startDate),
                 moment(contract.endDate ?? moment().add(100, 'years').toDate()),
+                'date',
+                '[]'
+              ) ||
+              moment(contract.startDate).isBetween(
+                cEmployeeContractStartDate,
+                cEmployeeContractEndDate,
                 'date',
                 '[]'
               )
             ) {
               throw new Error('Overlapping contract found');
             }
-            if (employeeContractEndDate) {
-              if (
-                moment(employeeContractEndDate).isBetween(
-                  moment(contract.startDate),
-                  moment(
-                    contract.endDate ?? moment().add(100, 'years').toDate()
-                  ),
-                  'date',
-                  '[]'
-                )
-              ) {
-                throw new Error('Overlapping contract found');
-              }
-            } else {
-              if (!contract.endDate) {
-                throw new Error('Overlapping contract found');
-              }
+            if (
+              cEmployeeContractEndDate.isBetween(
+                moment(contract.startDate),
+                moment(contract.endDate ?? moment().add(100, 'years').toDate()),
+                'date',
+                '[]'
+              ) ||
+              moment(
+                contract.endDate ?? moment().add(100, 'years').toDate()
+              ).isBetween(
+                cEmployeeContractStartDate,
+                cEmployeeContractEndDate,
+                'date',
+                '[]'
+              )
+            ) {
+              throw new Error('Overlapping contract found');
             }
           }
         });
 
         employmentContractObj.employeeId = employee.id;
-        employmentContractObj.comments = employmentContract.comments;
-        employmentContractObj.payslipEmail = employmentContract.payslipEmail;
-        employmentContractObj.payFrequency = employmentContract.payFrequency;
+        employmentContractObj.comments = employmentContractDTO.comments;
+        employmentContractObj.payslipEmail = employmentContractDTO.payslipEmail;
+        employmentContractObj.payFrequency = employmentContractDTO.payFrequency;
         employmentContractObj.startDate = moment(
-          employeeContractStartDate
+          employmentContractDTO.startDate
         ).toDate();
-        if (employeeContractEndDate) {
+        if (employmentContractDTO.endDate) {
           employmentContractObj.endDate = moment(
-            employeeContractEndDate
+            employmentContractDTO.endDate
           ).toDate();
         } else {
           (employmentContractObj.endDate as any) = null;
         }
-        employmentContractObj.type = employmentContract.type;
-        employmentContractObj.noOfHours = employmentContract.noOfHours;
-        employmentContractObj.noOfDays = employmentContract.noOfDays;
+        employmentContractObj.type = employmentContractDTO.type;
+        employmentContractObj.noOfHours = employmentContractDTO.noOfHours;
+        employmentContractObj.noOfDays = employmentContractDTO.noOfDays;
         employmentContractObj.remunerationAmount =
-          employmentContract.remunerationAmount;
+          employmentContractDTO.remunerationAmount;
         employmentContractObj.remunerationAmountPer =
-          employmentContract.remunerationAmountPer;
+          employmentContractDTO.remunerationAmountPer;
         employmentContractObj.leaveRequestPolicyId =
-          employmentContract.leaveRequestPolicyId;
+          employmentContractDTO.leaveRequestPolicyId;
 
-        employmentContractObj.fileId = employmentContract.fileId;
+        employmentContractObj.fileId = employmentContractDTO.fileId;
         await transactionalEntityManager.update(
           EmploymentContract,
           id,

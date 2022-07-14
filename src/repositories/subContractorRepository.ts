@@ -333,13 +333,12 @@ export class SubContractorRepository extends Repository<Employee> {
         fileId,
       } = subContractor.latestContract;
 
-      let subContractorContractStartDate =
-        moment(startDate).format('YYYY-MM-DD');
-      let subContractorContractEndDate: string | null;
+      let cSubContractorContractStartDate = moment(startDate);
+      let cSubContractorContractEndDate: moment.Moment;
       if (endDate != null) {
-        subContractorContractEndDate = moment(endDate).format('YYYY-MM-DD');
+        cSubContractorContractEndDate = moment(endDate);
       } else {
-        subContractorContractEndDate = null;
+        cSubContractorContractEndDate = moment().add(100, 'years');
       }
 
       // find latest contract here
@@ -392,48 +391,52 @@ export class SubContractorRepository extends Repository<Employee> {
         subContractorContract = pastContracts[pastContracts.length - 1];
       }
 
-      if (subContractorContract) {
-        subContractorObj.employmentContracts.forEach((contract) => {
-          if (contract.id != subContractorContract.id) {
-            if (
-              moment(subContractorContractStartDate).isBetween(
-                moment(contract.startDate),
-                moment(contract.endDate ?? moment().add(100, 'years').toDate()),
-                'date',
-                '[]'
-              )
-            ) {
-              throw new Error('Overlapping contract found');
-            }
-            if (subContractorContractEndDate) {
-              if (
-                moment(subContractorContractEndDate).isBetween(
-                  moment(contract.startDate),
-                  moment(
-                    contract.endDate ?? moment().add(100, 'years').toDate()
-                  ),
-                  'date',
-                  '[]'
-                )
-              ) {
-                throw new Error('Overlapping contract found');
-              }
-            } else {
-              if (!contract.endDate) {
-                throw new Error('Overlapping contract found');
-              }
-            }
-          }
-        });
+      for (let contract of subContractorObj.employmentContracts) {
+        if (subContractorContract && subContractorContract.id == contract.id) {
+          continue;
+        }
+        if (
+          cSubContractorContractStartDate.isBetween(
+            moment(contract.startDate),
+            moment(contract.endDate ?? moment().add(100, 'years').toDate()),
+            'date',
+            '[]'
+          ) ||
+          moment(contract.startDate).isBetween(
+            cSubContractorContractStartDate,
+            cSubContractorContractEndDate
+          )
+        ) {
+          throw new Error('Overlapping contract found');
+        }
+
+        if (
+          cSubContractorContractEndDate.isBetween(
+            moment(contract.startDate),
+            moment(contract.endDate ?? moment().add(100, 'years').toDate()),
+            'date',
+            '[]'
+          ) ||
+          moment(
+            contract.endDate ?? moment().add(100, 'years').toDate()
+          ).isBetween(
+            cSubContractorContractStartDate,
+            cSubContractorContractEndDate,
+            'date',
+            '[]'
+          )
+        ) {
+          throw new Error('Overlapping contract found');
+        }
       }
 
       if (!subContractorContract) {
         subContractorContract = new EmploymentContract();
       }
 
-      subContractorContract.startDate = new Date(startDate);
+      subContractorContract.startDate = moment(startDate).toDate();
       if (endDate) {
-        subContractorContract.endDate = new Date(endDate);
+        subContractorContract.endDate = moment(endDate).toDate();
       }
       subContractorContract.comments = comments;
       subContractorContract.noOfHours = noOfHours;
