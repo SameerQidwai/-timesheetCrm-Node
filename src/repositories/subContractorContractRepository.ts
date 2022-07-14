@@ -3,28 +3,25 @@ import { EntityRepository, Repository } from 'typeorm';
 import { EmploymentContract } from './../entities/employmentContract';
 import { Employee } from './../entities/employee';
 import moment from 'moment';
+import { format } from 'path';
 
 @EntityRepository(EmploymentContract)
 export class SubContractorContractRepository extends Repository<EmploymentContract> {
-  async createAndSave(contract: ContractDTO): Promise<any> {
+  async createAndSave(contractDTO: ContractDTO): Promise<any> {
     let employee = await this.manager.findOne(
       Employee,
-      contract.subContractorId
+      contractDTO.subContractorId
     );
     if (!employee) {
       throw new Error('Employee not found');
     }
 
-    let subContractorContractStartDate = moment(contract.startDate).format(
-      'YYYY-MM-DD'
-    );
-    let subContractorContractEndDate: string | null;
-    if (contract.endDate != null) {
-      subContractorContractEndDate = moment(contract.endDate).format(
-        'YYYY-MM-DD'
-      );
+    let cSubContractorContractStartDate = moment(contractDTO.startDate);
+    let cSubContractorContractEndDate: moment.Moment;
+    if (contractDTO.endDate != null) {
+      cSubContractorContractEndDate = moment(contractDTO.endDate);
     } else {
-      subContractorContractEndDate = null;
+      cSubContractorContractEndDate = moment().add(100, 'years');
     }
 
     // check any overlapping contract
@@ -36,47 +33,55 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
 
     contracts.forEach((contract) => {
       if (
-        moment(subContractorContractStartDate, 'YYYY-MM-DD').isBetween(
+        cSubContractorContractStartDate.isBetween(
           moment(contract.startDate),
           moment(contract.endDate ?? moment().add(100, 'years').toDate()),
+          'date',
+          '[]'
+        ) ||
+        moment(contract.startDate).isBetween(
+          cSubContractorContractStartDate,
+          cSubContractorContractEndDate,
           'date',
           '[]'
         )
       ) {
         throw new Error('Overlapping contract found');
       }
-      if (subContractorContractEndDate) {
-        if (
-          moment(subContractorContractEndDate, 'YYYY-MM-DD').isBetween(
-            moment(contract.startDate),
-            moment(contract.endDate ?? moment().add(100, 'years').toDate()),
-            'date',
-            '[]'
-          )
-        ) {
-          throw new Error('Overlapping contract found');
-        }
-      } else {
-        if (!contract.endDate) {
-          throw new Error('Overlapping contract found');
-        }
+      if (
+        cSubContractorContractEndDate.isBetween(
+          moment(contract.startDate),
+          moment(contract.endDate ?? moment().add(100, 'years').toDate()),
+          'date',
+          '[]'
+        ) ||
+        moment(
+          contract.endDate ?? moment().add(100, 'years').toDate()
+        ).isBetween(
+          cSubContractorContractStartDate,
+          cSubContractorContractEndDate,
+          'date',
+          '[]'
+        )
+      ) {
+        throw new Error('Overlapping contract found');
       }
     });
 
     let obj = new EmploymentContract();
     obj.employee = employee;
-    obj.startDate = new Date(subContractorContractStartDate);
-    if (subContractorContractEndDate) {
-      obj.endDate = new Date(subContractorContractEndDate);
+    obj.startDate = moment(contractDTO.startDate).toDate();
+    if (contractDTO.endDate) {
+      obj.endDate = moment(contractDTO.endDate).toDate();
     } else {
       (obj.endDate as any) = null;
     }
-    obj.comments = contract.comments;
-    obj.noOfHours = contract.noOfHours;
-    obj.noOfDays = contract.noOfDays;
-    obj.remunerationAmount = contract.remunerationAmount;
-    obj.remunerationAmountPer = contract.remunerationAmountPer;
-    obj.fileId = contract.fileId;
+    obj.comments = contractDTO.comments;
+    obj.noOfHours = contractDTO.noOfHours;
+    obj.noOfDays = contractDTO.noOfDays;
+    obj.remunerationAmount = contractDTO.remunerationAmount;
+    obj.remunerationAmountPer = contractDTO.remunerationAmountPer;
+    obj.fileId = contractDTO.fileId;
     return await this.save(obj);
   }
 
@@ -96,7 +101,7 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
 
   async updateAndReturn(
     id: number,
-    contract: ContractDTO
+    contractDTO: ContractDTO
   ): Promise<any | undefined> {
     let employmentContractObj = await this.findOne(id);
     if (!employmentContractObj) {
@@ -110,16 +115,12 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
       throw new Error('Employee not found');
     }
 
-    let subContractorContractStartDate = moment(contract.startDate).format(
-      'YYYY-MM-DD'
-    );
-    let subContractorContractEndDate: string | null;
-    if (contract.endDate != null) {
-      subContractorContractEndDate = moment(contract.endDate).format(
-        'YYYY-MM-DD'
-      );
+    let cSubContractorContractStartDate = moment(contractDTO.startDate);
+    let cSubContractorContractEndDate: moment.Moment;
+    if (contractDTO.endDate != null) {
+      cSubContractorContractEndDate = moment(contractDTO.endDate);
     } else {
-      subContractorContractEndDate = null;
+      cSubContractorContractEndDate = moment().add(100, 'years');
     }
 
     // check any overlapping contract
@@ -132,49 +133,56 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
     contracts.forEach((contract) => {
       if (contract.id != id) {
         if (
-          moment(subContractorContractStartDate).isBetween(
+          cSubContractorContractStartDate.isBetween(
             moment(contract.startDate),
             moment(contract.endDate ?? moment().add(100, 'years').toDate()),
+            'date',
+            '[]'
+          ) ||
+          moment(contract.startDate).isBetween(
+            cSubContractorContractStartDate,
+            cSubContractorContractEndDate
+          )
+        ) {
+          throw new Error('Overlapping contract found');
+        }
+
+        if (
+          cSubContractorContractEndDate.isBetween(
+            moment(contract.startDate),
+            moment(contract.endDate ?? moment().add(100, 'years').toDate()),
+            'date',
+            '[]'
+          ) ||
+          moment(
+            contract.endDate ?? moment().add(100, 'years').toDate()
+          ).isBetween(
+            cSubContractorContractStartDate,
+            cSubContractorContractEndDate,
             'date',
             '[]'
           )
         ) {
           throw new Error('Overlapping contract found');
         }
-        if (subContractorContractEndDate) {
-          if (
-            moment(subContractorContractEndDate).isBetween(
-              moment(contract.startDate),
-              moment(contract.endDate ?? moment().add(100, 'years').toDate()),
-              'date',
-              '[]'
-            )
-          ) {
-            throw new Error('Overlapping contract found');
-          }
-        } else {
-          if (!contract.endDate) {
-            throw new Error('Overlapping contract found');
-          }
-        }
       }
     });
 
     employmentContractObj.employeeId = employee.id;
-    employmentContractObj.startDate = new Date(subContractorContractStartDate);
-    if (subContractorContractEndDate) {
-      employmentContractObj.endDate = new Date(subContractorContractEndDate);
+    employmentContractObj.startDate = moment(contractDTO.startDate).toDate();
+    if (contractDTO.endDate) {
+      employmentContractObj.endDate = moment(contractDTO.endDate).toDate();
     } else {
       (employmentContractObj.endDate as any) = null;
     }
-    employmentContractObj.comments = contract.comments;
-    employmentContractObj.noOfHours = contract.noOfHours;
-    employmentContractObj.noOfDays = contract.noOfDays;
-    employmentContractObj.remunerationAmount = contract.remunerationAmount;
+    employmentContractObj.comments = contractDTO.comments;
+    employmentContractObj.noOfHours = contractDTO.noOfHours;
+    employmentContractObj.noOfDays = contractDTO.noOfDays;
+    employmentContractObj.remunerationAmount = contractDTO.remunerationAmount;
     employmentContractObj.remunerationAmountPer =
-      contract.remunerationAmountPer;
+      contractDTO.remunerationAmountPer;
     if (employmentContractObj.fileId)
-      employmentContractObj.fileId = contract.fileId;
+      employmentContractObj.fileId = contractDTO.fileId;
 
     await this.update(id, employmentContractObj);
     return this.findOneCustom(id);
