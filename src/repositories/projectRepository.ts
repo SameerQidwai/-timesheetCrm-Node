@@ -1658,13 +1658,12 @@ export class ProjectRepository extends Repository<Opportunity> {
     return opportunity.milestones;
   }
 
-  async getProfitLoss(projectId: number): Promise<any | undefined> {
+  async getProfitLoss(projectId: number, fiscalYear: {start: string, end: string, actual: string}): Promise<any | undefined> {
     if (!projectId || isNaN(projectId)) {
       throw new Error('Opportunity not found ');
     }
-
     const data = await this.query(`
-      SELECT *, SUM(buying_rate * actual ) month_total_buy, SUM(selling_rate * actual  ) month_total_sell, DATE_FORMAT(STR_TO_DATE(e_date,'%e-%m-%Y'), '%m-%Y') month
+      SELECT *, SUM(buying_rate * actual ) month_total_buy, SUM(selling_rate * actual  ) month_total_sell, DATE_FORMAT(STR_TO_DATE(e_date,'%e-%m-%Y'), '%b %y') month
         FROM (
             Select o_r.opportunity_id, o_r.milestone_id, o_r.start_date, o_r.end_date, ora.buying_rate, ora.selling_rate, ora.contact_person_id, e.id employee_id, o.cm_percentage cm
             FROM opportunities o 
@@ -1685,7 +1684,7 @@ export class ProjectRepository extends Repository<Opportunity> {
               tpe.timesheet_id = t.id 
                 JOIN timesheet_entries te ON 
                 te.milestone_entry_id = tpe.id 
-            WHERE STR_TO_DATE(te.date,'%e-%m-%Y') BETWEEN STR_TO_DATE('1-07-2022' ,'%e-%m-%Y') AND STR_TO_DATE('30-06-2023' ,'%e-%m-%Y'))as times 
+            WHERE STR_TO_DATE(te.date,'%e-%m-%Y') BETWEEN STR_TO_DATE('${fiscalYear.start}' ,'%e-%m-%Y') AND STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y'))as times 
         ON 
           project.employee_id = times.employee_id
         AND
@@ -1694,13 +1693,16 @@ export class ProjectRepository extends Repository<Opportunity> {
       `)
    
     let statement: any ={}
+    let statementTotal = {buyTotal: 0, sellTotal: 0}
 
     if (data) {
        data.forEach((el: any) =>{
         statement[el.month] = {cm: el.cm, month: el.month, monthTotalBuy: el.month_total_buy, monthTotalSell: el.month_total_sell, projectId: el.opportunity_id}
+        statementTotal['buyTotal'] += el.month_total_buy
+        statementTotal['sellTotal'] += el.month_total_sell
       })
     }
-    return statement
+    return {statement, statementTotal}
   }
 
   async helperGetProjectsByUserId(
