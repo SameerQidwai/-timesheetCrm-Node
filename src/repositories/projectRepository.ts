@@ -1700,7 +1700,6 @@ export class ProjectRepository extends Repository<Opportunity> {
         statement[el.month] = {cm: el.cm, month: el.month, monthTotalBuy: el.month_total_buy, monthTotalSell: el.month_total_sell, projectId: el.opportunity_id}
       })
     }
-
     return statement
   }
 
