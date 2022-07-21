@@ -1662,47 +1662,78 @@ export class ProjectRepository extends Repository<Opportunity> {
     if (!projectId || isNaN(projectId)) {
       throw new Error('Opportunity not found ');
     }
-    const data = await this.query(`
-      SELECT *, SUM(buying_rate * actual ) month_total_buy, SUM(selling_rate * actual  ) month_total_sell, DATE_FORMAT(STR_TO_DATE(e_date,'%e-%m-%Y'), '%b %y') month
-        FROM (
-            Select o_r.opportunity_id, o_r.milestone_id, o_r.start_date, o_r.end_date, ora.buying_rate, ora.selling_rate, ora.contact_person_id, e.id employee_id, o.cm_percentage cm
-            FROM opportunities o 
-              JOIN opportunity_resources o_r ON 
-              o_r.opportunity_id = o.id 
-                JOIN opportunity_resource_allocations ora ON 
-                ora.opportunity_resource_id = o_r.id 
-                  JOIN contact_person_organizations cpo ON 
-                  cpo.contact_person_id = ora.contact_person_id 
-                    JOIN employees e ON 
-                    e.contact_person_organization_id = cpo.id 
-            WHERE o.id = ${projectId} AND ora.is_marked_as_selected = 1) as project 
+    console.log(projectId, 'PROJECT ID ===================')
 
-        JOIN (
-            Select t.employee_id, tpe.milestone_id , te.date e_date, te.id entry_id, te.actual_hours actual 
-            From timesheets t 
-              JOIN timesheet_project_entries tpe ON 
-              tpe.timesheet_id = t.id 
-                JOIN timesheet_entries te ON 
-                te.milestone_entry_id = tpe.id 
-            WHERE STR_TO_DATE(te.date,'%e-%m-%Y') BETWEEN STR_TO_DATE('${fiscalYear.start}' ,'%e-%m-%Y') AND STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y'))as times 
-        ON 
-          project.employee_id = times.employee_id
+    let actualEndMonth = fiscalYear.actual
+    let forecastStartMonth = moment(fiscalYear.actual).add(1, 'days').format('D-M-YYYY')
+
+    const actual = await this.query(`
+    SELECT *, SUM(buying_rate * actual ) month_total_buy, SUM(selling_rate * actual  ) month_total_sell, 
+    DATE_FORMAT(STR_TO_DATE(e_date,'%e-%m-%Y'), '%b %y') month
+      FROM (
+          Select o_r.opportunity_id, o_r.milestone_id, o_r.start_date, o_r.end_date, ora.buying_rate, ora.selling_rate, 
+          ora.contact_person_id, e.id employee_id, o.cm_percentage cm
+          FROM opportunities o 
+            JOIN opportunity_resources o_r ON 
+            o_r.opportunity_id = o.id 
+              JOIN opportunity_resource_allocations ora ON 
+              ora.opportunity_resource_id = o_r.id 
+                JOIN contact_person_organizations cpo ON 
+                cpo.contact_person_id = ora.contact_person_id 
+                  JOIN employees e ON 
+                  e.contact_person_organization_id = cpo.id 
+          WHERE o.id = 44 AND ora.is_marked_as_selected = 1) as project 
+
+      JOIN (
+          Select t.employee_id, tpe.milestone_id , te.date e_date, te.id entry_id, te.actual_hours actual 
+          From timesheets t 
+            JOIN timesheet_project_entries tpe ON 
+            tpe.timesheet_id = t.id 
+              JOIN timesheet_entries te ON 
+              te.milestone_entry_id = tpe.id 
+          WHERE STR_TO_DATE(te.date,'%e-%m-%Y') < STR_TO_DATE('1-8-2022' ,'%e-%m-%Y'))as times 
+      ON 
+        project.employee_id = times.employee_id
+       AND
+        project.milestone_id = times.milestone_id
         AND
-          DATE_FORMAT(STR_TO_DATE(times.e_date,'%e-%m-%Y'), '%e-%m-%Y') BETWEEN DATE_FORMAT(project.start_date, '%e-%m-%Y') AND DATE_FORMAT(project.end_date, '%e-%m-%Y')
-        GROUP BY month;
+        STR_TO_DATE(times.e_date,'%e-%m-%Y') BETWEEN project.start_date 
+        AND project.end_date
+       GROUP BY month;
       `)
-   
-    let statement: any ={}
-    let statementTotal = {buyTotal: 0, sellTotal: 0}
 
-    if (data) {
-       data.forEach((el: any) =>{
-        statement[el.month] = {cm: el.cm, month: el.month, monthTotalBuy: el.month_total_buy, monthTotalSell: el.month_total_sell, projectId: el.opportunity_id}
-        statementTotal['buyTotal'] += el.month_total_buy
-        statementTotal['sellTotal'] += el.month_total_sell
+    let actualStatement: any ={}
+    let actualTotal = {buyTotal: 0, sellTotal: 0}
+
+    if (actual) {
+      actual.forEach((el: any) =>{
+        actualStatement[el.month] = {cm: el.cm, month: el.month, monthTotalBuy: el.month_total_buy, monthTotalSell: el.month_total_sell, projectId: el.opportunity_id}
+        actualTotal['buyTotal'] += el.month_total_buy
+        actualTotal['sellTotal'] += el.month_total_sell
       })
     }
-    return {statement, statementTotal}
+
+    const forecast = await this.query(`Select o_r.start_date res_startDate, o_r.end_date res_endDate, ec.start_date con_startDate, ec.end_date con_endDate, 
+      (ora.buying_rate *( (ec.no_of_hours /5) * (ora.effort_rate /100) ) ) forecateBuyRateDaily, 
+      (ora.selling_rate *( (ec.no_of_hours /5) * (ora.effort_rate /100) ) ) forecateSellRateDaily
+      FROM opportunities o 
+        JOIN opportunity_resources o_r ON 
+          o_r.opportunity_id = o.id 
+                JOIN opportunity_resource_allocations ora ON 
+                    ora.opportunity_resource_id = o_r.id 
+                    JOIN contact_person_organizations cpo ON 
+                        cpo.contact_person_id = ora.contact_person_id 
+                        JOIN employees e ON 
+                        e.contact_person_organization_id = cpo.id
+                        JOIN employment_contracts ec ON
+                          ec.employee_id = e.id
+      WHERE o.id = ${projectId} AND ora.is_marked_as_selected = 1 AND ec.start_date <= STR_TO_DATE('31-12-2022' ,'%e-%m-%Y') 
+      AND (ec.end_date IS NULL ||  ec.end_date >= STR_TO_DATE('1-9-2022' ,'%e-%m-%Y')) 
+      AND o_r.start_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y') AND (o_r.end_date IS NULL ||  o_r.end_date > STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y'));`
+    )
+
+
+    return {actualStatement, actualTotal, forecast}
   }
 
   async helperGetProjectsByUserId(
