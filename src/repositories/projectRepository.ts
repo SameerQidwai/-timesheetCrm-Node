@@ -1691,7 +1691,7 @@ export class ProjectRepository extends Repository<Opportunity> {
             tpe.timesheet_id = t.id 
               JOIN timesheet_entries te ON 
               te.milestone_entry_id = tpe.id 
-          WHERE STR_TO_DATE(te.date,'%e-%m-%Y') < STR_TO_DATE('1-8-2022' ,'%e-%m-%Y'))as times 
+          WHERE STR_TO_DATE(te.date,'%e-%m-%Y') < STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y'))as times 
       ON 
         project.employee_id = times.employee_id
        AND
@@ -1727,8 +1727,8 @@ export class ProjectRepository extends Repository<Opportunity> {
                         e.contact_person_organization_id = cpo.id
                         JOIN employment_contracts ec ON
                           ec.employee_id = e.id
-      WHERE o.id = ${projectId} AND ora.is_marked_as_selected = 1 AND ec.start_date <= STR_TO_DATE('31-12-2022' ,'%e-%m-%Y') 
-      AND (ec.end_date IS NULL ||  ec.end_date >= STR_TO_DATE('1-9-2022' ,'%e-%m-%Y')) 
+      WHERE o.id = ${projectId} AND ora.is_marked_as_selected = 1 AND ec.start_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y') 
+      AND (ec.end_date IS NULL ||  ec.end_date >= STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y')) 
       AND o_r.start_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y') AND (o_r.end_date IS NULL ||  o_r.end_date > STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y'));`
     )
 
