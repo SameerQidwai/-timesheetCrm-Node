@@ -42,4 +42,7 @@ router
 
 router.route('/auth/addSkill').post([isLoggedIn], contr.addSkill.bind(contr));
 
+router.route('/forgotPassword').post(contr.forgotPassword.bind(contr));
+router.route('/resetPassword/:token').post(contr.resetPassword.bind(contr));
+
 export default router;

@@ -39,6 +39,9 @@ export class ContactPerson extends Base {
   @Column({ name: 'email', nullable: true })
   email: string;
 
+  @Column({ name: 'birth_place', nullable: true })
+  birthPlace: String;
+
   @Column({ name: 'address', nullable: true })
   address: String;
 

@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import { Any, getCustomRepository } from 'typeorm';
+import { Request, Response, NextFunction, urlencoded } from 'express';
+import { Any, getCustomRepository, getManager } from 'typeorm';
 import { secret } from '../utilities/configs';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -7,6 +7,10 @@ import { EmployeeRepository } from './../repositories/employeeRepository';
 import { ProjectRepository } from '../repositories/projectRepository';
 import { EmploymentContract } from '../entities/employmentContract';
 import moment from 'moment';
+import { sendMail } from '../utilities/mailer';
+import { Employee } from '../entities/employee';
+import { PasswordReset } from '../entities/passwordReset';
+import crypto from 'crypto';
 
 export class AuthController {
   async login(req: Request, res: Response, next: NextFunction) {
@@ -392,6 +396,113 @@ export class AuthController {
         success: true,
         message: 'Skills Added Successfully',
         data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async forgotPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const manager = getManager();
+
+      const { email } = req.body;
+
+      let user = await manager.findOne(Employee, {
+        relations: [
+          'contactPersonOrganization',
+          'contactPersonOrganization.contactPerson',
+        ],
+        where: { username: email },
+      });
+
+      if (!user) {
+        return res.status(404).json({
+          success: true,
+          message: 'Password Reset Email Sent',
+          data: null,
+        });
+      }
+
+      let link = new PasswordReset();
+      link.email = user.username;
+      link.token = crypto.randomBytes(32).toString('hex');
+      await manager.save(link);
+
+      try {
+        sendMail(
+          'crm.onelm.com',
+          {
+            username: user.contactPersonOrganization.contactPerson.firstName,
+            email: user.username,
+          },
+          'Forgot Password Request',
+          `Your have requested a Password Reset on Onelm
+          If you did not request a request, please ignore this email.
+          Your Password Reset Link is : 
+          http://localhost:3001/forgot-password/${encodeURIComponent(
+            link.token
+          )}
+          `
+        );
+      } catch (e) {
+        console.log(e);
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: 'Password Reset Email Sent',
+        data: null,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async resetPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const manager = getManager();
+      const { token } = req.params;
+      const { password } = req.body;
+
+      if (!token) {
+        throw new Error('Invalid Token');
+      }
+
+      // manager.transaction(async (transactionalEntityManager) => {
+      let link = await manager.findOne(PasswordReset, {
+        where: {
+          token: token,
+          used: 0,
+        },
+      });
+
+      if (!link) {
+        throw new Error('Invalid Token');
+      }
+
+      let user = await manager.findOne(Employee, {
+        where: {
+          username: link.email,
+        },
+      });
+
+      if (!user) {
+        throw new Error('Invalid Token');
+      }
+
+      user.password = bcrypt.hashSync(password, bcrypt.genSaltSync(8));
+
+      link.used = true;
+
+      await manager.save(user);
+      await manager.save(link);
+
+      // });
+      return res.status(200).json({
+        success: true,
+        message: 'Password Updated Successfully',
+        data: null,
       });
     } catch (e) {
       next(e);

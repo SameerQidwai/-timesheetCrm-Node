@@ -18,6 +18,7 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
       contactPersonObj.firstName = contactPersonDTO.firstName;
       contactPersonObj.lastName = contactPersonDTO.lastName;
       contactPersonObj.email = contactPersonDTO.email;
+      contactPersonObj.birthPlace = contactPersonDTO.birthPlace;
       contactPersonObj.address = contactPersonDTO.address;
       contactPersonObj.gender = contactPersonDTO.gender;
       contactPersonObj.phoneNumber = contactPersonDTO.phoneNumber;
@@ -140,6 +141,7 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
       contactPersonObj.firstName = contactPersonDTO.firstName;
       contactPersonObj.lastName = contactPersonDTO.lastName;
       contactPersonObj.email = contactPersonDTO.email;
+      contactPersonObj.birthPlace = contactPersonDTO.birthPlace;
       contactPersonObj.address = contactPersonDTO.address;
       contactPersonObj.gender = contactPersonDTO.gender;
       contactPersonObj.phoneNumber = contactPersonDTO.phoneNumber;
