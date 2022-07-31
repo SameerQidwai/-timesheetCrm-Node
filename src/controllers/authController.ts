@@ -11,7 +11,7 @@ import { EmploymentContract } from '../entities/employmentContract';
 import { sendMail } from '../utilities/mailer';
 import { Employee } from '../entities/employee';
 import { PasswordReset } from '../entities/passwordReset';
-import { FRONTEND_URL } from '../constants/constants';
+import { FRONTEND_URL } from '../server';
 
 export class AuthController {
   async login(req: Request, res: Response, next: NextFunction) {
