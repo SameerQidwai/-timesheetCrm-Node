@@ -79,6 +79,7 @@ export class SubContractorRepository extends Repository<Employee> {
       contactPersonObj.firstName = subContractor.firstName;
       contactPersonObj.lastName = subContractor.lastName;
       contactPersonObj.email = subContractor.email;
+      contactPersonObj.birthPlace = subContractor.birthPlace;
       contactPersonObj.address = subContractor.address;
       contactPersonObj.gender = subContractor.gender;
       contactPersonObj.phoneNumber = subContractor.phoneNumber;
@@ -274,6 +275,7 @@ export class SubContractorRepository extends Repository<Employee> {
       contactPersonObj.firstName = subContractor.firstName;
       contactPersonObj.lastName = subContractor.lastName;
       contactPersonObj.email = subContractor.email;
+      contactPersonObj.birthPlace = subContractor.birthPlace;
       contactPersonObj.address = subContractor.address;
       contactPersonObj.gender = subContractor.gender;
       contactPersonObj.phoneNumber = subContractor.phoneNumber;

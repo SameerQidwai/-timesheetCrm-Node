@@ -244,6 +244,7 @@ export interface SubContractorDTO extends Base {
   dateOfBirth: Date | null;
   phoneNumber: string;
   email: string;
+  birthPlace: String;
   address: string;
   stateId: number | null;
   nextOfKinName: string;
