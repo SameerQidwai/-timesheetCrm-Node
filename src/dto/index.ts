@@ -147,6 +147,7 @@ export interface ContactPersonDTO extends Base {
   dateOfBirth: Date | null;
   phoneNumber: string;
   email: string;
+  birthPlace: String;
   address: string;
   stateId: number | null;
   clearanceLevel: ClearanceLevel | null;
@@ -170,6 +171,7 @@ export interface EmployeeDTO extends Base {
   dateOfBirth: Date | null;
   phoneNumber: string;
   email: string;
+  birthPlace: String;
   address: string;
   stateId: number | null;
   nextOfKinName: string;
@@ -242,6 +244,7 @@ export interface SubContractorDTO extends Base {
   dateOfBirth: Date | null;
   phoneNumber: string;
   email: string;
+  birthPlace: String;
   address: string;
   stateId: number | null;
   nextOfKinName: string;

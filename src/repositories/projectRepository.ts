@@ -1658,6 +1658,80 @@ export class ProjectRepository extends Repository<Opportunity> {
     return opportunity.milestones;
   }
 
+  async getProfitLoss(projectId: number, fiscalYear: {start: string, end: string, actual: string}): Promise<any | undefined> {
+    if (!projectId || isNaN(projectId)) {
+      throw new Error('Opportunity not found ');
+    }
+    console.log(projectId, 'PROJECT ID ===================')
+
+    const actual = await this.query(`
+      SELECT*, SUM(buying_rate * actual ) month_total_buy, SUM(selling_rate * actual  ) month_total_sell, SUM(actual) actual,
+      DATE_FORMAT(STR_TO_DATE(e_date,'%e-%m-%Y'), '%b %y') month FROM (
+            Select o_r.opportunity_id, o_r.milestone_id milestoneId, o_r.start_date res_start, o_r.end_date res_end, ora.buying_rate, ora.selling_rate, 
+            ora.contact_person_id, e.id employee_id, o.cm_percentage cm
+            FROM opportunities o 
+              JOIN opportunity_resources o_r ON 
+              o_r.opportunity_id = o.id 
+                JOIN opportunity_resource_allocations ora ON 
+                ora.opportunity_resource_id = o_r.id 
+                  JOIN contact_person_organizations cpo ON 
+                  cpo.contact_person_id = ora.contact_person_id 
+                    JOIN employees e ON 
+                    e.contact_person_organization_id = cpo.id 
+            WHERE o.id = ${projectId} AND ora.is_marked_as_selected = 1) as project 
+
+        JOIN (
+            Select t.employee_id, tpe.milestone_id , te.date e_date, te.id entry_id, te.actual_hours actual 
+            From timesheets t 
+              JOIN timesheet_project_entries tpe ON 
+              tpe.timesheet_id = t.id 
+                JOIN timesheet_entries te ON 
+                te.milestone_entry_id = tpe.id 
+            WHERE STR_TO_DATE(te.date,'%e-%m-%Y') <= STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y'))as times 
+        ON 
+          project.employee_id = times.employee_id
+        AND
+          project.milestoneId = times.milestone_id
+          AND
+          STR_TO_DATE(times.e_date,'%e-%m-%Y') BETWEEN STR_TO_DATE(DATE_FORMAT(project.res_start,'%e-%m-%Y'),'%e-%m-%Y')  
+          AND project.res_end
+        GROUP BY month;
+      `)
+
+    let actualStatement: any ={}
+    let actualTotal = {buyTotal: 0, sellTotal: 0}
+
+    if (actual) {
+      actual.forEach((el: any) =>{
+        actualStatement[el.month] = {cm: el.cm, month: el.month, monthTotalBuy: el.month_total_buy, monthTotalSell: el.month_total_sell, projectId: el.opportunity_id}
+        actualTotal['buyTotal'] += el.month_total_buy
+        actualTotal['sellTotal'] += el.month_total_sell
+      })
+    }
+
+    const forecast = await this.query(`Select o_r.start_date res_startDate, o_r.end_date res_endDate, ec.start_date con_startDate, ec.end_date con_endDate, 
+      (ora.buying_rate *( (ec.no_of_hours /5) * (ora.effort_rate /100) ) ) forecastBuyRateDaily, 
+      (ora.selling_rate *( (ec.no_of_hours /5) * (ora.effort_rate /100) ) ) forecastSellRateDaily
+      FROM opportunities o 
+        JOIN opportunity_resources o_r ON 
+          o_r.opportunity_id = o.id 
+                JOIN opportunity_resource_allocations ora ON 
+                    ora.opportunity_resource_id = o_r.id 
+                    JOIN contact_person_organizations cpo ON 
+                        cpo.contact_person_id = ora.contact_person_id 
+                        JOIN employees e ON 
+                        e.contact_person_organization_id = cpo.id
+                        JOIN employment_contracts ec ON
+                          ec.employee_id = e.id
+      WHERE o.id = ${projectId} AND ora.is_marked_as_selected = 1 AND ec.start_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y') 
+      AND (ec.end_date IS NULL ||  ec.end_date >= STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y')) 
+      AND o_r.start_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y') AND (o_r.end_date IS NULL ||  STR_TO_DATE(DATE_FORMAT(o_r.end_date,'%e-%m-%Y'),'%e-%m-%Y') > STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y'));`
+    )
+
+
+    return {actualStatement, actualTotal, forecast}
+  }
+
   async helperGetProjectsByUserId(
     employeeId: number,
     mode: string,

@@ -86,6 +86,7 @@ export class EmployeeRepository extends Repository<Employee> {
       contactPersonObj.firstName = employeeDTO.firstName;
       contactPersonObj.lastName = employeeDTO.lastName;
       contactPersonObj.email = employeeDTO.email;
+      contactPersonObj.birthPlace = employeeDTO.birthPlace;
       contactPersonObj.address = employeeDTO.address;
       contactPersonObj.gender = employeeDTO.gender;
       contactPersonObj.phoneNumber = employeeDTO.phoneNumber;
@@ -339,6 +340,7 @@ export class EmployeeRepository extends Repository<Employee> {
       contactPersonObj.firstName = employeeDTO.firstName;
       contactPersonObj.lastName = employeeDTO.lastName;
       contactPersonObj.email = employeeDTO.email;
+      contactPersonObj.birthPlace = employeeDTO.birthPlace;
       contactPersonObj.address = employeeDTO.address;
       contactPersonObj.gender = employeeDTO.gender;
       contactPersonObj.phoneNumber = employeeDTO.phoneNumber;
