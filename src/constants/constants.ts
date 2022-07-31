@@ -120,3 +120,10 @@ export enum ImportLogName {
   EMPLOYEE = 'employees_logs.xlsx',
   SUB_CONTRACTOR = 'subcontractors_logs.xlsx',
 }
+
+export const FRONTEND_URL =
+  process.env.ENVIRONMENT == 'production'
+    ? 'http://crm.1lm.com.au/'
+    : process.env.ENVIRONMENT == 'test'
+    ? 'http://testcrm.1lm.com.au/'
+    : 'http://localhost:3001/';

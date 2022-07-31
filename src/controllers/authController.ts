@@ -3,14 +3,15 @@ import { Any, getCustomRepository, getManager } from 'typeorm';
 import { secret } from '../utilities/configs';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+import moment from 'moment';
 import { EmployeeRepository } from './../repositories/employeeRepository';
 import { ProjectRepository } from '../repositories/projectRepository';
 import { EmploymentContract } from '../entities/employmentContract';
-import moment from 'moment';
 import { sendMail } from '../utilities/mailer';
 import { Employee } from '../entities/employee';
 import { PasswordReset } from '../entities/passwordReset';
-import crypto from 'crypto';
+import { FRONTEND_URL } from '../constants/constants';
 
 export class AuthController {
   async login(req: Request, res: Response, next: NextFunction) {
@@ -417,7 +418,7 @@ export class AuthController {
       });
 
       if (!user) {
-        return res.status(404).json({
+        return res.status(200).json({
           success: true,
           message: 'Password Reset Email Sent',
           data: null,
@@ -440,9 +441,7 @@ export class AuthController {
           `Your have requested a Password Reset on Onelm
           If you did not request a request, please ignore this email.
           Your Password Reset Link is : 
-          http://localhost:3001/forgot-password/${encodeURIComponent(
-            link.token
-          )}
+          ${FRONTEND_URL}reset-password/${encodeURIComponent(link.token)}
           `
         );
       } catch (e) {
@@ -466,7 +465,7 @@ export class AuthController {
       const { password } = req.body;
 
       if (!token) {
-        throw new Error('Invalid Token');
+        throw new Error('Invalid Link');
       }
 
       // manager.transaction(async (transactionalEntityManager) => {
@@ -478,7 +477,11 @@ export class AuthController {
       });
 
       if (!link) {
-        throw new Error('Invalid Token');
+        throw new Error('Invalid Link');
+      }
+
+      if (moment.utc(link.createdAt).add(1, 'day').isBefore(moment().utc())) {
+        throw new Error('Link Expired');
       }
 
       let user = await manager.findOne(Employee, {
