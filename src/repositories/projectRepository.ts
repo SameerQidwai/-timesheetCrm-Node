@@ -1655,6 +1655,14 @@ export class ProjectRepository extends Repository<Opportunity> {
         )[0];
         newResource.resourceId = resource.id;
         newResource.allocationId = allocation?.id;
+        (allocation as any).cm$ = (
+          allocation.sellingRate - allocation.buyingRate
+        ).toFixed(3);
+        (allocation as any).cmPercent = (
+          ((allocation.sellingRate - allocation.buyingRate) /
+            allocation.sellingRate) *
+          100
+        ).toFixed(3);
         newResource = { ...newResource, ...resource, ...allocation };
         delete newResource.id;
         delete newResource.opportunityResourceAllocations;
