@@ -89,4 +89,20 @@ export class OpportunityController extends BaseController<
       next(e);
     }
   }
+  async holidays(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(OpportunityRepository);
+      // let id = req.params.opportunityId;
+      let records: any = [];
+      records = await repository.getHolidays();
+      console.log('records: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'All Holidays',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

@@ -20,6 +20,7 @@ import { PurchaseOrder } from '../entities/purchaseOrder';
 import { Attachment } from '../entities/attachment';
 import { EntityType, ProjectType } from '../constants/constants';
 import { Comment } from '../entities/comment';
+import { Calendar } from '../entities/calendar';
 import moment from 'moment';
 import { LeaveRequest } from '../entities/leaveRequest';
 import { Timesheet } from '../entities/timesheet';
@@ -1711,6 +1712,23 @@ export class OpportunityRepository extends Repository<Opportunity> {
     if (!isNaN(employeeId) && employeeId != 0) return data;
 
     return work;
+  }
+
+  async getHolidays(): // fiscalYear: { start: string; end: string; actual: string }
+  Promise<any | undefined> {
+    let calendar = await this.manager.find(Calendar, {
+      relations: ['calendarHolidays', 'calendarHolidays.holidayType'],
+    });
+
+    let holidays: string[] = [];
+
+    if (calendar[0]) {
+      calendar[0].calendarHolidays.forEach((holiday) => {
+        holidays.push(moment(holiday.date).format('M D YYYY'));
+      });
+    }
+
+    return { holidays };
   }
 
   //!--------------------------- HELPER FUNCTIONS ----------------------------//
