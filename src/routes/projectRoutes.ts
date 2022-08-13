@@ -71,6 +71,17 @@ router
   .delete([isLoggedIn], resourceContr.delete.bind(resourceContr));
 
 router
+  .route('/:projectId/milestones/:milestoneId/expenses')
+  .get([isLoggedIn], milestoneContr.expenseIndex.bind(milestoneContr))
+  .post([isLoggedIn], milestoneContr.expenseCreate.bind(milestoneContr));
+
+router
+  .route('/:projectId/milestones/:milestoneId/expenses/:id')
+  .get([isLoggedIn], milestoneContr.expenseGet.bind(milestoneContr))
+  .put([isLoggedIn], milestoneContr.expenseUpdate.bind(milestoneContr))
+  .delete([isLoggedIn], milestoneContr.expenseDelete.bind(milestoneContr));
+
+router
   .route('/:projectId/purchaseOrders')
   .get([isLoggedIn], orderContr.index.bind(orderContr))
   .post([isLoggedIn], orderContr.create.bind(orderContr));

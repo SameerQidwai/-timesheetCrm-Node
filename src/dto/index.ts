@@ -665,3 +665,13 @@ export interface SubContractorEntity {
   'Organization ID': number;
   Organization: string;
 }
+
+export interface ExpenseTypeDTO extends Base {
+  label: String;
+}
+
+export interface MilestoneExpenseDTO extends Base {
+  expenseId: number;
+  buyingRate: number;
+  sellingRate: number;
+}
