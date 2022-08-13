@@ -100,4 +100,9 @@ router
   .route('/:projectId/phase/close')
   .post([isLoggedIn], contr.markAsClosed.bind(contr));
 
+router
+  .route('/:projectId/calculatedValue')
+  .get([isLoggedIn], contr.getCalculatedValue.bind(contr))
+  .put([isLoggedIn], contr.updateProjectValue.bind(contr));
+
 export default router;
