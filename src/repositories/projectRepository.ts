@@ -25,6 +25,7 @@ import { Timesheet } from '../entities/timesheet';
 import moment from 'moment';
 import { LeaveRequest } from '../entities/leaveRequest';
 import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
+import { Calendar } from '../entities/calendar';
 import {
   EntityType,
   OpportunityStatus,
@@ -1745,7 +1746,19 @@ export class ProjectRepository extends Repository<Opportunity> {
       AND (ec.end_date IS NULL ||  ec.end_date >= STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y')) 
       AND o_r.start_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y') AND (o_r.end_date IS NULL ||  STR_TO_DATE(DATE_FORMAT(o_r.end_date,'%e-%m-%Y'),'%e-%m-%Y') > STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y'));`);
 
-    return { actualStatement, actualTotal, forecast };
+    let calendar = await this.manager.find(Calendar, {
+      relations: ['calendarHolidays', 'calendarHolidays.holidayType'],
+    });
+    let holidays: any = {};
+
+    if (calendar[0]) {
+      calendar[0].calendarHolidays.forEach((holiday) => {
+        holidays[moment(holiday.date).format('M/D/YYYY').toString()] =
+          holiday.holidayType.label;
+      });
+    }
+
+    return { actualStatement, actualTotal, forecast, holidays };
   }
 
   async helperGetProjectsByUserId(
