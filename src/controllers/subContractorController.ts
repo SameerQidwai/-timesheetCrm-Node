@@ -33,12 +33,31 @@ export class SubContractorController extends BaseController<
       const repository = getCustomRepository(SubContractorRepository);
       let contractorId = req.params.contractorId;
       if (!contractorId) throw new Error('not found');
-      let searchIn = !!(req.query.searchIn === 'contactPerson')
-      let record = await repository.costCalculator( parseInt(contractorId), searchIn);
+      let searchIn = !!(req.query.searchIn === 'contactPerson');
+      let record = await repository.costCalculator(
+        parseInt(contractorId),
+        searchIn
+      );
       if (!record) throw new Error('not found');
       res.status(200).json({
         success: true,
         message: `Get ${req.params.id}`,
+        data: record,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+  async toggleActiveStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(SubContractorRepository);
+      let contractorId = parseInt(req.params.contractorId);
+      const { user } = res.locals;
+
+      let record = await repository.toggleActiveStatus(contractorId);
+      res.status(200).json({
+        success: true,
+        message: `Contractor Status Changed`,
         data: record,
       });
     } catch (e) {

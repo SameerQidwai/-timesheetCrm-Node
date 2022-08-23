@@ -25,4 +25,8 @@ router
   .route('/:contractorId/buy-cost')
   .get([isLoggedIn], contr.getContractorCost.bind(contr));
 
+router
+  .route('/:contractorId/toggleActive')
+  .put([isLoggedIn], contr.toggleActiveStatus.bind(contr));
+
 export default router;

@@ -26,7 +26,7 @@ export class AuthController {
       });
 
       let token: string;
-      if (user) {
+      if (user && user.active) {
         let same = bcrypt.compareSync(password, user.password); // true
         if (!same) {
           return res.status(200).json({
@@ -418,6 +418,14 @@ export class AuthController {
       });
 
       if (!user) {
+        return res.status(200).json({
+          success: true,
+          message: 'Password Reset Email Sent',
+          data: null,
+        });
+      }
+
+      if (!user.active) {
         return res.status(200).json({
           success: true,
           message: 'Password Reset Email Sent',

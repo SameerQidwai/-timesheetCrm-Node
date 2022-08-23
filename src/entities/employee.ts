@@ -37,6 +37,9 @@ export class Employee extends Base {
   @Column({ name: 'password' })
   password: string; // password for login
 
+  @Column({ name: 'active', default: true })
+  active: Boolean; // password for login
+
   // ---------------------------------------------------Next of kin info----------------------------------------
   @Column({ name: 'next_of_kin_name', nullable: true })
   nextOfKinName: string;
