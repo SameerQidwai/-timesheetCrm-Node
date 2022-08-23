@@ -699,4 +699,20 @@ export class SubContractorRepository extends Repository<Employee> {
       employeeBuyRate: buyRate,
     };
   }
+
+  async toggleActiveStatus(id: number): Promise<any | undefined> {
+    if (!id) {
+      throw new Error('Subcontractor not found');
+    }
+
+    let subContractor = await this.findOne(id);
+
+    if (!subContractor) {
+      throw new Error('Subcontractor not found');
+    }
+
+    subContractor.active = !subContractor.active;
+
+    return this.save(subContractor);
+  }
 }

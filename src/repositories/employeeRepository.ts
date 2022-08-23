@@ -1501,4 +1501,20 @@ export class EmployeeRepository extends Repository<Employee> {
       employeeBuyRate: buyRate,
     };
   }
+
+  async toggleActiveStatus(id: number): Promise<any | undefined> {
+    if (!id) {
+      throw new Error('Employee not found');
+    }
+
+    let employee = await this.findOne(id);
+
+    if (!employee) {
+      throw new Error('Employee not found');
+    }
+
+    employee.active = !employee.active;
+
+    return this.save(employee);
+  }
 }

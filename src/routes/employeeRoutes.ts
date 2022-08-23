@@ -37,9 +37,12 @@ router
   .put([isLoggedIn], leaseContr.update.bind(leaseContr))
   .delete([isLoggedIn], leaseContr.delete.bind(leaseContr));
 
-  router
+router
   .route('/:employeeId/buy-cost')
   .get([isLoggedIn], contr.getEmployeeCost.bind(contr));
 
+router
+  .route('/:employeeId/toggleActive')
+  .put([isLoggedIn], contr.toggleActiveStatus.bind(contr));
 
 export default router;
