@@ -106,4 +106,125 @@ export class OpportunityMilestoneController {
       next(e);
     }
   }
+
+  async expenseIndex(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(OpportunityRepository);
+      let records: any = [];
+      const { grantLevel } = res.locals;
+      let opportunityId = parseInt(req.params.opportunityId);
+      let milestoneId = parseInt(req.params.milestoneId);
+      // if (grantLevel.includes('ANY')) {
+      // } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
+      //   // Call repo function that returns both
+      // } else if (grantLevel.includes('MANAGE')) {
+      // } else if (grantLevel.includes('OWN')) {
+      // }
+
+      records = await repository.getAllActiveExpenses(
+        opportunityId,
+        milestoneId
+      );
+      res.status(200).json({
+        success: true,
+        message: 'Milestone Expenses',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async expenseCreate(req: Request, res: Response, next: NextFunction) {
+    try {
+      let opportunityId = parseInt(req.params.opportunityId);
+      let milestoneId = parseInt(req.params.milestoneId);
+      const repository = getCustomRepository(OpportunityRepository);
+      let response = await repository.addExpense(
+        opportunityId,
+        milestoneId,
+        req.body
+      );
+
+      // if no timesheet found
+      return res.status(200).json({
+        success: true,
+        // message: `Win Opportunity ${req.params.id}`,
+        message: 'Expense Created Successfully',
+        data: response,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async expenseGet(req: Request, res: Response, next: NextFunction) {
+    try {
+      let opportunityId = parseInt(req.params.opportunityId);
+      let milestoneId = parseInt(req.params.milestoneId);
+
+      const repository = getCustomRepository(OpportunityRepository);
+      let response = await repository.findOneCustomExpense(
+        opportunityId,
+        milestoneId,
+        parseInt(req.params.id)
+      );
+      // if no timesheet found
+      return res.status(200).json({
+        success: true,
+        // message: `Win Opportunity ${req.params.id}`,
+        message: 'Milestone Expense View',
+        data: response,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async expenseUpdate(req: Request, res: Response, next: NextFunction) {
+    try {
+      let opportunityId = parseInt(req.params.opportunityId);
+      let milestoneId = parseInt(req.params.milestoneId);
+      const repository = getCustomRepository(OpportunityRepository);
+      let response = await repository.updateExpense(
+        opportunityId,
+        milestoneId,
+        parseInt(req.params.id),
+        req.body
+      );
+
+      // if no timesheet found
+      return res.status(200).json({
+        success: true,
+        // message: `Win Opportunity ${req.params.id}`,
+        message: 'Expense Updated Succesfully',
+        data: response,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async expenseDelete(req: Request, res: Response, next: NextFunction) {
+    try {
+      let opportunityId = parseInt(req.params.opportunityId);
+      let milestoneId = parseInt(req.params.milestoneId);
+      const repository = getCustomRepository(OpportunityRepository);
+      let response = await repository.deleteCustomExpense(
+        opportunityId,
+        milestoneId,
+        parseInt(req.params.id)
+      );
+
+      // if no timesheet found
+      return res.status(200).json({
+        success: true,
+        // message: `Win Opportunity ${req.params.id}`,
+        message: 'Expense Deleted Succesfully',
+        data: response,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

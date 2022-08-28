@@ -82,6 +82,17 @@ router
   .delete([isLoggedIn], resourceContr.delete.bind(resourceContr));
 
 router
+  .route('/:opportunityId/milestones/:milestoneId/expenses')
+  .get([isLoggedIn], milestoneContr.expenseIndex.bind(milestoneContr))
+  .post([isLoggedIn], milestoneContr.expenseCreate.bind(milestoneContr));
+
+router
+  .route('/:opportunityId/milestones/:milestoneId/expenses/:id')
+  .get([isLoggedIn], milestoneContr.expenseGet.bind(milestoneContr))
+  .put([isLoggedIn], milestoneContr.expenseUpdate.bind(milestoneContr))
+  .delete([isLoggedIn], milestoneContr.expenseDelete.bind(milestoneContr));
+
+router
   .route(
     '/:opportunityId/milestones/:milestoneId/resources/:opportunityResourceId/allocations'
   )
@@ -100,5 +111,10 @@ router
     '/:opportunityId/milestones/:milestoneId/resources/:opportunityResourceId/allocations/:id/mark-as-selected'
   )
   .patch([isLoggedIn], allocationContr.markAsSelected.bind(allocationContr));
+
+router
+  .route('/:opportunityId/calculatedValue')
+  .get([isLoggedIn], contr.getCalculatedValue.bind(contr))
+  .put([isLoggedIn], contr.updateOpportunityValue.bind(contr));
 
 export default router;
