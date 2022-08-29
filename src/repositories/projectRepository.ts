@@ -1,12 +1,10 @@
 import {
-  OpportunityDTO,
-  OpportunityResourceAllocationDTO,
-  OpportunityResourceDTO,
   ProjectDTO,
   ProjectResourceDTO,
   PurchaseOrderDTO,
   MilestoneDTO,
   MilestoneUploadDTO,
+  MilestoneExpenseDTO,
 } from '../dto';
 import { EntityRepository, In, IsNull, Not, Repository } from 'typeorm';
 import { Organization } from './../entities/organization';
@@ -25,12 +23,15 @@ import { Timesheet } from '../entities/timesheet';
 import moment from 'moment';
 import { LeaveRequest } from '../entities/leaveRequest';
 import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
+import { MilestoneExpense } from '../entities/milestoneExpense';
+import { Calendar } from '../entities/calendar';
 import {
   EntityType,
   OpportunityStatus,
   ProjectType,
 } from '../constants/constants';
 import { File } from '../entities/file';
+import { ExpenseType } from '../entities/expenseType';
 
 @EntityRepository(Opportunity)
 export class ProjectRepository extends Repository<Opportunity> {
@@ -504,9 +505,41 @@ export class ProjectRepository extends Repository<Opportunity> {
   }
 
   async findOneCustom(id: number): Promise<any | undefined> {
-    return this.findOne(id, {
-      relations: ['organization', 'contactPerson', 'milestones'],
+    let project = await this.findOne(id, {
+      relations: [
+        'organization',
+        'contactPerson',
+        'milestones',
+        'milestones.expenses',
+        'milestones.opportunityResources',
+        'milestones.opportunityResources.opportunityResourceAllocations',
+      ],
     });
+
+    if (!project) {
+      throw new Error('Project not found');
+    }
+
+    let value = 0;
+
+    project.milestones.forEach((milestone) => {
+      milestone.opportunityResources.forEach((resource) => {
+        resource.opportunityResourceAllocations.forEach((allocation) => {
+          if (allocation.isMarkedAsSelected)
+            value +=
+              parseFloat(allocation.sellingRate as any) *
+              parseInt(resource.billableHours as any);
+        });
+      });
+      milestone.expenses.forEach((expense) => {
+        value += parseFloat(expense.sellingRate as any);
+      });
+    });
+
+    (project as Opportunity & { calculatedValue: number }).calculatedValue =
+      value;
+
+    return project;
   }
 
   async findOneCustomWithoutContactPerson(
@@ -576,6 +609,8 @@ export class ProjectRepository extends Repository<Opportunity> {
       await transactionalEntityManager.softRemove(Opportunity, project);
     });
   }
+
+  //-- MILESTONES
 
   async getAllActiveMilestones(projectId: number): Promise<any | undefined> {
     let project = await this.findOne(projectId, {
@@ -1028,6 +1063,8 @@ export class ProjectRepository extends Repository<Opportunity> {
     });
   }
 
+  //-- RESOURCES
+
   async getAllActiveResources(projectId: number, milestoneId: number) {
     if (!projectId) {
       throw new Error('This Project not found!');
@@ -1426,6 +1463,14 @@ export class ProjectRepository extends Repository<Opportunity> {
     let cpRole: string = 'Contact Person';
     selectedResources.forEach((resource, rindex) => {
       resource.opportunityResourceAllocations.forEach((allocation, aindex) => {
+        (allocation as any).cm$ = (
+          allocation.sellingRate - allocation.buyingRate
+        ).toFixed(3);
+        (allocation as any).cmPercent = (
+          ((allocation.sellingRate - allocation.buyingRate) /
+            allocation.sellingRate) *
+          100
+        ).toFixed(3);
         let cp = allocation.contactPerson;
         if (cp.contactPersonOrganizations.length > 0) {
           let contactPersonActiveAssociation =
@@ -1452,6 +1497,7 @@ export class ProjectRepository extends Repository<Opportunity> {
   }
 
   //-- PURCHASE ORDERS
+
   async getAllPurchaseOrders(projectId: number) {
     if (!projectId) {
       throw new Error('This Project not found!');
@@ -1582,6 +1628,8 @@ export class ProjectRepository extends Repository<Opportunity> {
     return await this.manager.softDelete(PurchaseOrder, deletedOrder);
   }
 
+  //------------------------------------
+
   async markProjectAsOpen(id: number): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
       let projectObj = await transactionalEntityManager.findOne(
@@ -1647,6 +1695,14 @@ export class ProjectRepository extends Repository<Opportunity> {
         )[0];
         newResource.resourceId = resource.id;
         newResource.allocationId = allocation?.id;
+        (allocation as any).cm$ = (
+          allocation.sellingRate - allocation.buyingRate
+        ).toFixed(3);
+        (allocation as any).cmPercent = (
+          ((allocation.sellingRate - allocation.buyingRate) /
+            allocation.sellingRate) *
+          100
+        ).toFixed(3);
         newResource = { ...newResource, ...resource, ...allocation };
         delete newResource.id;
         delete newResource.opportunityResourceAllocations;
@@ -1658,11 +1714,14 @@ export class ProjectRepository extends Repository<Opportunity> {
     return opportunity.milestones;
   }
 
-  async getProfitLoss(projectId: number, fiscalYear: {start: string, end: string, actual: string}): Promise<any | undefined> {
+  async getProfitLoss(
+    projectId: number,
+    fiscalYear: { start: string; end: string; actual: string }
+  ): Promise<any | undefined> {
     if (!projectId || isNaN(projectId)) {
       throw new Error('Opportunity not found ');
     }
-    console.log(projectId, 'PROJECT ID ===================')
+    console.log(projectId, 'PROJECT ID ===================');
 
     const actual = await this.query(`
       SELECT*, SUM(buying_rate * actual ) month_total_buy, SUM(selling_rate * actual  ) month_total_sell, SUM(actual) actual,
@@ -1696,20 +1755,27 @@ export class ProjectRepository extends Repository<Opportunity> {
           STR_TO_DATE(times.e_date,'%e-%m-%Y') BETWEEN STR_TO_DATE(DATE_FORMAT(project.res_start,'%e-%m-%Y'),'%e-%m-%Y')  
           AND project.res_end
         GROUP BY month;
-      `)
+      `);
 
-    let actualStatement: any ={}
-    let actualTotal = {buyTotal: 0, sellTotal: 0}
+    let actualStatement: any = {};
+    let actualTotal = { buyTotal: 0, sellTotal: 0 };
 
     if (actual) {
-      actual.forEach((el: any) =>{
-        actualStatement[el.month] = {cm: el.cm, month: el.month, monthTotalBuy: el.month_total_buy, monthTotalSell: el.month_total_sell, projectId: el.opportunity_id}
-        actualTotal['buyTotal'] += el.month_total_buy
-        actualTotal['sellTotal'] += el.month_total_sell
-      })
+      actual.forEach((el: any) => {
+        actualStatement[el.month] = {
+          cm: el.cm,
+          month: el.month,
+          monthTotalBuy: el.month_total_buy,
+          monthTotalSell: el.month_total_sell,
+          projectId: el.opportunity_id,
+        };
+        actualTotal['buyTotal'] += el.month_total_buy;
+        actualTotal['sellTotal'] += el.month_total_sell;
+      });
     }
 
-    const forecast = await this.query(`Select o_r.start_date res_startDate, o_r.end_date res_endDate, ec.start_date con_startDate, ec.end_date con_endDate, 
+    const forecast = await this
+      .query(`Select o_r.start_date res_startDate, o_r.end_date res_endDate, ec.start_date con_startDate, ec.end_date con_endDate, 
       (ora.buying_rate *( (ec.no_of_hours /5) * (ora.effort_rate /100) ) ) forecastBuyRateDaily, 
       (ora.selling_rate *( (ec.no_of_hours /5) * (ora.effort_rate /100) ) ) forecastSellRateDaily
       FROM opportunities o 
@@ -1725,11 +1791,21 @@ export class ProjectRepository extends Repository<Opportunity> {
                           ec.employee_id = e.id
       WHERE o.id = ${projectId} AND ora.is_marked_as_selected = 1 AND ec.start_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y') 
       AND (ec.end_date IS NULL ||  ec.end_date >= STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y')) 
-      AND o_r.start_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y') AND (o_r.end_date IS NULL ||  STR_TO_DATE(DATE_FORMAT(o_r.end_date,'%e-%m-%Y'),'%e-%m-%Y') > STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y'));`
-    )
+      AND o_r.start_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y') AND (o_r.end_date IS NULL ||  STR_TO_DATE(DATE_FORMAT(o_r.end_date,'%e-%m-%Y'),'%e-%m-%Y') > STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y'));`);
 
+    let calendar = await this.manager.find(Calendar, {
+      relations: ['calendarHolidays', 'calendarHolidays.holidayType'],
+    });
+    let holidays: any = {};
 
-    return {actualStatement, actualTotal, forecast}
+    if (calendar[0]) {
+      calendar[0].calendarHolidays.forEach((holiday) => {
+        holidays[moment(holiday.date).format('M/D/YYYY').toString()] =
+          holiday.holidayType.label;
+      });
+    }
+
+    return { actualStatement, actualTotal, forecast, holidays };
   }
 
   async helperGetProjectsByUserId(

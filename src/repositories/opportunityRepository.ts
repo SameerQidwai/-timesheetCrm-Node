@@ -5,6 +5,7 @@ import {
   OpportunityResourceDTO,
   ProjectDTO,
   OpportunityLostDTO,
+  MilestoneExpenseDTO,
 } from '../dto';
 import { EntityRepository, In, IsNull, Not, Repository } from 'typeorm';
 import { Organization } from './../entities/organization';
@@ -20,10 +21,13 @@ import { PurchaseOrder } from '../entities/purchaseOrder';
 import { Attachment } from '../entities/attachment';
 import { EntityType, ProjectType } from '../constants/constants';
 import { Comment } from '../entities/comment';
+import { Calendar } from '../entities/calendar';
 import moment from 'moment';
 import { LeaveRequest } from '../entities/leaveRequest';
 import { Timesheet } from '../entities/timesheet';
 import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
+import { MilestoneExpense } from '../entities/milestoneExpense';
+import { ExpenseType } from '../entities/expenseType';
 
 @EntityRepository(Opportunity)
 export class OpportunityRepository extends Repository<Opportunity> {
@@ -413,9 +417,41 @@ export class OpportunityRepository extends Repository<Opportunity> {
   }
 
   async findOneCustom(id: number): Promise<any | undefined> {
-    return this.findOne(id, {
-      relations: ['organization', 'contactPerson', 'milestones'],
+    let opportunity = await this.findOne(id, {
+      relations: [
+        'milestones',
+        'milestones.expenses',
+        'milestones.opportunityResources',
+        'milestones.opportunityResources.opportunityResourceAllocations',
+        'organization',
+        'contactPerson',
+      ],
     });
+
+    if (!opportunity) {
+      throw new Error('Opportunity not found');
+    }
+
+    let value = 0;
+
+    opportunity.milestones.forEach((milestone) => {
+      milestone.opportunityResources.forEach((resource) => {
+        resource.opportunityResourceAllocations.forEach((allocation) => {
+          if (allocation.isMarkedAsSelected)
+            value +=
+              parseFloat(allocation.sellingRate as any) *
+              parseInt(resource.billableHours as any);
+        });
+      });
+      milestone.expenses.forEach((expense) => {
+        value += parseFloat(expense.sellingRate as any);
+      });
+    });
+
+    (opportunity as Opportunity & { calculatedValue: number }).calculatedValue =
+      value;
+
+    return opportunity;
   }
 
   async findOneCustomWithoutContactPerson(
@@ -954,6 +990,221 @@ export class OpportunityRepository extends Repository<Opportunity> {
     }
 
     return await this.manager.remove(OpportunityResource, resource[0]);
+  }
+
+  //-- EXPENSES
+
+  async getAllActiveExpenses(opportunityId: number, milestoneId: number) {
+    if (!opportunityId) {
+      throw new Error('This Opportunity not found!');
+    }
+    if (!milestoneId) {
+      throw new Error('This Milestone not found!');
+    }
+    let project = await this.findOne(opportunityId, {
+      relations: [
+        'milestones',
+        'milestones.expenses',
+        'milestones.expenses.expenseType',
+      ],
+    });
+    if (!project) {
+      throw new Error('Opportunity not found!');
+    }
+
+    let milestone = project.milestones.filter((x) => x.id === milestoneId)[0];
+
+    return milestone.expenses;
+  }
+
+  async addExpense(
+    opportunityId: number,
+    milestoneId: number,
+    milestoneExpenseDTO: MilestoneExpenseDTO
+  ) {
+    let id = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        if (!opportunityId) {
+          throw new Error('Opportunity not found!');
+        }
+
+        if (!milestoneId) {
+          throw new Error('Milestone not found!');
+        }
+
+        let project = await this.findOne(opportunityId, {
+          relations: ['milestones', 'milestones.expenses'],
+        });
+
+        if (!project) {
+          throw new Error('Opportunity not found!');
+        }
+
+        if (project.type != 1) {
+          throw new Error('Unable to add Expense ');
+        }
+
+        let milestone = project.milestones.filter(
+          (x) => x.id == milestoneId
+        )[0];
+
+        if (!milestone) {
+          throw new Error('Milestone not found');
+        }
+
+        let expense = new MilestoneExpense();
+
+        let expenseType = await this.manager.findOne(
+          ExpenseType,
+          milestoneExpenseDTO.expenseId
+        );
+
+        if (!expenseType) {
+          throw new Error('Expense Type not found');
+        }
+
+        expense.expenseId = expenseType.id;
+        expense.milestoneId = milestoneId;
+        expense.buyingRate = milestoneExpenseDTO.buyingRate;
+        expense.sellingRate = milestoneExpenseDTO.sellingRate;
+
+        await transactionalEntityManager.save(expense);
+
+        return expense.id;
+      }
+    );
+
+    return this.findOneCustomExpense(opportunityId, milestoneId, id);
+  }
+
+  async updateExpense(
+    opportunityId: number,
+    milestoneId: number,
+    id: number,
+    milestoneExpenseDTO: MilestoneExpenseDTO
+  ) {
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      if (!opportunityId) {
+        throw new Error('Opportunity not found!');
+      }
+
+      if (!milestoneId) {
+        throw new Error('Milestone not found!');
+      }
+
+      let project = await this.findOne(opportunityId, {
+        relations: ['milestones', 'milestones.expenses'],
+      });
+
+      if (!project) {
+        throw new Error('Opportunity not found!');
+      }
+
+      let milestone = project.milestones.filter((x) => x.id == milestoneId)[0];
+
+      if (!milestone) {
+        throw new Error('Milestone not found');
+      }
+
+      let expense = milestone.expenses.filter((x) => x.id == id)[0];
+
+      if (!expense) {
+        throw new Error('Expense not found');
+      }
+
+      expense.expenseId = milestoneExpenseDTO.expenseId;
+      expense.buyingRate = milestoneExpenseDTO.buyingRate;
+      expense.sellingRate = milestoneExpenseDTO.sellingRate;
+
+      await transactionalEntityManager.save(expense);
+
+      return expense.id;
+    });
+
+    return this.findOneCustomExpense(opportunityId, milestoneId, id);
+  }
+
+  async findOneCustomExpense(
+    opportunityId: number,
+    milestoneId: number,
+    id: number
+  ): Promise<any | undefined> {
+    if (!opportunityId) {
+      throw new Error('Opportunity not found!');
+    }
+
+    if (!milestoneId) {
+      throw new Error('Milestone not found!');
+    }
+
+    let project = await this.findOne(opportunityId, {
+      relations: ['milestones', 'milestones.expenses'],
+    });
+    if (!project) {
+      throw new Error('Opportunity not found!');
+    }
+
+    let milestone = project.milestones.filter((x) => x.id == milestoneId)[0];
+
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    let expense = milestone.expenses.filter((x) => x.id === id)[0];
+
+    if (!expense) {
+      throw new Error('Expense not found');
+    }
+
+    return expense;
+  }
+
+  async deleteCustomExpense(
+    opportunityId: number,
+    milestoneId: number,
+    id: number
+  ): Promise<any | undefined> {
+    let project = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        if (!opportunityId) {
+          throw new Error('Opportunity not found!');
+        }
+        if (!milestoneId) {
+          throw new Error('Milestone not found!');
+        }
+        let project = await transactionalEntityManager.findOne(
+          Opportunity,
+          opportunityId,
+          {
+            relations: ['milestones', 'milestones.expenses'],
+          }
+        );
+        if (!project) {
+          throw new Error('Opportunity not found!');
+        }
+
+        let milestone = project.milestones.filter(
+          (x) => x.id == milestoneId
+        )[0];
+
+        if (!milestone) {
+          throw new Error('Milestone not found!');
+        }
+
+        let expense = milestone.expenses.filter((x) => x.id == id)[0];
+
+        if (!expense) {
+          throw new Error('Expense not found');
+        }
+
+        return await transactionalEntityManager.softDelete(
+          MilestoneExpense,
+          expense.id
+        );
+      }
+    );
+
+    return this.findOneCustom(opportunityId);
   }
 
   async addResourceAllocation(
@@ -1711,6 +1962,100 @@ export class OpportunityRepository extends Repository<Opportunity> {
     if (!isNaN(employeeId) && employeeId != 0) return data;
 
     return work;
+  }
+
+  // fiscalYear: { start: string; end: string; actual: string }
+  async getHolidays(): Promise<any | undefined> {
+    let calendar = await this.manager.find(Calendar, {
+      relations: ['calendarHolidays', 'calendarHolidays.holidayType'],
+    });
+
+    let holidays: string[] = [];
+
+    if (calendar[0]) {
+      calendar[0].calendarHolidays.forEach((holiday) => {
+        holidays.push(moment(holiday.date).format('M D YYYY'));
+      });
+    }
+
+    return { holidays };
+  }
+
+  async getCalculatedValue(opportunityId: number): Promise<any | undefined> {
+    if (!opportunityId || isNaN(opportunityId)) {
+      throw new Error('Opportunity not found ');
+    }
+
+    let project = await this.findOne(opportunityId, {
+      relations: [
+        'milestones',
+        'milestones.expenses',
+        'milestones.opportunityResources',
+        'milestones.opportunityResources.opportunityResourceAllocations',
+      ],
+    });
+
+    if (!project) {
+      throw new Error('Opportunity not found');
+    }
+
+    let value = 0;
+
+    project.milestones.forEach((milestone) => {
+      milestone.opportunityResources.forEach((resource) => {
+        resource.opportunityResourceAllocations.forEach((allocation) => {
+          value +=
+            parseFloat(allocation.sellingRate as any) *
+            parseInt(resource.billableHours as any);
+        });
+      });
+      milestone.expenses.forEach((expense) => {
+        value += parseFloat(expense.sellingRate as any);
+      });
+    });
+
+    return value;
+  }
+
+  async updateOpportunityValue(
+    opportunityId: number
+  ): Promise<any | undefined> {
+    if (!opportunityId || isNaN(opportunityId)) {
+      throw new Error('Opportunity not found ');
+    }
+
+    let project = await this.findOne(opportunityId, {
+      relations: [
+        'milestones',
+        'milestones.expenses',
+        'milestones.opportunityResources',
+        'milestones.opportunityResources.opportunityResourceAllocations',
+      ],
+    });
+
+    if (!project) {
+      throw new Error('Opportunity not found');
+    }
+
+    let value = 0;
+
+    project.milestones.forEach((milestone) => {
+      milestone.opportunityResources.forEach((resource) => {
+        resource.opportunityResourceAllocations.forEach((allocation) => {
+          value +=
+            parseFloat(allocation.sellingRate as any) *
+            parseInt(resource.billableHours as any);
+        });
+      });
+      milestone.expenses.forEach((expense) => {
+        value += parseFloat(expense.sellingRate as any);
+      });
+    });
+
+    project.value = value;
+    this.save(project);
+
+    return project;
   }
 
   //!--------------------------- HELPER FUNCTIONS ----------------------------//

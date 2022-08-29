@@ -11,11 +11,11 @@ export let sendMail = (
 ) => {
   // Create a SMTP transporter object
 
-  let MAILER_HOST = 'smtp.gmail.com';
+  let MAILER_HOST = 'smtp.office365.com';
   let MAILER_PORT = 587;
-  let MAILER_SSL = false;
-  let MAILER_USER = 'contact.1lm.au@gmail.com';
-  let MAILER_PWD = 'eiakgvsmqxoqvrnb';
+  let MAILER_SSL = true;
+  let MAILER_USER = 'support@timewize.com.au';
+  let MAILER_PWD = '123123testtest';
 
   let transporter = nodemailer.createTransport({
     host: MAILER_HOST,

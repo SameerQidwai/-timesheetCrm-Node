@@ -92,7 +92,11 @@ export class ProjectController extends BaseController<
     try {
       const repository = getCustomRepository(ProjectRepository);
       let id = req.params.projectId;
-      let fiscalYear: any = {start: req.query.startDate, end: req.query.endDate, actual: req.query.actualDate}
+      let fiscalYear: any = {
+        start: req.query.startDate,
+        end: req.query.endDate,
+        actual: req.query.actualDate,
+      };
       let records: any = [];
       records = await repository.getProfitLoss(parseInt(id), fiscalYear);
       console.log('records: ', records);

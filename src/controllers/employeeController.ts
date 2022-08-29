@@ -53,12 +53,36 @@ export class EmployeeController extends BaseController<
     try {
       const repository = getCustomRepository(EmployeeRepository);
       let employeeId = req.params.employeeId;
-      let searchIn = !!(req.query.searchIn === 'contactPerson')
-      let record = await repository.costCalculator( parseInt(employeeId), searchIn);
+      let searchIn = !!(req.query.searchIn === 'contactPerson');
+      let record = await repository.costCalculator(
+        parseInt(employeeId),
+        searchIn
+      );
       if (!record) throw new Error('not found');
       res.status(200).json({
         success: true,
         message: `Get ${req.params.id}`,
+        data: record,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async toggleActiveStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(EmployeeRepository);
+      let employeeId = parseInt(req.params.employeeId);
+      const { user } = res.locals;
+
+      if (user.id === employeeId) {
+        throw new Error('Cannot change own active status');
+      }
+
+      let record = await repository.toggleActiveStatus(employeeId);
+      res.status(200).json({
+        success: true,
+        message: `Employee Status Changed`,
         data: record,
       });
     } catch (e) {

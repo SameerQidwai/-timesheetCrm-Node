@@ -89,4 +89,58 @@ export class OpportunityController extends BaseController<
       next(e);
     }
   }
+  async holidays(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(OpportunityRepository);
+      // let id = req.params.opportunityId;
+      let records: any = [];
+      records = await repository.getHolidays();
+      console.log('records: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'All Holidays',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async getCalculatedValue(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(OpportunityRepository);
+      let id = req.params.opportunityId;
+      let records: any = [];
+      records = await repository.getCalculatedValue(parseInt(id));
+      console.log('records: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'Opportunity Calculated Value',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async updateOpportunityValue(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const repository = getCustomRepository(OpportunityRepository);
+      let id = req.params.opportunityId;
+      let records: any = [];
+      records = await repository.updateOpportunityValue(parseInt(id));
+      console.log('records: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'Opportunity Calculated Value',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }
