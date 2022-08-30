@@ -1712,6 +1712,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
       for (let milestone of opportunityObj.milestones) {
         for (let position of milestone.opportunityResources) {
+          //TODO handle selected allocation
           for (let allocation of position.opportunityResourceAllocations) {
             if (!allocation.contactPerson.getEmployee) {
               throw new Error(
