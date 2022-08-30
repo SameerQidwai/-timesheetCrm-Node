@@ -89,6 +89,7 @@ export class OpportunityController extends BaseController<
       next(e);
     }
   }
+
   async holidays(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(OpportunityRepository);
