@@ -102,4 +102,8 @@ export class ContactPerson extends Base {
     }
     return activeOrganization[0].employee;
   }
+
+  public get getFullName(): string {
+    return `${this.firstName} ${this.lastName}`;
+  }
 }

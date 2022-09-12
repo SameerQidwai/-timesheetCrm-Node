@@ -1712,13 +1712,27 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
       for (let milestone of opportunityObj.milestones) {
         for (let position of milestone.opportunityResources) {
-          //TODO handle selected allocation
+          //handle selected allocation
+          if (position.opportunityResourceAllocations.length == 0) {
+            throw new Error(
+              `No Allocations assigned to Position: ${position.title}`
+            );
+          }
+          let positionSelected = false;
           for (let allocation of position.opportunityResourceAllocations) {
+            if (allocation.isMarkedAsSelected) {
+              positionSelected = true;
+            }
             if (!allocation.contactPerson.getEmployee) {
               throw new Error(
                 'Cannot convert opportunity to project with contact person in allocations'
               );
             }
+          }
+          if (!positionSelected) {
+            throw new Error(
+              `No Allocations selected in Position: ${position.title}`
+            );
           }
         }
       }

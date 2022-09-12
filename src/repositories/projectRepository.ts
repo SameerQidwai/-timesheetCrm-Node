@@ -6,7 +6,15 @@ import {
   MilestoneUploadDTO,
   MilestoneExpenseDTO,
 } from '../dto';
-import { EntityRepository, In, IsNull, Not, Repository } from 'typeorm';
+import {
+  EntityRepository,
+  In,
+  IsNull,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Not,
+  Repository,
+} from 'typeorm';
 import { Organization } from './../entities/organization';
 import { Opportunity } from './../entities/opportunity';
 import { Panel } from './../entities/panel';
@@ -20,7 +28,7 @@ import { Milestone } from '../entities/milestone';
 import { Attachment } from '../entities/attachment';
 import { Comment } from '../entities/comment';
 import { Timesheet } from '../entities/timesheet';
-import moment from 'moment';
+import moment, { Moment, parseTwoDigitYear } from 'moment';
 import { LeaveRequest } from '../entities/leaveRequest';
 import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
 import { MilestoneExpense } from '../entities/milestoneExpense';
@@ -32,6 +40,8 @@ import {
 } from '../constants/constants';
 import { File } from '../entities/file';
 import { ExpenseType } from '../entities/expenseType';
+import { number } from 'joi';
+import { time } from 'console';
 
 @EntityRepository(Opportunity)
 export class ProjectRepository extends Repository<Opportunity> {
@@ -1810,6 +1820,415 @@ export class ProjectRepository extends Repository<Opportunity> {
     return { actualStatement, actualTotal, forecast, holidays };
   }
 
+  async getProjectTracking(
+    projectId: number,
+    fiscalYear: { start: string; end: string; actual: string }
+  ): Promise<any | undefined> {
+    if (!projectId || isNaN(projectId)) {
+      throw new Error('Project not found ');
+    }
+    console.log(projectId, 'PROJECT ID ===================');
+
+    let project = await this.findOne(projectId, {
+      relations: [
+        'milestones',
+        'milestones.opportunityResources',
+        'milestones.opportunityResources.opportunityResourceAllocations',
+        'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
+        'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations',
+        'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations.employee',
+        'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations.employee.employmentContracts',
+      ],
+    });
+
+    if (!project) {
+      throw new Error('Project not found');
+    }
+
+    let startDate = moment(fiscalYear.start, 'DD-MM-YYYY');
+    let endDate = moment(fiscalYear.end, 'DD-MM-YYYY');
+
+    let previousYearStartDate = startDate.clone().subtract(1, 'year');
+    let previousYearEndDate = startDate.clone().subtract(1, 'day');
+
+    let currentYearResponses = await this._getProjectTracking(
+      startDate,
+      endDate,
+      project
+    );
+
+    let previousYearResponses = await this._getProjectTracking(
+      previousYearStartDate,
+      previousYearEndDate,
+      project,
+      true
+    );
+
+    currentYearResponses.forEach((currentResponse: any) => {
+      previousYearResponses.forEach((previousResponse: any) => {
+        if (currentResponse.employeeId === previousResponse.employeeId) {
+          currentResponse.currentYear.unshift(previousResponse.currentYear);
+        }
+      });
+    });
+
+    let responses = currentYearResponses;
+
+    return responses;
+  }
+
+  async _getProjectTracking(
+    startDate: Moment,
+    endDate: Moment,
+    project: Opportunity,
+    summary = false
+  ) {
+    interface monthTrackDTO {
+      startDate: Moment;
+      endDate: Moment;
+
+      totalDaysInMonth: number;
+      holidays: number;
+      spans: any[];
+    }
+
+    interface allocationTrackDTO {
+      employeeId: number;
+      fullName: String;
+      currentYear: any;
+      dailyHours: number;
+    }
+
+    let startDateClone = startDate.clone();
+
+    let months: {
+      [key: string]: monthTrackDTO;
+    } = {};
+    let resources: number[] = [];
+    let resourceHours: any = {};
+
+    let allocations: allocationTrackDTO[] = [];
+    let responses: any = [];
+
+    while (
+      endDate > startDateClone ||
+      startDateClone.format('M') === endDate.format('M')
+    ) {
+      months[startDateClone.format('YYYY-MM')] = {
+        startDate: startDateClone.clone().startOf('month'),
+        endDate: startDateClone.clone().endOf('month'),
+
+        totalDaysInMonth: startDateClone.daysInMonth(),
+        holidays: 0,
+        spans: [],
+      };
+      startDateClone.add(1, 'month');
+    }
+
+    let calendars = await this.manager.find(Calendar, {
+      relations: ['calendarHolidays', 'calendarHolidays.holidayType'],
+    });
+
+    calendars.forEach((calendar) => {
+      calendar.calendarHolidays.forEach((holiday) => {
+        if (
+          months[moment(holiday.date, 'YYYY-MM').format('YYYY-MM')] !==
+          undefined
+        ) {
+          months[
+            moment(holiday.date, 'YYYY-MM').format('YYYY-MM')
+          ].holidays += 1;
+        }
+      });
+    });
+
+    project.milestones.forEach((milestone) => {
+      milestone.opportunityResources.forEach((position) => {
+        let positionStartDate = moment(position.startDate, 'YYYY-MM-DD');
+        let positionStartDateClone = positionStartDate.clone();
+        let positionEndDate = moment(position.endDate, 'YYYY-MM-DD');
+        // let positionMonths: any = {}
+        if (
+          positionStartDate.isBetween(startDate, endDate, 'date') ||
+          positionEndDate.isBetween(startDate, endDate, 'date') ||
+          startDate.isBetween(positionStartDate, positionEndDate, 'date') ||
+          endDate.isBetween(positionStartDate, positionEndDate, 'date')
+        )
+          position.opportunityResourceAllocations.forEach((allocation) => {
+            if (
+              allocation.isMarkedAsSelected &&
+              allocation.contactPerson.getEmployee?.id
+            ) {
+              resources.push(allocation.contactPerson.getEmployee?.id);
+              let currentYear: any = {};
+              while (
+                positionEndDate > positionStartDateClone ||
+                positionStartDateClone.format('M') ===
+                  positionEndDate.format('M')
+              ) {
+                if (positionStartDateClone.isBetween(startDate, endDate)) {
+                  let positionStartDateCloneFormatted = positionStartDateClone
+                    .clone()
+                    .startOf('month')
+                    .format('YYYY-MM');
+                  currentYear[positionStartDateCloneFormatted] = {};
+                  if (
+                    positionStartDate.isAfter(
+                      positionStartDateClone.clone().startOf('month')
+                    )
+                  )
+                    currentYear[positionStartDateCloneFormatted].startDate =
+                      moment(position.startDate, 'YYYY-MM-DD');
+                  else
+                    currentYear[positionStartDateCloneFormatted].startDate =
+                      moment(
+                        positionStartDateClone.clone().startOf('month'),
+                        'YYYY-MM-DD'
+                      );
+                  if (
+                    positionEndDate.isBefore(
+                      positionStartDateClone.clone().endOf('month')
+                    )
+                  )
+                    currentYear[positionStartDateCloneFormatted].endDate =
+                      moment(position.endDate, 'YYYY-MM-DD');
+                  else
+                    currentYear[positionStartDateCloneFormatted].endDate =
+                      moment(
+                        positionStartDateClone.clone().endOf('month'),
+                        'YYYY-MM-DD'
+                      );
+
+                  currentYear[positionStartDateCloneFormatted].buyRate =
+                    allocation.buyingRate;
+                  currentYear[positionStartDateCloneFormatted].sellRate =
+                    allocation.sellingRate;
+                  currentYear[positionStartDateCloneFormatted].actualHours = 0;
+                  currentYear[positionStartDateCloneFormatted].totalDays =
+                    currentYear[positionStartDateCloneFormatted].endDate.diff(
+                      currentYear[positionStartDateCloneFormatted].startDate,
+                      'days'
+                    );
+                  let currentSpanStartDateClone =
+                    currentYear[
+                      positionStartDateCloneFormatted
+                    ].startDate.clone();
+                  let workDays = 0;
+                  while (
+                    currentSpanStartDateClone <=
+                    currentYear[positionStartDateCloneFormatted].endDate
+                  ) {
+                    if (
+                      currentSpanStartDateClone.format('ddd') !== 'Sat' &&
+                      currentSpanStartDateClone.format('ddd') !== 'Sun'
+                    ) {
+                      workDays++; //add 1 to your counter if its not a weekend day
+                    }
+                    currentSpanStartDateClone.add(1, 'day'); //increment by one day
+                  }
+                  currentYear[positionStartDateCloneFormatted].workDays =
+                    workDays;
+                  currentYear[positionStartDateCloneFormatted].contractDays = 5;
+                }
+
+                positionStartDateClone.add(1, 'month');
+              }
+              let newAllocation: allocationTrackDTO = {
+                fullName: allocation.contactPerson.getFullName,
+                employeeId: allocation.contactPerson.getEmployee.id,
+                currentYear: currentYear,
+                dailyHours: project?.hoursPerDay ?? 8,
+              };
+
+              allocations.push(newAllocation);
+            }
+          });
+      });
+    });
+
+    resources = [...new Set(resources)];
+
+    let timesheets = await this.manager.find(Timesheet, {
+      where: {
+        employeeId: In(resources),
+        startDate: MoreThanOrEqual(startDate.toDate()),
+        endDate: LessThanOrEqual(endDate.toDate()),
+      },
+      relations: ['milestoneEntries', 'milestoneEntries.entries'],
+    });
+
+    allocations.forEach((allocation) => {
+      timesheets.forEach((timesheet) => {
+        let timesheetStartDate = moment(timesheet.startDate, 'YYYYY-MM-DD');
+        let timesheetEndDate = moment(timesheet.endDate, 'YYYYY-MM-DD').endOf(
+          'day'
+        );
+        if (allocation.employeeId === timesheet.employeeId) {
+          for (const span in allocation.currentYear) {
+            // console.log(
+            //   allocation.employeeId,
+            //   allocation.currentYear[span].startDate,
+            //   allocation.currentYear[span].endDate,
+            //   timesheetStartDate,
+            //   timesheetEndDate
+            // );
+            if (
+              allocation.currentYear[span].startDate.isSameOrAfter(
+                timesheetStartDate
+              ) &&
+              allocation.currentYear[span].startDate.isSameOrBefore(
+                timesheetEndDate
+              ) &&
+              allocation.currentYear[span].endDate.isSameOrAfter(
+                timesheetStartDate
+              ) &&
+              allocation.currentYear[span].endDate.isSameOrBefore(
+                timesheetEndDate
+              )
+            ) {
+              timesheet.milestoneEntries.forEach((milestoneEntry) => {
+                milestoneEntry.entries.forEach((entry) => {
+                  allocation.currentYear[span].actualHours += entry.hours;
+                });
+              });
+            }
+          }
+        }
+      });
+    });
+
+    resources.forEach((resource) => {
+      let fullName: String = '';
+      let currentYear = JSON.parse(JSON.stringify(months));
+      let currentYearArray: any = [];
+      let now: any = {};
+      allocations.forEach((allocation) => {
+        if (allocation.employeeId == resource) {
+          fullName == '' ? (fullName = allocation.fullName) : '';
+          for (const key in allocation.currentYear) {
+            let actualDays = parseFloat(
+              (
+                allocation.currentYear[key].actualHours / allocation.dailyHours
+              ).toFixed(2)
+            );
+            let actualCost = parseFloat(
+              (
+                allocation.currentYear[key].buyRate *
+                allocation.currentYear[key].workDays *
+                allocation.dailyHours
+              ).toFixed(2)
+            );
+            let actualRevenue = parseFloat(
+              (
+                allocation.currentYear[key].sellRate *
+                allocation.currentYear[key].actualHours
+              ).toFixed(2)
+            );
+            let cm$ = parseFloat((actualRevenue - actualCost).toFixed(2));
+            allocation.currentYear[key].actualDays = actualDays;
+            allocation.currentYear[key].effortRate = parseFloat(
+              (
+                (actualDays / allocation.currentYear[key].workDays) *
+                100
+              ).toFixed(1)
+            );
+            allocation.currentYear[key].actualRevenue = actualRevenue;
+            allocation.currentYear[key].actualCost = actualCost;
+            allocation.currentYear[key].cm$ = cm$;
+            allocation.currentYear[key].cmPercent =
+              parseFloat(((cm$ / actualRevenue) * 100).toFixed(2)) ?? 0;
+            allocation.currentYear[key].dateString = `${allocation.currentYear[
+              key
+            ].startDate.format('DD-MMM-YY')} - ${allocation.currentYear[
+              key
+            ].endDate.format('DD-MMM-YY')}.`;
+            // if (resourceHours[resource] != undefined) {
+            //   if (resourceHours[resource][key] != undefined) {
+            //     currentYear[key].actualHours = resourceHours[resource][key];
+            //   }
+            // }
+
+            currentYear[key].spans.push(allocation.currentYear[key]);
+            currentYear[key].spans.forEach((span: any) => {
+              currentYearArray.push(span);
+            });
+
+            if (
+              moment().isBetween(
+                allocation.currentYear[key].startDate,
+                allocation.currentYear[key].endDate
+              )
+            ) {
+              now = allocation.currentYear[key];
+            }
+          }
+        }
+      });
+
+      if (summary) {
+        let summaryCurrentYear = {
+          dateString: `${startDate.format('DD-MMM-YY')} - ${endDate.format(
+            'DD-MMM-YYYY'
+          )}`,
+          workDays: 0,
+          effortRate: 0,
+          actualHours: 0,
+          actualDays: 0,
+          actualRevenue: 0,
+          actualCost: 0,
+          cm$: 0,
+          cmPerc: 0,
+          cmPercent: 0,
+          rowCount: 0,
+        };
+        currentYearArray.forEach((span: any) => {
+          summaryCurrentYear.workDays += parseFloat(
+            parseFloat(span.workDays).toFixed(2)
+          );
+          summaryCurrentYear.effortRate += parseFloat(
+            parseFloat(span.effortRate).toFixed(2)
+          );
+          summaryCurrentYear.actualHours += parseFloat(
+            parseFloat(span.actualHours).toFixed(2)
+          );
+          summaryCurrentYear.actualDays += parseFloat(
+            parseFloat(span.actualDays).toFixed(2)
+          );
+          summaryCurrentYear.actualRevenue += parseFloat(
+            parseFloat(span.actualRevenue).toFixed(2)
+          );
+          summaryCurrentYear.actualCost += parseFloat(
+            parseFloat(span.actualCost).toFixed(2)
+          );
+          summaryCurrentYear.cm$ += parseFloat(parseFloat(span.cm$).toFixed(2));
+          summaryCurrentYear.cmPerc += parseFloat(
+            parseFloat(span.cmPercent ?? 0).toFixed(2)
+          );
+          if (span.cmPercent) summaryCurrentYear.rowCount++;
+        });
+
+        summaryCurrentYear.cmPercent =
+          summaryCurrentYear.cmPerc / summaryCurrentYear.rowCount;
+
+        summaryCurrentYear.effortRate =
+          summaryCurrentYear.effortRate / summaryCurrentYear.rowCount;
+
+        currentYearArray = summaryCurrentYear;
+      }
+
+      let newResponse: any = {
+        employeeId: resource,
+        fullName: fullName,
+        now,
+        currentYear: currentYearArray,
+      };
+
+      responses.push(newResponse);
+    });
+
+    return responses;
+  }
+
   async helperGetProjectsByUserId(
     employeeId: number,
     mode: string,
@@ -2298,3 +2717,189 @@ export class ProjectRepository extends Repository<Opportunity> {
 
   _validateResourceHours(hours: number, timesheets: Timesheet[]) {}
 }
+
+// async getProjectTracking(
+//   projectId: number,
+//   fiscalYear: { start: string; end: string; actual: string }
+// ): Promise<any | undefined> {
+//   if (!projectId || isNaN(projectId)) {
+//     throw new Error('Project not found ');
+//   }
+//   console.log(projectId, 'PROJECT ID ===================');
+
+//   let project = await this.findOne(projectId, {
+//     relations: [
+//       'milestones',
+//       'milestones.opportunityResources',
+//       'milestones.opportunityResources.opportunityResourceAllocations',
+//       'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
+//       'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations',
+//       'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations.employee',
+//       'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations.employee.employmentContracts',
+//     ],
+//   });
+
+//   if (!project) {
+//     throw new Error('Project not found');
+//   }
+
+//   interface monthDTO {
+//     isAllocated: Boolean;
+//     positionStart?: Moment | string;
+//     positionEnd?: Moment | string;
+//     actualHours: number;
+//     totalDaysInMonth: number;
+//     holidays: number;
+//   }
+//   interface allocationEntity {
+//     contactpersonId: number | null;
+//     employeeId: number | undefined;
+//     name: String;
+//     dailyHours: number;
+//     hourlySellRate: number;
+//     dailySellRate: number;
+//     dailyBuyRate: number;
+//     projectStartDate: string;
+//     projectEndDate: string;
+//     currentYear: {
+//       [key: string]: monthDTO;
+//     };
+//     previousYear: any;
+//     totals: any;
+//   }
+
+//   let startDate = moment(fiscalYear.start, 'DD-MM-YYYY');
+//   let startDateClone = startDate.clone();
+//   let endDate = moment(fiscalYear.end, 'DD-MM-YYYY');
+//   let months: {
+//     [key: string]: monthDTO;
+//   } = {};
+//   let allocationIds: number[] = [];
+
+//   let allocationEntities: allocationEntity[] = [];
+//   let allocationEntitiesIndex: any = {};
+
+//   while (
+//     endDate > startDateClone ||
+//     startDateClone.format('M') === endDate.format('M')
+//   ) {
+//     months[startDateClone.format('YYYY-MM-DD')] = {
+//       isAllocated: false,
+//       actualHours: 0,
+//       totalDaysInMonth: startDateClone.daysInMonth(),
+//       holidays: 0,
+//       //NOT SETTING
+//       // workingDays: 0,
+//       // effortRate: 0,
+//       // actualDays: 0,
+//       // revenue: 0,
+//       // cost: 0,
+//       // cm: 0,
+//       // cmPercent: 0,
+//     };
+//     startDateClone.add(1, 'month');
+//   }
+
+//   let calendars = await this.manager.find(Calendar, {
+//     relations: ['calendarHolidays', 'calendarHolidays.holidayType'],
+//   });
+
+//   calendars.forEach((calendar) => {
+//     calendar.calendarHolidays.forEach((holiday) => {
+//       if (
+//         months[moment(holiday.date, 'YYYY-MM-DD').format('YYYY-MM-DD')] !==
+//         undefined
+//       ) {
+//         months[
+//           moment(holiday.date, 'YYYY-MM-DD').format('YYYY-MM-DD')
+//         ].holidays += 1;
+//       }
+//     });
+//   });
+
+//   project.milestones.forEach((milestone) => {
+//     milestone.opportunityResources.forEach((position) => {
+//       let positionStartDate = moment(position.startDate, 'YYYY-MM-DD');
+//       let positionStartDateClone = positionStartDate.clone();
+//       let positionEndDate = moment(position.endDate, 'YYYY-MM-DD');
+//       // let positionMonths: any = {}
+//       if (
+//         positionStartDate.isBetween(startDate, endDate, 'date') ||
+//         positionEndDate.isBetween(startDate, endDate, 'date') ||
+//         startDate.isBetween(positionStartDate, positionEndDate, 'date') ||
+//         endDate.isBetween(positionStartDate, positionEndDate, 'date')
+//       )
+//         position.opportunityResourceAllocations.forEach((allocation) => {
+//           if (allocation.isMarkedAsSelected) {
+//             let currentYear = months;
+//             while (
+//               positionEndDate > positionStartDateClone ||
+//               positionStartDateClone.format('M') ===
+//                 positionEndDate.format('M')
+//             ) {
+//               let positionStartDateCloneFormatted = positionStartDateClone
+//                 .clone()
+//                 .startOf('month')
+//                 .format('YYYY-MM-DD');
+//               if (currentYear[positionStartDateCloneFormatted] != undefined) {
+//                 currentYear[positionStartDateCloneFormatted].isAllocated =
+//                   true;
+//                   currentYear[positionStartDateCloneFormatted].positionStart = positionStartDate
+//                   currentYear[positionStartDateCloneFormatted].positionEnd = positionEndDate
+//               }
+
+//               positionStartDateClone.add(1, 'month');
+//             }
+//             let newAllocationEntity: allocationEntity = {
+//               contactpersonId: allocation.contactPersonId,
+//               employeeId: allocation.contactPerson.getEmployee?.id,
+//               name: allocation.contactPerson.firstName,
+//               dailyHours: project?.hoursPerDay ?? 0,
+//               hourlySellRate: allocation.sellingRate,
+//               dailySellRate:
+//                 allocation.sellingRate * (project?.hoursPerDay ?? 0),
+//               projectStartDate: moment(project?.startDate).format(
+//                 'DD-MM-YYYY'
+//               ),
+//               dailyBuyRate:
+//                 allocation.buyingRate * (project?.hoursPerDay ?? 0),
+//               projectEndDate: moment(project?.endDate).format('DD-MM-YYYY'),
+//               currentYear: currentYear,
+//               previousYear: {},
+//               totals: {},
+//             };
+//             allocationIds.push(newAllocationEntity.employeeId as number);
+//             allocationEntities.push(newAllocationEntity);
+//             allocationEntitiesIndex[
+//               newAllocationEntity.employeeId as number
+//             ] = allocationEntities.length - 1;
+//           }
+//         });
+//     });
+//   });
+
+//   let timesheets = await this.manager.find(Timesheet, {
+//     where: {
+//       employeeId: In(allocationIds),
+//       startDate: MoreThanOrEqual(startDate.toDate()),
+//       endDate: LessThanOrEqual(endDate.toDate()),
+//     },
+//     relations: ['milestoneEntries', 'milestoneEntries.entries'],
+//   });
+
+//   timesheets.forEach((timesheet) => {
+//     let timesheetStartDate = moment(timesheet.startDate, 'YYYYY-MM-DD');
+//     let timesheetEndDate = moment(timesheet.endDate, 'YYYYY-MM-DD');
+//     timesheet.milestoneEntries.forEach((milestoneEntry) => {
+//       milestoneEntry.entries.forEach((entry) => {
+//         (allocationEntities as any)[
+//           allocationEntitiesIndex[timesheet.employeeId]
+//         ]['currentYear'][
+//           timesheetStartDate.format('YYYY-MM-DD')
+//         ].actualHours += entry.hours;
+//       });
+//     });
+//   });
+
+//   return allocationEntities;
+// }

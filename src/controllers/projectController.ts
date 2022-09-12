@@ -88,6 +88,28 @@ export class ProjectController extends BaseController<
     }
   }
 
+  async getProjecTracking(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(ProjectRepository);
+      let id = req.params.projectId;
+      let fiscalYear: any = {
+        start: req.query.startDate,
+        end: req.query.endDate,
+        actual: req.query.actualDate,
+      };
+      let records: any = [];
+      records = await repository.getProjectTracking(parseInt(id), fiscalYear);
+      console.log('records: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'Profit & Loss Statment',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
   async profit_loss(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(ProjectRepository);
