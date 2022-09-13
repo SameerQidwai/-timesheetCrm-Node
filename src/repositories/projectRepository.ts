@@ -1905,7 +1905,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       [key: string]: monthTrackDTO;
     } = {};
     let resources: number[] = [];
-    let resourceHours: any = {};
+    let projectMilestone = project.milestones[0];
 
     let allocations: allocationTrackDTO[] = [];
     let responses: any = [];
@@ -2054,7 +2054,11 @@ export class ProjectRepository extends Repository<Opportunity> {
         startDate: MoreThanOrEqual(startDate.toDate()),
         endDate: LessThanOrEqual(endDate.toDate()),
       },
-      relations: ['milestoneEntries', 'milestoneEntries.entries'],
+      relations: [
+        'milestoneEntries',
+        'milestoneEntries.milestone',
+        'milestoneEntries.entries',
+      ],
     });
 
     allocations.forEach((allocation) => {
@@ -2087,9 +2091,11 @@ export class ProjectRepository extends Repository<Opportunity> {
               )
             ) {
               timesheet.milestoneEntries.forEach((milestoneEntry) => {
-                milestoneEntry.entries.forEach((entry) => {
-                  allocation.currentYear[span].actualHours += entry.hours;
-                });
+                if (milestoneEntry.milestoneId === projectMilestone.id) {
+                  milestoneEntry.entries.forEach((entry) => {
+                    allocation.currentYear[span].actualHours += entry.hours;
+                  });
+                }
               });
             }
           }
@@ -2114,8 +2120,7 @@ export class ProjectRepository extends Repository<Opportunity> {
             let actualCost = parseFloat(
               (
                 allocation.currentYear[key].buyRate *
-                allocation.currentYear[key].workDays *
-                allocation.dailyHours
+                allocation.currentYear[key].actualHours
               ).toFixed(2)
             );
             let actualRevenue = parseFloat(
@@ -2160,6 +2165,12 @@ export class ProjectRepository extends Repository<Opportunity> {
               )
             ) {
               now = allocation.currentYear[key];
+            }
+
+            if (moment().isSameOrAfter(allocation.currentYear[key].startDate)) {
+              allocation.currentYear[key].current = 1;
+            } else {
+              allocation.currentYear[key].current = 0;
             }
           }
         }
