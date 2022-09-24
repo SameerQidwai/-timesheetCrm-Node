@@ -42,6 +42,7 @@ import { File } from '../entities/file';
 import { ExpenseType } from '../entities/expenseType';
 import { number } from 'joi';
 import { time } from 'console';
+import { EmploymentContract } from 'src/entities/employmentContract';
 
 @EntityRepository(Opportunity)
 export class ProjectRepository extends Repository<Opportunity> {
@@ -1848,7 +1849,11 @@ export class ProjectRepository extends Repository<Opportunity> {
     let startDate = moment(fiscalYear.start, 'DD-MM-YYYY');
     let endDate = moment(fiscalYear.end, 'DD-MM-YYYY');
 
-    let previousYearStartDate = startDate.clone().subtract(1, 'year');
+    let projectStartDate = moment(project.startDate, 'YYYY-MM-DD');
+    let previousYearStartDate = projectStartDate;
+    if (projectStartDate.isAfter(startDate, 'date')) {
+      previousYearStartDate = startDate.clone().subtract(1, 'year');
+    }
     let previousYearEndDate = startDate.clone().subtract(1, 'day');
 
     let currentYearResponses = await this._getProjectTracking(
@@ -1860,16 +1865,65 @@ export class ProjectRepository extends Repository<Opportunity> {
     let previousYearResponses = await this._getProjectTracking(
       previousYearStartDate,
       previousYearEndDate,
-      project,
-      true
+      project
     );
 
     currentYearResponses.forEach((currentResponse: any) => {
+      let total: any = {
+        totalHours: 0,
+        utilizedHours: 0,
+        remainingHours: 0,
+        actualCost: 0,
+        actualRevenue: 0,
+        cm$: 0,
+        cmPercent: 0,
+      };
       previousYearResponses.forEach((previousResponse: any) => {
         if (currentResponse.employeeId === previousResponse.employeeId) {
-          currentResponse.currentYear.unshift(previousResponse.currentYear);
+          let totalHours = parseFloat(
+            (
+              parseFloat(currentResponse.summary.totalHours) +
+              parseFloat(previousResponse.summary.totalHours)
+            ).toFixed(2)
+          );
+          let utilizedHours = parseFloat(
+            (
+              parseFloat(currentResponse.summary.actualHours) +
+              parseFloat(previousResponse.summary.actualHours)
+            ).toFixed(2)
+          );
+          let actualCost = parseFloat(
+            (
+              parseFloat(currentResponse.summary.actualCost) +
+              parseFloat(previousResponse.summary.actualCost)
+            ).toFixed(2)
+          );
+          let actualRevenue = parseFloat(
+            (
+              parseFloat(currentResponse.summary.actualRevenue) +
+              parseFloat(previousResponse.summary.actualRevenue)
+            ).toFixed(2)
+          );
+          let cm$ = parseFloat(
+            (
+              parseFloat(currentResponse.summary.cm$) +
+              parseFloat(previousResponse.summary.cm$)
+            ).toFixed(2)
+          );
+          let cmPercent = parseFloat(((cm$ / actualRevenue) * 100).toFixed(2));
+
+          total.totalHours = totalHours;
+          total.utilizedHours = utilizedHours;
+          total.remainingHours = totalHours - utilizedHours;
+          total.actualCost = actualCost;
+          total.actualRevenue = actualRevenue;
+          total.cm$ = cm$;
+          total.cmPercent = cmPercent;
+
+          currentResponse.currentYear.unshift(previousResponse.summary);
         }
       });
+      currentResponse.total = total;
     });
 
     let responses = currentYearResponses;
@@ -1880,8 +1934,7 @@ export class ProjectRepository extends Repository<Opportunity> {
   async _getProjectTracking(
     startDate: Moment,
     endDate: Moment,
-    project: Opportunity,
-    summary = false
+    project: Opportunity
   ) {
     interface monthTrackDTO {
       startDate: Moment;
@@ -1905,10 +1958,28 @@ export class ProjectRepository extends Repository<Opportunity> {
       [key: string]: monthTrackDTO;
     } = {};
     let resources: number[] = [];
+    let resourceHours: any = {};
     let projectMilestone = project.milestones[0];
 
     let allocations: allocationTrackDTO[] = [];
     let responses: any = [];
+
+    let _getContractByDate = (
+      contracts: EmploymentContract[],
+      date: Moment
+    ) => {
+      contracts.forEach((contract) => {
+        let contractStartDate = moment(contract.startDate, 'YYYY-MM-DD');
+        let contractEndDate = contractStartDate.add(100, 'year');
+        if (contract.endDate) {
+          contractEndDate = moment(contract.endDate, 'YYYY-MM-DD');
+        }
+
+        if (date.isBetween(contractStartDate, contractEndDate, 'date', '[]')) {
+          return contract.noOfDays;
+        }
+      });
+    };
 
     while (
       endDate > startDateClone ||
@@ -1960,6 +2031,17 @@ export class ProjectRepository extends Repository<Opportunity> {
               allocation.contactPerson.getEmployee?.id
             ) {
               resources.push(allocation.contactPerson.getEmployee?.id);
+              if (resourceHours[allocation.contactPerson.getEmployee?.id]) {
+                resourceHours[allocation.contactPerson.getEmployee?.id][
+                  'total'
+                ] += position.billableHours;
+              } else {
+                resourceHours[allocation.contactPerson.getEmployee?.id] = {
+                  total: position.billableHours,
+                  spent: 0,
+                  remaining: 0,
+                };
+              }
               let currentYear: any = {};
               while (
                 positionEndDate > positionStartDateClone ||
@@ -2028,7 +2110,11 @@ export class ProjectRepository extends Repository<Opportunity> {
                   }
                   currentYear[positionStartDateCloneFormatted].workDays =
                     workDays;
-                  currentYear[positionStartDateCloneFormatted].contractDays = 5;
+                  currentYear[positionStartDateCloneFormatted].contractDays =
+                    _getContractByDate(
+                      allocation.contactPerson.getEmployee.employmentContracts,
+                      positionStartDateClone
+                    );
                 }
 
                 positionStartDateClone.add(1, 'month');
@@ -2094,6 +2180,8 @@ export class ProjectRepository extends Repository<Opportunity> {
                 if (milestoneEntry.milestoneId === projectMilestone.id) {
                   milestoneEntry.entries.forEach((entry) => {
                     allocation.currentYear[span].actualHours += entry.hours;
+                    resourceHours[allocation.employeeId]['spent'] +=
+                      entry.hours;
                   });
                 }
               });
@@ -2107,7 +2195,12 @@ export class ProjectRepository extends Repository<Opportunity> {
       let fullName: String = '';
       let currentYear = JSON.parse(JSON.stringify(months));
       let currentYearArray: any = [];
-      let now: any = {};
+      let now: any = {
+        totalHours: resourceHours[resource]['total'],
+        spentHours: resourceHours[resource]['spent'],
+        remainingHours:
+          resourceHours[resource]['total'] - resourceHours[resource]['spent'],
+      };
       allocations.forEach((allocation) => {
         if (allocation.employeeId == resource) {
           fullName == '' ? (fullName = allocation.fullName) : '';
@@ -2137,9 +2230,15 @@ export class ProjectRepository extends Repository<Opportunity> {
                 100
               ).toFixed(1)
             );
-            allocation.currentYear[key].actualRevenue = actualRevenue;
-            allocation.currentYear[key].actualCost = actualCost;
-            allocation.currentYear[key].cm$ = cm$;
+            allocation.currentYear[key].actualRevenue =
+              actualRevenue.toFixed(2);
+            now.totalCost += actualCost;
+            now.totalRevenue += actualRevenue;
+            allocation.currentYear[key].actualCost = actualCost.toFixed(2);
+            allocation.currentYear[key].cm$ = cm$.toFixed(2);
+            if (cm$ == 0 || actualRevenue == 0 || !cm$ || !actualRevenue) {
+              allocation.currentYear[key].cmPercent = 0;
+            }
             allocation.currentYear[key].cmPercent =
               parseFloat(((cm$ / actualRevenue) * 100).toFixed(2)) ?? 0;
             allocation.currentYear[key].dateString = `${allocation.currentYear[
@@ -2158,14 +2257,14 @@ export class ProjectRepository extends Repository<Opportunity> {
               currentYearArray.push(span);
             });
 
-            if (
-              moment().isBetween(
-                allocation.currentYear[key].startDate,
-                allocation.currentYear[key].endDate
-              )
-            ) {
-              now = allocation.currentYear[key];
-            }
+            // if (
+            //   moment().isBetween(
+            //     allocation.currentYear[key].startDate,
+            //     allocation.currentYear[key].endDate
+            //   )
+            // ) {
+            //   now = allocation.currentYear[key];
+            // }
 
             if (moment().isSameOrAfter(allocation.currentYear[key].startDate)) {
               allocation.currentYear[key].current = 1;
@@ -2176,68 +2275,83 @@ export class ProjectRepository extends Repository<Opportunity> {
         }
       });
 
-      if (summary) {
-        let summaryCurrentYear = {
-          dateString: `${startDate.format('DD-MMM-YY')} - ${endDate.format(
-            'DD-MMM-YYYY'
-          )}`,
-          workDays: 0,
-          effortRate: 0,
-          actualHours: 0,
-          actualDays: 0,
-          actualRevenue: 0,
-          actualCost: 0,
-          cm$: 0,
-          cmPerc: 0,
-          cmPercent: 0,
-          rowCount: 0,
-        };
-        currentYearArray.forEach((span: any) => {
-          summaryCurrentYear.workDays += parseFloat(
-            parseFloat(span.workDays).toFixed(2)
-          );
-          summaryCurrentYear.effortRate += parseFloat(
-            parseFloat(span.effortRate).toFixed(2)
-          );
-          summaryCurrentYear.actualHours += parseFloat(
-            parseFloat(span.actualHours).toFixed(2)
-          );
-          summaryCurrentYear.actualDays += parseFloat(
-            parseFloat(span.actualDays).toFixed(2)
-          );
-          summaryCurrentYear.actualRevenue += parseFloat(
-            parseFloat(span.actualRevenue).toFixed(2)
-          );
-          summaryCurrentYear.actualCost += parseFloat(
-            parseFloat(span.actualCost).toFixed(2)
-          );
-          summaryCurrentYear.cm$ += parseFloat(parseFloat(span.cm$).toFixed(2));
+      let summaryCurrentYear = {
+        dateString: `${startDate.format('DD-MMM-YY')} - ${endDate.format(
+          'DD-MMM-YYYY'
+        )}`,
+        workDays: 0,
+        effortRate: 0,
+        actualHours: 0,
+        actualDays: 0,
+        actualRevenue: 0,
+        actualCost: 0,
+        cm$: 0,
+        cmPerc: 0,
+        cmPercent: 0,
+        totalHours: resourceHours[resource]['total'],
+        _rowCount: 0,
+      };
+      currentYearArray.forEach((span: any) => {
+        summaryCurrentYear.workDays += parseFloat(
+          parseFloat(span.workDays).toFixed(2)
+        );
+        summaryCurrentYear.effortRate += parseFloat(
+          parseFloat(span.effortRate).toFixed(2)
+        );
+        summaryCurrentYear.actualHours += parseFloat(
+          parseFloat(span.actualHours).toFixed(2)
+        );
+        summaryCurrentYear.actualDays += parseFloat(
+          parseFloat(span.actualDays).toFixed(2)
+        );
+        summaryCurrentYear.actualRevenue += parseFloat(
+          parseFloat(span.actualRevenue).toFixed(2)
+        );
+
+        summaryCurrentYear.actualRevenue = parseFloat(
+          summaryCurrentYear.actualRevenue.toFixed(2)
+        );
+
+        summaryCurrentYear.actualCost += parseFloat(
+          parseFloat(span.actualCost).toFixed(2)
+        );
+
+        summaryCurrentYear.cm$ += parseFloat(parseFloat(span.cm$).toFixed(2));
+
+        if (span.cmPercent) {
           summaryCurrentYear.cmPerc += parseFloat(
             parseFloat(span.cmPercent ?? 0).toFixed(2)
           );
-          if (span.cmPercent) summaryCurrentYear.rowCount++;
-        });
+          summaryCurrentYear._rowCount++;
+        }
+      });
 
-        summaryCurrentYear.cmPercent =
-          summaryCurrentYear.cmPerc / summaryCurrentYear.rowCount;
+      summaryCurrentYear.cmPercent =
+        summaryCurrentYear.cmPerc / summaryCurrentYear._rowCount;
 
-        summaryCurrentYear.effortRate =
-          summaryCurrentYear.effortRate / summaryCurrentYear.rowCount;
+      summaryCurrentYear.effortRate =
+        summaryCurrentYear.effortRate / summaryCurrentYear._rowCount;
 
-        currentYearArray = summaryCurrentYear;
-      }
+      summaryCurrentYear.actualCost = parseFloat(
+        summaryCurrentYear.actualCost.toFixed(2)
+      );
+
+      summaryCurrentYear.effortRate = parseFloat(
+        summaryCurrentYear.effortRate.toFixed(2)
+      );
 
       let newResponse: any = {
         employeeId: resource,
         fullName: fullName,
-        now,
         currentYear: currentYearArray,
+        summary: summaryCurrentYear,
       };
 
       responses.push(newResponse);
     });
 
     return responses;
+    //TODO LAST YEEAR = TOTAL OF PROJECT
   }
 
   async helperGetProjectsByUserId(
