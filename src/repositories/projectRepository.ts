@@ -1887,6 +1887,25 @@ export class ProjectRepository extends Repository<Opportunity> {
     let iteratedResources = [];
 
     currentYearResponses.forEach((currentResponse: any) => {
+      let currentTotalHours = parseFloat(
+        parseFloat(currentResponse.summary.totalHours).toFixed(2)
+      );
+      let currentUtilizedHours = parseFloat(
+        parseFloat(currentResponse.summary.actualHours).toFixed(2)
+      );
+      let currentActualCost = parseFloat(
+        parseFloat(currentResponse.summary.actualCost).toFixed(2)
+      );
+      let currentActualRevenue = parseFloat(
+        parseFloat(currentResponse.summary.actualRevenue).toFixed(2)
+      );
+      let currentCm$ = parseFloat(
+        parseFloat(currentResponse.summary.cm$).toFixed(2)
+      );
+      let currentCmPercent = parseFloat(
+        ((currentCm$ / currentActualRevenue) * 100).toFixed(2)
+      );
+
       let total: any = {
         totalHours: 0,
         utilizedHours: 0,
@@ -1896,47 +1915,43 @@ export class ProjectRepository extends Repository<Opportunity> {
         cm$: 0,
         cmPercent: 0,
       };
+
+      total.totalHours += currentTotalHours;
+      total.utilizedHours += currentUtilizedHours;
+      total.remainingHours += currentTotalHours - currentUtilizedHours;
+      total.actualCost += currentActualCost;
+      total.actualRevenue += currentActualRevenue;
+      total.cm$ += currentCm$;
+      total.cmPercent += currentCmPercent;
+
       let _flagFound = false;
       previousYearResponses.forEach((previousResponse: any) => {
         if (currentResponse.employeeId === previousResponse.employeeId) {
           _flagFound = true;
           iteratedResources.push(previousResponse.employeeId);
-          let totalHours = parseFloat(
-            parseFloat(currentResponse.summary.totalHours).toFixed(2)
-          );
-          let utilizedHours = parseFloat(
-            (
-              parseFloat(currentResponse.summary.actualHours) +
-              parseFloat(previousResponse.summary.actualHours)
-            ).toFixed(2)
-          );
-          let actualCost = parseFloat(
-            (
-              parseFloat(currentResponse.summary.actualCost) +
-              parseFloat(previousResponse.summary.actualCost)
-            ).toFixed(2)
-          );
-          let actualRevenue = parseFloat(
-            (
-              parseFloat(currentResponse.summary.actualRevenue) +
-              parseFloat(previousResponse.summary.actualRevenue)
-            ).toFixed(2)
-          );
-          let cm$ = parseFloat(
-            (
-              parseFloat(currentResponse.summary.cm$) +
-              parseFloat(previousResponse.summary.cm$)
-            ).toFixed(2)
-          );
-          let cmPercent = parseFloat(((cm$ / actualRevenue) * 100).toFixed(2));
 
-          total.totalHours = totalHours;
-          total.utilizedHours = utilizedHours;
-          total.remainingHours = totalHours - utilizedHours;
-          total.actualCost = actualCost;
-          total.actualRevenue = actualRevenue;
-          total.cm$ = cm$;
-          total.cmPercent = cmPercent;
+          let previousUtilizedHours = parseFloat(
+            parseFloat(currentResponse.summary.actualHours).toFixed(2)
+          );
+          let previousActualCost = parseFloat(
+            parseFloat(currentResponse.summary.actualCost).toFixed(2)
+          );
+          let previousActualRevenue = parseFloat(
+            parseFloat(currentResponse.summary.actualRevenue).toFixed(2)
+          );
+          let previousCm$ = parseFloat(
+            parseFloat(currentResponse.summary.cm$).toFixed(2)
+          );
+          let previousCmPercent = parseFloat(
+            ((previousCm$ / previousActualRevenue) * 100).toFixed(2)
+          );
+
+          total.utilizedHours += previousUtilizedHours;
+          total.remainingHours -= previousUtilizedHours;
+          total.actualCost += previousActualCost;
+          total.actualRevenue += previousActualRevenue;
+          total.cm$ += previousCm$;
+          total.cmPercent += previousCmPercent;
 
           currentResponse.currentYear.unshift(previousResponse.summary);
         }
