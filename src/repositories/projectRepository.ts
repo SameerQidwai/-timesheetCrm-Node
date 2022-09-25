@@ -1868,6 +1868,24 @@ export class ProjectRepository extends Repository<Opportunity> {
       project
     );
 
+    let dummySummary = {
+      dateString: `${previousYearStartDate.format(
+        'DD-MMM-YY'
+      )} - ${previousYearEndDate.format('DD-MMM-YYYY')}`,
+      workDays: 0,
+      effortRate: 0,
+      actualHours: 0,
+      actualDays: 0,
+      actualRevenue: 0,
+      actualCost: 0,
+      cm$: 0,
+      cmPerc: 0,
+      cmPercent: 0,
+      totalHours: 0,
+      _rowCount: 0,
+    };
+    let iteratedResources = [];
+
     currentYearResponses.forEach((currentResponse: any) => {
       let total: any = {
         totalHours: 0,
@@ -1878,13 +1896,13 @@ export class ProjectRepository extends Repository<Opportunity> {
         cm$: 0,
         cmPercent: 0,
       };
+      let _flagFound = false;
       previousYearResponses.forEach((previousResponse: any) => {
         if (currentResponse.employeeId === previousResponse.employeeId) {
+          _flagFound = true;
+          iteratedResources.push(previousResponse.employeeId);
           let totalHours = parseFloat(
-            (
-              parseFloat(currentResponse.summary.totalHours) +
-              parseFloat(previousResponse.summary.totalHours)
-            ).toFixed(2)
+            parseFloat(currentResponse.summary.totalHours).toFixed(2)
           );
           let utilizedHours = parseFloat(
             (
@@ -1923,6 +1941,9 @@ export class ProjectRepository extends Repository<Opportunity> {
           currentResponse.currentYear.unshift(previousResponse.summary);
         }
       });
+      if (!_flagFound) {
+        currentResponse.currentYear.unshift(dummySummary);
+      }
       currentResponse.total = total;
     });
 
@@ -2236,7 +2257,14 @@ export class ProjectRepository extends Repository<Opportunity> {
             now.totalRevenue += actualRevenue;
             allocation.currentYear[key].actualCost = actualCost.toFixed(2);
             allocation.currentYear[key].cm$ = cm$.toFixed(2);
-            if (cm$ == 0 || actualRevenue == 0 || !cm$ || !actualRevenue) {
+            if (
+              parseFloat(cm$ as any) == 0 ||
+              cm$ == 0 ||
+              parseFloat(actualRevenue as any) == 0 ||
+              actualRevenue == 0 ||
+              !cm$ ||
+              !actualRevenue
+            ) {
               allocation.currentYear[key].cmPercent = 0;
             }
             allocation.currentYear[key].cmPercent =
