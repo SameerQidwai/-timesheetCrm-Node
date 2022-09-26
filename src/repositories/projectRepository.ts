@@ -1884,7 +1884,6 @@ export class ProjectRepository extends Repository<Opportunity> {
       totalHours: 0,
       _rowCount: 0,
     };
-    let iteratedResources = [];
 
     currentYearResponses.forEach((currentResponse: any) => {
       let currentTotalHours = parseFloat(
@@ -1928,19 +1927,18 @@ export class ProjectRepository extends Repository<Opportunity> {
       previousYearResponses.forEach((previousResponse: any) => {
         if (currentResponse.employeeId === previousResponse.employeeId) {
           _flagFound = true;
-          iteratedResources.push(previousResponse.employeeId);
 
           let previousUtilizedHours = parseFloat(
-            parseFloat(currentResponse.summary.actualHours).toFixed(2)
+            parseFloat(previousResponse.summary.actualHours).toFixed(2)
           );
           let previousActualCost = parseFloat(
-            parseFloat(currentResponse.summary.actualCost).toFixed(2)
+            parseFloat(previousResponse.summary.actualCost).toFixed(2)
           );
           let previousActualRevenue = parseFloat(
-            parseFloat(currentResponse.summary.actualRevenue).toFixed(2)
+            parseFloat(previousResponse.summary.actualRevenue).toFixed(2)
           );
           let previousCm$ = parseFloat(
-            parseFloat(currentResponse.summary.cm$).toFixed(2)
+            parseFloat(previousResponse.summary.cm$).toFixed(2)
           );
           let previousCmPercent = parseFloat(
             ((previousCm$ / previousActualRevenue) * 100).toFixed(2)
@@ -1952,6 +1950,7 @@ export class ProjectRepository extends Repository<Opportunity> {
           total.actualRevenue += previousActualRevenue;
           total.cm$ += previousCm$;
           total.cmPercent += previousCmPercent;
+          total.cmPercent = total.cmPercent / 2;
 
           currentResponse.currentYear.unshift(previousResponse.summary);
         }
