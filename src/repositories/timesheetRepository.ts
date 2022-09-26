@@ -33,10 +33,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
     userId: number,
     authId: number
   ): Promise<any | undefined> {
-    let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
-      'YYYY-MM-DD HH:mm:ss'
-    );
-    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+    let mStartDate = moment(startDate, 'DD-MM-YYYY');
+    let mEndDate = moment(endDate, 'DD-MM-YYYY');
+
+    let cStartDate = mStartDate.format('YYYY-MM-DD HH:mm:ss');
+    let cEndDate = mEndDate.format('YYYY-MM-DD HH:mm:ss');
 
     console.log(cStartDate, cEndDate);
     let timesheet = await this.findOne({
@@ -193,7 +194,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
           };
 
           leaveRequest.entries.forEach((entry) => {
-            if (entry.hours > 0) {
+            if (
+              entry.hours > 0 &&
+              moment(entry.date, 'YYYY-MM-DD').isSameOrAfter(mStartDate) &&
+              moment(entry.date, 'YYYY-MM-DD').isSameOrBefore(mEndDate)
+            ) {
               resLeaveRequest[moment(entry.date, 'YYYY-MM-DD').format('D/M')] =
                 {
                   date: moment(entry.date, 'YYYY-MM-DD').format('D-M-Y'),
@@ -202,8 +207,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
                   statusMsg: leaveRequest.note,
                   notes: leaveRequest.desc,
                 };
-              //TODO TOTAL HOURS
-              // resLeaveRequest.totalHours += entry.hours;
+              // TOTAL HOURS
+              resLeaveRequest.totalHours += entry.hours;
             }
           });
 
@@ -244,10 +249,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
     userId: number,
     authId: number
   ): Promise<any | undefined> {
-    let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
-      'YYYY-MM-DD HH:mm:ss'
-    );
-    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+    let mStartDate = moment(startDate, 'DD-MM-YYYY');
+    let mEndDate = moment(endDate, 'DD-MM-YYYY');
+
+    let cStartDate = mStartDate.format('YYYY-MM-DD HH:mm:ss');
+    let cEndDate = mEndDate.format('YYYY-MM-DD HH:mm:ss');
 
     let timesheet = await this.findOne({
       where: { startDate: cStartDate, endDate: cEndDate, employeeId: userId },
@@ -405,7 +411,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
           };
 
           leaveRequest.entries.forEach((entry) => {
-            if (entry.hours > 0) {
+            if (
+              entry.hours > 0 &&
+              moment(entry.date, 'YYYY-MM-DD').isSameOrAfter(mStartDate) &&
+              moment(entry.date, 'YYYY-MM-DD').isSameOrBefore(mEndDate)
+            ) {
               resLeaveRequest[moment(entry.date, 'YYYY-MM-DD').format('D/M')] =
                 {
                   date: moment(entry.date, 'YYYY-MM-DD').format('D-M-Y'),
@@ -453,10 +463,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
     userId: number,
     authId: number
   ): Promise<any | undefined> {
-    let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
-      'YYYY-MM-DD HH:mm:ss'
-    );
-    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+    let mStartDate = moment(startDate, 'DD-MM-YYYY');
+    let mEndDate = moment(endDate, 'DD-MM-YYYY');
+
+    let cStartDate = mStartDate.format('YYYY-MM-DD HH:mm:ss');
+    let cEndDate = mEndDate.format('YYYY-MM-DD HH:mm:ss');
 
     let timesheet = await this.findOne({
       where: { startDate: cStartDate, endDate: cEndDate, employeeId: userId },
@@ -614,7 +625,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
           };
 
           leaveRequest.entries.forEach((entry) => {
-            if (entry.hours > 0) {
+            if (
+              entry.hours > 0 &&
+              moment(entry.date, 'YYYY-MM-DD').isSameOrAfter(mStartDate) &&
+              moment(entry.date, 'YYYY-MM-DD').isSameOrBefore(mEndDate)
+            ) {
               resLeaveRequest[moment(entry.date, 'YYYY-MM-DD').format('D/M')] =
                 {
                   date: moment(entry.date, 'YYYY-MM-DD').format('D-M-Y'),
