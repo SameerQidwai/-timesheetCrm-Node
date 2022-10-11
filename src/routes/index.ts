@@ -33,6 +33,7 @@ import leaveRequestBalances from './leaveRequestBalanceRoutes';
 import milestoneRoutes from './milestoneRoutes';
 import importExportRoutes from './importExportRoutes';
 import expenseTypeRoutes from './expenseTypeRoutes';
+import testRoutes from './testRoutes';
 
 const router: Router = Router();
 router.use('', authRoutes);
@@ -68,6 +69,7 @@ router.use('/leave-requests', leaveRequests);
 router.use('/leave-request-balances', leaveRequestBalances);
 router.use('/data', importExportRoutes);
 router.use('/expense-types', expenseTypeRoutes);
+router.use('/test', testRoutes);
 // router.use("/opportunity-resources", opportunityResourceRoutes);
 
 // console.log("router: ", router);
