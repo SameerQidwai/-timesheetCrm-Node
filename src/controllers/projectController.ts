@@ -131,4 +131,38 @@ export class ProjectController extends BaseController<
       next(e);
     }
   }
+
+  async getCalculatedValue(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(ProjectRepository);
+      let id = req.params.projectId;
+      let records: any = [];
+      records = await repository.getCalculatedValue(parseInt(id));
+      console.log('records: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'Project Calculated Value',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async updateProjectValue(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(ProjectRepository);
+      let id = req.params.projectId;
+      let records: any = [];
+      records = await repository.updateProjectValue(parseInt(id));
+      console.log('records: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'Project Calculated Value',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }
