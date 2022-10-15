@@ -675,3 +675,7 @@ export interface MilestoneExpenseDTO extends Base {
   buyingRate: number;
   sellingRate: number;
 }
+
+export interface ExpenseSheetDTO extends Base {
+  label: String;
+}
