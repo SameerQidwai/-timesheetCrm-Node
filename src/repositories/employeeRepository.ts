@@ -234,8 +234,13 @@ export class EmployeeRepository extends Repository<Employee> {
       sendMail(
         process.env.MAILER_ADDRESS,
         user,
-        'Account Password',
-        `You registered account password is ${generatedPassword}`
+        `Invitation to ${process.env.ORGANIZATION}`,
+        `Hello,
+You have been invited to ${process.env.ORGANIZATION}. 
+Your registered account password is ${generatedPassword}. Please visit ${process.env.ENV_URL} to login.
+        
+Regards,
+${process.env.ORGANIZATION} Support Team`
       );
     } catch (e) {
       console.log(e);

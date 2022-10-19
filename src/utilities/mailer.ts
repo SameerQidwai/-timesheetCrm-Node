@@ -13,7 +13,7 @@ export let sendMail = (
 
   let MAILER_HOST = 'smtp.office365.com';
   let MAILER_PORT = 587;
-  let MAILER_SSL = true;
+  let MAILER_SSL = false;
   let MAILER_USER = 'support@timewize.com.au';
   let MAILER_PWD = '123123testtest';
 
