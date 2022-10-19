@@ -699,7 +699,7 @@ export class ImportController {
           (x) => x.organizationId == 1
         )[0];
       if (!contactPersonOrganization) {
-        throw new Error('Not associated with oneLM');
+        throw new Error(`Not associated with ${process.env.ORGANIZATION}`);
       } else {
         let oldOrganization =
           contactPersonObj.contactPersonOrganizations.filter(

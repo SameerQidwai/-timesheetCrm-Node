@@ -440,13 +440,13 @@ export class AuthController {
 
       try {
         sendMail(
-          'crm.onelm.com',
+          process.env.MAILER_ADDRESS,
           {
             username: user.contactPersonOrganization.contactPerson.firstName,
             email: user.username,
           },
           'Forgot Password Request',
-          `Your have requested a Password Reset on Onelm
+          `Your have requested a Password Reset on ${process.env.ORGANIZATION}
           If you did not request a request, please ignore this email.
           Your Password Reset Link is : 
           ${FRONTEND_URL}reset-password/${encodeURIComponent(link.token)}

@@ -29,7 +29,7 @@ export let sendMail = (
 
   // Message object
   let mail = {
-    from: `OneLM <${from}>`,
+    from: `${process.env.ORGANIZATION} <${from}>`,
     to: `${to.username} <${to.email}>`,
     // from: `Sender Name <${from}>`,
     // to: `Recipient <${to}>`,

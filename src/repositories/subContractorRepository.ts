@@ -164,7 +164,7 @@ export class SubContractorRepository extends Repository<Employee> {
     };
     try {
       sendMail(
-        'crm.onelm.com',
+        process.env.MAILER_ADDRESS,
         user,
         'Account Password',
         `You registered account password is ${generatedPassword}`

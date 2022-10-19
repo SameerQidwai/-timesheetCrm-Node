@@ -62,7 +62,7 @@ export class EmployeeRepository extends Repository<Employee> {
           (x) => x.organizationId == 1
         )[0];
       if (!contactPersonOrganization) {
-        throw new Error('Not associated with oneLM');
+        throw new Error(`Not associated with ${process.env.ORGANIZATION}`);
       } else {
         let oldOrganization =
           contactPersonObj.contactPersonOrganizations.filter(
@@ -232,7 +232,7 @@ export class EmployeeRepository extends Repository<Employee> {
     };
     try {
       sendMail(
-        'crm.onelm.com',
+        process.env.MAILER_ADDRESS,
         user,
         'Account Password',
         `You registered account password is ${generatedPassword}`
