@@ -436,7 +436,7 @@ export interface MilestoneDTO extends Base {
   startDate: Date;
   endDate: Date;
   progress: number;
-  isApproved: Boolean;
+  isApproved: string;
   projectId: number;
 }
 

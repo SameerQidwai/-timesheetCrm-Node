@@ -1107,7 +1107,7 @@ ${process.env.ORGANIZATION} Support Team`
               }
 
               if (org.status == 1 && flag_found == 1) {
-                cpEmployeeID = org.employee.id;
+                cpEmployeeID = org.employee?.id;
               }
             }
           }

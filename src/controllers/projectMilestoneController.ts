@@ -81,6 +81,80 @@ export class ProjectMilestoneController {
     }
   }
 
+  async submitMilestone(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(ProjectRepository);
+      let records: any = [];
+      let milestoneId = req.params.id;
+      const { grantLevel, user } = res.locals;
+      if (grantLevel.includes('ANY')) {
+        records = await repository.submitAnyMilestone(parseInt(milestoneId));
+      } else if (grantLevel.includes('MANAGE')) {
+        records = await repository.submitManageMilestone(
+          user.id,
+          parseInt(milestoneId)
+        );
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Milestone Submitted',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+  async unapproveMilestone(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(ProjectRepository);
+      let records: any = [];
+      let milestoneId = req.params.id;
+      const { grantLevel, user } = res.locals;
+      if (grantLevel.includes('ANY')) {
+        records = await repository.unapproveAnyMilestone(parseInt(milestoneId));
+      } else if (grantLevel.includes('MANAGE')) {
+        records = await repository.unapproveManageMilestone(
+          user.id,
+          parseInt(milestoneId)
+        );
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Milestone Submitted',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async deleteMilestoneFile(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(ProjectRepository);
+      let records: any = [];
+      let milestoneId = req.params.id;
+      const { grantLevel, user } = res.locals;
+      if (grantLevel.includes('ANY')) {
+        records = await repository.deleteAnyMilestoneFile(parseInt(milestoneId));
+      } else if (grantLevel.includes('MANAGE')) {
+        records = await repository.deleteManageMilestoneFile(
+          user.id,
+          parseInt(milestoneId)
+        );
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Milestone File Removed',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
   async exportMilestone(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(ProjectRepository);

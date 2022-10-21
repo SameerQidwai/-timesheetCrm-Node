@@ -22,6 +22,27 @@ router
   );
 
 router
+  .route('/:id/submit')
+  .get(
+    [isLoggedIn, can(Action.UPDATE, Resource.TIMESHEETS)],
+    contr.submitMilestone.bind(contr)
+  );
+
+router
+  .route('/:id/unapprove')
+  .get(
+    [isLoggedIn, can(Action.UNAPPROVAL, Resource.TIMESHEETS)],
+    contr.unapproveMilestone.bind(contr)
+  );
+
+router
+  .route('/:id/delete-certificate')
+  .get(
+    [isLoggedIn, can(Action.UPDATE, Resource.TIMESHEETS)],
+    contr.deleteMilestoneFile.bind(contr)
+  );
+
+router
   .route('/:id/upload')
   .put(
     [isLoggedIn, can(Action.UPDATE, Resource.PROJECTS)],

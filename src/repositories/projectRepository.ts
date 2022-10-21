@@ -167,7 +167,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       milestoneObj.description = '-';
       milestoneObj.startDate = newProject.startDate;
       milestoneObj.endDate = newProject.endDate;
-      milestoneObj.isApproved = false;
+      milestoneObj.isApproved = '';
       milestoneObj.projectId = newProject.id;
       milestoneObj.progress = 0;
 
@@ -760,7 +760,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       throw new Error('Milestone not found');
     }
 
-    milestone.isApproved = true;
+    milestone.isApproved = 'AP';
 
     return this.manager.save(milestone);
   }
@@ -781,7 +781,114 @@ export class ProjectRepository extends Repository<Opportunity> {
       throw new Error('Not Authorized');
     }
 
-    milestone.isApproved = true;
+    milestone.isApproved = 'AP';
+
+    return this.manager.save(milestone);
+  }
+
+  async submitAnyMilestone(milestoneId: number): Promise<any | undefined> {
+    let milestone = await this.manager.findOne(Milestone, milestoneId, {
+      relations: ['project'],
+    });
+
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    milestone.isApproved = 'SB';
+
+    return this.manager.save(milestone);
+  }
+
+  async submitManageMilestone(
+    authId: number,
+    milestoneId: number
+  ): Promise<any | undefined> {
+    let milestone = await this.manager.findOne(Milestone, milestoneId, {
+      relations: ['project'],
+    });
+
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    if (milestone.project.projectManagerId !== authId) {
+      throw new Error('Not Authorized');
+    }
+
+    milestone.isApproved = 'SB';
+
+    return this.manager.save(milestone);
+  }
+
+  async unapproveAnyMilestone(milestoneId: number): Promise<any | undefined> {
+    let milestone = await this.manager.findOne(Milestone, milestoneId, {
+      relations: ['project'],
+    });
+
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    milestone.isApproved = '';
+
+    return this.manager.save(milestone);
+  }
+
+  async unapproveManageMilestone(
+    authId: number,
+    milestoneId: number
+  ): Promise<any | undefined> {
+    let milestone = await this.manager.findOne(Milestone, milestoneId, {
+      relations: ['project'],
+    });
+
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    if (milestone.project.projectManagerId !== authId) {
+      throw new Error('Not Authorized');
+    }
+
+    milestone.isApproved = '';
+
+    return this.manager.save(milestone);
+  }
+
+  async deleteAnyMilestoneFile(milestoneId: number): Promise<any | undefined> {
+    let milestone = await this.manager.findOne(Milestone, milestoneId, {
+      relations: ['project'],
+    });
+
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    let newMilestone: any = milestone 
+    newMilestone.fileId = null;
+
+    return this.manager.save(milestone);
+  }
+
+  async deleteManageMilestoneFile(
+    authId: number,
+    milestoneId: number
+  ): Promise<any | undefined> {
+    let milestone = await this.manager.findOne(Milestone, milestoneId, {
+      relations: ['project'],
+    });
+
+    if (!milestone) {
+      throw new Error('Milestone not found');
+    }
+
+    if (milestone.project.projectManagerId !== authId) {
+      throw new Error('Not Authorized');
+    }
+
+    let newMilestone: any = milestone 
+    newMilestone.fileId = null;
 
     return this.manager.save(milestone);
   }
@@ -920,7 +1027,7 @@ export class ProjectRepository extends Repository<Opportunity> {
         if (milestoneDTO.startDate) {
           milestone.endDate = new Date(milestoneDTO.endDate);
         }
-        milestone.isApproved = milestoneDTO.isApproved;
+        milestone.isApproved = milestoneDTO.isApproved?? '';
         milestone.projectId = projectId;
         milestone.progress = milestoneDTO.progress;
         return this.manager.save(milestone);
@@ -986,6 +1093,10 @@ export class ProjectRepository extends Repository<Opportunity> {
         throw new Error('Milestone not found!');
       }
 
+      if (milestone.isApproved === 'AP'){
+        new Error ("Approved milestone can't update!")
+      }
+
       let resources = await transactionalEntityManager.find(
         OpportunityResource,
         {
@@ -1031,7 +1142,7 @@ export class ProjectRepository extends Repository<Opportunity> {
         milestone.endDate = new Date(milestoneDTO.endDate);
       }
 
-      milestone.isApproved = milestoneDTO.isApproved;
+      milestone.isApproved = milestoneDTO.isApproved ?? '';
       milestone.progress = milestoneDTO.progress;
       return await transactionalEntityManager.save(milestone);
     });

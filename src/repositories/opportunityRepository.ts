@@ -157,7 +157,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
       milestoneObj.description = '-';
       milestoneObj.startDate = newOpportunity.startDate;
       milestoneObj.endDate = newOpportunity.endDate;
-      milestoneObj.isApproved = false;
+      milestoneObj.isApproved = '';
       milestoneObj.projectId = newOpportunity.id;
       milestoneObj.progress = 0;
 
