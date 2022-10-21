@@ -1093,7 +1093,7 @@ export class ProjectRepository extends Repository<Opportunity> {
         throw new Error('Milestone not found!');
       }
 
-      if (milestone.isApproved === 'AP'){
+      if (milestone.isApproved === 'AP' || milestone.isApproved === 'SB'){
         new Error ("Approved milestone can't update!")
       }
 
