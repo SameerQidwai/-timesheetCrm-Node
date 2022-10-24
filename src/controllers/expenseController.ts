@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
-import { expenseSheetRulesValidator } from '../rules';
+import { expenseRulesValidator } from '../rules';
 import { getCustomRepository } from 'typeorm';
-import { ExpenseSheetRepository } from '../repositories/expenseSheetRepository';
+import { ExpenseRepository } from '../repositories/expenseRepository';
 
-export class ExpenseSheetController {
+export class ExpenseController {
   async index(req: Request, res: Response, next: NextFunction) {
     try {
-      const repository = getCustomRepository(ExpenseSheetRepository);
-      let records = [];
+      const repository = getCustomRepository(ExpenseRepository);
+      let records: any = [];
       const { grantLevel } = res.locals;
       if (grantLevel.includes('ANY')) {
         records = await repository.getAllActive();
@@ -37,9 +37,9 @@ export class ExpenseSheetController {
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const repository = getCustomRepository(ExpenseSheetRepository);
+      const repository = getCustomRepository(ExpenseRepository);
 
-      await expenseSheetRulesValidator.validateCreate.validateAsync(req.body);
+      await expenseRulesValidator.validateCreate.validateAsync(req.body);
 
       let record = await repository.createAndSave(
         parseInt(res.locals.jwtPayload.id),
@@ -58,7 +58,7 @@ export class ExpenseSheetController {
 
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const repository = getCustomRepository(ExpenseSheetRepository);
+      const repository = getCustomRepository(ExpenseRepository);
 
       let id = req.params.id;
       let record = await repository.updateAndReturn(
@@ -78,7 +78,7 @@ export class ExpenseSheetController {
 
   async get(req: Request, res: Response, next: NextFunction) {
     try {
-      const repository = getCustomRepository(ExpenseSheetRepository);
+      const repository = getCustomRepository(ExpenseRepository);
 
       let id = req.params.id;
       let record = await repository.findOneCustom(
@@ -98,7 +98,7 @@ export class ExpenseSheetController {
 
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      const repository = getCustomRepository(ExpenseSheetRepository);
+      const repository = getCustomRepository(ExpenseRepository);
 
       let id = req.params.id;
       let record = await repository.deleteCustom(
@@ -108,26 +108,6 @@ export class ExpenseSheetController {
       res.status(200).json({
         success: true,
         message: `Deleted Successfully`,
-        data: record,
-      });
-    } catch (e) {
-      next(e);
-    }
-  }
-
-  async addExpenses(req: Request, res: Response, next: NextFunction) {
-    try {
-      const repository = getCustomRepository(ExpenseSheetRepository);
-
-      let id = req.params.id;
-      let record = await repository.addExpenses(
-        parseInt(res.locals.jwtPayload.id),
-        parseInt(id),
-        req.body
-      );
-      res.status(200).json({
-        success: true,
-        message: `Added Expenses Successfully`,
         data: record,
       });
     } catch (e) {

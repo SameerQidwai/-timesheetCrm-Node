@@ -1,482 +1,274 @@
-import {
-  ProjectDTO,
-  ProjectResourceDTO,
-  PurchaseOrderDTO,
-  MilestoneDTO,
-  MilestoneUploadDTO,
-  MilestoneExpenseDTO,
-  ExpenseSheetDTO,
-} from '../dto';
-import {
-  EntityRepository,
-  In,
-  IsNull,
-  LessThanOrEqual,
-  MoreThanOrEqual,
-  Not,
-  Repository,
-} from 'typeorm';
-import { Organization } from './../entities/organization';
+import { AddExpenseDTO, ExpenseSheetDTO } from '../dto';
+import { EntityRepository, In, Repository } from 'typeorm';
 import { Opportunity } from './../entities/opportunity';
-import { Panel } from './../entities/panel';
-import { State } from './../entities/state';
-import { ContactPerson } from './../entities/contactPerson';
-import { OpportunityResource } from './../entities/opportunityResource';
-import { OpportunityResourceAllocation } from '../entities/opportunityResourceAllocation';
 import { Employee } from '../entities/employee';
-import { PurchaseOrder } from '../entities/purchaseOrder';
-import { Milestone } from '../entities/milestone';
-import { Attachment } from '../entities/attachment';
-import { Comment } from '../entities/comment';
-import moment, { Moment, parseTwoDigitYear } from 'moment';
-import { LeaveRequest } from '../entities/leaveRequest';
-import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
-
-import { EntityType, ProjectType } from '../constants/constants';
 
 import { ExpenseSheet } from '../entities/expenseSheet';
+import { getProjectsByUserId } from '../utilities/helperFunctions';
+import { Expense } from '../entities/expense';
+import { ExpenseSheetExpense } from '../entities/expenseSheetExpense';
 
 @EntityRepository(ExpenseSheet)
 export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
-  async createAndSave(expenseSheetDTO: ExpenseSheetDTO): Promise<any> {
-    let id: number;
-    id = await this.manager.transaction(async (transactionalEntityManager) => {
-      let expenseSheetObj = new ExpenseSheet();
-      expenseSheetObj.label = expenseSheetObj.creator = authId;
+  async createAndSave(
+    authId: number,
+    expenseSheetDTO: ExpenseSheetDTO
+  ): Promise<any> {
+    let sheet = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let expenseSheetObj = new ExpenseSheet();
 
-      return newProject.id;
-    });
-    return await this.findOneCustom(id);
+        expenseSheetObj.label = expenseSheetDTO.label;
+
+        if (expenseSheetDTO.projectId) {
+          let project = await transactionalEntityManager.findOne(
+            Opportunity,
+            expenseSheetDTO.projectId
+          );
+          if (!project) {
+            throw new Error('Project not found');
+          }
+          expenseSheetObj.projectId = expenseSheetDTO.projectId;
+        }
+
+        expenseSheetObj.createdBy = authId;
+
+        await transactionalEntityManager.save(expenseSheetObj);
+
+        return expenseSheetObj;
+      }
+    );
+    return sheet;
   }
 
   async getAllActive(): Promise<any[]> {
-    let response: any = [];
-
     let result = await this.find({
-      where: [{ status: 'P' }, { status: 'C' }],
-      relations: [
-        'milestones',
-        'organization',
-        'opportunityResources',
-        'opportunityResources.panelSkill',
-        'opportunityResources.panelSkillStandardLevel',
-        'opportunityResources.opportunityResourceAllocations',
-        'opportunityResources.opportunityResourceAllocations.contactPerson',
-      ],
+      relations: ['expenseSheetExpenses', 'expenseSheetExpenses.expense'],
     });
 
     return result;
   }
 
-  async getOwnActive(userId: number): Promise<any[]> {
-    let response: any = [];
-
+  async getOwnActive(authId: number): Promise<any[]> {
     let result = await this.find({
-      where: [{ status: 'P' }, { status: 'C' }],
-      relations: [
-        'organization',
-        'opportunityResources',
-        'opportunityResources.panelSkill',
-        'opportunityResources.panelSkillStandardLevel',
-        'opportunityResources.opportunityResourceAllocations',
-        'opportunityResources.opportunityResourceAllocations.contactPerson',
-      ],
-    });
-
-    console.log('this ran');
-    result.map((project, index) => {
-      let add_flag = 0;
-      project.opportunityResources.map((resource) => {
-        resource.opportunityResourceAllocations.filter((allocation) => {
-          if (
-            allocation.contactPersonId === userId &&
-            allocation.isMarkedAsSelected
-          ) {
-            add_flag = 1;
-          }
-        });
-      });
-      if (add_flag === 1) response.push(project);
-    });
-
-    return response;
-  }
-
-  async getManageActive(userId: number): Promise<any[]> {
-    let result = await this.find({
-      where: [
-        {
-          status: 'P',
-          accountDirectorId: userId,
-        },
-        {
-          status: 'P',
-          accountManagerId: userId,
-        },
-        {
-          status: 'P',
-          projectManagerId: userId,
-        },
-        {
-          status: 'C',
-          accountDirectorId: userId,
-        },
-        {
-          status: 'C',
-          accountManagerId: userId,
-        },
-        {
-          status: 'C',
-          projectManagerId: userId,
-        },
-      ],
-      relations: [
-        'organization',
-        'opportunityResources',
-        'opportunityResources.panelSkill',
-        'opportunityResources.panelSkillStandardLevel',
-        'opportunityResources.opportunityResourceAllocations',
-        'opportunityResources.opportunityResourceAllocations.contactPerson',
-      ],
+      where: { createdBy: authId },
+      relations: ['expenseSheetExpenses', 'expenseSheetExpenses.expense'],
     });
 
     return result;
   }
 
-  async getOwnAndManageActive(userId: number): Promise<any[]> {
-    let response: any = [];
-    let result = await this.find({
-      where: [
-        {
-          status: 'P',
-          accountDirectorId: userId,
-        },
-        {
-          status: 'P',
-          accountManagerId: userId,
-        },
-        {
-          status: 'P',
-          projectManagerId: userId,
-        },
-        {
-          status: 'C',
-          accountDirectorId: userId,
-        },
-        {
-          status: 'C',
-          accountManagerId: userId,
-        },
-        {
-          status: 'C',
-          projectManagerId: userId,
-        },
-      ],
+  async getManageActive(authId: number): Promise<any[]> {
+    let employee = await this.manager.findOne(Employee, authId, {
       relations: [
-        'organization',
-        'opportunityResources',
-        'opportunityResources.panelSkill',
-        'opportunityResources.panelSkillStandardLevel',
-        'opportunityResources.opportunityResourceAllocations',
-        'opportunityResources.opportunityResourceAllocations.contactPerson',
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
       ],
     });
 
-    result.map((project, index) => {
-      let add_flag = 0;
-      project.opportunityResources.map((resource) => {
-        resource.opportunityResourceAllocations.filter((allocation) => {
-          if (
-            allocation.contactPersonId === userId &&
-            allocation.isMarkedAsSelected
-          ) {
-            add_flag = 1;
-          }
-        });
-      });
-      if (add_flag === 1) response.push(project);
-    });
-
-    return response;
-  }
-
-  async findOneCustom(id: number): Promise<any | undefined> {
-    let project = await this.findOne(id, {
-      relations: [
-        'organization',
-        'contactPerson',
-        'milestones',
-        'milestones.expenses',
-        'milestones.opportunityResources',
-        'milestones.opportunityResources.opportunityResourceAllocations',
-      ],
-    });
-
-    if (!project) {
-      throw new Error('Project not found');
+    if (!employee) {
+      throw new Error('Employee not found');
     }
+    let employeeContactPersonId =
+      employee.contactPersonOrganization.contactPerson.id;
 
-    let value = 0;
-
-    project.milestones.forEach((milestone) => {
-      milestone.opportunityResources.forEach((resource) => {
-        resource.opportunityResourceAllocations.forEach((allocation) => {
-          if (allocation.isMarkedAsSelected)
-            value +=
-              parseFloat(allocation.sellingRate as any) *
-              parseInt(resource.billableHours as any);
-        });
-      });
-      milestone.expenses.forEach((expense) => {
-        value += parseFloat(expense.sellingRate as any);
-      });
+    let projects = await this.manager.find(Opportunity, {
+      where: [{ status: 'P' }, { status: 'C' }],
+      relations: [
+        'organization',
+        'opportunityResources',
+        'opportunityResources.panelSkill',
+        'opportunityResources.panelSkillStandardLevel',
+        'opportunityResources.opportunityResourceAllocations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
     });
 
-    (project as Opportunity & { calculatedValue: number }).calculatedValue =
-      value;
+    let projectIds = getProjectsByUserId(
+      projects,
+      'm',
+      0,
+      employeeContactPersonId,
+      authId,
+      true
+    );
 
-    return project;
+    let result = await this.find({
+      where: { projectId: In(projectIds) },
+      relations: ['expenseSheetExpenses', 'expenseSheetExpenses.expense'],
+    });
+
+    return result;
+  }
+
+  async getOwnAndManageActive(authId: number): Promise<any[]> {
+    let employee = await this.manager.findOne(Employee, authId, {
+      relations: [
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+      ],
+    });
+
+    if (!employee) {
+      throw new Error('Employee not found');
+    }
+    let employeeContactPersonId =
+      employee.contactPersonOrganization.contactPerson.id;
+
+    let projects = await this.manager.find(Opportunity, {
+      where: [{ status: 'P' }, { status: 'C' }],
+      relations: [
+        'organization',
+        'opportunityResources',
+        'opportunityResources.panelSkill',
+        'opportunityResources.panelSkillStandardLevel',
+        'opportunityResources.opportunityResourceAllocations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
+    });
+
+    let projectIds = getProjectsByUserId(
+      projects,
+      'm',
+      0,
+      employeeContactPersonId,
+      authId,
+      true
+    );
+
+    let result = await this.find({
+      where: [{ projectId: In(projectIds) }, { createdBy: authId }],
+      relations: ['expenseSheetExpenses', 'expenseSheetExpenses.expense'],
+    });
+
+    return result;
+  }
+
+  async findOneCustom(authId: number, id: number): Promise<any | undefined> {
+    let result = await this.findOne(id, {
+      where: { createdBy: authId },
+      relations: ['expenseSheetExpenses', 'expenseSheetExpenses.expense'],
+    });
+
+    return result;
   }
 
   async updateAndReturn(
+    authId: number,
     id: number,
-    projectDTO: ExpenseSheetDTO
+    expenseSheetDTO: ExpenseSheetDTO
   ): Promise<any | undefined> {
-    await this.manager.transaction(async (transactionalEntityManager) => {
-      let projectObj = await transactionalEntityManager.findOne(
-        Opportunity,
-        id,
-        { relations: ['organization', 'milestones'] }
-      );
+    let sheet = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let expenseSheetObj = await this.findOne(id, {
+          relations: ['expenseSheetExpenses', 'expenseSheetExpenses.expense'],
+          where: { createdBy: authId },
+        });
 
-      if (!projectObj) {
-        throw new Error('Project not found');
-      }
-
-      projectObj.title = projectDTO.title;
-
-      let milestones = await transactionalEntityManager.find(Milestone, {
-        where: {
-          startDate: Not(IsNull()),
-          endDate: Not(IsNull()),
-          projectId: id,
-        },
-        relations: ['project'],
-      });
-      let milestoneIds = milestones.map((milestone) => milestone.id);
-
-      let resources = await transactionalEntityManager.find(
-        OpportunityResource,
-        {
-          where: {
-            startDate: Not(IsNull()),
-            endDate: Not(IsNull()),
-            milestoneId: In(milestoneIds),
-          },
+        if (!expenseSheetObj) {
+          throw new Error('Expense sheet not found');
         }
-      );
 
-      let timesheetMilestoneEntries = await transactionalEntityManager.find(
-        TimesheetMilestoneEntry,
-        {
-          where: { milestoneId: In(milestoneIds) },
-          relations: ['timesheet', 'entries'],
+        for (let expense of expenseSheetObj.expenseSheetExpenses) {
+          if (expense.expense.submittedAt || expense.expense.approvedAt) {
+            throw new Error('Cannot update Sheet');
+          }
         }
-      );
 
-      let leaveRequests = await transactionalEntityManager.find(LeaveRequest, {
-        where: { workId: projectObj.id },
-        relations: ['entries'],
-      });
+        expenseSheetObj.label = expenseSheetDTO.label;
 
-      if (projectDTO.startDate || projectDTO.endDate) {
-        this._validateProjectDates(
-          projectDTO.startDate,
-          projectDTO.endDate,
-          milestones,
-          resources,
-          timesheetMilestoneEntries,
-          leaveRequests
-        );
-      }
-
-      if (projectDTO.startDate) {
-        projectObj.startDate = new Date(projectDTO.startDate);
-        if (projectDTO.type == ProjectType.TIME_BASE) {
-          projectObj.milestones[0].startDate = new Date(projectDTO.startDate);
+        if (expenseSheetDTO.projectId) {
+          let project = await transactionalEntityManager.findOne(
+            Opportunity,
+            expenseSheetDTO.projectId
+          );
+          if (!project) {
+            throw new Error('Project not found');
+          }
+          expenseSheetObj.projectId = expenseSheetDTO.projectId;
         }
-      } else {
-        throw new Error('Project start date Cannot be null');
-      }
-      if (projectDTO.endDate) {
-        projectObj.endDate = new Date(projectDTO.endDate);
-        if (projectDTO.type == ProjectType.TIME_BASE) {
-          projectObj.milestones[0].endDate = new Date(projectDTO.endDate);
-        }
-      } else {
-        throw new Error('Project end date Cannot be null');
-      }
-      if (projectDTO.entryDate) {
-        projectObj.entryDate = new Date(projectDTO.entryDate);
-      }
-      projectObj.qualifiedOps = projectDTO.qualifiedOps ? true : false;
-      projectObj.value = projectDTO.value;
-      //! REMOVING CAUSE OF MILESTONE ADD AND REMOVE
-      // projectObj.type = projectDTO.type;
-      projectObj.tender = projectDTO.tender;
-      projectObj.tenderNumber = projectDTO.tenderNumber;
-      projectObj.hoursPerDay = projectDTO.hoursPerDay;
-      projectObj.cmPercentage = projectDTO.cmPercentage;
-      projectObj.stage = projectDTO.stage;
-      projectObj.linkedWorkId = projectDTO.linkedWorkId;
 
-      // validate organization
-      let organization: Organization | undefined;
-      if (projectDTO.organizationId) {
-        organization = await this.manager.findOne(
-          Organization,
-          projectDTO.organizationId
-        );
-        if (!organization) {
-          throw new Error('Organization not found');
-        }
-        projectObj.organizationId = organization.id;
+        await transactionalEntityManager.save(expenseSheetObj);
+        return expenseSheetObj;
       }
-
-      // validate panel
-      let panel: Panel | undefined;
-      if (projectDTO.panelId) {
-        panel = await this.manager.findOne(Panel, projectDTO.panelId);
-        if (!panel) {
-          throw new Error('Panel not found');
-        }
-        projectObj.panelId = panel.id;
-      }
-
-      let contactPerson: ContactPerson | undefined;
-      if (projectDTO.contactPersonId == null) {
-        projectObj.contactPersonId = null;
-      } else if (projectDTO.contactPersonId) {
-        contactPerson = await this.manager.findOne(
-          ContactPerson,
-          projectDTO.contactPersonId
-        );
-        if (!contactPerson) {
-          throw new Error('Contact Person not found');
-        }
-        projectObj.contactPersonId = contactPerson.id;
-      }
-
-      let state: State | undefined;
-      if (projectDTO.stateId) {
-        state = await this.manager.findOne(State, projectDTO.stateId);
-        if (!state) {
-          throw new Error('State not found');
-        }
-        projectObj.stateId = state.id;
-      }
-
-      let accountDirector: Employee | undefined;
-      if (projectDTO.accountDirectorId) {
-        accountDirector = await this.manager.findOne(
-          Employee,
-          projectDTO.accountDirectorId
-        );
-        if (!accountDirector) {
-          throw new Error('Account Director not found');
-        }
-        projectObj.accountDirectorId = accountDirector.id;
-      }
-      //   projectObj.accountDirectorId = 1;
-
-      let accountManager: Employee | undefined;
-      if (projectDTO.accountManagerId) {
-        accountManager = await this.manager.findOne(
-          Employee,
-          projectDTO.accountManagerId
-        );
-        if (!accountManager) {
-          throw new Error('Account Manager not found');
-        }
-        projectObj.accountManagerId = accountManager.id;
-      }
-      //   projectObj.accountManagerId = 1;
-
-      let projectManager: Employee | undefined;
-      if (projectDTO.projectManagerId) {
-        projectManager = await this.manager.findOne(
-          Employee,
-          projectDTO.projectManagerId
-        );
-        if (!projectManager) {
-          throw new Error('project Manager not found');
-        }
-        projectObj.projectManagerId = projectManager.id;
-      }
-      //   projectObj.projectManagerId = 1;
-
-      await transactionalEntityManager.save(projectObj);
-    });
-    return this.findOneCustom(id);
+    );
+    return sheet;
   }
 
-  async deleteCustom(id: number): Promise<any | undefined> {
-    await this.manager.transaction(async (transactionalEntityManager) => {
-      let project = await transactionalEntityManager.findOne(Opportunity, id, {
-        relations: [
-          'purchaseOrders',
-          'milestones',
-          'milestones.timesheetMilestoneEntries',
-          'milestones.opportunityResources',
-          'leaveRequests',
-        ],
+  async deleteCustom(authId: number, id: number): Promise<any | undefined> {
+    return this.manager.transaction(async (transactionalEntityManager) => {
+      let sheet = await this.findOne(id, {
+        where: { createdBy: authId },
+        relations: ['expenseSheetExpenses', 'expenseSheetExpenses.expense'],
       });
 
-      if (!project) {
-        throw new Error('Project not found');
+      if (!sheet) {
+        throw new Error('Expense sheet not found');
       }
 
-      let linkedOpportunities = await transactionalEntityManager.find(
-        Opportunity,
-        {
-          where: { linkedWorkId: id },
+      sheet.expenseSheetExpenses.forEach((expense) => {
+        if (expense.expense.approvedAt) {
+          throw new Error('Cannt delete sheet with approved expenses');
         }
-      );
+      });
 
-      for (let milestone of project.milestones) {
-        if (milestone.timesheetMilestoneEntries.length > 0) {
-          throw new Error('Project has Timesheet Entries');
-        }
-      }
-
-      if (project.leaveRequests.length > 0) {
-        throw new Error('Project has Leave Request entries');
-      }
-
-      if (linkedOpportunities.length > 0) {
-        throw new Error('Project is linked to other Opportunity / Project');
-      }
-
-      if (project.purchaseOrders.length > 0)
+      if (sheet.expenseSheetExpenses.length)
         await transactionalEntityManager.softDelete(
-          PurchaseOrder,
-          project.purchaseOrders
+          ExpenseSheetExpense,
+          sheet.expenseSheetExpenses
         );
 
-      let attachments = await transactionalEntityManager.find(Attachment, {
-        where: { targetType: EntityType.WORK, targetId: id },
+      await transactionalEntityManager.softRemove(ExpenseSheet, sheet);
+
+      return sheet;
+    });
+  }
+
+  async addExpenses(
+    authId: number,
+    id: number,
+    addExpenseDTO: AddExpenseDTO
+  ): Promise<any | undefined> {
+    return this.manager.transaction(async (transactionalEntityManager) => {
+      let sheet = await this.findOne(id, {
+        where: { createdBy: authId },
+        relations: ['expenseSheetExpenses', 'expenseSheetExpenses.expense'],
       });
 
-      let comments = await transactionalEntityManager.find(Comment, {
-        where: { targetType: EntityType.WORK, targetId: id },
-      });
+      if (!sheet) {
+        throw new Error('Expense sheet not found');
+      }
 
-      if (attachments.length > 0)
-        await transactionalEntityManager.softDelete(Attachment, attachments);
-      if (comments.length > 0)
-        await transactionalEntityManager.softDelete(Comment, comments);
+      for (let id of addExpenseDTO.expenses) {
+        let expense = await transactionalEntityManager.findOne(Expense, id);
 
-      await transactionalEntityManager.softRemove(Opportunity, project);
+        if (!expense) {
+          throw new Error('Expense not found');
+        }
+
+        if (expense.projectId !== sheet.projectId) {
+          throw new Error('Sheet Project is different');
+        }
+
+        if (expense.rejectedAt == null && expense.entries.length > 0) {
+          throw new Error('Expense already in timesheet');
+        }
+
+        let expenseSheetExpenseObj = new ExpenseSheetExpense();
+
+        expenseSheetExpenseObj.expenseId = expense.id;
+        expenseSheetExpenseObj.sheetId = sheet.id;
+
+        await transactionalEntityManager.save(expenseSheetExpenseObj);
+      }
+
+      return sheet;
+
+      // if (result.expenseSheetExpenses.length > 0)
+      //   await transactionalEntityManager.softDelete(
+      //     ExpenseSheetExpense,
+      //     project.purchaseOrders
+      //   );
     });
   }
 }

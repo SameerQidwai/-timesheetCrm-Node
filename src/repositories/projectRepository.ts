@@ -42,7 +42,8 @@ import { File } from '../entities/file';
 import { ExpenseType } from '../entities/expenseType';
 import { number } from 'joi';
 import { time } from 'console';
-import { EmploymentContract } from 'src/entities/employmentContract';
+import { EmploymentContract } from '../entities/employmentContract';
+import { getProjectsByUserId } from '../utilities/helperFunctions';
 
 @EntityRepository(Opportunity)
 export class ProjectRepository extends Repository<Opportunity> {
@@ -2615,8 +2616,6 @@ export class ProjectRepository extends Repository<Opportunity> {
     mode: string,
     phase: number
   ) {
-    let response: any = [];
-
     let employee = await this.manager.findOne(Employee, employeeId, {
       relations: [
         'contactPersonOrganization',
@@ -2644,33 +2643,13 @@ export class ProjectRepository extends Repository<Opportunity> {
 
     // console.log('result', result);
 
-    projects.map((project) => {
-      let add_flag = 0;
-      if (project.phase || phase === 1) {
-        if (mode == 'O' || mode == 'o' || mode == '') {
-          project.opportunityResources.map((resource) => {
-            resource.opportunityResourceAllocations.filter((allocation) => {
-              if (
-                allocation.contactPersonId === employeeContactPersonId &&
-                allocation.isMarkedAsSelected
-              ) {
-                add_flag = 1;
-              }
-            });
-          });
-          if (add_flag === 1)
-            response.push({ value: project.id, label: project.title });
-        }
-        if ((mode == 'M' || mode == 'm' || mode == '') && add_flag === 0) {
-          if (project.projectManagerId == employeeId) {
-            response.push({
-              value: project.id,
-              label: project.title,
-            });
-          }
-        }
-      }
-    });
+    let response = getProjectsByUserId(
+      projects,
+      mode,
+      phase,
+      employeeContactPersonId,
+      employeeId
+    );
 
     return response;
   }

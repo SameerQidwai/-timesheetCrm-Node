@@ -1,9 +1,16 @@
-import { Entity, Column, JoinColumn, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  Column,
+  JoinColumn,
+  ManyToOne,
+  ManyToMany,
+  OneToMany,
+} from 'typeorm';
 import { Base } from './common/base';
 import { Employee } from './employee';
-import { ExpenseSheet } from './expenseSheet';
+import { ExpenseSheetExpense } from './expenseSheetExpense';
 import { ExpenseType } from './expenseType';
-import { Milestone } from './milestone';
+import { Opportunity } from './opportunity';
 
 @Entity('expenses')
 export class Expense extends Base {
@@ -28,8 +35,15 @@ export class Expense extends Base {
   @Column({ name: 'notes', type: 'text', nullable: true })
   notes: string;
 
-  @Column({ name: 'file_id', nullable: true })
-  fileId: number;
+  @Column({ name: 'project_id', nullable: true })
+  projectId: number;
+
+  @ManyToOne(() => Opportunity)
+  @JoinColumn({ name: 'project_id' })
+  project: Opportunity;
+
+  @Column({ name: 'expense_type_id', nullable: false })
+  expenseTypeId: number;
 
   @ManyToOne(() => ExpenseType)
   @JoinColumn({ name: 'expense_type_id' })
@@ -44,14 +58,14 @@ export class Expense extends Base {
   @Column({ type: 'date', name: 'rejected_at', nullable: true })
   rejectedAt: Date | null;
 
-  @Column({ name: 'created_by' })
+  @Column({ name: 'created_by', nullable: true })
   createdBy: number;
 
   @ManyToOne(() => Employee)
   @JoinColumn({ name: 'created_by' })
   creator: Employee;
 
-  @Column({ name: 'submitted_by' })
+  @Column({ name: 'submitted_by', nullable: true })
   submittedBy: number;
 
   @ManyToOne(() => Employee)
@@ -72,6 +86,12 @@ export class Expense extends Base {
   @JoinColumn({ name: 'rejected_by' })
   rejecter: Employee;
 
-  @Column({ name: 'expense_type_id', nullable: false })
-  expenseId: number;
+  @OneToMany(
+    () => ExpenseSheetExpense,
+    (expenseSheetExpenses) => expenseSheetExpenses.expense,
+    {
+      cascade: true,
+    }
+  )
+  entries: ExpenseSheetExpense[];
 }

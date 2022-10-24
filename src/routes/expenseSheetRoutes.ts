@@ -1,25 +1,43 @@
 import { Router } from 'express';
-import { PanelSkillRepository } from '../repositories/panelSkillRepository';
 import { isLoggedIn } from '../middlewares/loggedIn';
 import { ExpenseSheetController } from '../controllers/expenseSheetController';
-import { ExpenseSheetRepository } from '../repositories/expenseSheetRepository';
+import { can } from '../middlewares/can';
+import { Action, Resource } from '../constants/authorization';
 
 const router = Router();
-let expenseSheetController = new ExpenseSheetController(ExpenseSheetRepository);
+const contr = new ExpenseSheetController();
+
 router
   .route('/')
-  .get([isLoggedIn], expenseSheetController.index.bind(expenseSheetController))
+  .get(
+    [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.index.bind(contr)
+  )
   .post(
-    [isLoggedIn],
-    expenseSheetController.create.bind(expenseSheetController)
+    [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.create.bind(contr)
   );
 
 router
   .route('/:id')
-  .put([isLoggedIn], expenseSheetController.update.bind(expenseSheetController))
+  .get(
+    [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.get.bind(contr)
+  )
+  .put(
+    [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.update.bind(contr)
+  )
   .delete(
-    [isLoggedIn],
-    expenseSheetController.delete.bind(expenseSheetController)
+    [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.delete.bind(contr)
+  );
+
+router
+  .route('/:id/expenses')
+  .post(
+    [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.addExpenses.bind(contr)
   );
 
 export default router;
