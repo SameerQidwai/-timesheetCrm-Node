@@ -675,3 +675,26 @@ export interface MilestoneExpenseDTO extends Base {
   buyingRate: number;
   sellingRate: number;
 }
+
+export interface ExpenseSheetDTO extends Base {
+  label: String;
+  projectId: number;
+}
+
+export interface ExpenseDTO extends Base {
+  amount: number;
+  date: Date;
+  isReimbursed: boolean;
+  isBillable: boolean;
+  notes: string;
+  expenseTypeId: number;
+  submittedAt: Date;
+  approvedAt: Date;
+  rejectedAt: Date;
+  attachments: number[];
+  projectId: number;
+}
+
+export interface AddExpenseDTO extends Base {
+  expenses: [];
+}

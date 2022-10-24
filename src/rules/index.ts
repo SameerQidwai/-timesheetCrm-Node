@@ -1,6 +1,8 @@
 import { BaseRule } from './baseRules';
 import contactPersonXLSXRules from './contactPersonXLSXRules';
 import employeeXLSXRules from './employeeXLSXRules';
+import expenseRules from './expenseRules';
+import expenseSheetRules from './expenseSheetRules';
 import leaveRequestRules from './leaveRequestRules';
 import opportunityXLSXRules from './opportunityXLSXRules';
 import organizationXLSXRules from './organizationXLSXRules';
@@ -14,3 +16,5 @@ export let opportunityXLSXValidator: BaseRule = opportunityXLSXRules;
 export let projectXLSXValidator: BaseRule = projectXLSXRules;
 export let employeeXLSXValidator: BaseRule = employeeXLSXRules;
 export let subContractorXLSXValidator: BaseRule = subContractorXLSXRules;
+export let expenseRulesValidator: BaseRule = expenseRules;
+export let expenseSheetRulesValidator: BaseRule = expenseSheetRules;
