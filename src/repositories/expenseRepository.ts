@@ -15,7 +15,7 @@ import moment from 'moment';
 @EntityRepository(Expense)
 export class ExpenseRepository extends Repository<Expense> {
   async createAndSave(authId: number, expenseDTO: ExpenseDTO): Promise<any> {
-    let expense = await this.manager.transaction(
+    let id = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let expenseObj = new Expense();
 
@@ -57,31 +57,32 @@ export class ExpenseRepository extends Repository<Expense> {
 
         let expense = await transactionalEntityManager.save(expenseObj);
 
-        return expense;
+        return expense.id;
       }
     );
-    return expense;
+
+    let expense = await this._findOneCustom(authId, id);
+
+    return new ExpenseResponse(expense);
   }
 
   async getAllActive(): Promise<any[]> {
     let results = await this.find({
-      relations: [],
+      relations: ['expenseType', 'project'],
     });
 
-    // return new ExpensesResponse(results).expenses;
-
-    return results;
+    return new ExpensesResponse(results).expenses;
   }
 
   async getOwnActive(authId: number): Promise<any[]> {
     let results = await this.find({
       where: { createdBy: authId },
-      relations: [],
+      relations: ['expenseType', 'project'],
     });
 
     // return new ExpensesResponse(results);
 
-    return results;
+    return new ExpensesResponse(results).expenses;
   }
 
   async getManageActive(authId: number): Promise<any[]> {
@@ -119,12 +120,12 @@ export class ExpenseRepository extends Repository<Expense> {
       true
     );
 
-    let result = await this.find({
+    let results = await this.find({
       where: { projectId: In(projectIds) },
-      relations: [],
+      relations: ['expenseType', 'project'],
     });
 
-    return result;
+    return new ExpensesResponse(results).expenses;
   }
 
   async getOwnAndManageActive(authId: number): Promise<any[]> {
@@ -162,21 +163,18 @@ export class ExpenseRepository extends Repository<Expense> {
       true
     );
 
-    let result = await this.find({
+    let results = await this.find({
       where: [{ projectId: In(projectIds) }, { createdBy: authId }],
-      relations: [],
+      relations: ['expenseType', 'project'],
     });
 
-    return result;
+    return new ExpensesResponse(results).expenses;
   }
 
   async findOneCustom(authId: number, id: number): Promise<any | undefined> {
-    let result = await this.findOne(id, {
-      where: { createdBy: authId },
-      relations: [],
-    });
+    let expense = await this._findOneCustom(authId, id);
 
-    return result;
+    return new ExpenseResponse(expense);
   }
 
   async updateAndReturn(
@@ -184,55 +182,56 @@ export class ExpenseRepository extends Repository<Expense> {
     id: number,
     expenseDTO: ExpenseDTO
   ): Promise<any | undefined> {
-    let expense = await this.manager.transaction(
-      async (transactionalEntityManager) => {
-        let expenseObj = await this.findOne(id, {
-          where: { createdBy: authId },
-        });
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      let expenseObj = await this.findOne(id, {
+        where: { createdBy: authId },
+      });
 
-        if (!expenseObj) {
-          throw new Error('Expense not found');
-        }
-
-        if (expenseObj.submittedAt || expenseObj.approvedAt) {
-          throw new Error('Cannot edit expense');
-        }
-
-        expenseObj.amount = expenseDTO.amount;
-        expenseObj.date = expenseDTO.date;
-        expenseObj.isReimbursed = expenseDTO.isReimbursed;
-        expenseObj.isBillable = expenseDTO.isBillable;
-        expenseObj.notes = expenseDTO.notes;
-
-        if (!expenseDTO.expenseTypeId) {
-          throw new Error('Expense type not found');
-        }
-        let expenseType = await transactionalEntityManager.findOne(
-          ExpenseType,
-          expenseDTO.expenseTypeId
-        );
-        if (!expenseType) {
-          throw new Error('Expense type not found');
-        }
-        expenseObj.expenseTypeId = expenseDTO.expenseTypeId;
-
-        if (expenseDTO.projectId) {
-          let project = await transactionalEntityManager.findOne(
-            Opportunity,
-            expenseDTO.projectId
-          );
-          if (!project) {
-            throw new Error('Project not found');
-          }
-          expenseObj.projectId = expenseDTO.projectId;
-        }
-
-        let expense = await transactionalEntityManager.save(expenseObj);
-
-        return expense;
+      if (!expenseObj) {
+        throw new Error('Expense not found');
       }
-    );
-    return expense;
+
+      if (expenseObj.submittedAt || expenseObj.approvedAt) {
+        throw new Error('Cannot edit expense');
+      }
+
+      expenseObj.amount = expenseDTO.amount;
+      expenseObj.date = expenseDTO.date;
+      expenseObj.isReimbursed = expenseDTO.isReimbursed;
+      expenseObj.isBillable = expenseDTO.isBillable;
+      expenseObj.notes = expenseDTO.notes;
+
+      if (!expenseDTO.expenseTypeId) {
+        throw new Error('Expense type not found');
+      }
+      let expenseType = await transactionalEntityManager.findOne(
+        ExpenseType,
+        expenseDTO.expenseTypeId
+      );
+      if (!expenseType) {
+        throw new Error('Expense type not found');
+      }
+      expenseObj.expenseTypeId = expenseDTO.expenseTypeId;
+
+      if (expenseDTO.projectId) {
+        let project = await transactionalEntityManager.findOne(
+          Opportunity,
+          expenseDTO.projectId
+        );
+        if (!project) {
+          throw new Error('Project not found');
+        }
+        expenseObj.projectId = expenseDTO.projectId;
+      }
+
+      let expense = await transactionalEntityManager.save(expenseObj);
+
+      return expense.id;
+    });
+
+    let expense = await this._findOneCustom(authId, id);
+
+    return new ExpenseResponse(expense);
   }
 
   async deleteCustom(authId: number, id: number): Promise<any | undefined> {
@@ -257,5 +256,14 @@ export class ExpenseRepository extends Repository<Expense> {
 
       return expense;
     });
+  }
+
+  async _findOneCustom(authId: number, id: number): Promise<any | undefined> {
+    let result = await this.findOne(id, {
+      where: { createdBy: authId },
+      relations: ['expenseType', 'project'],
+    });
+
+    return result;
   }
 }

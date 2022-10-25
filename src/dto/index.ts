@@ -1,3 +1,4 @@
+import { ExpenseSheetExpense } from '../entities/expenseSheetExpense';
 import { Action, Grant, Resource } from './../constants/authorization';
 import {
   EmploymentType,
@@ -679,6 +680,7 @@ export interface MilestoneExpenseDTO extends Base {
 export interface ExpenseSheetDTO extends Base {
   label: String;
   projectId: number;
+  expenseSheetExpenses: ExpenseSheetExpense[];
 }
 
 export interface ExpenseDTO extends Base {

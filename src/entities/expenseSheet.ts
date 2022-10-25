@@ -4,6 +4,7 @@ import { Employee } from './employee';
 import { ExpenseSheetExpense } from './expenseSheetExpense';
 import { ExpenseType } from './expenseType';
 import { Milestone } from './milestone';
+import { Opportunity } from './opportunity';
 
 @Entity('expense_sheets')
 export class ExpenseSheet extends Base {
@@ -12,6 +13,10 @@ export class ExpenseSheet extends Base {
 
   @Column({ name: 'project_id', nullable: true })
   projectId: number;
+
+  @ManyToOne(() => Opportunity)
+  @JoinColumn({ name: 'project_id' })
+  project: Opportunity;
 
   @OneToMany(
     () => ExpenseSheetExpense,
