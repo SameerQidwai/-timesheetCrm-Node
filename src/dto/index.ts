@@ -696,5 +696,9 @@ export interface ExpenseDTO extends Base {
 }
 
 export interface AddExpenseDTO extends Base {
-  expenses: [];
+  expenses: number[];
+}
+
+export interface RemoveExpenseDTO extends Base {
+  expenses: number[];
 }

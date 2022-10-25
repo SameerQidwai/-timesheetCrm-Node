@@ -1,4 +1,4 @@
-import { AddExpenseDTO, ExpenseSheetDTO } from '../dto';
+import { AddExpenseDTO, ExpenseSheetDTO, RemoveExpenseDTO } from '../dto';
 import { EntityRepository, In, Repository } from 'typeorm';
 import { Opportunity } from './../entities/opportunity';
 import { Employee } from '../entities/employee';
@@ -240,7 +240,9 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       }
 
       for (let id of addExpenseDTO.expenses) {
-        let expense = await transactionalEntityManager.findOne(Expense, id);
+        let expense = await transactionalEntityManager.findOne(Expense, id, {
+          relations: ['entries'],
+        });
 
         if (!expense) {
           throw new Error('Expense not found');
@@ -251,8 +253,12 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         }
 
         if (expense.rejectedAt == null && expense.entries.length > 0) {
-          throw new Error('Expense already in timesheet');
+          throw new Error('Expense already in sheet');
         }
+
+        // if (expense.entries[expense.entries.length - 1].sheetId == id) {
+        //   throw new Error('Expense already in same sheet');
+        // }
 
         let expenseSheetExpenseObj = new ExpenseSheetExpense();
 
@@ -263,6 +269,55 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       }
 
       return sheet;
+
+      // if (result.expenseSheetExpenses.length > 0)
+      //   await transactionalEntityManager.softDelete(
+      //     ExpenseSheetExpense,
+      //     project.purchaseOrders
+      //   );
+    });
+  }
+
+  async removeExpenses(
+    authId: number,
+    id: number,
+    removeExpensesDTO: RemoveExpenseDTO
+  ): Promise<any | undefined> {
+    return this.manager.transaction(async (transactionalEntityManager) => {
+      let sheet = await this.findOne(id, {
+        where: { createdBy: authId },
+        relations: ['expenseSheetExpenses', 'expenseSheetExpenses.expense'],
+      });
+
+      if (!sheet) {
+        throw new Error('Expense sheet not found');
+      }
+
+      let expensesToRemove: number[] = [];
+
+      sheet.expenseSheetExpenses.forEach((expense, index) => {
+        if (
+          removeExpensesDTO.expenses.find(
+            (removalExpense) => removalExpense == expense.expenseId
+          )
+        ) {
+          expensesToRemove.push(expense.id);
+        }
+      });
+
+      if (!expensesToRemove.length) {
+        throw new Error('Unknown expense Ids');
+      }
+
+      await transactionalEntityManager.delete(
+        ExpenseSheetExpense,
+        expensesToRemove
+      );
+
+      return await this.findOne(id, {
+        where: { createdBy: authId },
+        relations: ['expenseSheetExpenses', 'expenseSheetExpenses.expense'],
+      });
 
       // if (result.expenseSheetExpenses.length > 0)
       //   await transactionalEntityManager.softDelete(

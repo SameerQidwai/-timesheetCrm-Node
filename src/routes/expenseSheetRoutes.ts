@@ -38,6 +38,10 @@ router
   .post(
     [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
     contr.addExpenses.bind(contr)
+  )
+  .delete(
+    [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.removeExpenses.bind(contr)
   );
 
 export default router;

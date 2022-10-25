@@ -7,7 +7,7 @@ let expenseRules: BaseRule = {
     date: Joi.date().required(),
     isReimbursed: Joi.boolean().required(),
     isBillable: Joi.boolean().required(),
-    notes: Joi.string().required().allow(null),
+    notes: Joi.string().required().allow(null).allow(''),
     expenseTypeId: Joi.number().required(),
     projectId: Joi.number().optional().allow(null),
   }).unknown(false),
