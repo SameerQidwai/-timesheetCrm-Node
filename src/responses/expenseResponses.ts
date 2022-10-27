@@ -2,8 +2,10 @@ import { Expense } from '../entities/expense';
 
 export class ExpenseResponse {
   id: number;
+  expenseTypeId: number;
   expenseTypeName: String;
   date: Date;
+  projectId: number | null;
   projectName: String | null;
   amount: number;
   isBillable: Boolean;
@@ -12,8 +14,10 @@ export class ExpenseResponse {
 
   constructor(expense: Expense) {
     this.id = expense.id;
+    this.expenseTypeId = expense.expenseTypeId;
     this.expenseTypeName = expense.expenseType.label;
     this.date = expense.date;
+    this.projectId = expense.projectId;
     this.projectName = expense.project?.title;
     this.amount = expense.amount;
     this.isBillable = expense.isBillable ? true : false;

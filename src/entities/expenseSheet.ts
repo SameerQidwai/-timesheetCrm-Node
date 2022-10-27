@@ -11,6 +11,9 @@ export class ExpenseSheet extends Base {
   @Column({ name: 'label' })
   label: String;
 
+  @Column({ name: 'is_billable', default: false })
+  isBillable: boolean;
+
   @Column({ name: 'project_id', nullable: true })
   projectId: number;
 

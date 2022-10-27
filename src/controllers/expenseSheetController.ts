@@ -115,38 +115,58 @@ export class ExpenseSheetController {
     }
   }
 
-  async addExpenses(req: Request, res: Response, next: NextFunction) {
+  async submit(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(ExpenseSheetRepository);
 
       let id = req.params.id;
-      let record = await repository.addExpenses(
+      let record = await repository.submitExpenseSheet(
         parseInt(res.locals.jwtPayload.id),
-        parseInt(id),
-        req.body
+        parseInt(id)
       );
       res.status(200).json({
         success: true,
-        message: `Added Expenses Successfully`,
+        message: `Submitted Successfully`,
         data: record,
       });
     } catch (e) {
       next(e);
     }
   }
-  async removeExpenses(req: Request, res: Response, next: NextFunction) {
+
+  async approve(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(ExpenseSheetRepository);
 
       let id = req.params.id;
-      let record = await repository.removeExpenses(
+      let record = await repository.approveExpenseSheet(
         parseInt(res.locals.jwtPayload.id),
         parseInt(id),
         req.body
       );
       res.status(200).json({
         success: true,
-        message: `Remove Expenses Successfully`,
+        message: `Approved Successfully`,
+        data: record,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async reject(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(ExpenseSheetRepository);
+
+      let id = req.params.id;
+      let record = await repository.rejectExpenseSheet(
+        parseInt(res.locals.jwtPayload.id),
+        parseInt(id),
+        req.body
+      );
+      res.status(200).json({
+        success: true,
+        message: `Approved Successfully`,
         data: record,
       });
     } catch (e) {

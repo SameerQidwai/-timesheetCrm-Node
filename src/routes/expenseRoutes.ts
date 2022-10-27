@@ -19,6 +19,13 @@ router
   );
 
 router
+  .route('/available')
+  .get(
+    [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.availableIndex.bind(contr)
+  );
+
+router
   .route('/:id')
   .get(
     [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],

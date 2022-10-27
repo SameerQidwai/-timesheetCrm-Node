@@ -35,6 +35,37 @@ export class ExpenseController {
     }
   }
 
+  async availableIndex(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(ExpenseRepository);
+      let records: any = [];
+      const { grantLevel } = res.locals;
+      if (grantLevel.includes('ANY')) {
+        records = await repository.getAvailableAllActive();
+      } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
+        records = await repository.getAvailableOwnAndManageActive(
+          parseInt(res.locals.jwtPayload.id)
+        );
+      } else if (grantLevel.includes('MANAGE')) {
+        records = await repository.getAvailableManageActive(
+          parseInt(res.locals.jwtPayload.id)
+        );
+      } else if (grantLevel.includes('OWN')) {
+        records = await repository.getAvailableOwnActive(
+          parseInt(res.locals.jwtPayload.id)
+        );
+      }
+      console.log('records: ', records);
+      res.status(200).json({
+        success: true,
+        message: 'Index projects',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
   async create(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(ExpenseRepository);
@@ -59,6 +90,8 @@ export class ExpenseController {
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(ExpenseRepository);
+
+      await expenseRulesValidator.validateUpdate.validateAsync(req.body);
 
       let id = req.params.id;
       let record = await repository.updateAndReturn(

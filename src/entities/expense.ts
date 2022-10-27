@@ -36,7 +36,7 @@ export class Expense extends Base {
   notes: string;
 
   @Column({ name: 'project_id', nullable: true })
-  projectId: number;
+  projectId: number | null;
 
   @ManyToOne(() => Opportunity)
   @JoinColumn({ name: 'project_id' })

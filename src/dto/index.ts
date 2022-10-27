@@ -680,6 +680,8 @@ export interface MilestoneExpenseDTO extends Base {
 export interface ExpenseSheetDTO extends Base {
   label: String;
   projectId: number;
+  attachments: number[];
+  isBillable: boolean;
   expenseSheetExpenses: ExpenseSheetExpense[];
 }
 
@@ -697,10 +699,10 @@ export interface ExpenseDTO extends Base {
   projectId: number;
 }
 
-export interface AddExpenseDTO extends Base {
+export interface ExpenseSheetApproveDTO extends Base {
   expenses: number[];
 }
 
-export interface RemoveExpenseDTO extends Base {
+export interface ExpenseSheetRejectDTO extends Base {
   expenses: number[];
 }

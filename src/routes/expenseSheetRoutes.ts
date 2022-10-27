@@ -34,14 +34,24 @@ router
   );
 
 router
-  .route('/:id/expenses')
+  .route('/:id/submit')
   .post(
     [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
-    contr.addExpenses.bind(contr)
-  )
-  .delete(
+    contr.submit.bind(contr)
+  );
+
+router
+  .route('/:id/approve')
+  .post(
     [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
-    contr.removeExpenses.bind(contr)
+    contr.approve.bind(contr)
+  );
+
+router
+  .route('/:id/reject')
+  .post(
+    [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.reject.bind(contr)
   );
 
 export default router;
