@@ -760,17 +760,15 @@ export class ProjectRepository extends Repository<Opportunity> {
           relations: ['project'],
         });
 
-        if (!milestones) {
+        if (!milestones.length) {
           throw new Error('Milestone not found');
         }
 
         milestones.forEach((el)=>{
-          if(el){
-            if(el.isApproved !== 'SB'){
-              throw new Error('Can only approve sumbitted certificate');
-            }else{
-              el.isApproved = 'AP'
-            }
+          if(el.isApproved !== 'SB'){
+            throw new Error('Can only approve sumbitted certificate');
+          }else{
+            el.isApproved = 'AP'
           }
         })
         await transactionalEntityManager.save(milestones);
@@ -790,12 +788,11 @@ export class ProjectRepository extends Repository<Opportunity> {
           relations: ['project'],
         });
 
-        if (!milestones) {
+        if (!milestones.length) {
           throw new Error('Milestone not found');
         }
 
         milestones.forEach((el)=>{
-          if(el){
             if(el.isApproved !== 'SB'){
               throw new Error('Can only approve sumbitted certificate');
             }else{
@@ -805,8 +802,6 @@ export class ProjectRepository extends Repository<Opportunity> {
             if (el.project.projectManagerId !== authId) {
               throw new Error('Not Authorized');
             }
-
-          }
         })
         await transactionalEntityManager.save(milestones);
       })
@@ -821,19 +816,17 @@ export class ProjectRepository extends Repository<Opportunity> {
           relations: ['project'],
         });
 
-        if (!milestones) {
+        if (!milestones.length) {
           throw new Error('Milestone not found');
         }
 
         milestones.forEach((el)=>{
-          if(el){
-            if(el.isApproved === 'AP'){
-              throw new Error('Cannot submit already approved certificate');
-            }else if (el.isApproved === 'SB'){
-              throw new Error('Cannot submit already submitted certificate');
-            }else{
-              el.isApproved = 'SB'
-            }
+          if(el.isApproved === 'AP'){
+            throw new Error('Cannot submit already approved certificate');
+          }else if (el.isApproved === 'SB'){
+            throw new Error('Cannot submit already submitted certificate');
+          }else{
+            el.isApproved = 'SB'
           }
         })
         await transactionalEntityManager.save(milestones);
@@ -853,12 +846,11 @@ export class ProjectRepository extends Repository<Opportunity> {
           relations: ['project'],
         });
 
-        if (!milestones) {
+        if (!milestones.length) {
           throw new Error('Milestone not found');
         }
 
         milestones.forEach((el)=>{
-          if(el){
             if(el.isApproved === 'AP'){
               throw new Error('Cannot submit already approved certificate');
             }else if (el.isApproved === 'SB'){
@@ -870,8 +862,6 @@ export class ProjectRepository extends Repository<Opportunity> {
             if (el.project.projectManagerId !== authId) {
               throw new Error('Not Authorized');
             }
-
-          }
         })
         await transactionalEntityManager.save(milestones);
       })
@@ -886,18 +876,16 @@ export class ProjectRepository extends Repository<Opportunity> {
           relations: ['project'],
         });
 
-        if (!milestones) {
+        if (!milestones.length) {
           throw new Error('Milestone not found');
         }
 
         milestones.forEach((el)=>{
-          if(el){
             if(el.isApproved !== 'AP'){
               throw new Error('Can only unapprove approved certificate');
             }else{
               el.isApproved = ''
             }
-          }
         })
         await transactionalEntityManager.save(milestones);
       })
@@ -916,12 +904,11 @@ export class ProjectRepository extends Repository<Opportunity> {
           relations: ['project'],
         });
 
-        if (!milestones) {
+        if (!milestones.length) {
           throw new Error('Milestone not found');
         }
 
         milestones.forEach((el)=>{
-          if(el){
             if(el.isApproved !== 'AP'){
               throw new Error('Can only unapprove approved certificate');
             }else{
@@ -931,8 +918,6 @@ export class ProjectRepository extends Repository<Opportunity> {
             if (el.project.projectManagerId !== authId) {
               throw new Error('Not Authorized');
             }
-
-          }
         })
         await transactionalEntityManager.save(milestones);
       })
