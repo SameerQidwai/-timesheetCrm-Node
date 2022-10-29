@@ -1,5 +1,6 @@
 import { ExpenseSheetExpense } from '../entities/expenseSheetExpense';
 import { Expense } from '../entities/expense';
+import { AttachmentResponse } from './attachmentResponses';
 
 export class ExpenseSheetExpenseResponse {
   id: number;
@@ -12,6 +13,7 @@ export class ExpenseSheetExpenseResponse {
   isBillable: Boolean;
   isReimbursed: Boolean;
   notes: string | null;
+  attachments: AttachmentResponse[];
 
   constructor(expense: ExpenseSheetExpense) {
     this.id = expense.id;

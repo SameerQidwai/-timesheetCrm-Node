@@ -19,25 +19,22 @@ router
   );
 
 router
-  .route('/:id')
-  .get(
-    [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
-    contr.get.bind(contr)
-  )
-  .put(
-    [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
-    contr.update.bind(contr)
-  )
-  .delete(
-    [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
-    contr.delete.bind(contr)
-  );
-
-router
-  .route('/:id/submit')
+  .route('/submitMany')
   .post(
     [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
-    contr.submit.bind(contr)
+    contr.submitMany.bind(contr)
+  );
+router
+  .route('/approveMany')
+  .post(
+    [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.approveMany.bind(contr)
+  );
+router
+  .route('/rejectMany')
+  .post(
+    [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.rejectMany.bind(contr)
   );
 
 router
@@ -52,6 +49,21 @@ router
   .post(
     [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
     contr.reject.bind(contr)
+  );
+
+router
+  .route('/:id')
+  .get(
+    [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.get.bind(contr)
+  )
+  .put(
+    [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.update.bind(contr)
+  )
+  .delete(
+    [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.delete.bind(contr)
   );
 
 export default router;

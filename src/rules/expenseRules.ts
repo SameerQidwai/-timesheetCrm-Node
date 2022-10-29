@@ -10,7 +10,7 @@ let expenseRules: BaseRule = {
     notes: Joi.string().required().allow(null).allow(''),
     expenseTypeId: Joi.number().required(),
     projectId: Joi.number().optional().allow(null),
-    attachments: Joi.array().required().min(0),
+    attachments: Joi.array().required().min(0).allow(null),
   }).unknown(false),
 
   validateUpdate: Joi.object({
@@ -21,7 +21,7 @@ let expenseRules: BaseRule = {
     notes: Joi.string().required().allow(null).allow(''),
     expenseTypeId: Joi.number().required(),
     projectId: Joi.number().optional().allow(null),
-    attachments: Joi.array().required().min(0),
+    attachments: Joi.array().required().min(0).allow(null),
   }),
 };
 

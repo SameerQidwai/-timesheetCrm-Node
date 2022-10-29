@@ -701,8 +701,29 @@ export interface ExpenseDTO extends Base {
 
 export interface ExpenseSheetApproveDTO extends Base {
   expenses: number[];
+  isBillable: boolean;
+  notes: string;
 }
 
 export interface ExpenseSheetRejectDTO extends Base {
   expenses: number[];
+  isBillable: boolean;
+  notes: string;
+}
+
+export interface ExpenseSheetsSubmitDTO extends Base {
+  sheets: number[];
+  isBillable: boolean;
+  notes: string;
+}
+export interface ExpenseSheetsApproveDTO extends Base {
+  sheets: number[];
+  isBillable: boolean;
+  notes: string;
+}
+
+export interface ExpenseSheetsRejectDTO extends Base {
+  sheets: number[];
+  isBillable: boolean;
+  notes: string;
 }

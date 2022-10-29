@@ -17,4 +17,4 @@ export let projectXLSXValidator: BaseRule = projectXLSXRules;
 export let employeeXLSXValidator: BaseRule = employeeXLSXRules;
 export let subContractorXLSXValidator: BaseRule = subContractorXLSXRules;
 export let expenseRulesValidator: BaseRule = expenseRules;
-export let expenseSheetRulesValidator: BaseRule = expenseSheetRules;
+export let expenseSheetRulesValidator = expenseSheetRules;

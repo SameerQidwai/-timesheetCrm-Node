@@ -1,4 +1,10 @@
-import { ExpenseSheetApproveDTO, ExpenseSheetDTO } from '../dto';
+import {
+  ExpenseSheetApproveDTO,
+  ExpenseSheetDTO,
+  ExpenseSheetsApproveDTO,
+  ExpenseSheetsRejectDTO,
+  ExpenseSheetsSubmitDTO,
+} from '../dto';
 import { EntityRepository, In, Not, Repository } from 'typeorm';
 import { Opportunity } from './../entities/opportunity';
 import { Employee } from '../entities/employee';
@@ -37,7 +43,6 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           }
         }
         expenseSheetObj.projectId = expenseSheetDTO.projectId;
-        expenseSheetObj.isBillable = expenseSheetDTO.isBillable;
 
         expenseSheetObj.createdBy = authId;
 
@@ -78,18 +83,18 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           await transactionalEntityManager.save(Expense, expense);
         }
 
+        expenseSheetObj.expenseSheetExpenses = expenseSheetExpenses;
+
+        let sheet = await transactionalEntityManager.save(expenseSheetObj);
+
         for (const file of expenseSheetDTO.attachments) {
           let attachmentObj = new Attachment();
           attachmentObj.fileId = file;
-          attachmentObj.targetId = expenseSheetObj.id;
+          attachmentObj.targetId = sheet.id;
           attachmentObj.targetType = EntityType.EXPENSE_SHEET;
           attachmentObj.userId = authId;
           let attachment = await transactionalEntityManager.save(attachmentObj);
         }
-
-        expenseSheetObj.expenseSheetExpenses = expenseSheetExpenses;
-
-        let sheet = await transactionalEntityManager.save(expenseSheetObj);
 
         return sheet.id;
       }
@@ -101,29 +106,14 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
   }
 
   async getAllActive(): Promise<any[]> {
-    let result = await this.find({
-      relations: [
-        'expenseSheetExpenses',
-        'expenseSheetExpenses.expense',
-        'expenseSheetExpenses.expense.expenseType',
-        'expenseSheetExpenses.expense.project',
-        'project',
-      ],
-    });
+    let result = await this._findManyCustom({});
 
     return new ExpenseSheetsResponse(result).sheets;
   }
 
   async getOwnActive(authId: number): Promise<any[]> {
-    let results = await this.find({
+    let results = await this._findManyCustom({
       where: { createdBy: authId },
-      relations: [
-        'expenseSheetExpenses',
-        'expenseSheetExpenses.expense',
-        'expenseSheetExpenses.expense.expenseType',
-        'expenseSheetExpenses.expense.project',
-        'project',
-      ],
     });
 
     return new ExpenseSheetsResponse(results).sheets;
@@ -164,15 +154,8 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       true
     );
 
-    let results = await this.find({
+    let results = await this._findManyCustom({
       where: { projectId: In(projectIds) },
-      relations: [
-        'expenseSheetExpenses',
-        'expenseSheetExpenses.expense',
-        'expenseSheetExpenses.expense.expenseType',
-        'expenseSheetExpenses.expense.project',
-        'project',
-      ],
     });
 
     return new ExpenseSheetsResponse(results).sheets;
@@ -213,15 +196,8 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       true
     );
 
-    let results = await this.find({
+    let results = await this._findManyCustom({
       where: [{ projectId: In(projectIds) }, { createdBy: authId }],
-      relations: [
-        'expenseSheetExpenses',
-        'expenseSheetExpenses.expense',
-        'expenseSheetExpenses.expense.expenseType',
-        'expenseSheetExpenses.expense.project',
-        'project',
-      ],
     });
 
     return new ExpenseSheetsResponse(results).sheets;
@@ -245,7 +221,6 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           'expenseSheetExpenses.expense',
           'expenseSheetExpenses.expense.expenseType',
           'expenseSheetExpenses.expense.project',
-          'project',
         ],
         where: { createdBy: authId },
       });
@@ -272,7 +247,6 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         }
       }
       expenseSheetObj.projectId = expenseSheetDTO.projectId;
-      expenseSheetObj.isBillable = expenseSheetDTO.isBillable;
 
       if (expenseSheetObj.expenseSheetExpenses.length)
         await transactionalEntityManager.delete(
@@ -411,45 +385,6 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
     });
   }
 
-  async submitExpenseSheet(
-    authId: number,
-    id: number
-  ): Promise<any | undefined> {
-    await this.manager.transaction(async (transactionalEntityManager) => {
-      let expenseSheetObj = await this.findOne(id, {
-        relations: [
-          'expenseSheetExpenses',
-          'expenseSheetExpenses.expense',
-          'expenseSheetExpenses.expense.expenseType',
-          'expenseSheetExpenses.expense.project',
-          'project',
-        ],
-        where: { createdBy: authId },
-      });
-
-      if (!expenseSheetObj) {
-        throw new Error('Expense sheet not found');
-      }
-
-      for (let expense of expenseSheetObj.expenseSheetExpenses) {
-        if (expense.expense.submittedAt || expense.expense.approvedAt) {
-          throw new Error('Already Submitted');
-        }
-        expense.expense.submittedAt = moment().toDate();
-        expense.expense.submittedBy = authId;
-        transactionalEntityManager.save(Expense, expense.expense);
-      }
-
-      let sheet = await transactionalEntityManager.save(expenseSheetObj);
-
-      return sheet.id;
-    });
-
-    let sheet = await this._findOneCustom(authId, id);
-
-    return new ExpenseSheetResponse(sheet);
-  }
-
   async approveExpenseSheet(
     authId: number,
     id: number,
@@ -515,6 +450,11 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         transactionalEntityManager.save(Expense, expense.expense);
       }
 
+      expenseSheetObj.isBillable = expenseSheetApproveDTO.isBillable
+        ? true
+        : false;
+      expenseSheetObj.notes = expenseSheetApproveDTO.notes;
+
       let sheet = await transactionalEntityManager.save(expenseSheetObj);
 
       return sheet.id;
@@ -528,7 +468,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
   async rejectExpenseSheet(
     authId: number,
     id: number,
-    ExpenseSheetRejectDTO: ExpenseSheetApproveDTO
+    expenseSheetRejectDTO: ExpenseSheetApproveDTO
   ): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
       let expenseSheetObj = await this.findOne(id, {
@@ -549,7 +489,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       let expenseSheetExpensesToApprove = await transactionalEntityManager.find(
         ExpenseSheetExpense,
         {
-          where: { id: Not(In(ExpenseSheetRejectDTO.expenses)), sheetId: id },
+          where: { id: Not(In(expenseSheetRejectDTO.expenses)), sheetId: id },
           relations: ['expense', 'expense.project'],
         }
       );
@@ -557,7 +497,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       let expenseSheetExpensesToReject = await transactionalEntityManager.find(
         ExpenseSheetExpense,
         {
-          where: { id: In(ExpenseSheetRejectDTO.expenses), sheetId: id },
+          where: { id: In(expenseSheetRejectDTO.expenses), sheetId: id },
           relations: ['expense', 'expense.project'],
         }
       );
@@ -590,6 +530,11 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         transactionalEntityManager.save(Expense, expense.expense);
       }
 
+      expenseSheetObj.isBillable = expenseSheetRejectDTO.isBillable
+        ? true
+        : false;
+      expenseSheetObj.notes = expenseSheetRejectDTO.notes;
+
       let sheet = await transactionalEntityManager.save(expenseSheetObj);
 
       return sheet.id;
@@ -598,6 +543,128 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
     let sheet = await this._findOneCustom(authId, id);
 
     return new ExpenseSheetResponse(sheet);
+  }
+
+  async submitExpenseSheets(
+    authId: number,
+    expenseSheetsSubmitDTO: ExpenseSheetsSubmitDTO
+  ): Promise<any | undefined> {
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      let expenseSheets = await this._findManyCustom({
+        where: { id: In(expenseSheetsSubmitDTO.sheets) },
+      });
+
+      if (!expenseSheets.length) {
+        throw new Error('Expense sheet not found');
+      }
+
+      for (let sheet of expenseSheets) {
+        for (let expense of sheet.expenseSheetExpenses) {
+          if (expense.expense.submittedAt || expense.expense.approvedAt) {
+            throw new Error('Already Submitted');
+          }
+          expense.expense.rejectedAt = null;
+          expense.expense.submittedAt = moment().toDate();
+          expense.expense.submittedBy = authId;
+          transactionalEntityManager.save(Expense, expense.expense);
+        }
+
+        sheet.isBillable = expenseSheetsSubmitDTO.isBillable ? true : false;
+        sheet.notes = expenseSheetsSubmitDTO.notes;
+
+        let expenseSheet = await transactionalEntityManager.save(sheet);
+      }
+    });
+
+    let expenseSheets = await this._findManyCustom({
+      where: { id: In(expenseSheetsSubmitDTO.sheets) },
+    });
+
+    return new ExpenseSheetsResponse(expenseSheets);
+  }
+
+  async approveExpenseSheets(
+    authId: number,
+    expenseSheetsApproveDTO: ExpenseSheetsApproveDTO
+  ): Promise<any | undefined> {
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      let expenseSheets = await this._findManyCustom({
+        where: { id: In(expenseSheetsApproveDTO.sheets) },
+      });
+
+      if (!expenseSheets.length) {
+        throw new Error('Expense sheet not found');
+      }
+
+      for (let sheet of expenseSheets) {
+        for (let expense of sheet.expenseSheetExpenses) {
+          if (!expense.expense.submittedAt) {
+            throw new Error('Sheet Not Submitted');
+          }
+
+          if (expense.expense.approvedAt) {
+            throw new Error('Sheet already approved');
+          }
+
+          expense.expense.approvedAt = moment().toDate();
+          expense.expense.approvedBy = authId;
+          transactionalEntityManager.save(Expense, expense.expense);
+        }
+
+        sheet.isBillable = expenseSheetsApproveDTO.isBillable ? true : false;
+        sheet.notes = expenseSheetsApproveDTO.notes;
+
+        let expenseSheet = await transactionalEntityManager.save(sheet);
+      }
+    });
+
+    let expenseSheets = await this._findManyCustom({
+      where: { id: In(expenseSheetsApproveDTO.sheets) },
+    });
+
+    return new ExpenseSheetsResponse(expenseSheets);
+  }
+
+  async rejectExpenseSheets(
+    authId: number,
+    expenseSheetsRejectDTO: ExpenseSheetsRejectDTO
+  ): Promise<any | undefined> {
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      let expenseSheets = await this._findManyCustom({
+        where: { id: In(expenseSheetsRejectDTO.sheets) },
+      });
+
+      if (!expenseSheets.length) {
+        throw new Error('Expense sheet not found');
+      }
+
+      for (let sheet of expenseSheets) {
+        for (let expense of sheet.expenseSheetExpenses) {
+          if (!expense.expense.submittedAt) {
+            throw new Error('Sheet Not Submitted');
+          }
+
+          if (expense.expense.approvedAt) {
+            throw new Error('Sheet already approved');
+          }
+
+          expense.expense.rejectedAt = moment().toDate();
+          expense.expense.rejectedBy = authId;
+          transactionalEntityManager.save(Expense, expense.expense);
+        }
+
+        sheet.isBillable = expenseSheetsRejectDTO.isBillable ? true : false;
+        sheet.notes = expenseSheetsRejectDTO.notes;
+
+        let expenseSheet = await transactionalEntityManager.save(sheet);
+      }
+    });
+
+    let expenseSheets = await this._findManyCustom({
+      where: { id: In(expenseSheetsRejectDTO.sheets) },
+    });
+
+    return new ExpenseSheetsResponse(expenseSheets);
   }
 
   async _findOneCustom(authId: number, id: number): Promise<any | undefined> {
@@ -609,9 +676,28 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         'expenseSheetExpenses.expense.expenseType',
         'expenseSheetExpenses.expense.project',
         'project',
+        'attachments',
+        'attachments.file',
       ],
     });
 
     return result;
+  }
+
+  async _findManyCustom(options: {}): Promise<ExpenseSheet[] | []> {
+    let results = await this.find({
+      ...options,
+      relations: [
+        'expenseSheetExpenses',
+        'expenseSheetExpenses.expense',
+        'expenseSheetExpenses.expense.expenseType',
+        'expenseSheetExpenses.expense.project',
+        'project',
+        'attachments',
+        'attachments.file',
+      ],
+    });
+
+    return results;
   }
 }

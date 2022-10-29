@@ -9,6 +9,8 @@ import {
 import { Base } from './common/base';
 import { File } from './file';
 import { EntityType } from '../constants/constants';
+import { Expense } from './expense';
+import { ExpenseSheet } from './expenseSheet';
 
 @Entity('attachments')
 export class Attachment extends Base {
@@ -24,4 +26,8 @@ export class Attachment extends Base {
   @ManyToOne(() => File)
   @JoinColumn({ name: 'file_id' })
   file: File;
+
+  @ManyToOne(() => Expense)
+  @JoinColumn({ name: 'target_id' })
+  entity: Expense;
 }

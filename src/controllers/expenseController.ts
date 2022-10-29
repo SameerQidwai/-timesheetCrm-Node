@@ -38,21 +38,26 @@ export class ExpenseController {
   async availableIndex(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(ExpenseRepository);
+      let querySheetId = req.query.sheetId?.toString() ?? '';
+      let sheetId = isNaN(parseInt(querySheetId)) ? 0 : parseInt(querySheetId);
       let records: any = [];
       const { grantLevel } = res.locals;
       if (grantLevel.includes('ANY')) {
-        records = await repository.getAvailableAllActive();
+        records = await repository.getAvailableAllActive(sheetId);
       } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
         records = await repository.getAvailableOwnAndManageActive(
-          parseInt(res.locals.jwtPayload.id)
+          parseInt(res.locals.jwtPayload.id),
+          sheetId
         );
       } else if (grantLevel.includes('MANAGE')) {
         records = await repository.getAvailableManageActive(
-          parseInt(res.locals.jwtPayload.id)
+          parseInt(res.locals.jwtPayload.id),
+          sheetId
         );
       } else if (grantLevel.includes('OWN')) {
         records = await repository.getAvailableOwnActive(
-          parseInt(res.locals.jwtPayload.id)
+          parseInt(res.locals.jwtPayload.id),
+          sheetId
         );
       }
       console.log('records: ', records);

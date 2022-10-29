@@ -52,22 +52,24 @@ export class ExpenseRepository extends Repository<Expense> {
           if (!project) {
             throw new Error('Project not found');
           }
+
+          expenseObj.project = project;
         }
 
-        expenseObj.projectId = expenseDTO.projectId;
+        // expenseObj.projectId = expenseDTO.projectId;
 
         expenseObj.createdBy = authId;
+
+        let expense = await transactionalEntityManager.save(expenseObj);
 
         for (const file of expenseDTO.attachments) {
           let attachmentObj = new Attachment();
           attachmentObj.fileId = file;
-          attachmentObj.targetId = expenseObj.id;
+          attachmentObj.targetId = expense.id;
           attachmentObj.targetType = EntityType.EXPENSE;
           attachmentObj.userId = authId;
           let attachment = await transactionalEntityManager.save(attachmentObj);
         }
-
-        let expense = await transactionalEntityManager.save(expenseObj);
 
         return expense.id;
       }
@@ -79,18 +81,13 @@ export class ExpenseRepository extends Repository<Expense> {
   }
 
   async getAllActive(): Promise<any[]> {
-    let results = await this.find({
-      relations: ['expenseType', 'project'],
-    });
+    let results = await this._findManyCustom({});
 
     return new ExpensesResponse(results).expenses;
   }
 
   async getOwnActive(authId: number): Promise<any[]> {
-    let results = await this.find({
-      where: { createdBy: authId },
-      relations: ['expenseType', 'project'],
-    });
+    let results = await this._findManyCustom({ where: { createdBy: authId } });
 
     // return new ExpensesResponse(results);
 
@@ -132,9 +129,8 @@ export class ExpenseRepository extends Repository<Expense> {
       true
     );
 
-    let results = await this.find({
+    let results = await this._findManyCustom({
       where: { projectId: In(projectIds) },
-      relations: ['expenseType', 'project'],
     });
 
     return new ExpensesResponse(results).expenses;
@@ -175,58 +171,54 @@ export class ExpenseRepository extends Repository<Expense> {
       true
     );
 
-    let results = await this.find({
+    let results = await this._findManyCustom({
       where: [{ projectId: In(projectIds) }, { createdBy: authId }],
-      relations: ['expenseType', 'project'],
     });
 
     return new ExpensesResponse(results).expenses;
   }
 
-  async getAvailableAllActive(): Promise<any[]> {
-    let results = await this.find({
-      relations: ['expenseType', 'project'],
-    });
+  async getAvailableAllActive(id: number): Promise<any[]> {
+    let results = await this._findManyCustom({});
 
-    let expensesToRemoveIds: number[] = [];
+    let availableExpenses: Expense[] = [];
 
-    results.forEach((expense, index) => {
-      if (expense.rejectedAt == null && expense.entries.length > 0) {
-        expensesToRemoveIds.push(index);
+    results.forEach((expense) => {
+      if (
+        expense.rejectedAt !== null ||
+        !expense.entries.length ||
+        expense.entries.filter((e) => e.sheetId == id).length
+      ) {
+        availableExpenses.push(expense);
       }
     });
 
-    expensesToRemoveIds.forEach((index) => {
-      results.splice(index, 1);
-    });
-
-    return new ExpensesResponse(results).expenses;
+    return new ExpensesResponse(availableExpenses).expenses;
   }
 
-  async getAvailableOwnActive(authId: number): Promise<any[]> {
-    let results = await this.find({
+  async getAvailableOwnActive(authId: number, id: number): Promise<any[]> {
+    let results = await this._findManyCustom({
       where: { createdBy: authId },
-      relations: ['expenseType', 'project', 'entries'],
     });
 
-    let expensesToRemoveIds: number[] = [];
+    let availableExpenses: Expense[] = [];
 
-    results.forEach((expense, index) => {
-      if (expense.rejectedAt == null && expense.entries.length > 0) {
-        expensesToRemoveIds.push(index);
+    results.forEach((expense) => {
+      if (
+        expense.rejectedAt !== null ||
+        !expense.entries.length ||
+        expense.entries.filter((e) => e.sheetId == id).length
+      ) {
+        availableExpenses.push(expense);
       }
-    });
-
-    expensesToRemoveIds.forEach((index) => {
-      results.splice(index, 1);
     });
 
     // return new ExpensesResponse(results);
 
-    return new ExpensesResponse(results).expenses;
+    return new ExpensesResponse(availableExpenses).expenses;
   }
 
-  async getAvailableManageActive(authId: number): Promise<any[]> {
+  async getAvailableManageActive(authId: number, id: number): Promise<any[]> {
     let employee = await this.manager.findOne(Employee, authId, {
       relations: [
         'contactPersonOrganization',
@@ -261,27 +253,29 @@ export class ExpenseRepository extends Repository<Expense> {
       true
     );
 
-    let results = await this.find({
+    let results = await this._findManyCustom({
       where: { projectId: In(projectIds) },
-      relations: ['expenseType', 'project', 'entries'],
     });
 
-    let expensesToRemoveIds: number[] = [];
+    let availableExpenses: Expense[] = [];
 
-    results.forEach((expense, index) => {
-      if (expense.rejectedAt == null && expense.entries.length > 0) {
-        expensesToRemoveIds.push(index);
+    results.forEach((expense) => {
+      if (
+        expense.rejectedAt !== null ||
+        !expense.entries.length ||
+        expense.entries.filter((e) => e.sheetId == id).length
+      ) {
+        availableExpenses.push(expense);
       }
     });
 
-    expensesToRemoveIds.forEach((index) => {
-      results.splice(index, 1);
-    });
-
-    return new ExpensesResponse(results).expenses;
+    return new ExpensesResponse(availableExpenses).expenses;
   }
 
-  async getAvailableOwnAndManageActive(authId: number): Promise<any[]> {
+  async getAvailableOwnAndManageActive(
+    authId: number,
+    id: number
+  ): Promise<any[]> {
     let employee = await this.manager.findOne(Employee, authId, {
       relations: [
         'contactPersonOrganization',
@@ -316,24 +310,23 @@ export class ExpenseRepository extends Repository<Expense> {
       true
     );
 
-    let results = await this.find({
+    let results = await this._findManyCustom({
       where: [{ projectId: In(projectIds) }, { createdBy: authId }],
-      relations: ['expenseType', 'project'],
     });
 
-    let expensesToRemoveIds: number[] = [];
+    let availableExpenses: Expense[] = [];
 
-    results.forEach((expense, index) => {
-      if (expense.rejectedAt == null && expense.entries.length > 0) {
-        expensesToRemoveIds.push(index);
+    results.forEach((expense) => {
+      if (
+        expense.rejectedAt !== null ||
+        !expense.entries.length ||
+        expense.entries.filter((e) => e.sheetId == id).length
+      ) {
+        availableExpenses.push(expense);
       }
     });
 
-    expensesToRemoveIds.forEach((index) => {
-      results.splice(index, 1);
-    });
-
-    return new ExpensesResponse(results).expenses;
+    return new ExpensesResponse(availableExpenses).expenses;
   }
 
   async findOneCustom(authId: number, id: number): Promise<any | undefined> {
@@ -348,7 +341,10 @@ export class ExpenseRepository extends Repository<Expense> {
     expenseDTO: ExpenseDTO
   ): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
-      let expenseObj = await this._findOneCustom(authId, id);
+      let expenseObj = await this.findOne(id, {
+        where: { createdBy: authId },
+        relations: ['entries', 'entries.sheet'],
+      });
 
       if (!expenseObj) {
         throw new Error('Expense not found');
@@ -385,6 +381,16 @@ export class ExpenseRepository extends Repository<Expense> {
           throw new Error('Project not found');
         }
       }
+
+      if (!expenseObj.rejectedAt && expenseObj.entries.length > 0) {
+        if (
+          expenseObj.entries[expenseObj.entries.length - 1].sheet.projectId !==
+          expenseDTO.projectId
+        ) {
+          throw new Error('Assigned in sheet with different project');
+        }
+      }
+
       expenseObj.projectId = expenseDTO.projectId;
 
       let deleteableAttachments: Attachment[] = [];
@@ -432,6 +438,7 @@ export class ExpenseRepository extends Repository<Expense> {
         let attachment = await transactionalEntityManager.save(attachmentObj);
       }
 
+      console.log(expenseObj);
       let expense = await transactionalEntityManager.save(expenseObj);
 
       return expense.id;
@@ -466,12 +473,38 @@ export class ExpenseRepository extends Repository<Expense> {
     });
   }
 
-  async _findOneCustom(authId: number, id: number): Promise<any | undefined> {
+  async _findOneCustom(authId: number, id: number): Promise<Expense> {
     let result = await this.findOne(id, {
       where: { createdBy: authId },
-      relations: ['expenseType', 'project'],
+      relations: [
+        'expenseType',
+        'project',
+        'attachments',
+        'attachments.file',
+        'entries',
+      ],
     });
 
+    if (!result) {
+      throw new Error('Expense not found');
+    }
+
     return result;
+  }
+
+  async _findManyCustom(options: {}): Promise<Expense[] | []> {
+    let results = await this.find({
+      ...options,
+      relations: [
+        'expenseType',
+        'project',
+        'attachments',
+        'attachments.file',
+        'entries',
+      ],
+      order: { id: 'ASC' },
+    });
+
+    return results;
   }
 }

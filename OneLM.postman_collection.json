@@ -2932,7 +2932,7 @@
 								{
 									"key": "files",
 									"type": "file",
-									"src": "/C:/Users/shahz/Documents/Lightshot/Screenshot_1.png"
+									"src": "/C:/Users/Shahzaib/AppData/Local/DiscordPTB/Update.exe"
 								},
 								{
 									"key": "files",
@@ -3152,7 +3152,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"email\": \"mustafa.syed@1lm.com.au\",\r\n    \"password\": \"Rauf20\"\r\n}",
+							"raw": "{\r\n    \"email\": \"demo@timewize.com.au\",\r\n    \"password\": \"demo123\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4377,6 +4377,30 @@
 					"response": []
 				},
 				{
+					"name": "Get All Available Expenses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/expenses/available?sheetId=4",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"expenses",
+								"available"
+							],
+							"query": [
+								{
+									"key": "sheetId",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Delete Expense",
 					"request": {
 						"method": "DELETE",
@@ -4401,7 +4425,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"amount\": 500,\r\n    \"date\": \"2022-10-24\",\r\n    \"isReimbursed\": true,\r\n    \"isBillable\": false,\r\n    \"notes\": \"Hello\",\r\n    \"expenseTypeId\": 1,\r\n    \"projectId\": null\r\n}",
+							"raw": "{\r\n    \"amount\": 500,\r\n    \"date\": \"2022-10-24\",\r\n    \"isReimbursed\": true,\r\n    \"isBillable\": false,\r\n    \"notes\": \"Hello\",\r\n    \"expenseTypeId\": 2,\r\n    \"projectId\": null,\r\n    \"attachments\": [289]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4427,7 +4451,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"amount\": 500,\r\n    \"date\": \"2022-10-24\",\r\n    \"isReimbursed\": true,\r\n    \"isBillable\": false,\r\n    \"notes\": \"Potato\",\r\n    \"expenseTypeId\": 1,\r\n    \"projectId\": null\r\n}",
+							"raw": "{\r\n    \"amount\": 500,\r\n    \"date\": \"2022-10-24\",\r\n    \"isReimbursed\": true,\r\n    \"isBillable\": false,\r\n    \"notes\": \"Potatoes\",\r\n    \"expenseTypeId\": 4,\r\n    \"projectId\": 41,\r\n    \"attachments\": [289]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4435,13 +4459,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{Endpoint}}/expenses/3",
+							"raw": "{{Endpoint}}/expenses/9",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"expenses",
-								"3"
+								"9"
 							]
 						}
 					},
@@ -4475,13 +4499,13 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{Endpoint}}/expense-sheets/3",
+							"raw": "{{Endpoint}}/expense-sheets/2",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"expense-sheets",
-								"3"
+								"2"
 							]
 						}
 					},
@@ -4494,7 +4518,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"label\": \"Sheet 1\",\r\n    \"projectId\": null\r\n}",
+							"raw": "{\r\n    \"label\": \"Sheet 3\",\r\n    \"projectId\": null,\r\n    \"expenseSheetExpenses\": [3,4],\r\n    \"attachments\": []\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4520,7 +4544,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"label\": \"Sheet 2\",\r\n    \"projectId\": null\r\n}",
+							"raw": "{\r\n    \"label\": \"Sheet 2\",\r\n    \"projectId\": 41,\r\n    \"expenseSheetExpenses\": [9],\r\n    \"attachments\": [290]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4539,6 +4563,115 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Submit Many",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"sheets\": [2,3]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/expense-sheets/submitMany",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"expense-sheets",
+								"submitMany"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approve Many",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"sheets\": [2,3]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/expense-sheets/approveMany",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"expense-sheets",
+								"approveMany"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reject Many",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"sheets\": [2,3]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/expense-sheets/rejectMany",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"expense-sheets",
+								"rejectMany"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Expenses",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"expenses\": [4]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/expense-sheets/3/expenses",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"expense-sheets",
+								"3",
+								"expenses"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
@@ -4548,7 +4681,7 @@
 		"bearer": [
 			{
 				"key": "token",
-				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjY2NjExNDg4LCJleHAiOjE2NjY2MTUwODh9.FagKT2glsSPz3ieXB2CqcW4NVUMBwMded_Flq7LoyPk",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjY3MDM0MjgwLCJleHAiOjE2NjcwMzc4ODB9.WRsyikIEXZC2RC4AbUyCG_8QprOE9n6-FezzWB3y7OA",
 				"type": "string"
 			}
 		]

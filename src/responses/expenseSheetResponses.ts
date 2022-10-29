@@ -1,5 +1,6 @@
-import { ExpenseSheetStatus } from '../constants/constants';
+import { EntityType, ExpenseSheetStatus } from '../constants/constants';
 import { ExpenseSheet } from '../entities/expenseSheet';
+import { AttachmentResponse, AttachmentsResponse } from './attachmentResponses';
 import { ExpenseResponse, ExpensesResponse } from './expenseResponses';
 import { ExpenseSheetExpensesResponse } from './expenseSheetExpenseResponses';
 
@@ -11,6 +12,7 @@ export class ExpenseSheetResponse {
   amount: number = 0;
   status: string;
   submittedAt: Date | null;
+  attachments: AttachmentResponse[];
   expenseSheetExpenses: ExpenseResponse[];
 
   constructor(sheet: ExpenseSheet) {
@@ -23,13 +25,22 @@ export class ExpenseSheetResponse {
         parseFloat(expense.expense.amount as any).toFixed(2)
       );
     });
-    this.status = sheet.expenseSheetExpenses[0]?.expense.rejectedAt
-      ? ExpenseSheetStatus.REJECTED
-      : sheet.expenseSheetExpenses[0]?.expense.approvedAt
-      ? ExpenseSheetStatus.APPROVED
-      : ExpenseSheetStatus.SUBMITTED;
+    let firstExpense = sheet.expenseSheetExpenses[0]?.expense;
+    this.status = ExpenseSheetStatus.SAVED;
+
+    if (firstExpense.rejectedAt !== null)
+      this.status = ExpenseSheetStatus.REJECTED;
+    else if (firstExpense.approvedAt !== null)
+      this.status = ExpenseSheetStatus.APPROVED;
+    else if (firstExpense.submittedAt !== null)
+      this.status = ExpenseSheetStatus.SUBMITTED;
     this.submittedAt =
       sheet.expenseSheetExpenses[0]?.expense.submittedAt ?? null;
+    this.attachments = new AttachmentsResponse(
+      sheet.attachments.filter(
+        (attachment) => attachment.targetType === EntityType.EXPENSE_SHEET
+      )
+    ).attachments;
     this.expenseSheetExpenses = new ExpenseSheetExpensesResponse(
       sheet.expenseSheetExpenses
     ).expenses;

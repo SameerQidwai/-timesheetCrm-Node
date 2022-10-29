@@ -1,4 +1,6 @@
+import { EntityType } from '../constants/constants';
 import { Expense } from '../entities/expense';
+import { AttachmentResponse, AttachmentsResponse } from './attachmentResponses';
 
 export class ExpenseResponse {
   id: number;
@@ -11,6 +13,7 @@ export class ExpenseResponse {
   isBillable: Boolean;
   isReimbursed: Boolean;
   notes: string | null;
+  attachments: AttachmentResponse[];
 
   constructor(expense: Expense) {
     this.id = expense.id;
@@ -23,6 +26,11 @@ export class ExpenseResponse {
     this.isBillable = expense.isBillable ? true : false;
     this.isReimbursed = expense.isReimbursed ? true : false;
     this.notes = expense.notes;
+    this.attachments = new AttachmentsResponse(
+      expense.attachments.filter(
+        (attachment) => attachment.targetType === EntityType.EXPENSE
+      )
+    ).attachments;
   }
 }
 

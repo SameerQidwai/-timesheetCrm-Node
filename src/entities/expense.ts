@@ -6,6 +6,7 @@ import {
   ManyToMany,
   OneToMany,
 } from 'typeorm';
+import { Attachment } from './attachment';
 import { Base } from './common/base';
 import { Employee } from './employee';
 import { ExpenseSheetExpense } from './expenseSheetExpense';
@@ -94,4 +95,9 @@ export class Expense extends Base {
     }
   )
   entries: ExpenseSheetExpense[];
+
+  @OneToMany(() => Attachment, (attachments) => attachments.entity, {
+    cascade: true,
+  })
+  attachments: Attachment[];
 }
