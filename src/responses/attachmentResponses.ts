@@ -18,7 +18,7 @@ export class AttachmentResponse {
     this.uid = attachment.file.uniqueName;
     this.name = attachment.file.originalName;
     this.type = attachment.file.type;
-    this.url = `/files/${attachment.file.uniqueName}`;
+    this.url = `files/${attachment.file.uniqueName}`;
     this.userId = attachment.userId;
     this.thumbUrl = this.thumbUrlGenerator(attachment.file.type);
   }

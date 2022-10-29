@@ -13,6 +13,7 @@ export class ExpenseSheetResponse {
   status: string;
   submittedAt: Date | null;
   attachments: AttachmentResponse[];
+  expenseSheetExpensesIds: number[]= [];
   expenseSheetExpenses: ExpenseResponse[];
 
   constructor(sheet: ExpenseSheet) {
@@ -24,16 +25,17 @@ export class ExpenseSheetResponse {
       this.amount += parseFloat(
         parseFloat(expense.expense.amount as any).toFixed(2)
       );
+      this.expenseSheetExpensesIds.push(expense.expense.id)
     });
     let firstExpense = sheet.expenseSheetExpenses[0]?.expense;
     this.status = ExpenseSheetStatus.SAVED;
-
     if (firstExpense.rejectedAt !== null)
-      this.status = ExpenseSheetStatus.REJECTED;
+    this.status = ExpenseSheetStatus.REJECTED;
     else if (firstExpense.approvedAt !== null)
-      this.status = ExpenseSheetStatus.APPROVED;
+    this.status = ExpenseSheetStatus.APPROVED;
     else if (firstExpense.submittedAt !== null)
-      this.status = ExpenseSheetStatus.SUBMITTED;
+    this.status = ExpenseSheetStatus.SUBMITTED;
+
     this.submittedAt =
       sheet.expenseSheetExpenses[0]?.expense.submittedAt ?? null;
     this.attachments = new AttachmentsResponse(

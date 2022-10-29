@@ -18,8 +18,8 @@ let expenseSheetRules = {
 
   validateSheetAction: Joi.object({
     sheets: Joi.array().required().min(1),
-    isBillable: Joi.boolean().required(),
-    notes: Joi.string().required().allow(null),
+    // isBillable: Joi.boolean().required().allow(null),
+    // notes: Joi.string().required().allow(null),
   }).unknown(false),
 };
 
