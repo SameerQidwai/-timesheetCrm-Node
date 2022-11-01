@@ -9,19 +9,32 @@ export class ExpenseSheetController {
       const repository = getCustomRepository(ExpenseSheetRepository);
       let records = [];
       const { grantLevel } = res.locals;
+      let startDate = req.params.startDate as string;
+      let endDate = req.params.endDate as string;
+      let projectId = parseInt(req.params.projectId) as number;
+
       if (grantLevel.includes('ANY')) {
-        records = await repository.getAllActive();
+        records = await repository.getAllActive(startDate, endDate, projectId);
       } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
         records = await repository.getOwnAndManageActive(
-          parseInt(res.locals.jwtPayload.id)
+          parseInt(res.locals.jwtPayload.id),
+          startDate,
+          endDate,
+          projectId
         );
       } else if (grantLevel.includes('MANAGE')) {
         records = await repository.getManageActive(
-          parseInt(res.locals.jwtPayload.id)
+          parseInt(res.locals.jwtPayload.id),
+          startDate,
+          endDate,
+          projectId
         );
       } else if (grantLevel.includes('OWN')) {
         records = await repository.getOwnActive(
-          parseInt(res.locals.jwtPayload.id)
+          parseInt(res.locals.jwtPayload.id),
+          startDate,
+          endDate,
+          projectId
         );
       }
       console.log('records: ', records);

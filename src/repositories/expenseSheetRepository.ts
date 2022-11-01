@@ -105,13 +105,22 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
     return new ExpenseSheetResponse(sheet);
   }
 
-  async getAllActive(): Promise<any[]> {
+  async getAllActive(
+    startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
+    endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
+    projectId: number
+  ): Promise<any[]> {
     let result = await this._findManyCustom({});
 
     return new ExpenseSheetsResponse(result).sheets;
   }
 
-  async getOwnActive(authId: number): Promise<any[]> {
+  async getOwnActive(
+    authId: number,
+    startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
+    endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
+    projectId: number
+  ): Promise<any[]> {
     let results = await this._findManyCustom({
       where: { createdBy: authId },
     });
@@ -119,7 +128,12 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
     return new ExpenseSheetsResponse(results).sheets;
   }
 
-  async getManageActive(authId: number): Promise<any[]> {
+  async getManageActive(
+    authId: number,
+    startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
+    endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
+    projectId: number
+  ): Promise<any[]> {
     let employee = await this.manager.findOne(Employee, authId, {
       relations: [
         'contactPersonOrganization',
@@ -161,7 +175,12 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
     return new ExpenseSheetsResponse(results).sheets;
   }
 
-  async getOwnAndManageActive(authId: number): Promise<any[]> {
+  async getOwnAndManageActive(
+    authId: number,
+    startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
+    endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
+    projectId: number
+  ): Promise<any[]> {
     let employee = await this.manager.findOne(Employee, authId, {
       relations: [
         'contactPersonOrganization',
@@ -673,6 +692,9 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       relations: [
         'expenseSheetExpenses',
         'expenseSheetExpenses.expense',
+        'expenseSheetExpenses.expense.submitter',
+        'expenseSheetExpenses.expense.submitter.contactPersonOrganization',
+        'expenseSheetExpenses.expense.submitter.contactPersonOrganization.contactPerson',
         'expenseSheetExpenses.expense.expenseType',
         'expenseSheetExpenses.expense.project',
         'project',
@@ -690,6 +712,9 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       relations: [
         'expenseSheetExpenses',
         'expenseSheetExpenses.expense',
+        'expenseSheetExpenses.expense.submitter',
+        'expenseSheetExpenses.expense.submitter.contactPersonOrganization',
+        'expenseSheetExpenses.expense.submitter.contactPersonOrganization.contactPerson',
         'expenseSheetExpenses.expense.expenseType',
         'expenseSheetExpenses.expense.project',
         'project',
