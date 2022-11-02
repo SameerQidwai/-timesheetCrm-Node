@@ -38,6 +38,20 @@ router
   );
 
 router
+  .route('/unapproveMany')
+  .post(
+    [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.unapprove.bind(contr)
+  );
+
+router
+  .route('/:id/isBillable')
+  .put(
+    [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.updateBillable.bind(contr)
+  );
+
+router
   .route('/:id/approve')
   .post(
     [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
@@ -50,6 +64,8 @@ router
     [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
     contr.reject.bind(contr)
   );
+
+
 
 router
   .route('/:id')

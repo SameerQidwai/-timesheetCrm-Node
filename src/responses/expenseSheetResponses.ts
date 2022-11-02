@@ -11,6 +11,7 @@ export class ExpenseSheetResponse {
   projectName: String | null;
   amount: number = 0;
   status: string;
+  notes: string
   submittedAt: Date | null;
   submittedBy: string | null;
   attachments: AttachmentResponse[];
@@ -22,6 +23,7 @@ export class ExpenseSheetResponse {
     this.label = sheet.label;
     this.projectId = sheet.projectId;
     this.projectName = sheet.project?.title ?? null;
+    this.notes = sheet.notes
     sheet.expenseSheetExpenses.forEach((expense) => {
       this.amount += parseFloat(
         parseFloat(expense.expense.amount as any).toFixed(2)
@@ -41,7 +43,7 @@ export class ExpenseSheetResponse {
       sheet.expenseSheetExpenses[0]?.expense.submittedAt ?? null;
 
     this.submittedBy =
-      sheet.expenseSheetExpenses[0]?.expense.submitter.getFullName ?? null;
+      sheet.expenseSheetExpenses[0]?.expense.submitter?.getFullName ?? null;
 
     this.expenseSheetExpenses = new ExpenseSheetExpensesResponse(
       sheet.expenseSheetExpenses

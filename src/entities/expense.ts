@@ -63,21 +63,21 @@ export class Expense extends Base {
 
   @ManyToOne(() => Employee)
   @JoinColumn({ name: 'submitted_by' })
-  submitter: Employee;
+  submitter: Employee | null;
 
   @Column({ name: 'approved_by', nullable: true })
   approvedBy: number | null;
 
   @ManyToOne(() => Employee)
   @JoinColumn({ name: 'approved_by' })
-  approver: Employee;
+  approver: Employee | null;
 
   @Column({ name: 'rejected_by', nullable: true })
   rejectedBy: number | null;
 
   @ManyToOne(() => Employee)
   @JoinColumn({ name: 'rejected_by' })
-  rejecter: Employee;
+  rejecter: Employee | null;
 
   @OneToMany(
     () => ExpenseSheetExpense,

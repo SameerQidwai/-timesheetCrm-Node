@@ -685,6 +685,10 @@ export interface ExpenseSheetDTO extends Base {
   expenseSheetExpenses: ExpenseSheetExpense[];
 }
 
+export interface ExpenseSheetBillableDTO extends Base {
+  isBillable: boolean
+}
+
 export interface ExpenseDTO extends Base {
   amount: number;
   date: Date;
