@@ -26,8 +26,4 @@ export class Attachment extends Base {
   @ManyToOne(() => File)
   @JoinColumn({ name: 'file_id' })
   file: File;
-
-  @ManyToOne(() => Expense)
-  @JoinColumn({ name: 'target_id' })
-  entity: Expense;
 }

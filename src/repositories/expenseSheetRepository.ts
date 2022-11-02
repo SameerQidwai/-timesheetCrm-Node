@@ -1,5 +1,6 @@
 import {
   ExpenseSheetApproveDTO,
+  ExpenseSheetBillableDTO,
   ExpenseSheetDTO,
   ExpenseSheetsApproveDTO,
   ExpenseSheetsRejectDTO,
@@ -105,13 +106,22 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
     return new ExpenseSheetResponse(sheet);
   }
 
-  async getAllActive(): Promise<any[]> {
+  async getAllActive(
+    startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
+    endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
+    projectId: number
+  ): Promise<any[]> {
     let result = await this._findManyCustom({});
 
     return new ExpenseSheetsResponse(result).sheets;
   }
 
-  async getOwnActive(authId: number): Promise<any[]> {
+  async getOwnActive(
+    authId: number,
+    startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
+    endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
+    projectId: number
+  ): Promise<any[]> {
     let results = await this._findManyCustom({
       where: { createdBy: authId },
     });
@@ -119,7 +129,12 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
     return new ExpenseSheetsResponse(results).sheets;
   }
 
-  async getManageActive(authId: number): Promise<any[]> {
+  async getManageActive(
+    authId: number,
+    startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
+    endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
+    projectId: number
+  ): Promise<any[]> {
     let employee = await this.manager.findOne(Employee, authId, {
       relations: [
         'contactPersonOrganization',
@@ -161,7 +176,12 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
     return new ExpenseSheetsResponse(results).sheets;
   }
 
-  async getOwnAndManageActive(authId: number): Promise<any[]> {
+  async getOwnAndManageActive(
+    authId: number,
+    startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
+    endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
+    projectId: number
+  ): Promise<any[]> {
     let employee = await this.manager.findOne(Employee, authId, {
       relations: [
         'contactPersonOrganization',
@@ -348,6 +368,162 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
     let sheet = await this._findOneCustom(authId, id);
 
     return new ExpenseSheetResponse(sheet);
+  }
+
+  async updateAnyBillableAndReturn(
+    authId: number,
+    id: number,
+    expenseSheetBillableDTO: ExpenseSheetBillableDTO
+  ): Promise<any | undefined> {
+    let result = await this.findOne(id, {
+      relations: [
+        'expenseSheetExpenses',
+        'expenseSheetExpenses.expense',
+        'expenseSheetExpenses.expense.submitter',
+        'expenseSheetExpenses.expense.submitter.contactPersonOrganization',
+        'expenseSheetExpenses.expense.submitter.contactPersonOrganization.contactPerson',
+        'expenseSheetExpenses.expense.expenseType',
+        'expenseSheetExpenses.expense.project',
+        'project',
+        'attachments',
+        'attachments.file',
+      ],
+    });
+
+    if(!result){
+      throw new Error('Expense not found');
+    }
+
+    result.isBillable = expenseSheetBillableDTO.isBillable ? true : false;
+    await this.save(result);
+    
+
+    return new ExpenseSheetResponse(result);
+  }
+
+  async updateOwnBillableAndReturn(
+    authId: number,
+    id: number,
+    expenseSheetBillableDTO: ExpenseSheetBillableDTO
+  ): Promise<any | undefined> {
+    let result = await this.findOne(id, {
+      where: { createdBy: authId },
+    });
+
+    if(!result){
+      throw new Error("Expense not found");
+    }
+
+    result.isBillable = expenseSheetBillableDTO.isBillable ? true : false;
+    await this.save(result);
+
+    return new ExpenseSheetResponse(result);
+  }
+
+  async updateManageBillableAndReturn(
+    authId: number,
+    id: number,
+    expenseSheetBillableDTO: ExpenseSheetBillableDTO
+  ): Promise<any | undefined> {
+    let employee = await this.manager.findOne(Employee, authId, {
+      relations: [
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+      ],
+    });
+
+    if (!employee) {
+      throw new Error('Employee not found');
+    }
+    let employeeContactPersonId =
+      employee.contactPersonOrganization.contactPerson.id;
+
+    let projects = await this.manager.find(Opportunity, {
+      where: [{ status: 'P' }, { status: 'C' }],
+      relations: [
+        'organization',
+        'opportunityResources',
+        'opportunityResources.panelSkill',
+        'opportunityResources.panelSkillStandardLevel',
+        'opportunityResources.opportunityResourceAllocations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
+    });
+
+    let projectIds = getProjectsByUserId(
+      projects,
+      'm',
+      0,
+      employeeContactPersonId,
+      authId,
+      true
+    );
+
+    let result = await this.findOne(id, {
+      where: { projectId: In(projectIds) },
+    });
+
+    if(!result){
+      throw new Error("Expense not found")
+    }
+
+    result.isBillable = expenseSheetBillableDTO.isBillable ? true : false;
+    await this.save(result);
+
+    return new ExpenseSheetResponse(result);
+  }
+
+  async updateOwnAndManageBillableAndReturn(
+    authId: number,
+    id: number,
+    expenseSheetBillableDTO: ExpenseSheetBillableDTO
+  ): Promise<any | undefined> {
+    let employee = await this.manager.findOne(Employee, authId, {
+      relations: [
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+      ],
+    });
+
+    if (!employee) {
+      throw new Error('Employee not found');
+    }
+    let employeeContactPersonId =
+      employee.contactPersonOrganization.contactPerson.id;
+
+    let projects = await this.manager.find(Opportunity, {
+      where: [{ status: 'P' }, { status: 'C' }],
+      relations: [
+        'organization',
+        'opportunityResources',
+        'opportunityResources.panelSkill',
+        'opportunityResources.panelSkillStandardLevel',
+        'opportunityResources.opportunityResourceAllocations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson',
+      ],
+    });
+
+    let projectIds = getProjectsByUserId(
+      projects,
+      'm',
+      0,
+      employeeContactPersonId,
+      authId,
+      true
+    );
+
+    let result = await this.findOne(id, {
+      where: [{ projectId: In(projectIds) }, { createdBy: authId }],
+    });
+
+    if(!result){
+      throw new Error("Expense not found")
+    }
+
+    result.isBillable = expenseSheetBillableDTO.isBillable ? true : false;
+    await this.save(result);
+
+    return new ExpenseSheetResponse(result);
   }
 
   async deleteCustom(authId: number, id: number): Promise<any | undefined> {
@@ -565,7 +741,18 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           }
           expense.expense.rejectedAt = null;
           expense.expense.submittedAt = moment().toDate();
-          expense.expense.submittedBy = authId;
+
+          let emplyoee = await transactionalEntityManager.findOne(
+            Employee,
+            authId
+          );
+
+          if (!emplyoee) {
+            throw new Error('Employee not found');
+          }
+
+          expense.expense.submitter = emplyoee;
+
           transactionalEntityManager.save(Expense, expense.expense);
         }
 
@@ -607,7 +794,18 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           }
 
           expense.expense.approvedAt = moment().toDate();
-          expense.expense.approvedBy = authId;
+          
+          let emplyoee = await transactionalEntityManager.findOne(
+            Employee,
+            authId
+          );
+
+          if (!emplyoee) {
+            throw new Error('Employee not found');
+          }
+
+          expense.expense.approver = emplyoee;  
+        
           transactionalEntityManager.save(Expense, expense.expense);
         }
 
@@ -649,7 +847,18 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           }
 
           expense.expense.rejectedAt = moment().toDate();
-          expense.expense.rejectedBy = authId;
+          
+          let emplyoee = await transactionalEntityManager.findOne(
+            Employee,
+            authId
+          );
+
+          if (!emplyoee) {
+            throw new Error('Employee not found');
+          }
+
+          expense.expense.rejecter = emplyoee;  
+
           transactionalEntityManager.save(Expense, expense.expense);
         }
 
@@ -667,17 +876,70 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
     return new ExpenseSheetsResponse(expenseSheets);
   }
 
+  async unApproveExpenseSheets(
+    authId: number,
+    expenseSheetsApproveDTO: ExpenseSheetsApproveDTO
+  ): Promise<any | undefined> {
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      let expenseSheets = await this._findManyCustom({
+        where: { id: In(expenseSheetsApproveDTO.sheets) },
+      });
+
+      if (!expenseSheets.length) {
+        throw new Error('Expense sheet not found');
+      }
+
+      for (let sheet of expenseSheets) {
+        for (let expense of sheet.expenseSheetExpenses) {
+          if (!expense.expense.approvedAt) {
+            throw new Error('Sheet Not Approved');
+          }
+
+
+          expense.expense.approvedAt = null;
+          expense.expense.submittedAt = null;
+          
+          let emplyoee = await transactionalEntityManager.findOne(
+            Employee,
+            authId
+          );
+
+          if (!emplyoee) {
+            throw new Error('Employee not found');
+          }
+
+          expense.expense.approver = null;  
+          expense.expense.submitter = null;  
+        
+          transactionalEntityManager.save(Expense, expense.expense);
+        }
+
+        sheet.isBillable = expenseSheetsApproveDTO.isBillable ? true : false;
+        sheet.notes = expenseSheetsApproveDTO.notes;
+
+        let expenseSheet = await transactionalEntityManager.save(sheet);
+      }
+    });
+
+    let expenseSheets = await this._findManyCustom({
+      where: { id: In(expenseSheetsApproveDTO.sheets) },
+    });
+
+    return new ExpenseSheetsResponse(expenseSheets);
+  }
+
   async _findOneCustom(authId: number, id: number): Promise<any | undefined> {
     let result = await this.findOne(id, {
       where: { createdBy: authId },
       relations: [
         'expenseSheetExpenses',
         'expenseSheetExpenses.expense',
+        'expenseSheetExpenses.expense.submitter',
+        'expenseSheetExpenses.expense.submitter.contactPersonOrganization',
+        'expenseSheetExpenses.expense.submitter.contactPersonOrganization.contactPerson',
         'expenseSheetExpenses.expense.expenseType',
         'expenseSheetExpenses.expense.project',
         'project',
-        'attachments',
-        'attachments.file',
       ],
     });
 
@@ -690,11 +952,12 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       relations: [
         'expenseSheetExpenses',
         'expenseSheetExpenses.expense',
+        'expenseSheetExpenses.expense.submitter',
+        'expenseSheetExpenses.expense.submitter.contactPersonOrganization',
+        'expenseSheetExpenses.expense.submitter.contactPersonOrganization.contactPerson',
         'expenseSheetExpenses.expense.expenseType',
         'expenseSheetExpenses.expense.project',
         'project',
-        'attachments',
-        'attachments.file',
       ],
     });
 

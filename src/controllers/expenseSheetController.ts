@@ -9,19 +9,32 @@ export class ExpenseSheetController {
       const repository = getCustomRepository(ExpenseSheetRepository);
       let records = [];
       const { grantLevel } = res.locals;
+      let startDate = req.params.startDate as string;
+      let endDate = req.params.endDate as string;
+      let projectId = parseInt(req.params.projectId) as number;
+
       if (grantLevel.includes('ANY')) {
-        records = await repository.getAllActive();
+        records = await repository.getAllActive(startDate, endDate, projectId);
       } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
         records = await repository.getOwnAndManageActive(
-          parseInt(res.locals.jwtPayload.id)
+          parseInt(res.locals.jwtPayload.id),
+          startDate,
+          endDate,
+          projectId
         );
       } else if (grantLevel.includes('MANAGE')) {
         records = await repository.getManageActive(
-          parseInt(res.locals.jwtPayload.id)
+          parseInt(res.locals.jwtPayload.id),
+          startDate,
+          endDate,
+          projectId
         );
       } else if (grantLevel.includes('OWN')) {
         records = await repository.getOwnActive(
-          parseInt(res.locals.jwtPayload.id)
+          parseInt(res.locals.jwtPayload.id),
+          startDate,
+          endDate,
+          projectId
         );
       }
       console.log('records: ', records);
@@ -76,6 +89,52 @@ export class ExpenseSheetController {
     }
   }
 
+  async updateBillable(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(ExpenseSheetRepository);
+
+      let id = req.params.id;
+      const { grantLevel } = res.locals;
+      if (grantLevel.includes('ANY')) {
+      let record = await repository.updateAnyBillableAndReturn(
+        parseInt(res.locals.jwtPayload.id),
+        parseInt(id),
+        req.body
+      );
+      } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
+      let record = await repository.updateOwnAndManageBillableAndReturn(
+        parseInt(res.locals.jwtPayload.id),
+        parseInt(id),
+        req.body
+      );
+      } else if (grantLevel.includes('MANAGE')) {
+      let record = await repository.updateManageBillableAndReturn(
+        parseInt(res.locals.jwtPayload.id),
+        parseInt(id),
+        req.body
+      );
+      } else if (grantLevel.includes('OWN')) {
+      let record = await repository.updateOwnBillableAndReturn(
+        parseInt(res.locals.jwtPayload.id),
+        parseInt(id),
+        req.body
+      );
+      }
+      let record = await repository.updateAndReturn(
+        parseInt(res.locals.jwtPayload.id),
+        parseInt(id),
+        req.body
+      );
+      res.status(200).json({
+        success: true,
+        message: `Updated Successfully`,
+        data: record,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
   async get(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(ExpenseSheetRepository);
@@ -108,6 +167,26 @@ export class ExpenseSheetController {
       res.status(200).json({
         success: true,
         message: `Deleted Successfully`,
+        data: record,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  
+  async unapprove(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(ExpenseSheetRepository);
+
+      let id = req.params.id;
+      let record = await repository.unApproveExpenseSheets(
+        parseInt(res.locals.jwtPayload.id),
+        req.body
+      );
+      res.status(200).json({
+        success: true,
+        message: `Unapproved Successfully`,
         data: record,
       });
     } catch (e) {

@@ -12,8 +12,8 @@ export class ExpenseResponse {
   amount: number;
   isBillable: Boolean;
   isReimbursed: Boolean;
+  isInSheet: Boolean;
   notes: string | null;
-  attachments: AttachmentResponse[];
 
   constructor(expense: Expense) {
     this.id = expense.id;
@@ -25,12 +25,9 @@ export class ExpenseResponse {
     this.amount = expense.amount;
     this.isBillable = expense.isBillable ? true : false;
     this.isReimbursed = expense.isReimbursed ? true : false;
+    this.isInSheet =
+      expense.entries.length > 0 && !expense.rejectedAt ? true : false;
     this.notes = expense.notes;
-    this.attachments = new AttachmentsResponse(
-      expense.attachments.filter(
-        (attachment) => attachment.targetType === EntityType.EXPENSE
-      )
-    ).attachments;
   }
 }
 

@@ -1,12 +1,4 @@
-import {
-  Entity,
-  Column,
-  JoinColumn,
-  ManyToOne,
-  ManyToMany,
-  OneToMany,
-} from 'typeorm';
-import { Attachment } from './attachment';
+import { Entity, Column, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Base } from './common/base';
 import { Employee } from './employee';
 import { ExpenseSheetExpense } from './expenseSheetExpense';
@@ -71,21 +63,21 @@ export class Expense extends Base {
 
   @ManyToOne(() => Employee)
   @JoinColumn({ name: 'submitted_by' })
-  submitter: Employee;
+  submitter: Employee | null;
 
   @Column({ name: 'approved_by', nullable: true })
   approvedBy: number | null;
 
   @ManyToOne(() => Employee)
   @JoinColumn({ name: 'approved_by' })
-  approver: Employee;
+  approver: Employee | null;
 
   @Column({ name: 'rejected_by', nullable: true })
   rejectedBy: number | null;
 
   @ManyToOne(() => Employee)
   @JoinColumn({ name: 'rejected_by' })
-  rejecter: Employee;
+  rejecter: Employee | null;
 
   @OneToMany(
     () => ExpenseSheetExpense,
@@ -95,9 +87,4 @@ export class Expense extends Base {
     }
   )
   entries: ExpenseSheetExpense[];
-
-  @OneToMany(() => Attachment, (attachments) => attachments.entity, {
-    cascade: true,
-  })
-  attachments: Attachment[];
 }

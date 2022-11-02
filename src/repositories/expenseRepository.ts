@@ -27,6 +27,7 @@ export class ExpenseRepository extends Repository<Expense> {
         if (!momentDate.isValid()) {
           throw new Error('Invalid Date');
         }
+
         expenseObj.date = momentDate.toDate();
         expenseObj.isReimbursed = expenseDTO.isReimbursed;
         expenseObj.isBillable = expenseDTO.isBillable;
@@ -52,6 +53,8 @@ export class ExpenseRepository extends Repository<Expense> {
           if (!project) {
             throw new Error('Project not found');
           }
+
+          this._validateExpenseDates(expenseDTO.date, project);
 
           expenseObj.project = project;
         }
@@ -380,6 +383,8 @@ export class ExpenseRepository extends Repository<Expense> {
         if (!project) {
           throw new Error('Project not found');
         }
+
+        this._validateExpenseDates(expenseDTO.date, project);
       }
 
       if (!expenseObj.rejectedAt && expenseObj.entries.length > 0) {
@@ -476,13 +481,7 @@ export class ExpenseRepository extends Repository<Expense> {
   async _findOneCustom(authId: number, id: number): Promise<Expense> {
     let result = await this.findOne(id, {
       where: { createdBy: authId },
-      relations: [
-        'expenseType',
-        'project',
-        'attachments',
-        'attachments.file',
-        'entries',
-      ],
+      relations: ['expenseType', 'project', 'entries'],
     });
 
     if (!result) {
@@ -495,16 +494,30 @@ export class ExpenseRepository extends Repository<Expense> {
   async _findManyCustom(options: {}): Promise<Expense[] | []> {
     let results = await this.find({
       ...options,
-      relations: [
-        'expenseType',
-        'project',
-        'attachments',
-        'attachments.file',
-        'entries',
-      ],
+      relations: ['expenseType', 'project', 'entries'],
       order: { id: 'ASC' },
     });
 
     return results;
+  }
+
+  _validateExpenseDates(date: Date, project: Opportunity) {
+    if (!project.startDate) {
+      throw new Error('Project start date is not set');
+    }
+    if (!project.endDate) {
+      throw new Error('Project end date is not set');
+    }
+
+    if (
+      !moment(date, 'YYYY-MM-DD').isBetween(
+        project.startDate,
+        project.endDate,
+        'date',
+        '[]'
+      )
+    ) {
+      throw new Error('Expense is out of project Dates');
+    }
   }
 }

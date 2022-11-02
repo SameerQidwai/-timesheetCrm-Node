@@ -12,8 +12,8 @@ export class ExpenseSheetExpenseResponse {
   amount: number;
   isBillable: Boolean;
   isReimbursed: Boolean;
+  isInSheet: Boolean;
   notes: string | null;
-  attachments: AttachmentResponse[];
 
   constructor(expense: ExpenseSheetExpense) {
     this.id = expense.id;
@@ -25,6 +25,7 @@ export class ExpenseSheetExpenseResponse {
     this.amount = expense.expense.amount;
     this.isBillable = expense.expense.isBillable ? true : false;
     this.isReimbursed = expense.expense.isReimbursed ? true : false;
+    this.isInSheet = !expense.expense.rejectedAt ? true : false;
     this.notes = expense.expense.notes;
   }
 }
