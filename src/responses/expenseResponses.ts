@@ -1,4 +1,4 @@
-import { EntityType } from '../constants/constants';
+import { EntityType, ExpenseSheetStatus } from '../constants/constants';
 import { Expense } from '../entities/expense';
 import { AttachmentResponse, AttachmentsResponse } from './attachmentResponses';
 
@@ -10,6 +10,7 @@ export class ExpenseResponse {
   projectId: number | null;
   projectName: String | null;
   amount: number;
+  status: string;
   isBillable: Boolean;
   isReimbursed: Boolean;
   isInSheet: Boolean;
@@ -28,6 +29,13 @@ export class ExpenseResponse {
     this.isInSheet =
       expense.entries.length > 0 && !expense.rejectedAt ? true : false;
     this.notes = expense.notes;
+    this.status = ExpenseSheetStatus.SAVED;
+    if (expense.rejectedAt !== null)
+      this.status = ExpenseSheetStatus.REJECTED;
+    else if (expense.approvedAt !== null)
+      this.status = ExpenseSheetStatus.APPROVED;
+    else if (expense.submittedAt !== null)
+      this.status = ExpenseSheetStatus.SUBMITTED;
   }
 }
 

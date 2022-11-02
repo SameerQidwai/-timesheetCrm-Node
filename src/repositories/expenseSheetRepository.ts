@@ -469,8 +469,6 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         'expenseSheetExpenses.expense.expenseType',
         'expenseSheetExpenses.expense.project',
         'project',
-        'attachments',
-        'attachments.file',
       ],
     });
 

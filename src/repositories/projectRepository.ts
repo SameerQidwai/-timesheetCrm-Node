@@ -752,109 +752,176 @@ export class ProjectRepository extends Repository<Opportunity> {
     return response;
   }
 
-  async approveAnyMilestone(milestoneId: number): Promise<any | undefined> {
-    let milestone = await this.manager.findOne(Milestone, milestoneId, {
-      relations: ['project'],
-    });
+  async approveAnyMilestone(milestoneIds: []): Promise<any | undefined> {
+    let milestoneResponse = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let milestones = await this.manager.find(Milestone, {
+          where: { id: In(milestoneIds) },
+          relations: ['project'],
+        });
 
-    if (!milestone) {
-      throw new Error('Milestone not found');
-    }
+        if (!milestones.length) {
+          throw new Error('Milestone not found');
+        }
 
-    milestone.isApproved = 'AP';
-
-    return this.manager.save(milestone);
+        milestones.forEach((el)=>{
+          if(el.isApproved !== 'SB'){
+            throw new Error('Can only approve sumbitted certificate');
+          }else{
+            el.isApproved = 'AP'
+          }
+        })
+        await transactionalEntityManager.save(milestones);
+      })
+    return milestoneResponse
   }
 
   async approveManageMilestone(
     authId: number,
-    milestoneId: number
+    milestoneIds: []
   ): Promise<any | undefined> {
-    let milestone = await this.manager.findOne(Milestone, milestoneId, {
-      relations: ['project'],
-    });
 
-    if (!milestone) {
-      throw new Error('Milestone not found');
-    }
+    let milestoneResponse = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let milestones = await this.manager.find(Milestone, {
+          where: { id: In(milestoneIds) },
+          relations: ['project'],
+        });
 
-    if (milestone.project.projectManagerId !== authId) {
-      throw new Error('Not Authorized');
-    }
+        if (!milestones.length) {
+          throw new Error('Milestone not found');
+        }
 
-    milestone.isApproved = 'AP';
+        milestones.forEach((el)=>{
+            if(el.isApproved !== 'SB'){
+              throw new Error('Can only approve sumbitted certificate');
+            }else{
+              el.isApproved = 'AP'
+            }
 
-    return this.manager.save(milestone);
+            if (el.project.projectManagerId !== authId) {
+              throw new Error('Not Authorized');
+            }
+        })
+        await transactionalEntityManager.save(milestones);
+      })
+    return milestoneResponse
   }
 
-  async submitAnyMilestone(milestoneId: number): Promise<any | undefined> {
-    let milestone = await this.manager.findOne(Milestone, milestoneId, {
-      relations: ['project'],
-    });
+  async submitAnyMilestone(milestoneIds: []): Promise<any | undefined> {
+    let milestoneResponse = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let milestones = await this.manager.find(Milestone, {
+          where: { id: In(milestoneIds) },
+          relations: ['project'],
+        });
 
-    if (!milestone) {
-      throw new Error('Milestone not found');
-    }
+        if (!milestones.length) {
+          throw new Error('Milestone not found');
+        }
 
-    milestone.isApproved = 'SB';
-
-    return this.manager.save(milestone);
+        milestones.forEach((el)=>{
+          if(el.isApproved === 'AP'){
+            throw new Error('Cannot submit already approved certificate');
+          }else if (el.isApproved === 'SB'){
+            throw new Error('Cannot submit already submitted certificate');
+          }else{
+            el.isApproved = 'SB'
+          }
+        })
+        await transactionalEntityManager.save(milestones);
+      })
+    return milestoneResponse
   }
 
   async submitManageMilestone(
     authId: number,
-    milestoneId: number
+    milestoneIds: []
   ): Promise<any | undefined> {
-    let milestone = await this.manager.findOne(Milestone, milestoneId, {
-      relations: ['project'],
-    });
 
-    if (!milestone) {
-      throw new Error('Milestone not found');
-    }
+    let milestoneResponse = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let milestones = await this.manager.find(Milestone, {
+          where: { id: In(milestoneIds) },
+          relations: ['project'],
+        });
 
-    if (milestone.project.projectManagerId !== authId) {
-      throw new Error('Not Authorized');
-    }
+        if (!milestones.length) {
+          throw new Error('Milestone not found');
+        }
 
-    milestone.isApproved = 'SB';
+        milestones.forEach((el)=>{
+            if(el.isApproved === 'AP'){
+              throw new Error('Cannot submit already approved certificate');
+            }else if (el.isApproved === 'SB'){
+              throw new Error('Cannot submit already submitted certificate');
+            }else{
+              el.isApproved = 'SB'
+            }
 
-    return this.manager.save(milestone);
+            if (el.project.projectManagerId !== authId) {
+              throw new Error('Not Authorized');
+            }
+        })
+        await transactionalEntityManager.save(milestones);
+      })
+    return milestoneResponse
   }
 
-  async unapproveAnyMilestone(milestoneId: number): Promise<any | undefined> {
-    let milestone = await this.manager.findOne(Milestone, milestoneId, {
-      relations: ['project'],
-    });
+  async unapproveAnyMilestone(milestoneIds: []): Promise<any | undefined> {
+    let milestoneResponse = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let milestones = await this.manager.find(Milestone, {
+          where: { id: In(milestoneIds) },
+          relations: ['project'],
+        });
 
-    if (!milestone) {
-      throw new Error('Milestone not found');
-    }
+        if (!milestones.length) {
+          throw new Error('Milestone not found');
+        }
 
-    milestone.isApproved = '';
-
-    return this.manager.save(milestone);
+        milestones.forEach((el)=>{
+            if(el.isApproved !== 'AP'){
+              throw new Error('Can only unapprove approved certificate');
+            }else{
+              el.isApproved = ''
+            }
+        })
+        await transactionalEntityManager.save(milestones);
+      })
+    return milestoneResponse
   }
 
   async unapproveManageMilestone(
     authId: number,
-    milestoneId: number
+    milestoneIds: []
   ): Promise<any | undefined> {
-    let milestone = await this.manager.findOne(Milestone, milestoneId, {
-      relations: ['project'],
-    });
 
-    if (!milestone) {
-      throw new Error('Milestone not found');
-    }
+    let milestoneResponse = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let milestones = await this.manager.find(Milestone, {
+          where: { id: In(milestoneIds) },
+          relations: ['project'],
+        });
 
-    if (milestone.project.projectManagerId !== authId) {
-      throw new Error('Not Authorized');
-    }
+        if (!milestones.length) {
+          throw new Error('Milestone not found');
+        }
 
-    milestone.isApproved = '';
+        milestones.forEach((el)=>{
+            if(el.isApproved !== 'AP'){
+              throw new Error('Can only unapprove approved certificate');
+            }else{
+              el.isApproved = ''
+            }
 
-    return this.manager.save(milestone);
+            if (el.project.projectManagerId !== authId) {
+              throw new Error('Not Authorized');
+            }
+        })
+        await transactionalEntityManager.save(milestones);
+      })
+    return milestoneResponse
   }
 
   async deleteAnyMilestoneFile(milestoneId: number): Promise<any | undefined> {
@@ -1095,7 +1162,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       }
 
       if (milestone.isApproved === 'AP' || milestone.isApproved === 'SB'){
-        new Error ("Approved milestone can't update!")
+        throw new Error ("Approved milestone can't update!")
       }
 
       let resources = await transactionalEntityManager.find(

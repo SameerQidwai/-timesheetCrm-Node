@@ -60,14 +60,19 @@ export class ProjectMilestoneController {
     try {
       const repository = getCustomRepository(ProjectRepository);
       let records: any = [];
-      let milestoneId = req.params.id;
+      let milestoneIds = req.body.milestones;
+
+      if (!milestoneIds || milestoneIds.length == 0) {
+        throw new Error('Milestones not found');
+      }
+
       const { grantLevel, user } = res.locals;
       if (grantLevel.includes('ANY')) {
-        records = await repository.approveAnyMilestone(parseInt(milestoneId));
+        records = await repository.approveAnyMilestone(milestoneIds);
       } else if (grantLevel.includes('MANAGE')) {
         records = await repository.approveManageMilestone(
           user.id,
-          parseInt(milestoneId)
+          milestoneIds
         );
       }
 
@@ -85,14 +90,19 @@ export class ProjectMilestoneController {
     try {
       const repository = getCustomRepository(ProjectRepository);
       let records: any = [];
-      let milestoneId = req.params.id;
+      let milestoneIds = req.body.milestones;
+
+      if (!milestoneIds || milestoneIds.length == 0) {
+        throw new Error('Milestones not found');
+      }
+
       const { grantLevel, user } = res.locals;
       if (grantLevel.includes('ANY')) {
-        records = await repository.submitAnyMilestone(parseInt(milestoneId));
+        records = await repository.submitAnyMilestone(milestoneIds);
       } else if (grantLevel.includes('MANAGE')) {
         records = await repository.submitManageMilestone(
           user.id,
-          parseInt(milestoneId)
+          milestoneIds
         );
       }
 
@@ -109,14 +119,19 @@ export class ProjectMilestoneController {
     try {
       const repository = getCustomRepository(ProjectRepository);
       let records: any = [];
-      let milestoneId = req.params.id;
+      let milestoneIds = req.body.milestones;
+
+      if (!milestoneIds || milestoneIds.length == 0) {
+        throw new Error('Milestones not found');
+      }
+
       const { grantLevel, user } = res.locals;
       if (grantLevel.includes('ANY')) {
-        records = await repository.unapproveAnyMilestone(parseInt(milestoneId));
+        records = await repository.unapproveAnyMilestone(milestoneIds);
       } else if (grantLevel.includes('MANAGE')) {
         records = await repository.unapproveManageMilestone(
           user.id,
-          parseInt(milestoneId)
+          milestoneIds
         );
       }
 
