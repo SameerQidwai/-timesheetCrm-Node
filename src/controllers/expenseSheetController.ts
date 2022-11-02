@@ -95,36 +95,32 @@ export class ExpenseSheetController {
 
       let id = req.params.id;
       const { grantLevel } = res.locals;
+      let record: any;
       if (grantLevel.includes('ANY')) {
-      let record = await repository.updateAnyBillableAndReturn(
-        parseInt(res.locals.jwtPayload.id),
-        parseInt(id),
-        req.body
-      );
+        let record = await repository.updateAnyBillableAndReturn(
+          parseInt(res.locals.jwtPayload.id),
+          parseInt(id),
+          req.body
+        );
       } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
-      let record = await repository.updateOwnAndManageBillableAndReturn(
-        parseInt(res.locals.jwtPayload.id),
-        parseInt(id),
-        req.body
-      );
+        let record = await repository.updateOwnAndManageBillableAndReturn(
+          parseInt(res.locals.jwtPayload.id),
+          parseInt(id),
+          req.body
+        );
       } else if (grantLevel.includes('MANAGE')) {
-      let record = await repository.updateManageBillableAndReturn(
-        parseInt(res.locals.jwtPayload.id),
-        parseInt(id),
-        req.body
-      );
+        let record = await repository.updateManageBillableAndReturn(
+          parseInt(res.locals.jwtPayload.id),
+          parseInt(id),
+          req.body
+        );
       } else if (grantLevel.includes('OWN')) {
-      let record = await repository.updateOwnBillableAndReturn(
-        parseInt(res.locals.jwtPayload.id),
-        parseInt(id),
-        req.body
-      );
+        let record = await repository.updateOwnBillableAndReturn(
+          parseInt(res.locals.jwtPayload.id),
+          parseInt(id),
+          req.body
+        );
       }
-      let record = await repository.updateAndReturn(
-        parseInt(res.locals.jwtPayload.id),
-        parseInt(id),
-        req.body
-      );
       res.status(200).json({
         success: true,
         message: `Updated Successfully`,
@@ -174,7 +170,6 @@ export class ExpenseSheetController {
     }
   }
 
-  
   async unapprove(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(ExpenseSheetRepository);

@@ -390,13 +390,12 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       ],
     });
 
-    if(!result){
+    if (!result) {
       throw new Error('Expense not found');
     }
 
     result.isBillable = expenseSheetBillableDTO.isBillable ? true : false;
     await this.save(result);
-    
 
     return new ExpenseSheetResponse(result);
   }
@@ -410,8 +409,8 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       where: { createdBy: authId },
     });
 
-    if(!result){
-      throw new Error("Expense not found");
+    if (!result) {
+      throw new Error('Expense not found');
     }
 
     result.isBillable = expenseSheetBillableDTO.isBillable ? true : false;
@@ -463,8 +462,8 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       where: { projectId: In(projectIds) },
     });
 
-    if(!result){
-      throw new Error("Expense not found")
+    if (!result) {
+      throw new Error('Expense not found');
     }
 
     result.isBillable = expenseSheetBillableDTO.isBillable ? true : false;
@@ -516,8 +515,8 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       where: [{ projectId: In(projectIds) }, { createdBy: authId }],
     });
 
-    if(!result){
-      throw new Error("Expense not found")
+    if (!result) {
+      throw new Error('Expense not found');
     }
 
     result.isBillable = expenseSheetBillableDTO.isBillable ? true : false;
@@ -544,8 +543,10 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       }
 
       sheet.expenseSheetExpenses.forEach((expense) => {
-        if (expense.expense.approvedAt) {
-          throw new Error('Cannt delete sheet with approved expenses');
+        if (expense.expense.submittedAt || expense.expense.approvedAt) {
+          throw new Error(
+            'Cannt delete sheet with approved or submitted expenses'
+          );
         }
       });
 
@@ -734,6 +735,12 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         throw new Error('Expense sheet not found');
       }
 
+      let emplyoee = await transactionalEntityManager.findOne(Employee, authId);
+
+      if (!emplyoee) {
+        throw new Error('Employee not found');
+      }
+
       for (let sheet of expenseSheets) {
         for (let expense of sheet.expenseSheetExpenses) {
           if (expense.expense.submittedAt || expense.expense.approvedAt) {
@@ -741,15 +748,6 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           }
           expense.expense.rejectedAt = null;
           expense.expense.submittedAt = moment().toDate();
-
-          let emplyoee = await transactionalEntityManager.findOne(
-            Employee,
-            authId
-          );
-
-          if (!emplyoee) {
-            throw new Error('Employee not found');
-          }
 
           expense.expense.submitter = emplyoee;
 
@@ -783,6 +781,12 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         throw new Error('Expense sheet not found');
       }
 
+      let emplyoee = await transactionalEntityManager.findOne(Employee, authId);
+
+      if (!emplyoee) {
+        throw new Error('Employee not found');
+      }
+
       for (let sheet of expenseSheets) {
         for (let expense of sheet.expenseSheetExpenses) {
           if (!expense.expense.submittedAt) {
@@ -794,18 +798,9 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           }
 
           expense.expense.approvedAt = moment().toDate();
-          
-          let emplyoee = await transactionalEntityManager.findOne(
-            Employee,
-            authId
-          );
 
-          if (!emplyoee) {
-            throw new Error('Employee not found');
-          }
+          expense.expense.approver = emplyoee;
 
-          expense.expense.approver = emplyoee;  
-        
           transactionalEntityManager.save(Expense, expense.expense);
         }
 
@@ -836,6 +831,12 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         throw new Error('Expense sheet not found');
       }
 
+      let emplyoee = await transactionalEntityManager.findOne(Employee, authId);
+
+      if (!emplyoee) {
+        throw new Error('Employee not found');
+      }
+
       for (let sheet of expenseSheets) {
         for (let expense of sheet.expenseSheetExpenses) {
           if (!expense.expense.submittedAt) {
@@ -847,17 +848,11 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           }
 
           expense.expense.rejectedAt = moment().toDate();
-          
-          let emplyoee = await transactionalEntityManager.findOne(
-            Employee,
-            authId
-          );
 
-          if (!emplyoee) {
-            throw new Error('Employee not found');
-          }
+          expense.expense.rejecter = emplyoee;
 
-          expense.expense.rejecter = emplyoee;  
+          expense.expense.submittedAt = null;
+          expense.expense.submitter = null;
 
           transactionalEntityManager.save(Expense, expense.expense);
         }
@@ -889,28 +884,25 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         throw new Error('Expense sheet not found');
       }
 
+      let emplyoee = await transactionalEntityManager.findOne(Employee, authId);
+
+      if (!emplyoee) {
+        throw new Error('Employee not found');
+      }
+
       for (let sheet of expenseSheets) {
         for (let expense of sheet.expenseSheetExpenses) {
           if (!expense.expense.approvedAt) {
             throw new Error('Sheet Not Approved');
           }
 
-
           expense.expense.approvedAt = null;
           expense.expense.submittedAt = null;
-          
-          let emplyoee = await transactionalEntityManager.findOne(
-            Employee,
-            authId
-          );
 
-          if (!emplyoee) {
-            throw new Error('Employee not found');
-          }
+          expense.expense.submitter = null;
+          expense.expense.approver = null;
+          expense.expense.rejecter = emplyoee;
 
-          expense.expense.approver = null;  
-          expense.expense.submitter = null;  
-        
           transactionalEntityManager.save(Expense, expense.expense);
         }
 

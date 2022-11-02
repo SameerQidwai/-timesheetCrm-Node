@@ -465,8 +465,8 @@ export class ExpenseRepository extends Repository<Expense> {
         throw new Error('Expense not found');
       }
 
-      if (expense.submittedAt || expense.approvedAt) {
-        throw new Error('Expense is in submitted or approved');
+      if (!expense.rejectedAt && expense.entries.length > 0) {
+        throw new Error('Expense is in sheet');
       }
 
       if (expense.entries.length)
