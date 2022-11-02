@@ -130,8 +130,10 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       if (
         moment(sheet.createdAt).isBetween(mStartDate, mEndDate, 'date', '[]')
       ) {
-        if (!isNaN(projectId) && projectId !== 0) {
+        if (!isNaN(projectId)) {
           if (sheet.projectId === projectId) {
+            response.push(sheet);
+          } else if (sheet.projectId === null && projectId === 0) {
             response.push(sheet);
           }
         } else {
@@ -162,8 +164,11 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       if (
         moment(sheet.createdAt).isBetween(mStartDate, mEndDate, 'date', '[]')
       ) {
-        if (!isNaN(projectId) && projectId !== 0) {
+        if (!isNaN(projectId)) {
           if (sheet.projectId === projectId) {
+            response.push(sheet);
+          }
+          if (sheet.projectId === null && projectId === 0) {
             response.push(sheet);
           }
         } else {
@@ -228,8 +233,11 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       if (
         moment(sheet.createdAt).isBetween(mStartDate, mEndDate, 'date', '[]')
       ) {
-        if (!isNaN(projectId) && projectId !== 0) {
+        if (!isNaN(projectId)) {
           if (sheet.projectId === projectId) {
+            response.push(sheet);
+          }
+          if (sheet.projectId === null && projectId === 0) {
             response.push(sheet);
           }
         } else {
@@ -294,8 +302,11 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       if (
         moment(sheet.createdAt).isBetween(mStartDate, mEndDate, 'date', '[]')
       ) {
-        if (!isNaN(projectId) && projectId !== 0) {
+        if (!isNaN(projectId)) {
           if (sheet.projectId === projectId) {
+            response.push(sheet);
+          }
+          if (sheet.projectId === null && projectId === 0) {
             response.push(sheet);
           }
         } else {
