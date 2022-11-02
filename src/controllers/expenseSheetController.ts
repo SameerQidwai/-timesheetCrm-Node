@@ -9,9 +9,9 @@ export class ExpenseSheetController {
       const repository = getCustomRepository(ExpenseSheetRepository);
       let records = [];
       const { grantLevel } = res.locals;
-      let startDate = req.params.startDate as string;
-      let endDate = req.params.endDate as string;
-      let projectId = parseInt(req.params.projectId) as number;
+      let startDate = req.query.startDate as string;
+      let endDate = req.query.endDate as string;
+      let projectId = parseInt(req.query.projectId?.toString() ?? '');
 
       if (grantLevel.includes('ANY')) {
         records = await repository.getAllActive(startDate, endDate, projectId);

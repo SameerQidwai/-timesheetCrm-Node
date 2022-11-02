@@ -1,4 +1,11 @@
-import { Entity, Column, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 import { Attachment } from './attachment';
 import { Base } from './common/base';
 import { Employee } from './employee';
@@ -32,7 +39,7 @@ export class ExpenseSheet extends Base {
 
   @OneToMany(
     () => ExpenseSheetExpense,
-    (expenseSheetExpenses) => expenseSheetExpenses.sheet,
+    (expenseSheetExpense) => expenseSheetExpense.sheet,
     {
       cascade: true,
     }

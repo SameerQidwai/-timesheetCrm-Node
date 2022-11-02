@@ -6,7 +6,15 @@ import {
   ExpenseSheetsRejectDTO,
   ExpenseSheetsSubmitDTO,
 } from '../dto';
-import { EntityRepository, In, Not, Repository } from 'typeorm';
+import {
+  Between,
+  EntityRepository,
+  In,
+  MoreThan,
+  MoreThanOrEqual,
+  Not,
+  Repository,
+} from 'typeorm';
 import { Opportunity } from './../entities/opportunity';
 import { Employee } from '../entities/employee';
 
@@ -111,9 +119,28 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     projectId: number
   ): Promise<any[]> {
+    let mStartDate = moment(startDate, 'DD-MM-YYYY');
+    let mEndDate = moment(endDate, 'DD-MM-YYYY');
+
     let result = await this._findManyCustom({});
 
-    return new ExpenseSheetsResponse(result).sheets;
+    let response: ExpenseSheet[] = [];
+
+    result.forEach((sheet) => {
+      if (
+        moment(sheet.createdAt).isBetween(mStartDate, mEndDate, 'date', '[]')
+      ) {
+        if (!isNaN(projectId) && projectId !== 0) {
+          if (sheet.projectId === projectId) {
+            response.push(sheet);
+          }
+        } else {
+          response.push(sheet);
+        }
+      }
+    });
+
+    return new ExpenseSheetsResponse(response).sheets;
   }
 
   async getOwnActive(
@@ -122,11 +149,30 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     projectId: number
   ): Promise<any[]> {
+    let mStartDate = moment(startDate, 'DD-MM-YYYY');
+    let mEndDate = moment(endDate, 'DD-MM-YYYY');
+
     let results = await this._findManyCustom({
       where: { createdBy: authId },
     });
 
-    return new ExpenseSheetsResponse(results).sheets;
+    let response: ExpenseSheet[] = [];
+
+    results.forEach((sheet) => {
+      if (
+        moment(sheet.createdAt).isBetween(mStartDate, mEndDate, 'date', '[]')
+      ) {
+        if (!isNaN(projectId) && projectId !== 0) {
+          if (sheet.projectId === projectId) {
+            response.push(sheet);
+          }
+        } else {
+          response.push(sheet);
+        }
+      }
+    });
+
+    return new ExpenseSheetsResponse(response).sheets;
   }
 
   async getManageActive(
@@ -135,6 +181,9 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     projectId: number
   ): Promise<any[]> {
+    let mStartDate = moment(startDate, 'DD-MM-YYYY');
+    let mEndDate = moment(endDate, 'DD-MM-YYYY');
+
     let employee = await this.manager.findOne(Employee, authId, {
       relations: [
         'contactPersonOrganization',
@@ -173,7 +222,23 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       where: { projectId: In(projectIds) },
     });
 
-    return new ExpenseSheetsResponse(results).sheets;
+    let response: ExpenseSheet[] = [];
+
+    results.forEach((sheet) => {
+      if (
+        moment(sheet.createdAt).isBetween(mStartDate, mEndDate, 'date', '[]')
+      ) {
+        if (!isNaN(projectId) && projectId !== 0) {
+          if (sheet.projectId === projectId) {
+            response.push(sheet);
+          }
+        } else {
+          response.push(sheet);
+        }
+      }
+    });
+
+    return new ExpenseSheetsResponse(response).sheets;
   }
 
   async getOwnAndManageActive(
@@ -182,6 +247,9 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     projectId: number
   ): Promise<any[]> {
+    let mStartDate = moment(startDate, 'DD-MM-YYYY');
+    let mEndDate = moment(endDate, 'DD-MM-YYYY');
+
     let employee = await this.manager.findOne(Employee, authId, {
       relations: [
         'contactPersonOrganization',
@@ -220,7 +288,23 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       where: [{ projectId: In(projectIds) }, { createdBy: authId }],
     });
 
-    return new ExpenseSheetsResponse(results).sheets;
+    let response: ExpenseSheet[] = [];
+
+    results.forEach((sheet) => {
+      if (
+        moment(sheet.createdAt).isBetween(mStartDate, mEndDate, 'date', '[]')
+      ) {
+        if (!isNaN(projectId) && projectId !== 0) {
+          if (sheet.projectId === projectId) {
+            response.push(sheet);
+          }
+        } else {
+          response.push(sheet);
+        }
+      }
+    });
+
+    return new ExpenseSheetsResponse(response).sheets;
   }
 
   async findOneCustom(authId: number, id: number): Promise<any | undefined> {
