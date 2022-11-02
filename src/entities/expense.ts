@@ -1,12 +1,4 @@
-import {
-  Entity,
-  Column,
-  JoinColumn,
-  ManyToOne,
-  ManyToMany,
-  OneToMany,
-} from 'typeorm';
-import { Attachment } from './attachment';
+import { Entity, Column, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Base } from './common/base';
 import { Employee } from './employee';
 import { ExpenseSheetExpense } from './expenseSheetExpense';
@@ -95,9 +87,4 @@ export class Expense extends Base {
     }
   )
   entries: ExpenseSheetExpense[];
-
-  @OneToMany(() => Attachment, (attachments) => attachments.entity, {
-    cascade: true,
-  })
-  attachments: Attachment[];
 }

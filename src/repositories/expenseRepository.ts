@@ -481,13 +481,7 @@ export class ExpenseRepository extends Repository<Expense> {
   async _findOneCustom(authId: number, id: number): Promise<Expense> {
     let result = await this.findOne(id, {
       where: { createdBy: authId },
-      relations: [
-        'expenseType',
-        'project',
-        'attachments',
-        'attachments.file',
-        'entries',
-      ],
+      relations: ['expenseType', 'project', 'entries'],
     });
 
     if (!result) {
@@ -500,13 +494,7 @@ export class ExpenseRepository extends Repository<Expense> {
   async _findManyCustom(options: {}): Promise<Expense[] | []> {
     let results = await this.find({
       ...options,
-      relations: [
-        'expenseType',
-        'project',
-        'attachments',
-        'attachments.file',
-        'entries',
-      ],
+      relations: ['expenseType', 'project', 'entries'],
       order: { id: 'ASC' },
     });
 

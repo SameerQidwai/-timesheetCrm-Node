@@ -43,12 +43,6 @@ export class ExpenseSheetResponse {
     this.submittedBy =
       sheet.expenseSheetExpenses[0]?.expense.submitter.getFullName ?? null;
 
-    this.attachments = new AttachmentsResponse(
-      sheet.attachments.filter(
-        (attachment) => attachment.targetType === EntityType.EXPENSE_SHEET
-      )
-    ).attachments;
-
     this.expenseSheetExpenses = new ExpenseSheetExpensesResponse(
       sheet.expenseSheetExpenses
     ).expenses;

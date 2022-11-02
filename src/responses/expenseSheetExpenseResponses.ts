@@ -14,7 +14,6 @@ export class ExpenseSheetExpenseResponse {
   isReimbursed: Boolean;
   isInSheet: Boolean;
   notes: string | null;
-  attachments: AttachmentResponse[];
 
   constructor(expense: ExpenseSheetExpense) {
     this.id = expense.id;

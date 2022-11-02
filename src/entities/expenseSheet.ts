@@ -3,8 +3,6 @@ import { Attachment } from './attachment';
 import { Base } from './common/base';
 import { Employee } from './employee';
 import { ExpenseSheetExpense } from './expenseSheetExpense';
-import { ExpenseType } from './expenseType';
-import { Milestone } from './milestone';
 import { Opportunity } from './opportunity';
 
 @Entity('expense_sheets')
@@ -40,9 +38,4 @@ export class ExpenseSheet extends Base {
     }
   )
   expenseSheetExpenses: ExpenseSheetExpense[];
-
-  @OneToMany(() => Attachment, (attachments) => attachments.entity, {
-    cascade: true,
-  })
-  attachments: Attachment[];
 }
