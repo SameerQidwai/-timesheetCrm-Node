@@ -1162,7 +1162,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       }
 
       if (milestone.isApproved === 'AP' || milestone.isApproved === 'SB'){
-        new Error ("Approved milestone can't update!")
+        throw new Error ("Approved milestone can't update!")
       }
 
       let resources = await transactionalEntityManager.find(

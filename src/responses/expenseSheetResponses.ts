@@ -11,7 +11,8 @@ export class ExpenseSheetResponse {
   projectName: String | null;
   amount: number = 0;
   status: string;
-  notes: string
+  notes: string;
+  isBillable: Boolean;
   submittedAt: Date | null;
   submittedBy: string | null;
   attachments: AttachmentResponse[];
@@ -22,6 +23,7 @@ export class ExpenseSheetResponse {
     this.id = sheet.id;
     this.label = sheet.label;
     this.projectId = sheet.projectId;
+    this.isBillable = sheet.isBillable;
     this.projectName = sheet.project?.title ?? null;
     this.notes = sheet.notes
     sheet.expenseSheetExpenses.forEach((expense) => {
