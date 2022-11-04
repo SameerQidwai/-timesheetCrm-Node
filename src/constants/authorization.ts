@@ -17,6 +17,7 @@ export enum Resource {
   TIMESHEETS = 'TIMESHEETS',
   PROFILE = 'PROFILE',
   LEAVE_REQUESTS = 'LEAVE_REQUESTS',
+  EXPENSES = 'EXPENSES',
 }
 
 export enum Grant {
