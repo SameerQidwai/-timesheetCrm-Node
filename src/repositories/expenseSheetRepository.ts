@@ -940,11 +940,11 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
             throw new Error('Sheet already approved');
           }
 
+          expense.expense.submittedAt = null;
           expense.expense.rejectedAt = moment().toDate();
 
           expense.expense.rejecter = emplyoee;
 
-          expense.expense.submittedAt = null;
           expense.expense.submitter = null;
 
           transactionalEntityManager.save(Expense, expense.expense);
@@ -991,6 +991,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
 
           expense.expense.approvedAt = null;
           expense.expense.submittedAt = null;
+          expense.expense.rejectedAt = moment().toDate();
 
           expense.expense.submitter = null;
           expense.expense.approver = null;
