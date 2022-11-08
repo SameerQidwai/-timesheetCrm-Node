@@ -3011,9 +3011,12 @@ export class ProjectRepository extends Repository<Opportunity> {
     project.milestones.forEach((milestone) => {
       milestone.opportunityResources.forEach((resource) => {
         resource.opportunityResourceAllocations.forEach((allocation) => {
-          value +=
+          if(allocation.isMarkedAsSelected){
+            value +=
             parseFloat(allocation.sellingRate as any) *
-            parseInt(resource.billableHours as any);
+            parseFloat(resource.billableHours as any);
+          }
+
         });
       });
       milestone.expenses.forEach((expense) => {
@@ -3047,9 +3050,11 @@ export class ProjectRepository extends Repository<Opportunity> {
     project.milestones.forEach((milestone) => {
       milestone.opportunityResources.forEach((resource) => {
         resource.opportunityResourceAllocations.forEach((allocation) => {
+          if(allocation.isMarkedAsSelected){
           value +=
             parseFloat(allocation.sellingRate as any) *
-            parseInt(resource.billableHours as any);
+            parseFloat(resource.billableHours as any);
+          }
         });
       });
       milestone.expenses.forEach((expense) => {
