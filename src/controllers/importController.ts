@@ -517,7 +517,7 @@ export class ImportController {
       milestoneObj.description = '-';
       milestoneObj.startDate = newOpportunity.startDate;
       milestoneObj.endDate = newOpportunity.endDate;
-      milestoneObj.isApproved = false;
+      milestoneObj.isApproved = '';
       milestoneObj.projectId = newOpportunity.id;
       milestoneObj.progress = 0;
 
@@ -665,7 +665,7 @@ export class ImportController {
       milestoneObj.description = '-';
       milestoneObj.startDate = newProject.startDate;
       milestoneObj.endDate = newProject.endDate;
-      milestoneObj.isApproved = false;
+      milestoneObj.isApproved = '';
       milestoneObj.projectId = newProject.id;
       milestoneObj.progress = 0;
 
@@ -699,7 +699,7 @@ export class ImportController {
           (x) => x.organizationId == 1
         )[0];
       if (!contactPersonOrganization) {
-        throw new Error('Not associated with oneLM');
+        throw new Error(`Not associated with ${process.env.ORGANIZATION}`);
       } else {
         let oldOrganization =
           contactPersonObj.contactPersonOrganizations.filter(

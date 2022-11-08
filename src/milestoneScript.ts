@@ -21,7 +21,7 @@ connection
         milestone.progress = 0;
         milestone.startDate = work.startDate;
         milestone.endDate = work.endDate;
-        milestone.isApproved = false;
+        milestone.isApproved = '';
         milestone.projectId = work.id;
         milestone.createdAt = work.createdAt;
         milestone.deletedAt = work.deletedAt;

@@ -11,11 +11,11 @@ export let sendMail = (
 ) => {
   // Create a SMTP transporter object
 
-  let MAILER_HOST = 'smtp.office365.com';
-  let MAILER_PORT = 587;
-  let MAILER_SSL = true;
-  let MAILER_USER = 'support@timewize.com.au';
-  let MAILER_PWD = '123123testtest';
+  let MAILER_HOST: any = process.env.MAILER_HOST;
+  let MAILER_PORT: any = process.env.MAILER_PORT;
+  let MAILER_SSL: any = process.env.MAILER_SSL === 'true';
+  let MAILER_USER: any = process.env.MAILER_USER;
+  let MAILER_PWD: any = process.env.MAILER_PWD;
 
   let transporter = nodemailer.createTransport({
     host: MAILER_HOST,
@@ -29,7 +29,7 @@ export let sendMail = (
 
   // Message object
   let mail = {
-    from: `OneLM <${from}>`,
+    from: `${process.env.ORGANIZATION} <${from}>`,
     to: `${to.username} <${to.email}>`,
     // from: `Sender Name <${from}>`,
     // to: `Recipient <${to}>`,

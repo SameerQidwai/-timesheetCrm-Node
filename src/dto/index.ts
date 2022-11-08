@@ -1,3 +1,4 @@
+import { ExpenseSheetExpense } from '../entities/expenseSheetExpense';
 import { Action, Grant, Resource } from './../constants/authorization';
 import {
   EmploymentType,
@@ -436,7 +437,7 @@ export interface MilestoneDTO extends Base {
   startDate: Date;
   endDate: Date;
   progress: number;
-  isApproved: Boolean;
+  isApproved: string;
   projectId: number;
 }
 
@@ -674,4 +675,59 @@ export interface MilestoneExpenseDTO extends Base {
   expenseId: number;
   buyingRate: number;
   sellingRate: number;
+}
+
+export interface ExpenseSheetDTO extends Base {
+  label: String;
+  projectId: number;
+  attachments: number[];
+  isBillable: boolean;
+  expenseSheetExpenses: ExpenseSheetExpense[];
+}
+
+export interface ExpenseSheetBillableDTO extends Base {
+  isBillable: boolean
+}
+
+export interface ExpenseDTO extends Base {
+  amount: number;
+  date: Date;
+  isReimbursed: boolean;
+  isBillable: boolean;
+  notes: string;
+  expenseTypeId: number;
+  submittedAt: Date;
+  approvedAt: Date;
+  rejectedAt: Date;
+  attachments: number[];
+  projectId: number;
+}
+
+export interface ExpenseSheetApproveDTO extends Base {
+  expenses: number[];
+  isBillable: boolean;
+  notes: string;
+}
+
+export interface ExpenseSheetRejectDTO extends Base {
+  expenses: number[];
+  isBillable: boolean;
+  notes: string;
+}
+
+export interface ExpenseSheetsSubmitDTO extends Base {
+  sheets: number[];
+  isBillable: boolean;
+  notes: string;
+}
+export interface ExpenseSheetsApproveDTO extends Base {
+  sheets: number[];
+  isBillable: boolean;
+  notes: string;
+}
+
+export interface ExpenseSheetsRejectDTO extends Base {
+  sheets: number[];
+  isBillable: boolean;
+  notes: string;
 }

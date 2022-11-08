@@ -15,10 +15,31 @@ router
   );
 
 router
-  .route('/:id/approve')
-  .get(
+  .route('/approve')
+  .patch(
     [isLoggedIn, can(Action.APPROVAL, Resource.TIMESHEETS)],
     contr.approveMilestone.bind(contr)
+  );
+
+router
+  .route('/submit')
+  .patch(
+    [isLoggedIn, can(Action.UPDATE, Resource.TIMESHEETS)],
+    contr.submitMilestone.bind(contr)
+  );
+
+router
+  .route('/unapprove')
+  .patch(
+    [isLoggedIn, can(Action.UNAPPROVAL, Resource.TIMESHEETS)],
+    contr.unapproveMilestone.bind(contr)
+  );
+
+router
+  .route('/:id/delete-certificate')
+  .delete(
+    [isLoggedIn, can(Action.UPDATE, Resource.TIMESHEETS)],
+    contr.deleteMilestoneFile.bind(contr)
   );
 
 router

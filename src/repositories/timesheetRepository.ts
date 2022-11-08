@@ -1551,7 +1551,9 @@ export class TimesheetRepository extends Repository<Timesheet> {
           );
 
           let deleteableAttachments: Attachment[] = [];
-          let newAttachments = [...milestoneEntriesUpdateDTO.attachments];
+          let newAttachments = [
+            ...new Set(milestoneEntriesUpdateDTO.attachments),
+          ];
           let oldAttachments = await transactionalEntityManager.find(
             Attachment,
             {
@@ -1563,7 +1565,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
             oldAttachments.forEach((oldAttachment) => {
               let flag_found = false;
 
-              milestoneEntriesUpdateDTO.attachments.forEach((attachment) => {
+              newAttachments.forEach((attachment) => {
                 let _indexOf = newAttachments.indexOf(attachment);
                 if (oldAttachment.fileId === attachment) {
                   flag_found = true;

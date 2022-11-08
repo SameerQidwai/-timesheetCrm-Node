@@ -72,6 +72,8 @@ export enum EntityType {
   PROJECT_ENTRY = 'PEN',
   LEAVE_REQUEST = 'LRE',
   MILESTONE = 'MIL',
+  EXPENSE = 'EXP',
+  EXPENSE_SHEET = 'ESH',
 }
 
 export enum OpportunityStatus {
@@ -119,4 +121,11 @@ export enum ImportLogName {
   PROJECT = 'projects_logs.xlsx',
   EMPLOYEE = 'employees_logs.xlsx',
   SUB_CONTRACTOR = 'subcontractors_logs.xlsx',
+}
+
+export enum ExpenseSheetStatus {
+  SAVED = 'SV',
+  SUBMITTED = 'SB',
+  REJECTED = 'RJ',
+  APPROVED = 'AP',
 }

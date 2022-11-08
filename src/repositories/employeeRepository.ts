@@ -62,7 +62,7 @@ export class EmployeeRepository extends Repository<Employee> {
           (x) => x.organizationId == 1
         )[0];
       if (!contactPersonOrganization) {
-        throw new Error('Not associated with oneLM');
+        throw new Error(`Not associated with ${process.env.ORGANIZATION}`);
       } else {
         let oldOrganization =
           contactPersonObj.contactPersonOrganizations.filter(
@@ -232,10 +232,15 @@ export class EmployeeRepository extends Repository<Employee> {
     };
     try {
       sendMail(
-        'crm.onelm.com',
+        process.env.MAILER_ADDRESS,
         user,
-        'Account Password',
-        `You registered account password is ${generatedPassword}`
+        `Invitation to ${process.env.ORGANIZATION}`,
+        `Hello,
+You have been invited to ${process.env.ORGANIZATION}. 
+Your registered account password is ${generatedPassword}. Please visit ${process.env.ENV_URL} to login.
+        
+Regards,
+${process.env.ORGANIZATION} Support Team`
       );
     } catch (e) {
       console.log(e);
@@ -1102,7 +1107,7 @@ export class EmployeeRepository extends Repository<Employee> {
               }
 
               if (org.status == 1 && flag_found == 1) {
-                cpEmployeeID = org.employee.id;
+                cpEmployeeID = org.employee?.id;
               }
             }
           }

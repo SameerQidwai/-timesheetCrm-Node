@@ -9,6 +9,8 @@ import {
 import { Base } from './common/base';
 import { File } from './file';
 import { EntityType } from '../constants/constants';
+import { Expense } from './expense';
+import { ExpenseSheet } from './expenseSheet';
 
 @Entity('attachments')
 export class Attachment extends Base {

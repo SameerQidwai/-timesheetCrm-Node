@@ -113,9 +113,25 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
   }
 
   async getAllActive(): Promise<any[]> {
-    return this.find({
-      relations: ['standardSkillStandardLevels', 'contactPersonOrganizations'],
+    let contactPersons = await this.find({
+      relations: [
+        'standardSkillStandardLevels',
+        'contactPersonOrganizations',
+        'contactPersonOrganizations.employee',
+        'contactPersonOrganizations.employee.contactPersonOrganization',
+      ],
     });
+
+    contactPersons.forEach((cp) => {
+      (cp as any).employee = cp.getEmployee;
+      (cp as any).employementStatus = cp.getEmployee
+        ? cp.getEmployee.contactPersonOrganization.organizationId == 1
+          ? 'Employee'
+          : 'Sub Contractor'
+        : 'Contact Person';
+    });
+
+    return contactPersons;
   }
 
   async updateAndReturn(
@@ -267,9 +283,27 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
   }
 
   async findOneCustom(id: number): Promise<any | undefined> {
-    return this.findOne(id, {
-      relations: ['standardSkillStandardLevels', 'contactPersonOrganizations'],
+    let contactPerson = await this.findOne(id, {
+      relations: [
+        'standardSkillStandardLevels',
+        'contactPersonOrganizations',
+        'contactPersonOrganizations.employee',
+        'contactPersonOrganizations.employee.contactPersonOrganization',
+      ],
     });
+
+    if (!contactPerson) {
+      throw new Error('Contact Person not found');
+    }
+
+    (contactPerson as any).employee = contactPerson.getEmployee;
+    (contactPerson as any).employementStatus = contactPerson.getEmployee
+      ? contactPerson.getEmployee.contactPersonOrganization.organizationId == 1
+        ? 'Employee'
+        : 'Sub Contractor'
+      : 'Contact Person';
+
+    return contactPerson;
   }
 
   async deleteCustom(id: number): Promise<any | undefined> {
