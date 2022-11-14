@@ -1020,6 +1020,10 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       relations: [
         'expenseSheetExpenses',
         'expenseSheetExpenses.expense',
+        'expenseSheetExpenses.expense.entries',
+        'expenseSheetExpenses.expense.creator',
+        'expenseSheetExpenses.expense.creator.contactPersonOrganization',
+        'expenseSheetExpenses.expense.creator.contactPersonOrganization.contactPerson',
         'expenseSheetExpenses.expense.submitter',
         'expenseSheetExpenses.expense.submitter.contactPersonOrganization',
         'expenseSheetExpenses.expense.submitter.contactPersonOrganization.contactPerson',
@@ -1038,6 +1042,10 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       relations: [
         'expenseSheetExpenses',
         'expenseSheetExpenses.expense',
+        'expenseSheetExpenses.expense.entries',
+        'expenseSheetExpenses.expense.creator',
+        'expenseSheetExpenses.expense.creator.contactPersonOrganization',
+        'expenseSheetExpenses.expense.creator.contactPersonOrganization.contactPerson',
         'expenseSheetExpenses.expense.submitter',
         'expenseSheetExpenses.expense.submitter.contactPersonOrganization',
         'expenseSheetExpenses.expense.submitter.contactPersonOrganization.contactPerson',

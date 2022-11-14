@@ -737,7 +737,6 @@ export interface ProjectScheduleDTO extends Base {
   endDate: Date;
   notes: string;
   amount: number;
-  projectId: number;
   segments: {
     startDate: number;
     endDate: number;

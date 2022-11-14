@@ -5,6 +5,7 @@ import {
   MilestoneDTO,
   MilestoneUploadDTO,
   MilestoneExpenseDTO,
+  ProjectScheduleDTO,
 } from '../dto';
 import {
   EntityRepository,
@@ -28,7 +29,7 @@ import { Milestone } from '../entities/milestone';
 import { Attachment } from '../entities/attachment';
 import { Comment } from '../entities/comment';
 import { Timesheet } from '../entities/timesheet';
-import moment, { Moment, parseTwoDigitYear } from 'moment';
+import moment, { Moment } from 'moment';
 import { LeaveRequest } from '../entities/leaveRequest';
 import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
 import { MilestoneExpense } from '../entities/milestoneExpense';
@@ -40,10 +41,10 @@ import {
 } from '../constants/constants';
 import { File } from '../entities/file';
 import { ExpenseType } from '../entities/expenseType';
-import { number } from 'joi';
-import { time } from 'console';
 import { EmploymentContract } from '../entities/employmentContract';
 import { getProjectsByUserId } from '../utilities/helperFunctions';
+import { ProjectSchedule } from '../entities/projectSchedule';
+import { ProjectScheduleSegment } from '../entities/projectScheduleSegment';
 
 @EntityRepository(Opportunity)
 export class ProjectRepository extends Repository<Opportunity> {
@@ -764,23 +765,23 @@ export class ProjectRepository extends Repository<Opportunity> {
           throw new Error('Milestone not found');
         }
 
-        milestones.forEach((el)=>{
-          if(el.isApproved !== 'SB'){
+        milestones.forEach((el) => {
+          if (el.isApproved !== 'SB') {
             throw new Error('Can only approve sumbitted certificate');
-          }else{
-            el.isApproved = 'AP'
+          } else {
+            el.isApproved = 'AP';
           }
-        })
+        });
         await transactionalEntityManager.save(milestones);
-      })
-    return milestoneResponse
+      }
+    );
+    return milestoneResponse;
   }
 
   async approveManageMilestone(
     authId: number,
     milestoneIds: []
   ): Promise<any | undefined> {
-
     let milestoneResponse = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let milestones = await this.manager.find(Milestone, {
@@ -792,20 +793,21 @@ export class ProjectRepository extends Repository<Opportunity> {
           throw new Error('Milestone not found');
         }
 
-        milestones.forEach((el)=>{
-            if(el.isApproved !== 'SB'){
-              throw new Error('Can only approve sumbitted certificate');
-            }else{
-              el.isApproved = 'AP'
-            }
+        milestones.forEach((el) => {
+          if (el.isApproved !== 'SB') {
+            throw new Error('Can only approve sumbitted certificate');
+          } else {
+            el.isApproved = 'AP';
+          }
 
-            if (el.project.projectManagerId !== authId) {
-              throw new Error('Not Authorized');
-            }
-        })
+          if (el.project.projectManagerId !== authId) {
+            throw new Error('Not Authorized');
+          }
+        });
         await transactionalEntityManager.save(milestones);
-      })
-    return milestoneResponse
+      }
+    );
+    return milestoneResponse;
   }
 
   async submitAnyMilestone(milestoneIds: []): Promise<any | undefined> {
@@ -820,25 +822,25 @@ export class ProjectRepository extends Repository<Opportunity> {
           throw new Error('Milestone not found');
         }
 
-        milestones.forEach((el)=>{
-          if(el.isApproved === 'AP'){
+        milestones.forEach((el) => {
+          if (el.isApproved === 'AP') {
             throw new Error('Cannot submit already approved certificate');
-          }else if (el.isApproved === 'SB'){
+          } else if (el.isApproved === 'SB') {
             throw new Error('Cannot submit already submitted certificate');
-          }else{
-            el.isApproved = 'SB'
+          } else {
+            el.isApproved = 'SB';
           }
-        })
+        });
         await transactionalEntityManager.save(milestones);
-      })
-    return milestoneResponse
+      }
+    );
+    return milestoneResponse;
   }
 
   async submitManageMilestone(
     authId: number,
     milestoneIds: []
   ): Promise<any | undefined> {
-
     let milestoneResponse = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let milestones = await this.manager.find(Milestone, {
@@ -850,22 +852,23 @@ export class ProjectRepository extends Repository<Opportunity> {
           throw new Error('Milestone not found');
         }
 
-        milestones.forEach((el)=>{
-            if(el.isApproved === 'AP'){
-              throw new Error('Cannot submit already approved certificate');
-            }else if (el.isApproved === 'SB'){
-              throw new Error('Cannot submit already submitted certificate');
-            }else{
-              el.isApproved = 'SB'
-            }
+        milestones.forEach((el) => {
+          if (el.isApproved === 'AP') {
+            throw new Error('Cannot submit already approved certificate');
+          } else if (el.isApproved === 'SB') {
+            throw new Error('Cannot submit already submitted certificate');
+          } else {
+            el.isApproved = 'SB';
+          }
 
-            if (el.project.projectManagerId !== authId) {
-              throw new Error('Not Authorized');
-            }
-        })
+          if (el.project.projectManagerId !== authId) {
+            throw new Error('Not Authorized');
+          }
+        });
         await transactionalEntityManager.save(milestones);
-      })
-    return milestoneResponse
+      }
+    );
+    return milestoneResponse;
   }
 
   async unapproveAnyMilestone(milestoneIds: []): Promise<any | undefined> {
@@ -880,23 +883,23 @@ export class ProjectRepository extends Repository<Opportunity> {
           throw new Error('Milestone not found');
         }
 
-        milestones.forEach((el)=>{
-            if(el.isApproved !== 'AP'){
-              throw new Error('Can only unapprove approved certificate');
-            }else{
-              el.isApproved = ''
-            }
-        })
+        milestones.forEach((el) => {
+          if (el.isApproved !== 'AP') {
+            throw new Error('Can only unapprove approved certificate');
+          } else {
+            el.isApproved = '';
+          }
+        });
         await transactionalEntityManager.save(milestones);
-      })
-    return milestoneResponse
+      }
+    );
+    return milestoneResponse;
   }
 
   async unapproveManageMilestone(
     authId: number,
     milestoneIds: []
   ): Promise<any | undefined> {
-
     let milestoneResponse = await this.manager.transaction(
       async (transactionalEntityManager) => {
         let milestones = await this.manager.find(Milestone, {
@@ -908,20 +911,21 @@ export class ProjectRepository extends Repository<Opportunity> {
           throw new Error('Milestone not found');
         }
 
-        milestones.forEach((el)=>{
-            if(el.isApproved !== 'AP'){
-              throw new Error('Can only unapprove approved certificate');
-            }else{
-              el.isApproved = ''
-            }
+        milestones.forEach((el) => {
+          if (el.isApproved !== 'AP') {
+            throw new Error('Can only unapprove approved certificate');
+          } else {
+            el.isApproved = '';
+          }
 
-            if (el.project.projectManagerId !== authId) {
-              throw new Error('Not Authorized');
-            }
-        })
+          if (el.project.projectManagerId !== authId) {
+            throw new Error('Not Authorized');
+          }
+        });
         await transactionalEntityManager.save(milestones);
-      })
-    return milestoneResponse
+      }
+    );
+    return milestoneResponse;
   }
 
   async deleteAnyMilestoneFile(milestoneId: number): Promise<any | undefined> {
@@ -933,7 +937,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       throw new Error('Milestone not found');
     }
 
-    let newMilestone: any = milestone 
+    let newMilestone: any = milestone;
     newMilestone.fileId = null;
 
     return this.manager.save(milestone);
@@ -955,7 +959,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       throw new Error('Not Authorized');
     }
 
-    let newMilestone: any = milestone 
+    let newMilestone: any = milestone;
     newMilestone.fileId = null;
 
     return this.manager.save(milestone);
@@ -1095,7 +1099,7 @@ export class ProjectRepository extends Repository<Opportunity> {
         if (milestoneDTO.startDate) {
           milestone.endDate = new Date(milestoneDTO.endDate);
         }
-        milestone.isApproved = milestoneDTO.isApproved?? '';
+        milestone.isApproved = milestoneDTO.isApproved ?? '';
         milestone.projectId = projectId;
         milestone.progress = milestoneDTO.progress;
         return this.manager.save(milestone);
@@ -1161,8 +1165,8 @@ export class ProjectRepository extends Repository<Opportunity> {
         throw new Error('Milestone not found!');
       }
 
-      if (milestone.isApproved === 'AP' || milestone.isApproved === 'SB'){
-        throw new Error ("Approved milestone can't update!")
+      if (milestone.isApproved === 'AP' || milestone.isApproved === 'SB') {
+        throw new Error("Approved milestone can't update!");
       }
 
       let resources = await transactionalEntityManager.find(
@@ -2030,6 +2034,175 @@ export class ProjectRepository extends Repository<Opportunity> {
 
     let deletedOrder = project.purchaseOrders.filter((x) => x.id === id);
     return await this.manager.softDelete(PurchaseOrder, deletedOrder);
+  }
+
+  //-- SCHEDULES
+
+  async addSchedule(
+    projectId: number,
+    projectScheduleDTO: ProjectScheduleDTO
+  ): Promise<any> {
+    let id = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let projectScheduleObj = new ProjectSchedule();
+
+        if (!projectId) {
+          throw new Error('Project not found');
+        }
+
+        let project = await transactionalEntityManager.findOne(
+          Opportunity,
+          projectId,
+          { where: { status: In(['P', 'C']) } }
+        );
+        if (!project) {
+          throw new Error('Project not found');
+        }
+        projectScheduleObj.project = project;
+
+        projectScheduleObj.startDate = moment(
+          projectScheduleDTO.startDate
+        ).toDate();
+        projectScheduleObj.endDate = moment(
+          projectScheduleDTO.endDate
+        ).toDate();
+
+        projectScheduleObj.amount = projectScheduleDTO.amount;
+
+        projectScheduleObj.notes = projectScheduleDTO.notes;
+
+        let schedule = await transactionalEntityManager.save(
+          projectScheduleObj
+        );
+
+        let sumAmount = 0;
+
+        for (let segmentDTO of projectScheduleDTO.segments) {
+          let segment = new ProjectScheduleSegment();
+          segment.startDate = moment(segmentDTO.startDate).toDate();
+          segment.endDate = moment(segmentDTO.endDate).toDate();
+          segment.amount = segmentDTO.amount;
+          segment.scheduleId = schedule.id;
+          sumAmount += segmentDTO.amount ?? 0;
+
+          if (sumAmount > projectScheduleDTO.amount) {
+            throw new Error('Segments cant have greater amount than schedule');
+          }
+
+          await transactionalEntityManager.save(segment);
+        }
+
+        return schedule.id;
+      }
+    );
+    let schedule = await this._findOneSchedule(projectId, id);
+    return schedule;
+  }
+
+  async getAllSchedules(projectId: number): Promise<any> {
+    let results = await this._findManySchedule(projectId);
+    return results;
+  }
+
+  async updateSchedule(
+    projectId: number,
+    id: number,
+    projectScheduleDTO: ProjectScheduleDTO
+  ): Promise<any> {
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      let projectScheduleObj = await this._findOneSchedule(projectId, id);
+
+      if (!projectId) {
+        throw new Error('Project not found');
+      }
+
+      let project = await transactionalEntityManager.findOne(
+        Opportunity,
+        projectId,
+        { where: { status: In(['P', 'C']) } }
+      );
+      if (!project) {
+        throw new Error('Project not found');
+      }
+      projectScheduleObj.project = project;
+
+      projectScheduleObj.startDate = moment(
+        projectScheduleDTO.startDate
+      ).toDate();
+      projectScheduleObj.endDate = moment(projectScheduleDTO.endDate).toDate();
+
+      projectScheduleObj.amount = projectScheduleDTO.amount;
+
+      projectScheduleObj.notes = projectScheduleDTO.notes;
+
+      await transactionalEntityManager.remove(projectScheduleObj.segments);
+
+      let segments: ProjectScheduleSegment[] = [];
+
+      let sumAmount = 0;
+
+      for (let segmentDTO of projectScheduleDTO.segments) {
+        let segment = new ProjectScheduleSegment();
+        segment.startDate = moment(segmentDTO.startDate).toDate();
+        segment.endDate = moment(segmentDTO.endDate).toDate();
+        segment.amount = segmentDTO.amount;
+        sumAmount += segmentDTO.amount ?? 0;
+
+        if (sumAmount > projectScheduleDTO.amount) {
+          throw new Error('Segments cant have greater amount than schedule');
+        }
+
+        segments.push(segment);
+      }
+
+      projectScheduleObj.segments = segments;
+
+      let schedule = await transactionalEntityManager.save(projectScheduleObj);
+
+      return schedule;
+    });
+    let schedule = await this._findOneSchedule(projectId, id);
+    return schedule;
+  }
+
+  async findOneSchedule(projectId: number, id: number): Promise<any> {
+    let result = await this._findOneSchedule(projectId, id);
+    return result;
+  }
+
+  async deleteSchedule(projectId: number, id: number): Promise<any> {
+    let result = await this._findOneSchedule(projectId, id);
+    return await this.manager.softRemove(ProjectSchedule, result);
+  }
+
+  async _findOneSchedule(
+    projectId: number,
+    id: number,
+    options = {}
+  ): Promise<ProjectSchedule> {
+    let projectSchedule = await this.manager.findOne(ProjectSchedule, id, {
+      relations: ['segments'],
+      where: { projectId: projectId },
+      ...options,
+    });
+    if (!projectSchedule) {
+      throw new Error('Project Schedule not found');
+    }
+
+    return projectSchedule;
+  }
+
+  async _findManySchedule(
+    projectId: number,
+    options = {}
+  ): Promise<ProjectSchedule[]> {
+    let projectSchedules = await this.manager.find(ProjectSchedule, {
+      relations: ['segments'],
+      where: { projectId: projectId },
+      ...options,
+    });
+
+    return projectSchedules;
   }
 
   //------------------------------------
@@ -3011,12 +3184,11 @@ export class ProjectRepository extends Repository<Opportunity> {
     project.milestones.forEach((milestone) => {
       milestone.opportunityResources.forEach((resource) => {
         resource.opportunityResourceAllocations.forEach((allocation) => {
-          if(allocation.isMarkedAsSelected){
+          if (allocation.isMarkedAsSelected) {
             value +=
-            parseFloat(allocation.sellingRate as any) *
-            parseFloat(resource.billableHours as any);
+              parseFloat(allocation.sellingRate as any) *
+              parseFloat(resource.billableHours as any);
           }
-
         });
       });
       milestone.expenses.forEach((expense) => {
@@ -3050,10 +3222,10 @@ export class ProjectRepository extends Repository<Opportunity> {
     project.milestones.forEach((milestone) => {
       milestone.opportunityResources.forEach((resource) => {
         resource.opportunityResourceAllocations.forEach((allocation) => {
-          if(allocation.isMarkedAsSelected){
-          value +=
-            parseFloat(allocation.sellingRate as any) *
-            parseFloat(resource.billableHours as any);
+          if (allocation.isMarkedAsSelected) {
+            value +=
+              parseFloat(allocation.sellingRate as any) *
+              parseFloat(resource.billableHours as any);
           }
         });
       });
