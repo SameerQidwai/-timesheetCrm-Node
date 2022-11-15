@@ -2089,11 +2089,11 @@ export class ProjectRepository extends Repository<Opportunity> {
             throw new Error('Segments cant have greater amount than schedule');
           }
 
-          if (sumAmount < projectScheduleDTO.amount) {
-            throw new Error('Segments cant have less amount than schedule');
-          }
-
           await transactionalEntityManager.save(segment);
+        }
+
+        if (sumAmount < projectScheduleDTO.amount) {
+          throw new Error('Segments cant have less amount than schedule');
         }
 
         return schedule.id;
@@ -2156,11 +2156,11 @@ export class ProjectRepository extends Repository<Opportunity> {
           throw new Error('Segments cant have greater amount than schedule');
         }
 
-        if (sumAmount < projectScheduleDTO.amount) {
-          throw new Error('Segments cant have less amount than schedule');
-        }
-
         segments.push(segment);
+      }
+
+      if (sumAmount < projectScheduleDTO.amount) {
+        throw new Error('Segments cant have less amount than schedule');
       }
 
       projectScheduleObj.segments = segments;
