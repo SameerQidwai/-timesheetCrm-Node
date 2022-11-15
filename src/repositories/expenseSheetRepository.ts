@@ -66,8 +66,10 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
             throw new Error('Expense not found');
           }
 
-          if (expense.projectId !== expenseSheetObj.projectId) {
-            console.log(expense, expenseSheetObj);
+          if (
+            expense.projectId !== expenseSheetObj.projectId &&
+            expenseSheetObj.projectId != null
+          ) {
             throw new Error('Sheet Project is different');
           }
 
@@ -380,7 +382,10 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           throw new Error('Expense not found');
         }
 
-        if (expense.projectId !== expenseSheetObj.projectId) {
+        if (
+          expense.projectId !== expenseSheetObj.projectId &&
+          expenseSheetObj.projectId != null
+        ) {
           throw new Error('Sheet Project is different');
         }
 
@@ -487,6 +492,10 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       throw new Error('Expense not found');
     }
 
+    if (result.expenseSheetExpenses[0].expense.rejectedAt) {
+      throw new Error('Cannot update rejected sheet');
+    }
+
     result.isBillable = expenseSheetBillableDTO.isBillable ? true : false;
     await this.save(result);
 
@@ -504,6 +513,10 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
 
     if (!result) {
       throw new Error('Expense not found');
+    }
+
+    if (result.expenseSheetExpenses[0].expense.rejectedAt) {
+      throw new Error('Cannot update rejected sheet');
     }
 
     result.isBillable = expenseSheetBillableDTO.isBillable ? true : false;
@@ -527,6 +540,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
     if (!employee) {
       throw new Error('Employee not found');
     }
+
     let employeeContactPersonId =
       employee.contactPersonOrganization.contactPerson.id;
 
@@ -559,7 +573,12 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       throw new Error('Expense not found');
     }
 
+    if (result.expenseSheetExpenses[0].expense.rejectedAt) {
+      throw new Error('Cannot update rejected sheet');
+    }
+
     result.isBillable = expenseSheetBillableDTO.isBillable ? true : false;
+
     await this.save(result);
 
     return new ExpenseSheetResponse(result);
@@ -612,7 +631,12 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       throw new Error('Expense not found');
     }
 
+    if (result.expenseSheetExpenses[0].expense.rejectedAt) {
+      throw new Error('Cannot update rejected sheet');
+    }
+
     result.isBillable = expenseSheetBillableDTO.isBillable ? true : false;
+
     await this.save(result);
 
     return new ExpenseSheetResponse(result);
