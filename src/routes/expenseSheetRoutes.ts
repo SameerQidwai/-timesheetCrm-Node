@@ -19,6 +19,13 @@ router
   );
 
 router
+  .route('/approvalExpenseSheets')
+  .get(
+    [isLoggedIn, can(Action.APPROVAL, Resource.EXPENSES)],
+    contr.approvalIndex.bind(contr)
+  );
+
+router
   .route('/submitMany')
   .post(
     [isLoggedIn, can(Action.ADD, Resource.EXPENSES)],
