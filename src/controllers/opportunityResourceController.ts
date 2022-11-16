@@ -37,7 +37,7 @@ export class OpportunityResourceController {
       console.log('record: ', record);
       res.status(200).json({
         success: true,
-        message: 'Created Resource Successfully',
+        message: 'Position Created Successfully',
         data: record,
       });
     } catch (e) {
@@ -59,7 +59,7 @@ export class OpportunityResourceController {
       );
       res.status(200).json({
         success: true,
-        message: `Updated Resource Successfully`,
+        message: `Position Updated Successfully`,
         data: record,
       });
     } catch (e) {
@@ -102,7 +102,7 @@ export class OpportunityResourceController {
       );
       res.status(200).json({
         success: true,
-        message: `Deleted Resource Successfully`,
+        message: `Position Deleted Successfully`,
         data: record,
       });
     } catch (e) {
