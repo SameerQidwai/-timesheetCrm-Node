@@ -74,6 +74,7 @@ export class HelperController {
   async helperGetAllWork(req: Request, res: Response, next: NextFunction) {
     let type = req.query.type?.toString() ?? '';
     let employeeId = parseInt(req.query.employee?.toString() ?? '');
+    let contactId = parseInt(req.query.contact?.toString() ?? '');
     let organizationId = parseInt(req.query.organization?.toString() ?? '');
 
     try {
@@ -81,6 +82,7 @@ export class HelperController {
       let records = await repository.helperGetAllWork(
         type,
         employeeId,
+        contactId,
         organizationId
       );
       res.status(200).json({
