@@ -8,6 +8,7 @@ import {
   ProjectScheduleDTO,
 } from '../dto';
 import {
+  Between,
   EntityRepository,
   In,
   IsNull,
@@ -2060,6 +2061,11 @@ export class ProjectRepository extends Repository<Opportunity> {
         }
         projectScheduleObj.project = project;
 
+        await this._validateSceduleDates(
+          moment(projectScheduleDTO.startDate),
+          moment(projectScheduleDTO.endDate)
+        );
+
         projectScheduleObj.startDate = moment(
           projectScheduleDTO.startDate
         ).toDate();
@@ -2130,9 +2136,16 @@ export class ProjectRepository extends Repository<Opportunity> {
       }
       projectScheduleObj.project = project;
 
+      await this._validateSceduleDates(
+        moment(projectScheduleDTO.startDate),
+        moment(projectScheduleDTO.endDate),
+        projectScheduleObj
+      );
+
       projectScheduleObj.startDate = moment(
         projectScheduleDTO.startDate
       ).toDate();
+
       projectScheduleObj.endDate = moment(projectScheduleDTO.endDate).toDate();
 
       projectScheduleObj.amount = projectScheduleDTO.amount;
@@ -3514,6 +3527,29 @@ export class ProjectRepository extends Repository<Opportunity> {
   }
 
   _validateResourceHours(hours: number, timesheets: Timesheet[]) {}
+
+  async _validateSceduleDates(
+    startDate: Moment,
+    endDate: Moment,
+    schedule: ProjectSchedule | null = null
+  ) {
+    let whereCondition: any = {
+      startDate: Between(startDate.toDate(), endDate.toDate()),
+      endDate: Between(startDate.toDate(), endDate.toDate()),
+    };
+
+    if (schedule) {
+      whereCondition['id'] = Not(schedule.id);
+    }
+
+    let schedules = await this.manager.find(ProjectSchedule, {
+      where: whereCondition,
+    });
+
+    if (schedules.length) {
+      throw new Error('Schedule already present for given dates');
+    }
+  }
 }
 
 // async getProjectTracking(

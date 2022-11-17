@@ -42,6 +42,8 @@ export class ExpenseSheetResponse {
     });
     let firstExpense = sheet.expenseSheetExpenses[0]?.expense;
     this.status = ExpenseSheetStatus.SAVED;
+    console.log(firstExpense.entries.length);
+    console.log(sheet.expenseSheetExpenses.length);
     if (firstExpense.entries.length > sheet.expenseSheetExpenses.length) {
       if (
         sheet.expenseSheetExpenses[sheet.expenseSheetExpenses.length - 1].id ===

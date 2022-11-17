@@ -479,6 +479,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       relations: [
         'expenseSheetExpenses',
         'expenseSheetExpenses.expense',
+        'expenseSheetExpenses.expense.entries',
         'expenseSheetExpenses.expense.submitter',
         'expenseSheetExpenses.expense.submitter.contactPersonOrganization',
         'expenseSheetExpenses.expense.submitter.contactPersonOrganization.contactPerson',
