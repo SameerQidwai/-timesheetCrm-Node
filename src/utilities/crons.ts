@@ -4,8 +4,8 @@ import { Employee } from '../entities/employee';
 import { LeaveRequestBalance } from '../entities/leaveRequestBalance';
 import { LeaveRequestTriggerFrequency } from '../constants/constants';
 
-let monthCronString = '1 0 0 1 */1 *';
-let yearCronString = '1 10 0 1 7 *';
+let monthCronString = '1 0 0 15 */1 *';
+let yearCronString = '1 10 0 15 7 *';
 
 export const leaveRequestMonthlyCron = cron.schedule(
   monthCronString,
