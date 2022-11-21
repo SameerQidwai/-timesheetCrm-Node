@@ -3536,21 +3536,21 @@ export class ProjectRepository extends Repository<Opportunity> {
     project: Opportunity,
     schedule: ProjectSchedule | null = null
   ) {
-    // if (startDate.isBefore(moment(project.startDate), 'date')) {
-    //   throw new Error(
-    //     'Schedule Start Date cannot be Before Project Start Date'
-    //   );
-    // }
-    // if (startDate.isAfter(moment(project.endDate), 'date')) {
-    //   throw new Error('Schedule Start Date cannot be After Project End Date');
-    // }
+    if (startDate.isBefore(moment(project.startDate), 'date')) {
+      throw new Error(
+        'Schedule Start Date cannot be Before Project Start Date'
+      );
+    }
+    if (startDate.isAfter(moment(project.endDate), 'date')) {
+      throw new Error('Schedule Start Date cannot be After Project End Date');
+    }
 
-    // if (endDate.isBefore(moment(project.startDate), 'date')) {
-    //   throw new Error('Schedule End Date cannot be Before Project Start Date');
-    // }
-    // if (endDate.isAfter(moment(project.endDate), 'date')) {
-    //   throw new Error('Schedule End Date cannot be After Project End Date');
-    // }
+    if (endDate.isBefore(moment(project.startDate), 'date')) {
+      throw new Error('Schedule End Date cannot be Before Project Start Date');
+    }
+    if (endDate.isAfter(moment(project.endDate), 'date')) {
+      throw new Error('Schedule End Date cannot be After Project End Date');
+    }
 
     let whereCondition: any = {
       startDate: Between(startDate.toDate(), endDate.toDate()),
