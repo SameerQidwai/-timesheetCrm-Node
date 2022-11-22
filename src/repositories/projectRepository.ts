@@ -2092,7 +2092,7 @@ export class ProjectRepository extends Repository<Opportunity> {
           segment.endDate = moment(segmentDTO.endDate).toDate();
           segment.amount = segmentDTO.amount;
           segment.scheduleId = schedule.id;
-          sumAmount += segmentDTO.amount ?? 0;
+          sumAmount += parseFloat(segmentDTO.amount as any) ?? 0;
 
           if (sumAmount > projectScheduleDTO.amount) {
             throw new Error('Segments cant have greater amount than schedule');
@@ -2168,7 +2168,7 @@ export class ProjectRepository extends Repository<Opportunity> {
         segment.startDate = moment(segmentDTO.startDate).toDate();
         segment.endDate = moment(segmentDTO.endDate).toDate();
         segment.amount = segmentDTO.amount;
-        sumAmount += segmentDTO.amount ?? 0;
+        sumAmount += parseFloat(segmentDTO.amount as any) ?? 0;
 
         if (sumAmount > projectScheduleDTO.amount) {
           throw new Error('Segments cant have greater amount than schedule');

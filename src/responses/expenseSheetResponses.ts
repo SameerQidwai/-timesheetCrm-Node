@@ -40,29 +40,30 @@ export class ExpenseSheetResponse {
       this.rejectedAmount += expense.expense.rejectedAt ? expenseAmount : 0;
       this.expenseSheetExpensesIds.push(expense.expense.id);
     });
-    let firstExpense = sheet.expenseSheetExpenses[0]?.expense;
+    let lastExpense =
+      sheet.expenseSheetExpenses[sheet.expenseSheetExpenses.length - 1]
+        ?.expense;
     this.status = ExpenseSheetStatus.SAVED;
 
-    if (firstExpense.entries.length > sheet.expenseSheetExpenses.length) {
+    if (lastExpense.entries.length > 1) {
       if (
-        sheet.expenseSheetExpenses[sheet.expenseSheetExpenses.length - 1].id ===
-        firstExpense.entries[firstExpense.entries.length - 1].id
+        sheet.id === lastExpense.entries[lastExpense.entries.length - 1].sheetId
       ) {
-        if (firstExpense.rejectedAt !== null)
+        if (lastExpense.rejectedAt !== null)
           this.status = ExpenseSheetStatus.REJECTED;
-        else if (firstExpense.approvedAt !== null)
+        else if (lastExpense.approvedAt !== null)
           this.status = ExpenseSheetStatus.APPROVED;
-        else if (firstExpense.submittedAt !== null)
+        else if (lastExpense.submittedAt !== null)
           this.status = ExpenseSheetStatus.SUBMITTED;
       } else {
         this.status = ExpenseSheetStatus.REJECTED;
       }
     } else {
-      if (firstExpense.rejectedAt !== null)
+      if (lastExpense.rejectedAt !== null)
         this.status = ExpenseSheetStatus.REJECTED;
-      else if (firstExpense.approvedAt !== null)
+      else if (lastExpense.approvedAt !== null)
         this.status = ExpenseSheetStatus.APPROVED;
-      else if (firstExpense.submittedAt !== null)
+      else if (lastExpense.submittedAt !== null)
         this.status = ExpenseSheetStatus.SUBMITTED;
     }
 
