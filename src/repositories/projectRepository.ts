@@ -46,6 +46,7 @@ import { EmploymentContract } from '../entities/employmentContract';
 import { getProjectsByUserId } from '../utilities/helperFunctions';
 import { ProjectSchedule } from '../entities/projectSchedule';
 import { ProjectScheduleSegment } from '../entities/projectScheduleSegment';
+import { where } from 'src/middlewares/can';
 
 @EntityRepository(Opportunity)
 export class ProjectRepository extends Repository<Opportunity> {
@@ -2064,6 +2065,7 @@ export class ProjectRepository extends Repository<Opportunity> {
         await this._validateSceduleDates(
           moment(projectScheduleDTO.startDate),
           moment(projectScheduleDTO.endDate),
+          projectScheduleDTO.amount,
           project
         );
 
@@ -2140,6 +2142,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       await this._validateSceduleDates(
         moment(projectScheduleDTO.startDate),
         moment(projectScheduleDTO.endDate),
+        projectScheduleDTO.amount,
         project,
         projectScheduleObj
       );
@@ -3533,28 +3536,34 @@ export class ProjectRepository extends Repository<Opportunity> {
   async _validateSceduleDates(
     startDate: Moment,
     endDate: Moment,
+    amount: number,
     project: Opportunity,
     schedule: ProjectSchedule | null = null
   ) {
-    if (startDate.isBefore(moment(project.startDate), 'date')) {
-      throw new Error(
-        'Schedule Start Date cannot be Before Project Start Date'
-      );
-    }
-    if (startDate.isAfter(moment(project.endDate), 'date')) {
-      throw new Error('Schedule Start Date cannot be After Project End Date');
+    if (
+      !startDate.isBetween(
+        moment(project.startDate).startOf('month'),
+        moment(project.endDate).endOf('month'),
+        'date',
+        '[]'
+      )
+    ) {
+      throw new Error('Start of Schedule should be inside project dates');
     }
 
-    if (endDate.isBefore(moment(project.startDate), 'date')) {
-      throw new Error('Schedule End Date cannot be Before Project Start Date');
-    }
-    if (endDate.isAfter(moment(project.endDate), 'date')) {
-      throw new Error('Schedule End Date cannot be After Project End Date');
+    if (
+      !endDate.isBetween(
+        moment(project.startDate).startOf('month'),
+        moment(project.endDate).endOf('month'),
+        'date',
+        '[]'
+      )
+    ) {
+      throw new Error('End of Schedule should be inside project dates');
     }
 
     let whereCondition: any = {
-      startDate: Between(startDate.toDate(), endDate.toDate()),
-      endDate: Between(startDate.toDate(), endDate.toDate()),
+      projectId: project.id,
     };
 
     if (schedule) {
@@ -3562,11 +3571,31 @@ export class ProjectRepository extends Repository<Opportunity> {
     }
 
     let schedules = await this.manager.find(ProjectSchedule, {
-      where: whereCondition,
+      where: {
+        startDate: Between(startDate.toDate(), endDate.toDate()),
+        endDate: Between(startDate.toDate(), endDate.toDate()),
+        ...whereCondition,
+      },
     });
 
     if (schedules.length) {
       throw new Error('Schedule already present for given dates');
+    }
+
+    let schedulesAll = await this.manager.find(ProjectSchedule, {
+      where: whereCondition,
+    });
+
+    let sumAmount = 0;
+
+    schedulesAll.forEach((schedule) => {
+      sumAmount += schedule.amount;
+    });
+
+    if (project.value < sumAmount + amount) {
+      throw new Error(
+        'Amount of Total Schedules cant be greater than project value'
+      );
     }
   }
 }
