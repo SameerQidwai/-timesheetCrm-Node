@@ -142,25 +142,18 @@ export class TimesheetRepository extends Repository<Timesheet> {
     leaveRequest.forEach((leaveRequest) => {
       let leaveRequestDetails = leaveRequest.getEntriesDetails;
       if (
-        (moment(leaveRequestDetails.startDate).isSameOrAfter(cStartDate) &&
-          moment(leaveRequestDetails.endDate).isSameOrBefore(cEndDate),
-        'date') ||
-        ((moment(leaveRequestDetails.startDate).isSameOrBefore(cEndDate) ||
-          moment(leaveRequestDetails.startDate).isSame(cEndDate) ||
-          moment(leaveRequestDetails.startDate).isBetween(
-            cStartDate,
-            cEndDate
-          )) &&
-          moment(leaveRequestDetails.endDate).isSameOrAfter(cStartDate),
-        'date') ||
-        (moment(leaveRequestDetails.startDate).isSameOrBefore(cStartDate) &&
-          (moment(leaveRequestDetails.endDate).isSame(cEndDate) ||
-            moment(leaveRequestDetails.endDate).isBetween(
-              cStartDate,
-              cEndDate
-            ) ||
-            moment(leaveRequestDetails.endDate).isSame(cStartDate),
-          'date'))
+        moment(leaveRequestDetails.startDate).isBetween(
+          cStartDate,
+          cEndDate,
+          'date',
+          '[]'
+        ) &&
+        moment(leaveRequestDetails.endDate).isBetween(
+          cStartDate,
+          cEndDate,
+          'date',
+          '[]'
+        )
       ) {
         let _checker =
           _projectAndTypeIndexer[
@@ -359,25 +352,18 @@ export class TimesheetRepository extends Repository<Timesheet> {
     leaveRequest.forEach((leaveRequest) => {
       let leaveRequestDetails = leaveRequest.getEntriesDetails;
       if (
-        (moment(leaveRequestDetails.startDate).isSameOrAfter(cStartDate) &&
-          moment(leaveRequestDetails.endDate).isSameOrBefore(cEndDate),
-        'date') ||
-        ((moment(leaveRequestDetails.startDate).isSameOrBefore(cEndDate) ||
-          moment(leaveRequestDetails.startDate).isSame(cEndDate) ||
-          moment(leaveRequestDetails.startDate).isBetween(
-            cStartDate,
-            cEndDate
-          )) &&
-          moment(leaveRequestDetails.endDate).isSameOrAfter(cStartDate),
-        'date') ||
-        (moment(leaveRequestDetails.startDate).isSameOrBefore(cStartDate) &&
-          (moment(leaveRequestDetails.endDate).isSame(cEndDate) ||
-            moment(leaveRequestDetails.endDate).isBetween(
-              cStartDate,
-              cEndDate
-            ) ||
-            moment(leaveRequestDetails.endDate).isSame(cStartDate),
-          'date'))
+        moment(leaveRequestDetails.startDate).isBetween(
+          cStartDate,
+          cEndDate,
+          'date',
+          '[]'
+        ) &&
+        moment(leaveRequestDetails.endDate).isBetween(
+          cStartDate,
+          cEndDate,
+          'date',
+          '[]'
+        )
       ) {
         let _checker =
           _projectAndTypeIndexer[
@@ -573,25 +559,18 @@ export class TimesheetRepository extends Repository<Timesheet> {
     leaveRequest.forEach((leaveRequest) => {
       let leaveRequestDetails = leaveRequest.getEntriesDetails;
       if (
-        (moment(leaveRequestDetails.startDate).isSameOrAfter(cStartDate) &&
-          moment(leaveRequestDetails.endDate).isSameOrBefore(cEndDate),
-        'date') ||
-        ((moment(leaveRequestDetails.startDate).isSameOrBefore(cEndDate) ||
-          moment(leaveRequestDetails.startDate).isSame(cEndDate) ||
-          moment(leaveRequestDetails.startDate).isBetween(
-            cStartDate,
-            cEndDate
-          )) &&
-          moment(leaveRequestDetails.endDate).isSameOrAfter(cStartDate),
-        'date') ||
-        (moment(leaveRequestDetails.startDate).isSameOrBefore(cStartDate) &&
-          (moment(leaveRequestDetails.endDate).isSame(cEndDate) ||
-            moment(leaveRequestDetails.endDate).isBetween(
-              cStartDate,
-              cEndDate
-            ) ||
-            moment(leaveRequestDetails.endDate).isSame(cStartDate),
-          'date'))
+        moment(leaveRequestDetails.startDate).isBetween(
+          cStartDate,
+          cEndDate,
+          'date',
+          '[]'
+        ) &&
+        moment(leaveRequestDetails.endDate).isBetween(
+          cStartDate,
+          cEndDate,
+          'date',
+          '[]'
+        )
       ) {
         let _checker =
           _projectAndTypeIndexer[
