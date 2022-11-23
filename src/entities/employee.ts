@@ -148,18 +148,20 @@ export class Employee extends Base {
 
   public get getActiveContract(): EmploymentContract | null {
     let activeContract: EmploymentContract | null = null;
-    this.employmentContracts.forEach((contract) => {
+    for (let contract of this.employmentContracts) {
       if (contract.endDate == null) {
         activeContract = contract;
+        break;
       } else if (
         moment(contract.startDate) <= moment() &&
         moment(contract.endDate) >= moment()
       ) {
         activeContract = contract;
+        break;
       } else {
         activeContract = null;
       }
-    });
+    }
 
     return activeContract;
   }
