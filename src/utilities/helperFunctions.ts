@@ -38,6 +38,17 @@ export let getProjectsByUserId = (
       }
       if ((mode == 'M' || mode == 'm' || mode == '') && add_flag === 0) {
         if (project.projectManagerId == employeeId) {
+          add_flag = 1;
+          if (idArray) {
+            response.push(project.id);
+          } else {
+            response.push({ value: project.id, label: project.title });
+          }
+        }
+      }
+      if ((mode == 'R' || mode == 'r' || mode == '') && add_flag === 0) {
+        if (project.contactPersonId == contactPersonId) {
+          add_flag = 1;
           if (idArray) {
             response.push(project.id);
           } else {
