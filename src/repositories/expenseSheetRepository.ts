@@ -367,12 +367,12 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       }
       expenseSheetObj.projectId = expenseSheetDTO.projectId;
 
-      // for (let oldExpense of expenseSheetObj.expenseSheetExpenses) {
-      //   oldExpense.expense.rejectedAt = null;
-      //   oldExpense.expense.rejectedBy = null;
-      //   oldExpense.expense.expenseSheetId = null;
-      //   await transactionalEntityManager.save(Expense, oldExpense);
-      // }
+      for (let oldExpense of expenseSheetObj.expenseSheetExpenses) {
+        oldExpense.expense.rejectedAt = null;
+        oldExpense.expense.rejectedBy = null;
+        oldExpense.expense.expenseSheetId = null;
+        await transactionalEntityManager.save(Expense, oldExpense.expense);
+      }
 
       if (expenseSheetObj.expenseSheetExpenses.length)
         await transactionalEntityManager.delete(
