@@ -2333,8 +2333,27 @@ export class ProjectRepository extends Repository<Opportunity> {
     }
     console.log(projectId, 'PROJECT ID ===================');
 
+    const project = await this.findOne(projectId)
+
+    if (!project){
+      throw new Error('Opportunity not found ');
+    }
+    let segmentsRevenue: {[key: string]: number} ={}
+    if (project?.type ==1){
+      let segments = await this.query(
+        `SELECT DATE_FORMAT(pss.start_date, '%b %y') month, pss.amount revenue
+        FROM project_schedules ps
+             JOIN project_schedule_segments pss ON
+                  ps.id = pss.schedule_id
+      WHERE ps.project_id = ${projectId} AND( pss.start_date >= STR_TO_DATE('${fiscalYear.start}' ,'%e-%m-%Y')) AND pss.end_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y');`
+      )
+      segments.forEach((el: {month: string, revenue: number})=>{
+        segmentsRevenue[el.month] = el.revenue
+      })
+    }
+
     const actual = await this.query(`
-      SELECT*, SUM(buying_rate * actual ) month_total_buy, SUM(selling_rate * actual  ) month_total_sell, SUM(actual) actual,
+      SELECT *, SUM(buying_rate * actual ) month_total_buy, SUM(selling_rate * actual  ) month_total_sell, SUM(actual) actual,
       DATE_FORMAT(STR_TO_DATE(e_date,'%e-%m-%Y'), '%b %y') month FROM (
             Select o_r.opportunity_id, o_r.milestone_id milestoneId, o_r.start_date res_start, o_r.end_date res_end, ora.buying_rate, ora.selling_rate, 
             ora.contact_person_id, e.id employee_id, o.cm_percentage cm
@@ -2384,8 +2403,8 @@ export class ProjectRepository extends Repository<Opportunity> {
       });
     }
 
-    const forecast = await this
-      .query(`Select o_r.start_date res_startDate, o_r.end_date res_endDate, ec.start_date con_startDate, ec.end_date con_endDate, 
+    const forecast = await this.query(
+      `Select o_r.start_date res_startDate, o_r.end_date res_endDate, ec.start_date con_startDate, ec.end_date con_endDate, 
       (ora.buying_rate *( (ec.no_of_hours /5) * (ora.effort_rate /100) ) ) forecastBuyRateDaily, 
       (ora.selling_rate *( (ec.no_of_hours /5) * (ora.effort_rate /100) ) ) forecastSellRateDaily
       FROM opportunities o 
@@ -2401,7 +2420,9 @@ export class ProjectRepository extends Repository<Opportunity> {
                           ec.employee_id = e.id
       WHERE o.id = ${projectId} AND ora.is_marked_as_selected = 1 AND ec.start_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y') 
       AND (ec.end_date IS NULL ||  ec.end_date >= STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y')) 
-      AND o_r.start_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y') AND (o_r.end_date IS NULL ||  STR_TO_DATE(DATE_FORMAT(o_r.end_date,'%e-%m-%Y'),'%e-%m-%Y') > STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y'));`);
+      AND o_r.start_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y') ;`
+      // AND (o_r.end_date IS NULL ||  STR_TO_DATE(DATE_FORMAT(o_r.end_date,'%e-%m-%Y'),'%e-%m-%Y') <= STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y'))
+    );
 
     let calendar = await this.manager.find(Calendar, {
       relations: ['calendarHolidays', 'calendarHolidays.holidayType'],
@@ -2415,7 +2436,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       });
     }
 
-    return { actualStatement, actualTotal, forecast, holidays };
+    return { actualStatement, actualTotal, forecast, holidays, segmentsRevenue };
   }
 
   async getProjectTracking(
