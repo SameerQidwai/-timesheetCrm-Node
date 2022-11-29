@@ -56,6 +56,10 @@ export class ExpenseSheetResponse {
       } else {
         this.status = ExpenseSheetStatus.REJECTED;
       }
+    } else {
+      if (lastExpense.entries.length > 0) {
+        this.status = ExpenseSheetStatus.REJECTED;
+      }
     }
 
     this.submittedAt =
