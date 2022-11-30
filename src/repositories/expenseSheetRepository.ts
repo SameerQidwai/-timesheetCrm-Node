@@ -885,7 +885,6 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           transactionalEntityManager.save(Expense, expense.expense);
         }
 
-        sheet.isBillable = expenseSheetsSubmitDTO.isBillable ? true : false;
         sheet.notes = expenseSheetsSubmitDTO.notes;
 
         let expenseSheet = await transactionalEntityManager.save(sheet);
@@ -936,7 +935,6 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           transactionalEntityManager.save(Expense, expense.expense);
         }
 
-        sheet.isBillable = expenseSheetsApproveDTO.isBillable ? true : false;
         sheet.notes = expenseSheetsApproveDTO.notes;
 
         let expenseSheet = await transactionalEntityManager.save(sheet);
@@ -990,7 +988,6 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           transactionalEntityManager.save(Expense, expense.expense);
         }
 
-        sheet.isBillable = expenseSheetsRejectDTO.isBillable ? true : false;
         sheet.notes = expenseSheetsRejectDTO.notes;
 
         let expenseSheet = await transactionalEntityManager.save(sheet);
@@ -1041,7 +1038,6 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           transactionalEntityManager.save(Expense, expense.expense);
         }
 
-        sheet.isBillable = expenseSheetsApproveDTO.isBillable ? true : false;
         sheet.notes = expenseSheetsApproveDTO.notes;
 
         let expenseSheet = await transactionalEntityManager.save(sheet);
