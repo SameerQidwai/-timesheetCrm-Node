@@ -2345,7 +2345,8 @@ export class ProjectRepository extends Repository<Opportunity> {
         FROM project_schedules ps
              JOIN project_schedule_segments pss ON
                   ps.id = pss.schedule_id
-      WHERE ps.project_id = ${projectId} AND( pss.start_date >= STR_TO_DATE('${fiscalYear.start}' ,'%e-%m-%Y')) AND pss.end_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y');`
+      WHERE ps.project_id = ${projectId} AND( pss.start_date >= STR_TO_DATE('${fiscalYear.start}' ,'%e-%m-%Y')) 
+      AND pss.end_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y') AND ps.deleted_at IS NULL AND pss.deleted_at IS NULL;`
       )
       segments.forEach((el: {month: string, revenue: number})=>{
         segmentsRevenue[el.month] = el.revenue
@@ -3597,11 +3598,21 @@ export class ProjectRepository extends Repository<Opportunity> {
     }
 
     let schedules = await this.manager.find(ProjectSchedule, {
-      where: {
-        startDate: Between(startDate.toDate(), endDate.toDate()),
-        endDate: Between(startDate.toDate(), endDate.toDate()),
-        ...whereCondition,
-      },
+      where: [
+        {
+          startDate: Between(startDate.toDate(), endDate.toDate()),
+          ...whereCondition,
+        },
+        {
+          endDate: Between(startDate.toDate(), endDate.toDate()),
+          ...whereCondition,
+        },
+        {
+          startDate: LessThanOrEqual(startDate.toDate()),
+          endDate: MoreThanOrEqual(endDate.toDate()),
+          ...whereCondition,
+        },
+      ],
     });
 
     if (schedules.length) {
