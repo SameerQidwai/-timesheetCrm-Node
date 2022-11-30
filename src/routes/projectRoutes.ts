@@ -7,10 +7,12 @@ import { Action, Resource } from './../constants/authorization';
 import { isLoggedIn } from './../middlewares/loggedIn';
 import { can } from './../middlewares/can';
 import { ProjectMilestoneController } from '../controllers/projectMilestoneController';
+import { ProjectScheduleController } from '../controllers/projectScheduleController';
 
 const router = Router();
 let contr = new ProjectController(ProjectRepository);
 let milestoneContr = new ProjectMilestoneController();
+let scheduleContr = new ProjectScheduleController();
 let resourceContr = new ProjectResourceController();
 let orderContr = new PurchaseOrderController();
 
@@ -52,6 +54,8 @@ router
   .route('/:projectId/hierarchy')
   .get([isLoggedIn], contr.hierarchy.bind(contr));
 
+//-- MILESTONES
+
 router
   .route('/:projectId/milestones')
   .get([isLoggedIn], milestoneContr.index.bind(milestoneContr))
@@ -62,6 +66,19 @@ router
   .get([isLoggedIn], milestoneContr.get.bind(milestoneContr))
   .put([isLoggedIn], milestoneContr.update.bind(milestoneContr))
   .delete([isLoggedIn], milestoneContr.delete.bind(milestoneContr));
+
+//-- SCHEDULES
+
+router
+  .route('/:projectId/schedules')
+  .get([isLoggedIn], scheduleContr.index.bind(scheduleContr))
+  .post([isLoggedIn], scheduleContr.create.bind(scheduleContr));
+
+router
+  .route('/:projectId/schedules/:id')
+  .get([isLoggedIn], scheduleContr.get.bind(scheduleContr))
+  .put([isLoggedIn], scheduleContr.update.bind(scheduleContr))
+  .delete([isLoggedIn], scheduleContr.delete.bind(scheduleContr));
 
 router
   .route('/:projectId/milestones/:milestoneId/resources')

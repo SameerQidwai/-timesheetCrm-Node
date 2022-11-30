@@ -18,6 +18,7 @@ export enum Resource {
   PROFILE = 'PROFILE',
   LEAVE_REQUESTS = 'LEAVE_REQUESTS',
   EXPENSES = 'EXPENSES',
+  SCHEDULES = 'SCHEDULES',
 }
 
 export enum Grant {

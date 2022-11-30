@@ -1866,6 +1866,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
   async helperGetAllWork(
     type: string,
     employeeId: number,
+    contactId: number,
     organizationId: number
   ): Promise<any | undefined> {
     let work: Opportunity[];
@@ -1944,6 +1945,35 @@ export class OpportunityRepository extends Repository<Opportunity> {
       }
     }
 
+    if (!isNaN(contactId) && contactId != 0) {
+      let contact = await this.manager.findOne(ContactPerson, contactId, {
+        // relations: [
+        //   'contactPersonOrganization',
+        //   'contactPersonOrganization.contactPerson',
+        // ],
+      });
+      if (!contact) {
+        throw new Error('Contact not found');
+      }
+      let employeeContactPersonId = contact.id;
+      work.forEach((project, index) => {
+        if (type == 'P' || 'p') {
+          let add_flag = 0;
+          project.opportunityResources.forEach((resource) => {
+            resource.opportunityResourceAllocations.forEach((allocation) => {
+              if (
+                allocation.contactPersonId === employeeContactPersonId &&
+                allocation.isMarkedAsSelected
+              ) {
+                add_flag = 1;
+              }
+            });
+          });
+          if (add_flag === 1) data.push(project);
+        }
+      });
+    }
+
     if (!isNaN(employeeId) && employeeId != 0) {
       let employee = await this.manager.findOne(Employee, employeeId, {
         relations: [
@@ -1975,6 +2005,8 @@ export class OpportunityRepository extends Repository<Opportunity> {
     }
 
     if (!isNaN(employeeId) && employeeId != 0) return data;
+
+    if (!isNaN(contactId) && contactId != 0) return data;
 
     return work;
   }
@@ -2019,10 +2051,10 @@ export class OpportunityRepository extends Repository<Opportunity> {
     project.milestones.forEach((milestone) => {
       milestone.opportunityResources.forEach((resource) => {
         resource.opportunityResourceAllocations.forEach((allocation) => {
-          if(allocation.isMarkedAsSelected){
-          value +=
-            parseFloat(allocation.sellingRate as any) *
-            parseFloat(resource.billableHours as any);
+          if (allocation.isMarkedAsSelected) {
+            value +=
+              parseFloat(allocation.sellingRate as any) *
+              parseFloat(resource.billableHours as any);
           }
         });
       });
@@ -2059,7 +2091,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
     project.milestones.forEach((milestone) => {
       milestone.opportunityResources.forEach((resource) => {
         resource.opportunityResourceAllocations.forEach((allocation) => {
-          if(allocation.isMarkedAsSelected){
+          if (allocation.isMarkedAsSelected) {
             value +=
               parseFloat(allocation.sellingRate as any) *
               parseFloat(resource.billableHours as any);

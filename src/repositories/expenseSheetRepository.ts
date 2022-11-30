@@ -57,6 +57,8 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
 
         let expenseSheetExpenses: ExpenseSheetExpense[] = [];
 
+        let sheet = await transactionalEntityManager.save(expenseSheetObj);
+
         for (let id of expenseSheetDTO.expenseSheetExpenses) {
           let expense = await transactionalEntityManager.findOne(Expense, id, {
             relations: ['entries'],
@@ -66,8 +68,10 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
             throw new Error('Expense not found');
           }
 
-          if (expense.projectId !== expenseSheetObj.projectId) {
-            console.log(expense, expenseSheetObj);
+          if (
+            expense.projectId !== expenseSheetObj.projectId &&
+            expenseSheetObj.projectId != null
+          ) {
             throw new Error('Sheet Project is different');
           }
 
@@ -82,10 +86,11 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           let expenseSheetExpenseObj = new ExpenseSheetExpense();
 
           expenseSheetExpenseObj.expenseId = expense.id;
-          expenseSheetExpenseObj.sheetId = expenseSheetObj.id;
+          expenseSheetExpenseObj.sheetId = sheet.id;
 
           expenseSheetExpenses.push(expenseSheetExpenseObj);
 
+          expense.expenseSheetId = sheet.id;
           expense.rejectedAt = null;
           expense.rejectedBy = null;
 
@@ -93,8 +98,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         }
 
         expenseSheetObj.expenseSheetExpenses = expenseSheetExpenses;
-
-        let sheet = await transactionalEntityManager.save(expenseSheetObj);
+        sheet = await transactionalEntityManager.save(expenseSheetObj);
 
         for (const file of expenseSheetDTO.attachments) {
           let attachmentObj = new Attachment();
@@ -363,6 +367,13 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       }
       expenseSheetObj.projectId = expenseSheetDTO.projectId;
 
+      for (let oldExpense of expenseSheetObj.expenseSheetExpenses) {
+        oldExpense.expense.rejectedAt = null;
+        oldExpense.expense.rejectedBy = null;
+        oldExpense.expense.expenseSheetId = null;
+        await transactionalEntityManager.save(Expense, oldExpense.expense);
+      }
+
       if (expenseSheetObj.expenseSheetExpenses.length)
         await transactionalEntityManager.delete(
           ExpenseSheetExpense,
@@ -380,7 +391,10 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           throw new Error('Expense not found');
         }
 
-        if (expense.projectId !== expenseSheetObj.projectId) {
+        if (
+          expense.projectId !== expenseSheetObj.projectId &&
+          expenseSheetObj.projectId != null
+        ) {
           throw new Error('Sheet Project is different');
         }
 
@@ -401,6 +415,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
 
         expense.rejectedAt = null;
         expense.rejectedBy = null;
+        expense.expenseSheetId = expenseSheetObj.id;
 
         await transactionalEntityManager.save(Expense, expense);
       }
@@ -474,6 +489,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       relations: [
         'expenseSheetExpenses',
         'expenseSheetExpenses.expense',
+        'expenseSheetExpenses.expense.entries',
         'expenseSheetExpenses.expense.submitter',
         'expenseSheetExpenses.expense.submitter.contactPersonOrganization',
         'expenseSheetExpenses.expense.submitter.contactPersonOrganization.contactPerson',
@@ -485,6 +501,10 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
 
     if (!result) {
       throw new Error('Expense not found');
+    }
+
+    if (result.expenseSheetExpenses[0].expense.rejectedAt) {
+      throw new Error('Cannot update rejected sheet');
     }
 
     result.isBillable = expenseSheetBillableDTO.isBillable ? true : false;
@@ -504,6 +524,10 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
 
     if (!result) {
       throw new Error('Expense not found');
+    }
+
+    if (result.expenseSheetExpenses[0].expense.rejectedAt) {
+      throw new Error('Cannot update rejected sheet');
     }
 
     result.isBillable = expenseSheetBillableDTO.isBillable ? true : false;
@@ -527,6 +551,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
     if (!employee) {
       throw new Error('Employee not found');
     }
+
     let employeeContactPersonId =
       employee.contactPersonOrganization.contactPerson.id;
 
@@ -559,7 +584,12 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       throw new Error('Expense not found');
     }
 
+    if (result.expenseSheetExpenses[0].expense.rejectedAt) {
+      throw new Error('Cannot update rejected sheet');
+    }
+
     result.isBillable = expenseSheetBillableDTO.isBillable ? true : false;
+
     await this.save(result);
 
     return new ExpenseSheetResponse(result);
@@ -612,7 +642,12 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       throw new Error('Expense not found');
     }
 
+    if (result.expenseSheetExpenses[0].expense.rejectedAt) {
+      throw new Error('Cannot update rejected sheet');
+    }
+
     result.isBillable = expenseSheetBillableDTO.isBillable ? true : false;
+
     await this.save(result);
 
     return new ExpenseSheetResponse(result);
@@ -702,6 +737,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         }
 
         expense.expense.approvedAt = moment().toDate();
+        expense.expense.expenseSheetId = expenseSheetObj.id;
         expense.expense.approvedBy = authId;
         transactionalEntityManager.save(Expense, expense.expense);
       }
@@ -782,6 +818,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         }
 
         expense.expense.approvedAt = moment().toDate();
+        expense.expense.expenseSheetId = expenseSheetObj.id;
         expense.expense.approvedBy = authId;
         transactionalEntityManager.save(Expense, expense.expense);
       }
@@ -841,6 +878,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           }
           expense.expense.rejectedAt = null;
           expense.expense.submittedAt = moment().toDate();
+          expense.expense.expenseSheetId = sheet.id;
 
           expense.expense.submitter = emplyoee;
 
@@ -891,6 +929,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           }
 
           expense.expense.approvedAt = moment().toDate();
+          expense.expense.expenseSheetId = sheet.id;
 
           expense.expense.approver = emplyoee;
 
@@ -942,6 +981,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
 
           expense.expense.submittedAt = null;
           expense.expense.rejectedAt = moment().toDate();
+          expense.expense.expenseSheetId = sheet.id;
 
           expense.expense.rejecter = emplyoee;
 
@@ -992,6 +1032,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           expense.expense.approvedAt = null;
           expense.expense.submittedAt = null;
           expense.expense.rejectedAt = moment().toDate();
+          expense.expense.expenseSheetId = sheet.id;
 
           expense.expense.submitter = null;
           expense.expense.approver = null;
@@ -1020,6 +1061,10 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       relations: [
         'expenseSheetExpenses',
         'expenseSheetExpenses.expense',
+        'expenseSheetExpenses.expense.entries',
+        'expenseSheetExpenses.expense.creator',
+        'expenseSheetExpenses.expense.creator.contactPersonOrganization',
+        'expenseSheetExpenses.expense.creator.contactPersonOrganization.contactPerson',
         'expenseSheetExpenses.expense.submitter',
         'expenseSheetExpenses.expense.submitter.contactPersonOrganization',
         'expenseSheetExpenses.expense.submitter.contactPersonOrganization.contactPerson',
@@ -1038,6 +1083,10 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       relations: [
         'expenseSheetExpenses',
         'expenseSheetExpenses.expense',
+        'expenseSheetExpenses.expense.entries',
+        'expenseSheetExpenses.expense.creator',
+        'expenseSheetExpenses.expense.creator.contactPersonOrganization',
+        'expenseSheetExpenses.expense.creator.contactPersonOrganization.contactPerson',
         'expenseSheetExpenses.expense.submitter',
         'expenseSheetExpenses.expense.submitter.contactPersonOrganization',
         'expenseSheetExpenses.expense.submitter.contactPersonOrganization.contactPerson',

@@ -134,6 +134,19 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         }
 
         if (!employee.getActiveContract.leaveRequestPolicy) {
+          console.log(
+            '🚀 ~ file: leaveRequestRepository.ts ~ line 137 ~ LeaveRequestRepository ~ employee',
+            employee
+          );
+          console.log(
+            '🚀 ~ file: leaveRequestRepository.ts ~ line 137 ~ LeaveRequestRepository ~ getActiveContract',
+            employee.getActiveContract
+          );
+          console.log(
+            '🚀 ~ file: leaveRequestRepository.ts ~ line 137 ~ LeaveRequestRepository ~ leaveRequestPolicy',
+            employee.getActiveContract.leaveRequestPolicy
+          );
+
           throw new Error('No Active Leave Request of Employee');
         }
 

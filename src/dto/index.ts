@@ -686,7 +686,7 @@ export interface ExpenseSheetDTO extends Base {
 }
 
 export interface ExpenseSheetBillableDTO extends Base {
-  isBillable: boolean
+  isBillable: boolean;
 }
 
 export interface ExpenseDTO extends Base {
@@ -730,4 +730,16 @@ export interface ExpenseSheetsRejectDTO extends Base {
   sheets: number[];
   isBillable: boolean;
   notes: string;
+}
+
+export interface ProjectScheduleDTO extends Base {
+  startDate: Date;
+  endDate: Date;
+  notes: string;
+  amount: number;
+  segments: {
+    startDate: number;
+    endDate: number;
+    amount: number;
+  }[];
 }

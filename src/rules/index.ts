@@ -7,6 +7,7 @@ import leaveRequestRules from './leaveRequestRules';
 import opportunityXLSXRules from './opportunityXLSXRules';
 import organizationXLSXRules from './organizationXLSXRules';
 import projectXLSXRules from './projectXLSXRules';
+import scheduleRules from './scheduleRules';
 import subContractorXLSXRules from './subContractorXLSXRules';
 
 export let leaveRequestValidator: BaseRule = leaveRequestRules;
@@ -18,3 +19,4 @@ export let employeeXLSXValidator: BaseRule = employeeXLSXRules;
 export let subContractorXLSXValidator: BaseRule = subContractorXLSXRules;
 export let expenseRulesValidator: BaseRule = expenseRules;
 export let expenseSheetRulesValidator = expenseSheetRules;
+export let schduleRulesValidator = scheduleRules;

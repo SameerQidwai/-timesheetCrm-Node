@@ -7,6 +7,31 @@ export class ExpenseSheetController {
   async index(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(ExpenseSheetRepository);
+      const { grantLevel } = res.locals;
+      let startDate = req.query.startDate as string;
+      let endDate = req.query.endDate as string;
+      let projectId = parseInt(req.query.projectId?.toString() ?? '');
+
+      let records = await repository.getOwnActive(
+        parseInt(res.locals.jwtPayload.id),
+        startDate,
+        endDate,
+        projectId
+      );
+
+      res.status(200).json({
+        success: true,
+        message: 'Index projects',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async approvalIndex(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(ExpenseSheetRepository);
       let records = [];
       const { grantLevel } = res.locals;
       let startDate = req.query.startDate as string;
@@ -24,13 +49,6 @@ export class ExpenseSheetController {
         );
       } else if (grantLevel.includes('MANAGE')) {
         records = await repository.getManageActive(
-          parseInt(res.locals.jwtPayload.id),
-          startDate,
-          endDate,
-          projectId
-        );
-      } else if (grantLevel.includes('OWN')) {
-        records = await repository.getOwnActive(
           parseInt(res.locals.jwtPayload.id),
           startDate,
           endDate,
