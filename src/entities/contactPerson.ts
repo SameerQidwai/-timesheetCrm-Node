@@ -14,6 +14,7 @@ import { State } from './state';
 import { ContactPersonOrganization } from './contactPersonOrganization';
 import { Organization } from './organization';
 import { Employee } from './employee';
+import { OpportunityResourceAllocation } from './opportunityResourceAllocation';
 
 @Entity('contact_persons')
 export class ContactPerson extends Base {
@@ -91,6 +92,15 @@ export class ContactPerson extends Base {
     }
   )
   contactPersonOrganizations: ContactPersonOrganization[];
+
+  @OneToMany(
+    () => OpportunityResourceAllocation,
+    (allocation) => allocation.contactPerson,
+    {
+      cascade: true,
+    }
+  )
+  allocations: OpportunityResourceAllocation[];
 
   public get getEmployee(): Employee | null {
     let activeOrganization = this.contactPersonOrganizations.filter(
