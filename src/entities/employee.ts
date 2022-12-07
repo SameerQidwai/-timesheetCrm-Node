@@ -166,6 +166,21 @@ export class Employee extends Base {
     return activeContract;
   }
 
+  public get getBuyRate(): number {
+    let hourlyRate = 0;
+
+    if (this.getActiveContract) {
+      hourlyRate =
+        this.getActiveContract.type === 1
+          ? this.getActiveContract?.remunerationAmount
+          : this.getActiveContract?.remunerationAmount /
+            52 /
+            this.getActiveContract?.noOfHours;
+    }
+
+    return hourlyRate;
+  }
+
   public get getFullName(): string {
     return `${this.contactPersonOrganization.contactPerson.firstName} ${this.contactPersonOrganization.contactPerson.lastName}`;
   }

@@ -1,3 +1,6 @@
+import { Moment } from 'moment';
+import { EmploymentContract } from '../entities/employmentContract';
+import { Employee } from '../entities/employee';
 import { Opportunity } from '../entities/opportunity';
 
 export let getProjectsByUserId = (
@@ -60,4 +63,12 @@ export let getProjectsByUserId = (
   });
 
   return response;
+};
+
+export let getContractByDate = (
+  employee: Employee,
+  startDate: Moment,
+  endDate: Moment
+): EmploymentContract => {
+  return employee.employmentContracts[0];
 };

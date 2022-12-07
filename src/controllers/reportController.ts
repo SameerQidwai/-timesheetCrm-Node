@@ -15,14 +15,18 @@ export class ReportController {
       let startDate = moment().startOf('year');
       let endDate = moment().endOf('year');
 
+      interface resSkill {
+        skill: string;
+        level: string;
+      }
+
       let resources: {
         name: string;
         type: string;
-        skill: string;
-        level: string;
+        skills: resSkill[];
         buyRate: number;
       }[] = [];
-      let addedIds: number[] = [];
+      let ignoreIds: number[] = [];
 
       console.log(queryStartDate, queryEndDate);
 
@@ -49,50 +53,61 @@ export class ReportController {
           'contactPersonOrganization.contactPerson.standardSkillStandardLevels.standardLevel',
           'contactPersonOrganization.contactPerson.allocations',
           'contactPersonOrganization.contactPerson.allocations.opportunityResource',
-          'contactPersonOrganization.contactPerson.allocations.opportunityResource.panelSkillStandardLevel',
-          'contactPersonOrganization.contactPerson.allocations.opportunityResource.panelSkillStandardLevel.standardLevel',
-          'contactPersonOrganization.contactPerson.allocations.opportunityResource.panelSkill',
-          'contactPersonOrganization.contactPerson.allocations.opportunityResource.panelSkill.standardSkill',
         ],
       });
 
-      employees.forEach((employee) => {
-        employee.contactPersonOrganization.contactPerson.allocations.forEach(
-          (allocation) => {
-            let position = allocation.opportunityResource;
-            let type = employee.getActiveContract?.type ?? 0;
-            if (position) {
-              let allocationStart = moment(position.startDate);
-              let allocationEnd = moment(position.endDate);
-              if (
-                !allocationStart.isBetween(startDate, endDate, 'date', '[]') &&
-                !allocationEnd.isBetween(startDate, endDate, 'date', '[]') &&
-                !(
-                  allocationStart.isBefore(startDate) &&
-                  allocationEnd.isAfter(endDate)
-                )
-              ) {
-                if (!addedIds.includes(employee.id)) {
-                  // addedIds.push(employee.id);
-                  resources.push({
-                    name: employee.getFullName,
-                    type:
-                      type === 1
-                        ? 'Casual'
-                        : type === 2
-                        ? 'Full Time'
-                        : type === 3
-                        ? 'Part Time'
-                        : 'Inactive Contract',
-                    skill: position.panelSkill.standardSkill.label,
-                    level: position.panelSkillStandardLevel.standardLevel.label,
-                    buyRate: allocation.buyingRate,
-                  });
-                }
-              }
+      for (let employee of employees) {
+        let ignore = false;
+        for (let allocation of employee.contactPersonOrganization.contactPerson
+          .allocations) {
+          let position = allocation.opportunityResource;
+
+          if (position) {
+            let allocationStart = moment(position.startDate);
+            let allocationEnd = moment(position.endDate);
+            if (
+              allocationStart.isBetween(startDate, endDate, 'date', '[]') ||
+              allocationEnd.isBetween(startDate, endDate, 'date', '[]') ||
+              (allocationStart.isBefore(startDate) &&
+                allocationEnd.isAfter(endDate))
+            ) {
+              ignore = true;
+              break;
             }
           }
-        );
+        }
+        if (ignore) {
+          ignoreIds.push(employee.id);
+        }
+      }
+
+      employees.forEach((employee) => {
+        let type = employee.getActiveContract?.type ?? 0;
+        if (!ignoreIds.includes(employee.id)) {
+          let skills =
+            employee.contactPersonOrganization.contactPerson.standardSkillStandardLevels.map(
+              (skill) => {
+                return {
+                  level: skill.standardLevel.label,
+                  skill: skill.standardSkill.label,
+                };
+              }
+            );
+
+          resources.push({
+            name: employee.getFullName,
+            type:
+              type === 1
+                ? 'Casual'
+                : type === 2
+                ? 'Full Time'
+                : type === 3
+                ? 'Part Time'
+                : 'Inactive Contract',
+            buyRate: parseFloat(employee.getBuyRate.toFixed(2)),
+            skills,
+          });
+        }
       });
 
       res.status(200).json({
