@@ -13,6 +13,7 @@ import { ExpenseType } from '../entities/expenseType';
 import moment from 'moment';
 import { Attachment } from '../entities/attachment';
 import { EntityType } from '../constants/constants';
+import { AttachmentsResponse } from '../responses/attachmentResponses';
 
 @EntityRepository(Expense)
 export class ExpenseRepository extends Repository<Expense> {
@@ -85,14 +86,27 @@ export class ExpenseRepository extends Repository<Expense> {
 
   async getAllActive(): Promise<any[]> {
     let results = await this._findManyCustom({});
-
     return new ExpensesResponse(results).expenses;
   }
 
   async getOwnActive(authId: number): Promise<any[]> {
     let results = await this._findManyCustom({ where: { createdBy: authId } });
+    let resultIds = results.map((el: any)=> el.id)
 
-    // return new ExpensesResponse(results);
+    let attachments = await this.manager.find(Attachment,{
+      where: { targetType: EntityType.EXPENSE, targetId: In(resultIds) },
+      relations: ['file'],
+    }); 
+
+    results.map((el:any)=>{
+      el.attachments = []
+      for (const item of attachments) {
+        if (el.id === item.targetId){
+          el.attachments.push(item)
+        }
+      }
+      return el
+    })
 
     return new ExpensesResponse(results).expenses;
   }
