@@ -457,7 +457,11 @@ export class ExpenseRepository extends Repository<Expense> {
   async deleteCustom(authId: number, id: number): Promise<any | undefined> {
     return this.manager.transaction(async (transactionalEntityManager) => {
       let expense = await transactionalEntityManager.findOne(Expense, id, {
-        relations: ['entries'],
+        relations: [
+          'entries',
+          'entries.sheet',
+          'entries.sheet.expenseSheetExpenses',
+        ],
         where: { createdBy: authId },
       });
 
@@ -467,6 +471,13 @@ export class ExpenseRepository extends Repository<Expense> {
 
       if (!expense.rejectedAt && expense.entries.length > 0) {
         throw new Error('Expense is in sheet');
+      }
+
+      if (
+        expense.entries[expense.entries.length - 1].sheet.expenseSheetExpenses
+          .length == 1
+      ) {
+        throw new Error('Sheet has only one expense');
       }
 
       if (expense.entries.length)

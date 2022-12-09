@@ -35,6 +35,7 @@ import importExportRoutes from './importExportRoutes';
 import expenseTypeRoutes from './expenseTypeRoutes';
 import expenseRoutes from './expenseRoutes';
 import expenseSheetRoutes from './expenseSheetRoutes';
+import reportRoutes from './reportRoutes';
 import testRoutes from './testRoutes';
 
 const router: Router = Router();
@@ -73,6 +74,7 @@ router.use('/data', importExportRoutes);
 router.use('/expense-types', expenseTypeRoutes);
 router.use('/expenses', expenseRoutes);
 router.use('/expense-sheets', expenseSheetRoutes);
+router.use('/reports', reportRoutes);
 router.use('/test', testRoutes);
 // router.use("/opportunity-resources", opportunityResourceRoutes);
 

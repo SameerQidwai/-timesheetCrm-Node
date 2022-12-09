@@ -45,10 +45,8 @@ export class ExpenseSheetResponse {
         ?.expense;
     this.status = ExpenseSheetStatus.SAVED;
 
-    if (lastExpense.entries.length > 1) {
-      if (
-        sheet.id === lastExpense.entries[lastExpense.entries.length - 1].sheetId
-      ) {
+    if (lastExpense.expenseSheetId) {
+      if (sheet.id === lastExpense.expenseSheetId) {
         if (lastExpense.rejectedAt !== null)
           this.status = ExpenseSheetStatus.REJECTED;
         else if (lastExpense.approvedAt !== null)
@@ -59,12 +57,9 @@ export class ExpenseSheetResponse {
         this.status = ExpenseSheetStatus.REJECTED;
       }
     } else {
-      if (lastExpense.rejectedAt !== null)
+      if (lastExpense.entries.length > 0) {
         this.status = ExpenseSheetStatus.REJECTED;
-      else if (lastExpense.approvedAt !== null)
-        this.status = ExpenseSheetStatus.APPROVED;
-      else if (lastExpense.submittedAt !== null)
-        this.status = ExpenseSheetStatus.SUBMITTED;
+      }
     }
 
     this.submittedAt =

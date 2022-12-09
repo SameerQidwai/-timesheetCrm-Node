@@ -539,7 +539,22 @@ ${process.env.ORGANIZATION} Support Team`
       employmentContract.remunerationAmount = remunerationAmount;
       employmentContract.remunerationAmountPer = remunerationAmountPer;
       employmentContract.employeeId = employeeObj.id;
-      employmentContract.leaveRequestPolicyId = leaveRequestPolicyId;
+
+      if (leaveRequestPolicyId) {
+        let policy = await transactionalEntityManager.findOne(
+          LeaveRequestPolicy,
+          leaveRequestPolicyId
+        );
+
+        if (!policy) {
+          throw new Error('Policy not found');
+        }
+
+        employmentContract.leaveRequestPolicy = policy;
+      } else {
+        (employmentContract.leaveRequestPolicy as any) = null;
+      }
+
       employmentContract.fileId = fileId;
       await transactionalEntityManager.save(employmentContract);
 

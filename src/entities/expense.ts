@@ -1,6 +1,7 @@
 import { Entity, Column, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Base } from './common/base';
 import { Employee } from './employee';
+import { ExpenseSheet } from './expenseSheet';
 import { ExpenseSheetExpense } from './expenseSheetExpense';
 import { ExpenseType } from './expenseType';
 import { Opportunity } from './opportunity';
@@ -34,6 +35,13 @@ export class Expense extends Base {
   @ManyToOne(() => Opportunity)
   @JoinColumn({ name: 'project_id' })
   project: Opportunity;
+
+  @Column({ name: 'expense_sheet_id', nullable: true })
+  expenseSheetId: number | null;
+
+  @ManyToOne(() => ExpenseSheet)
+  @JoinColumn({ name: 'expense_sheet_id' })
+  expenseSheet: ExpenseSheet;
 
   @Column({ name: 'expense_type_id', nullable: false })
   expenseTypeId: number;
