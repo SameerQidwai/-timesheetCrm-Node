@@ -269,4 +269,88 @@ export class ReportController {
       next(e);
     }
   }
+
+  async allocationsAll(req: Request, res: Response, next: NextFunction) {
+    try {
+      const manager = getManager();
+
+      let allocations: {
+        workType: string;
+        title: String;
+        organization: string;
+        milestone: string;
+        position: string;
+        skill: string;
+        skillLevel: string;
+        name: string;
+        type: string;
+        booking: string;
+        buyRate: number;
+        sellRate: number;
+        startDate: Date;
+        endDate: Date;
+      }[] = [];
+
+      const projectStatuses = ['P', 'C'];
+
+      let works = await manager.find(Opportunity, {
+        relations: [
+          'organization',
+          'milestones',
+          'milestones.opportunityResources',
+          'milestones.opportunityResources.panelSkill',
+          'milestones.opportunityResources.panelSkill.standardSkill',
+          'milestones.opportunityResources.panelSkillStandardLevel',
+          'milestones.opportunityResources.panelSkillStandardLevel.standardLevel',
+          'milestones.opportunityResources.opportunityResourceAllocations',
+          'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
+          'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations',
+          'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations.employee',
+          'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations.employee.employmentContracts',
+        ],
+      });
+
+      for (let work of works) {
+        for (let milestone of work.milestones) {
+          for (let position of milestone.opportunityResources) {
+            for (let allocation of position.opportunityResourceAllocations) {
+              let type =
+                allocation.contactPerson.getEmployee?.getActiveContract?.type ??
+                0;
+
+              allocations.push({
+                workType: projectStatuses.includes(work.status)
+                  ? 'Project'
+                  : 'Opportunity',
+                title: work.title,
+                organization: work.organization.title,
+                milestone: milestone.title,
+                position: position.title ?? '-N',
+                skill: position.panelSkill.standardSkill.label,
+                skillLevel:
+                  position.panelSkillStandardLevel.standardLevel.label,
+                name: allocation.contactPerson.getFullName,
+                type: parseContractType(type),
+                booking: allocation.contactPerson.getEmployee
+                  ? 'Allocated'
+                  : 'Softbook',
+                buyRate: allocation.buyingRate,
+                sellRate: allocation.sellingRate,
+                startDate: position.startDate,
+                endDate: position.endDate,
+              });
+            }
+          }
+        }
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Allocations',
+        data: allocations,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }
