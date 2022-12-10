@@ -91,22 +91,6 @@ export class ExpenseRepository extends Repository<Expense> {
 
   async getOwnActive(authId: number): Promise<any[]> {
     let results = await this._findManyCustom({ where: { createdBy: authId } });
-    let resultIds = results.map((el: any)=> el.id)
-
-    let attachments = await this.manager.find(Attachment,{
-      where: { targetType: EntityType.EXPENSE, targetId: In(resultIds) },
-      relations: ['file'],
-    }); 
-
-    results.map((el:any)=>{
-      el.attachments = []
-      for (const item of attachments) {
-        if (el.id === item.targetId){
-          el.attachments.push(item)
-        }
-      }
-      return el
-    })
 
     return new ExpensesResponse(results).expenses;
   }
@@ -513,7 +497,7 @@ export class ExpenseRepository extends Repository<Expense> {
       throw new Error('Expense not found');
     }
 
-    return result;
+    return this._getOneAttachment(result);
   }
 
   async _findManyCustom(options: {}): Promise<Expense[] | []> {
@@ -523,7 +507,7 @@ export class ExpenseRepository extends Repository<Expense> {
       order: { id: 'ASC' },
     });
 
-    return results;
+    return this._getAttachments(results);
   }
 
   _validateExpenseDates(date: Date, project: Opportunity) {
@@ -545,4 +529,46 @@ export class ExpenseRepository extends Repository<Expense> {
       throw new Error('Expense is out of project Dates');
     }
   }
+
+  async _getOneAttachment(result: Expense ): Promise<Expense>{
+
+    let attachments = await this.manager.find(Attachment,{
+      where: { targetType: EntityType.EXPENSE, targetId: result.id },
+      relations: ['file'],
+    })
+
+    let expense: Expense & { attachments: Attachment[] } = {
+      ...result,
+      attachments: attachments || [],
+    };
+    
+    return expense
+  }
+
+  async _getAttachments(results: Expense[]): Promise<Expense[]>{
+    let resultIds = results.map((el: any)=> el.id)
+
+    let attachments = await this.manager.find(Attachment,{
+      where: { targetType: EntityType.EXPENSE, targetId: In(resultIds) },
+      relations: ['file'],
+    })
+
+    let attachmentObj : {[key: number]: Attachment[]} ={}
+    
+    attachments.forEach((el:any)=>{
+      if (attachmentObj?.[el.targetId]){
+        attachmentObj[el.targetId].push(el)
+      }else{
+        attachmentObj[el.targetId] = [el]
+      }
+    })
+
+    results.map((el:any)=>{
+      el.attachments = attachmentObj[el.id] || []
+      return el
+    })
+
+    return results
+  }
+
 }
