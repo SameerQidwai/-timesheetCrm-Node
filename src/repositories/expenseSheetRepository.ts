@@ -324,7 +324,11 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
 
   async findOneCustom(authId: number, id: number): Promise<any | undefined> {
     let result = await this._findOneCustom(authId, id);
-
+    // console.log('==================SHOWING===============')
+    // result.expenseSheetExpenses.map((el:any)=>{
+    //     console.log(el.expenseId)
+    //   })
+    // console.log('==================SHOWING===============')
     return new ExpenseSheetResponse(result);
   }
 
@@ -1069,8 +1073,13 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         'project',
       ],
     });
+    if (!result) {
+      throw new Error('Expense not found');
+    }
 
-    return result;
+    result.expenseSheetExpenses = await this._getAttachments(result.expenseSheetExpenses)
+
+    return result
   }
 
   async _findManyCustom(options: {}): Promise<ExpenseSheet[] | []> {
@@ -1093,5 +1102,33 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
     });
 
     return results;
+  }
+
+  async _getAttachments(
+    expenseSheetExpenses: ExpenseSheetExpense[]
+  ): Promise<Array<ExpenseSheetExpense & { attachments: Attachment[] | [] }>> {
+    let resultIds = expenseSheetExpenses.map((el: any) => el.expenseId);
+    
+    let attachments = await this.manager.find(Attachment, {
+      where: { targetType: EntityType.EXPENSE, targetId: In(resultIds) },
+      relations: ['file'],
+    });
+
+
+    let attachmentObj: { [key: number]: Attachment[] } = {};
+    attachments.forEach((el: Attachment) => {
+      if (attachmentObj?.[el.targetId]) {
+        attachmentObj[el.targetId].push(el);
+      } else {
+        attachmentObj[el.targetId] = [el];
+      }
+    });
+
+    let expenses = expenseSheetExpenses.map((el: any) => {
+      el.attachments = attachmentObj[el.expenseId] || [];
+      return el;
+    });
+    
+    return expenses;
   }
 }

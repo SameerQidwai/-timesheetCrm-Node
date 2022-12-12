@@ -472,8 +472,8 @@ export class ExpenseRepository extends Repository<Expense> {
       }
 
       if (
-        expense.entries[expense.entries.length - 1].sheet.expenseSheetExpenses
-          .length == 1
+        expense?.entries[expense.entries.length - 1]?.sheet?.expenseSheetExpenses
+          ?.length == 1
       ) {
         throw new Error('Sheet has only one expense');
       }
