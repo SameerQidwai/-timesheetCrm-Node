@@ -124,6 +124,9 @@ export class ReportController {
     try {
       const manager = getManager();
 
+      let querySkillId = parseInt(req.query.skillId as string);
+      let queryLevelId = parseInt(req.query.levelId as string);
+
       let worforce: {
         skill: string;
         skillLevel: string;
@@ -162,13 +165,19 @@ export class ReportController {
 
           let type = employee.getActiveContract.type;
 
-          worforce.push({
-            skill: standardSkillLevel.standardSkill.label,
-            skillLevel: standardSkillLevel.standardLevel.label,
-            name: contactPerson.getFullName,
-            type: parseContractType(type),
-            buyRate: await buyRateByEmployee(employee),
-          });
+          if (
+            (isNaN(querySkillId) ||
+              querySkillId == standardSkillLevel.standardSkillId) &&
+            (isNaN(queryLevelId) ||
+              queryLevelId == standardSkillLevel.standardLevelId)
+          )
+            worforce.push({
+              skill: standardSkillLevel.standardSkill.label,
+              skillLevel: standardSkillLevel.standardLevel.label,
+              name: contactPerson.getFullName,
+              type: parseContractType(type),
+              buyRate: await buyRateByEmployee(employee),
+            });
         }
       }
 
@@ -185,6 +194,29 @@ export class ReportController {
   async allocations(req: Request, res: Response, next: NextFunction) {
     try {
       const manager = getManager();
+
+      let queryStartDate = req.query.startDate as string;
+      let queryEndDate = req.query.endDate as string;
+      let querySkillId = parseInt(req.query.skillId as string);
+      let queryLevelId = parseInt(req.query.levelId as string);
+      let queryResourceType = parseInt(req.query.resourceType as string);
+      let queryWorkStatus = parseInt(req.query.workStatus as string);
+      let queryWorkType = parseInt(req.query.workType as string);
+
+      let startDate = moment().startOf('year');
+      let endDate = moment().endOf('year');
+
+      if (queryStartDate) {
+        if (moment(queryStartDate).isValid()) {
+          startDate = moment(queryStartDate);
+        }
+      }
+
+      if (queryEndDate) {
+        if (moment(queryEndDate).isValid()) {
+          endDate = moment(queryEndDate);
+        }
+      }
 
       let allocations: {
         workType: string;
@@ -224,18 +256,56 @@ export class ReportController {
       });
 
       for (let work of works) {
+        let workStatus = projectStatuses.includes(work.status) ? 1 : 0;
+        if (
+          (!isNaN(queryWorkStatus) && workStatus != queryWorkStatus) ||
+          (!isNaN(queryWorkType) && work.type != queryWorkType)
+        ) {
+          continue;
+        }
         for (let milestone of work.milestones) {
           for (let position of milestone.opportunityResources) {
+            let positionStartDate = moment(position.startDate);
+            let positionEndDate = moment(position.endDate);
+
+            if (
+              !positionStartDate.isBetween(startDate, endDate, 'date', '[]') &&
+              !positionEndDate.isBetween(startDate, endDate, 'date', '[]') &&
+              !(
+                positionStartDate.isBefore(startDate) &&
+                positionEndDate.isAfter(endDate)
+              )
+            ) {
+              continue;
+            }
+
+            if (
+              (!isNaN(querySkillId) &&
+                querySkillId != position.panelSkill.standardSkillId) ||
+              (!isNaN(queryLevelId) &&
+                queryLevelId !=
+                  position.panelSkillStandardLevel.standardLevelId)
+            ) {
+              continue;
+            }
+
             for (let allocation of position.opportunityResourceAllocations) {
               let type =
                 allocation.contactPerson.getEmployee?.getActiveContract?.type ??
                 0;
 
               if (allocation.isMarkedAsSelected) {
+                let resourceType = allocation.contactPerson.getEmployee ? 1 : 0;
+
+                if (
+                  !isNaN(queryResourceType) &&
+                  queryResourceType != resourceType
+                ) {
+                  continue;
+                }
+
                 allocations.push({
-                  workType: projectStatuses.includes(work.status)
-                    ? 'Project'
-                    : 'Opportunity',
+                  workType: workStatus ? 'Project' : 'Opportunity',
                   title: work.title,
                   organization: work.organization.title,
                   milestone: milestone.title,
@@ -245,9 +315,7 @@ export class ReportController {
                     position.panelSkillStandardLevel.standardLevel.label,
                   name: allocation.contactPerson.getFullName,
                   type: parseContractType(type),
-                  booking: allocation.contactPerson.getEmployee
-                    ? 'Allocated'
-                    : 'Softbook',
+                  booking: resourceType ? 'Allocated' : 'Softbook',
                   buyRate: allocation.buyingRate,
                   sellRate: allocation.sellingRate,
                   CMPercent: 0,
@@ -273,6 +341,29 @@ export class ReportController {
   async allocationsAll(req: Request, res: Response, next: NextFunction) {
     try {
       const manager = getManager();
+
+      let queryStartDate = req.query.startDate as string;
+      let queryEndDate = req.query.endDate as string;
+      let querySkillId = parseInt(req.query.skillId as string);
+      let queryLevelId = parseInt(req.query.levelId as string);
+      let queryResourceType = parseInt(req.query.resourceType as string);
+      let queryWorkStatus = parseInt(req.query.workStatus as string);
+      let queryWorkType = parseInt(req.query.workType as string);
+
+      let startDate = moment().startOf('year');
+      let endDate = moment().endOf('year');
+
+      if (queryStartDate) {
+        if (moment(queryStartDate).isValid()) {
+          startDate = moment(queryStartDate);
+        }
+      }
+
+      if (queryEndDate) {
+        if (moment(queryEndDate).isValid()) {
+          endDate = moment(queryEndDate);
+        }
+      }
 
       let allocations: {
         workType: string;
@@ -311,17 +402,58 @@ export class ReportController {
       });
 
       for (let work of works) {
+        let workStatus = projectStatuses.includes(work.status) ? 1 : 0;
+        if (
+          (!isNaN(queryWorkStatus) && workStatus != queryWorkStatus) ||
+          (!isNaN(queryWorkType) && work.type != queryWorkType)
+        ) {
+          continue;
+        }
         for (let milestone of work.milestones) {
           for (let position of milestone.opportunityResources) {
+            let positionStartDate = moment(position.startDate);
+            let positionEndDate = moment(position.endDate);
+
+            if (
+              !positionStartDate.isBetween(startDate, endDate, 'date', '[]') &&
+              !positionEndDate.isBetween(startDate, endDate, 'date', '[]') &&
+              !(
+                positionStartDate.isBefore(startDate) &&
+                positionEndDate.isAfter(endDate)
+              )
+            ) {
+              continue;
+            }
+
+            if (
+              (!isNaN(querySkillId) &&
+                querySkillId != position.panelSkill.standardSkillId) ||
+              (!isNaN(queryLevelId) &&
+                queryLevelId !=
+                  position.panelSkillStandardLevel.standardLevelId)
+            ) {
+              continue;
+            }
+
             for (let allocation of position.opportunityResourceAllocations) {
               let type =
                 allocation.contactPerson.getEmployee?.getActiveContract?.type ??
                 0;
+              let resourceType = 2;
+
+              if (allocation.isMarkedAsSelected) {
+                resourceType = allocation.contactPerson.getEmployee ? 1 : 0;
+              }
+
+              if (
+                !isNaN(queryResourceType) &&
+                queryResourceType != resourceType
+              ) {
+                continue;
+              }
 
               allocations.push({
-                workType: projectStatuses.includes(work.status)
-                  ? 'Project'
-                  : 'Opportunity',
+                workType: workStatus ? 'Project' : 'Opportunity',
                 title: work.title,
                 organization: work.organization.title,
                 milestone: milestone.title,
@@ -331,9 +463,12 @@ export class ReportController {
                   position.panelSkillStandardLevel.standardLevel.label,
                 name: allocation.contactPerson.getFullName,
                 type: parseContractType(type),
-                booking: allocation.contactPerson.getEmployee
-                  ? 'Allocated'
-                  : 'Softbook',
+                booking:
+                  resourceType == 2
+                    ? 'Assigned'
+                    : resourceType == 1
+                    ? 'Allocated'
+                    : 'Softbook',
                 buyRate: allocation.buyingRate,
                 sellRate: allocation.sellingRate,
                 startDate: position.startDate,
