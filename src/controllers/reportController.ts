@@ -43,8 +43,6 @@ export class ReportController {
       }[] = [];
       let ignoreIds: number[] = [];
 
-      console.log(queryStartDate, queryEndDate);
-
       if (queryStartDate) {
         if (moment(queryStartDate).isValid()) {
           startDate = moment(queryStartDate);
@@ -176,18 +174,6 @@ export class ReportController {
           if (!employee.getActiveContract) continue;
 
           let type = employee.getActiveContract.type;
-
-          console.log(querySkillId);
-          console.log(queryLevelId);
-
-          console.log(
-            !querySkillId.length ||
-              querySkillId.includes(standardSkillLevel.standardSkillId)
-          );
-          console.log(
-            !queryLevelId.length ||
-              queryLevelId.includes(standardSkillLevel.standardLevelId)
-          );
 
           if (
             (!querySkillId.length ||
@@ -339,7 +325,7 @@ export class ReportController {
                   title: work.title,
                   organization: work.organization.title,
                   milestone: milestone.title,
-                  position: position.title ?? '-N',
+                  position: position.title ?? '-',
                   skill: position.panelSkill.standardSkill.label,
                   skillLevel:
                     position.panelSkillStandardLevel.standardLevel.label,
@@ -483,7 +469,7 @@ export class ReportController {
 
               if (
                 queryResourceType.length &&
-                queryResourceType.includes(resourceType)
+                !queryResourceType.includes(resourceType)
               ) {
                 continue;
               }
@@ -493,7 +479,7 @@ export class ReportController {
                 title: work.title,
                 organization: work.organization.title,
                 milestone: milestone.title,
-                position: position.title ?? '-N',
+                position: position.title ?? '-',
                 skill: position.panelSkill.standardSkill.label,
                 skillLevel:
                   position.panelSkillStandardLevel.standardLevel.label,
