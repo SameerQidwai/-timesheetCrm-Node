@@ -10,6 +10,18 @@ import { StandardSkillStandardLevel } from '../entities/standardSkillStandardLev
 import { Opportunity } from '../entities/opportunity';
 
 export class ReportController {
+  _customQueryParser(query = '') {
+    let ids = [];
+
+    for (let item of query.split(',')) {
+      if (isNaN(parseInt(item))) continue;
+
+      ids.push(parseInt(item));
+    }
+
+    return ids;
+  }
+
   async benchResources(req: Request, res: Response, next: NextFunction) {
     try {
       let queryStartDate = req.query.startDate as string;
@@ -124,8 +136,8 @@ export class ReportController {
     try {
       const manager = getManager();
 
-      let querySkillId = parseInt(req.query.skillId as string);
-      let queryLevelId = parseInt(req.query.levelId as string);
+      let querySkillId = this._customQueryParser(req.query.skillId as string);
+      let queryLevelId = this._customQueryParser(req.query.levelId as string);
 
       let worforce: {
         skill: string;
@@ -165,11 +177,23 @@ export class ReportController {
 
           let type = employee.getActiveContract.type;
 
+          console.log(querySkillId);
+          console.log(queryLevelId);
+
+          console.log(
+            !querySkillId.length ||
+              querySkillId.includes(standardSkillLevel.standardSkillId)
+          );
+          console.log(
+            !queryLevelId.length ||
+              queryLevelId.includes(standardSkillLevel.standardLevelId)
+          );
+
           if (
-            (isNaN(querySkillId) ||
-              querySkillId == standardSkillLevel.standardSkillId) &&
-            (isNaN(queryLevelId) ||
-              queryLevelId == standardSkillLevel.standardLevelId)
+            (!querySkillId.length ||
+              querySkillId.includes(standardSkillLevel.standardSkillId)) &&
+            (!queryLevelId.length ||
+              queryLevelId.includes(standardSkillLevel.standardLevelId))
           )
             worforce.push({
               skill: standardSkillLevel.standardSkill.label,
@@ -197,11 +221,16 @@ export class ReportController {
 
       let queryStartDate = req.query.startDate as string;
       let queryEndDate = req.query.endDate as string;
-      let querySkillId = parseInt(req.query.skillId as string);
-      let queryLevelId = parseInt(req.query.levelId as string);
-      let queryResourceType = parseInt(req.query.resourceType as string);
-      let queryWorkStatus = parseInt(req.query.workStatus as string);
-      let queryWorkType = parseInt(req.query.workType as string);
+
+      let querySkillId = this._customQueryParser(req.query.skillId as string);
+      let queryLevelId = this._customQueryParser(req.query.levelId as string);
+      let queryResourceType = this._customQueryParser(
+        req.query.resourceType as string
+      );
+      let queryWorkStatus = this._customQueryParser(
+        req.query.workStatus as string
+      );
+      let queryWorkType = this._customQueryParser(req.query.workType as string);
 
       let startDate = moment().startOf('year');
       let endDate = moment().endOf('year');
@@ -258,8 +287,8 @@ export class ReportController {
       for (let work of works) {
         let workStatus = projectStatuses.includes(work.status) ? 1 : 0;
         if (
-          (!isNaN(queryWorkStatus) && workStatus != queryWorkStatus) ||
-          (!isNaN(queryWorkType) && work.type != queryWorkType)
+          (queryWorkStatus.length && !queryWorkStatus.includes(workStatus)) ||
+          (queryWorkType.length && !queryWorkType.includes(work.type))
         ) {
           continue;
         }
@@ -280,11 +309,12 @@ export class ReportController {
             }
 
             if (
-              (!isNaN(querySkillId) &&
-                querySkillId != position.panelSkill.standardSkillId) ||
-              (!isNaN(queryLevelId) &&
-                queryLevelId !=
-                  position.panelSkillStandardLevel.standardLevelId)
+              (querySkillId.length &&
+                !querySkillId.includes(position.panelSkill.standardSkillId)) ||
+              (queryLevelId.length &&
+                !queryLevelId.includes(
+                  position.panelSkillStandardLevel.standardLevelId
+                ))
             ) {
               continue;
             }
@@ -298,8 +328,8 @@ export class ReportController {
                 let resourceType = allocation.contactPerson.getEmployee ? 1 : 0;
 
                 if (
-                  !isNaN(queryResourceType) &&
-                  queryResourceType != resourceType
+                  queryResourceType.length &&
+                  !queryResourceType.includes(resourceType)
                 ) {
                   continue;
                 }
@@ -344,11 +374,16 @@ export class ReportController {
 
       let queryStartDate = req.query.startDate as string;
       let queryEndDate = req.query.endDate as string;
-      let querySkillId = parseInt(req.query.skillId as string);
-      let queryLevelId = parseInt(req.query.levelId as string);
-      let queryResourceType = parseInt(req.query.resourceType as string);
-      let queryWorkStatus = parseInt(req.query.workStatus as string);
-      let queryWorkType = parseInt(req.query.workType as string);
+
+      let querySkillId = this._customQueryParser(req.query.skillId as string);
+      let queryLevelId = this._customQueryParser(req.query.levelId as string);
+      let queryResourceType = this._customQueryParser(
+        req.query.resourceType as string
+      );
+      let queryWorkStatus = this._customQueryParser(
+        req.query.workStatus as string
+      );
+      let queryWorkType = this._customQueryParser(req.query.workType as string);
 
       let startDate = moment().startOf('year');
       let endDate = moment().endOf('year');
@@ -404,8 +439,8 @@ export class ReportController {
       for (let work of works) {
         let workStatus = projectStatuses.includes(work.status) ? 1 : 0;
         if (
-          (!isNaN(queryWorkStatus) && workStatus != queryWorkStatus) ||
-          (!isNaN(queryWorkType) && work.type != queryWorkType)
+          (queryWorkStatus.length && !queryWorkStatus.includes(workStatus)) ||
+          (queryWorkType.length && !queryWorkType.includes(work.type))
         ) {
           continue;
         }
@@ -426,11 +461,12 @@ export class ReportController {
             }
 
             if (
-              (!isNaN(querySkillId) &&
-                querySkillId != position.panelSkill.standardSkillId) ||
-              (!isNaN(queryLevelId) &&
-                queryLevelId !=
-                  position.panelSkillStandardLevel.standardLevelId)
+              (querySkillId.length &&
+                !querySkillId.includes(position.panelSkill.standardSkillId)) ||
+              (queryLevelId.length &&
+                !queryLevelId.includes(
+                  position.panelSkillStandardLevel.standardLevelId
+                ))
             ) {
               continue;
             }
@@ -446,8 +482,8 @@ export class ReportController {
               }
 
               if (
-                !isNaN(queryResourceType) &&
-                queryResourceType != resourceType
+                queryResourceType.length &&
+                queryResourceType.includes(resourceType)
               ) {
                 continue;
               }
