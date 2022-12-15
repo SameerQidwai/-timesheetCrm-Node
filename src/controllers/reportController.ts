@@ -217,6 +217,10 @@ export class ReportController {
         req.query.workStatus as string
       );
       let queryWorkType = this._customQueryParser(req.query.workType as string);
+      let queryContactPersonId = this._customQueryParser(
+        req.query.contactPersonId as string
+      );
+      let queryWorkId = this._customQueryParser(req.query.workId as string);
 
       let startDate = moment().startOf('year');
       let endDate = moment().endOf('year');
@@ -278,6 +282,11 @@ export class ReportController {
         ) {
           continue;
         }
+
+        if (queryWorkId.length && !queryWorkId.includes(work.id)) {
+          continue;
+        }
+
         for (let milestone of work.milestones) {
           for (let position of milestone.opportunityResources) {
             let positionStartDate = moment(position.startDate);
@@ -306,6 +315,13 @@ export class ReportController {
             }
 
             for (let allocation of position.opportunityResourceAllocations) {
+              if (
+                queryContactPersonId.length &&
+                !queryContactPersonId.includes(allocation.contactPerson.id)
+              ) {
+                continue;
+              }
+
               let type =
                 allocation.contactPerson.getEmployee?.getActiveContract?.type ??
                 0;
@@ -334,7 +350,11 @@ export class ReportController {
                   booking: resourceType ? 'Allocated' : 'Softbook',
                   buyRate: allocation.buyingRate,
                   sellRate: allocation.sellingRate,
-                  CMPercent: 0,
+                  CMPercent: allocation.sellingRate
+                    ? ((allocation.sellingRate - allocation.buyingRate) /
+                        allocation.sellingRate) *
+                      100
+                    : 0,
                   startDate: position.startDate,
                   endDate: position.endDate,
                 });
@@ -370,6 +390,10 @@ export class ReportController {
         req.query.workStatus as string
       );
       let queryWorkType = this._customQueryParser(req.query.workType as string);
+      let queryContactPersonId = this._customQueryParser(
+        req.query.contactPersonId as string
+      );
+      let queryWorkId = this._customQueryParser(req.query.workId as string);
 
       let startDate = moment().startOf('year');
       let endDate = moment().endOf('year');
@@ -430,6 +454,11 @@ export class ReportController {
         ) {
           continue;
         }
+
+        if (queryWorkId.length && !queryWorkId.includes(work.id)) {
+          continue;
+        }
+
         for (let milestone of work.milestones) {
           for (let position of milestone.opportunityResources) {
             let positionStartDate = moment(position.startDate);
@@ -458,6 +487,13 @@ export class ReportController {
             }
 
             for (let allocation of position.opportunityResourceAllocations) {
+              if (
+                queryContactPersonId.length &&
+                !queryContactPersonId.includes(allocation.contactPerson.id)
+              ) {
+                continue;
+              }
+
               let type =
                 allocation.contactPerson.getEmployee?.getActiveContract?.type ??
                 0;
