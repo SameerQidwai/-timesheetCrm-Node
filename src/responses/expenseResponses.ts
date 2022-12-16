@@ -15,8 +15,10 @@ export class ExpenseResponse {
   isReimbursed: Boolean;
   isInSheet: Boolean;
   notes: string | null;
+  attachments: AttachmentResponse[]
 
-  constructor(expense: Expense) {
+  // constructor(expense: Expense) {
+  constructor(expense: any) {
     this.id = expense.id;
     this.expenseTypeId = expense.expenseTypeId;
     this.expenseTypeName = expense.expenseType.label;
@@ -36,6 +38,7 @@ export class ExpenseResponse {
       this.status = ExpenseSheetStatus.APPROVED;
     else if (expense.submittedAt !== null)
       this.status = ExpenseSheetStatus.SUBMITTED;
+    this.attachments = new AttachmentsResponse(expense.attachments).attachments
   }
 }
 

@@ -13,6 +13,7 @@ import { ExpenseType } from '../entities/expenseType';
 import moment from 'moment';
 import { Attachment } from '../entities/attachment';
 import { EntityType } from '../constants/constants';
+import { AttachmentsResponse } from '../responses/attachmentResponses';
 
 @EntityRepository(Expense)
 export class ExpenseRepository extends Repository<Expense> {
@@ -85,14 +86,11 @@ export class ExpenseRepository extends Repository<Expense> {
 
   async getAllActive(): Promise<any[]> {
     let results = await this._findManyCustom({});
-
     return new ExpensesResponse(results).expenses;
   }
 
   async getOwnActive(authId: number): Promise<any[]> {
     let results = await this._findManyCustom({ where: { createdBy: authId } });
-
-    // return new ExpensesResponse(results);
 
     return new ExpensesResponse(results).expenses;
   }
@@ -474,8 +472,8 @@ export class ExpenseRepository extends Repository<Expense> {
       }
 
       if (
-        expense.entries[expense.entries.length - 1].sheet.expenseSheetExpenses
-          .length == 1
+        expense?.entries[expense.entries.length - 1]?.sheet?.expenseSheetExpenses
+          ?.length == 1
       ) {
         throw new Error('Sheet has only one expense');
       }
@@ -499,7 +497,7 @@ export class ExpenseRepository extends Repository<Expense> {
       throw new Error('Expense not found');
     }
 
-    return result;
+    return this._getOneAttachment(result);
   }
 
   async _findManyCustom(options: {}): Promise<Expense[] | []> {
@@ -509,7 +507,7 @@ export class ExpenseRepository extends Repository<Expense> {
       order: { id: 'ASC' },
     });
 
-    return results;
+    return this._getAttachments(results);
   }
 
   _validateExpenseDates(date: Date, project: Opportunity) {
@@ -531,4 +529,46 @@ export class ExpenseRepository extends Repository<Expense> {
       throw new Error('Expense is out of project Dates');
     }
   }
+
+  async _getOneAttachment(result: Expense ): Promise<Expense>{
+
+    let attachments = await this.manager.find(Attachment,{
+      where: { targetType: EntityType.EXPENSE, targetId: result.id },
+      relations: ['file'],
+    })
+
+    let expense: Expense & { attachments: Attachment[] } = {
+      ...result,
+      attachments: attachments || [],
+    };
+    
+    return expense
+  }
+
+  async _getAttachments(results: Expense[]): Promise<Expense[]>{
+    let resultIds = results.map((el: any)=> el.id)
+
+    let attachments = await this.manager.find(Attachment,{
+      where: { targetType: EntityType.EXPENSE, targetId: In(resultIds) },
+      relations: ['file'],
+    })
+
+    let attachmentObj : {[key: number]: Attachment[]} ={}
+    
+    attachments.forEach((el:any)=>{
+      if (attachmentObj?.[el.targetId]){
+        attachmentObj[el.targetId].push(el)
+      }else{
+        attachmentObj[el.targetId] = [el]
+      }
+    })
+
+    results.map((el:any)=>{
+      el.attachments = attachmentObj[el.id] || []
+      return el
+    })
+
+    return results
+  }
+
 }

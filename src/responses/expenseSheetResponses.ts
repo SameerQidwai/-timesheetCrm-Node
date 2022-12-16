@@ -74,6 +74,7 @@ export class ExpenseSheetResponse {
     this.expenseSheetExpenses = new ExpenseSheetExpensesResponse(
       sheet.expenseSheetExpenses
     ).expenses;
+
   }
 }
 

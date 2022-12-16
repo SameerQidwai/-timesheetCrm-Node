@@ -1,7 +1,8 @@
 import { ExpenseSheetExpense } from '../entities/expenseSheetExpense';
 import { Expense } from '../entities/expense';
-import { AttachmentResponse } from './attachmentResponses';
+import { AttachmentResponse, AttachmentsResponse } from './attachmentResponses';
 import { ExpenseSheetStatus } from '../constants/constants';
+import { Attachment } from '../entities/attachment';
 
 export class ExpenseSheetExpenseResponse {
   id: number;
@@ -16,8 +17,9 @@ export class ExpenseSheetExpenseResponse {
   isReimbursed: Boolean;
   isInSheet: Boolean;
   notes: string | null;
+  attachments: AttachmentResponse[];
 
-  constructor(expense: ExpenseSheetExpense) {
+  constructor(expense: ExpenseSheetExpense & { attachments?: Attachment[] }) {
     this.id = expense.id;
     this.expenseTypeId = expense.expense.expenseTypeId;
     this.expenseTypeName = expense.expense.expenseType.label;
@@ -36,6 +38,9 @@ export class ExpenseSheetExpenseResponse {
       this.status = ExpenseSheetStatus.APPROVED;
     else if (expense.expense.submittedAt !== null)
       this.status = ExpenseSheetStatus.SUBMITTED;
+    this.attachments = expense.attachments?.length
+      ? new AttachmentsResponse(expense.attachments).attachments
+      : [];
   }
 }
 
