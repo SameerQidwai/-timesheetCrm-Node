@@ -238,8 +238,8 @@ export let parseContractType = (type: EmploymentType | number): string => {
   return type === 1
     ? 'Casual'
     : type === 2
-    ? 'Full Time'
-    : type === 3
     ? 'Part Time'
+    : type === 3
+    ? 'Full Time'
     : 'Inactive Contract';
 };

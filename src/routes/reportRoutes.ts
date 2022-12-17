@@ -10,9 +10,11 @@ router
 router
   .route('/workforce-skills')
   .get([isLoggedIn], contr.workforceSkills.bind(contr));
-router.route('/allocations').get([isLoggedIn], contr.allocations.bind(contr));
+router
+  .route('/allocations')
+  .get([isLoggedIn], contr.opportunityAllocations.bind(contr));
 router
   .route('/allocations-all')
-  .get([isLoggedIn], contr.allocationsAll.bind(contr));
+  .get([isLoggedIn], contr.employeeAllocations.bind(contr));
 
 export default router;
