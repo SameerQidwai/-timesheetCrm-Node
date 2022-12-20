@@ -4,10 +4,13 @@ import { getManager } from 'typeorm';
 import moment, { Moment } from 'moment';
 import {
   buyRateByEmployee,
+  parseBookingType,
   parseContractType,
+  parseResourceType,
 } from '../utilities/helperFunctions';
 import { StandardSkillStandardLevel } from '../entities/standardSkillStandardLevel';
 import { Opportunity } from '../entities/opportunity';
+import { string } from 'joi';
 
 export class ReportController {
   _customQueryParser(query = '') {
@@ -225,6 +228,9 @@ export class ReportController {
         req.query.contactPersonId as string
       );
       let queryWorkId = this._customQueryParser(req.query.workId as string);
+      let queryOrganizationId = this._customQueryParser(
+        req.query.organizationId as string
+      );
 
       let startDate = moment().startOf('year');
       let endDate = moment().endOf('year');
@@ -250,8 +256,9 @@ export class ReportController {
         skill: string;
         skillLevel: string;
         name: string;
-        type: string;
-        booking: string;
+        employmentType: string;
+        resourceType: string;
+        bookingType: string;
         buyRate: number;
         sellRate: number;
         CMPercent: number;
@@ -293,6 +300,13 @@ export class ReportController {
           continue;
         }
 
+        if (
+          queryOrganizationId.length &&
+          !queryOrganizationId.includes(work.organization.id)
+        ) {
+          continue;
+        }
+
         for (let milestone of work.milestones) {
           for (let position of milestone.opportunityResources) {
             let positionStartDate = moment(position.startDate);
@@ -331,8 +345,9 @@ export class ReportController {
                 skillLevel:
                   position.panelSkillStandardLevel.standardLevel.label,
                 name: '-',
-                type: '-',
-                booking: 'Unassigned',
+                resourceType: '-',
+                employmentType: '-',
+                bookingType: 'Unallocated',
                 buyRate: 0,
                 sellRate: 0,
                 CMPercent: 0,
@@ -349,14 +364,21 @@ export class ReportController {
                 continue;
               }
 
-              let type =
+              let employmentType =
                 allocation.contactPerson.getEmployee?.getActiveContract?.type ??
                 0;
+              let bookingType = 0;
+              let resourceType = 0;
 
-              let resourceType = 2;
+              if (allocation.contactPerson.getActiveOrganization)
+                resourceType =
+                  allocation.contactPerson.getActiveOrganization
+                    .organizationId == 1
+                    ? 1
+                    : 2;
 
               if (allocation.isMarkedAsSelected)
-                resourceType = allocation.contactPerson.getEmployee ? 1 : 0;
+                bookingType = allocation.contactPerson.getEmployee ? 2 : 1;
 
               if (
                 queryResourceType.length &&
@@ -375,13 +397,9 @@ export class ReportController {
                 skillLevel:
                   position.panelSkillStandardLevel.standardLevel.label,
                 name: allocation.contactPerson.getFullName,
-                type: parseContractType(type),
-                booking:
-                  resourceType == 2
-                    ? 'Assigned'
-                    : resourceType == 1
-                    ? 'Allocated'
-                    : 'Softbooked',
+                resourceType: parseResourceType(resourceType),
+                employmentType: parseContractType(employmentType),
+                bookingType: parseBookingType(bookingType),
                 buyRate: allocation.buyingRate,
                 sellRate: allocation.sellingRate,
                 CMPercent: allocation.sellingRate
@@ -427,6 +445,9 @@ export class ReportController {
         req.query.contactPersonId as string
       );
       let queryWorkId = this._customQueryParser(req.query.workId as string);
+      let queryOrganizationId = this._customQueryParser(
+        req.query.organizationId as string
+      );
 
       let startDate = moment().startOf('year');
       let endDate = moment().endOf('year');
@@ -444,6 +465,10 @@ export class ReportController {
       }
 
       let allocations: {
+        name: string;
+        resourceType: string;
+        employmentType: string;
+        bookingType: string;
         workType: string;
         title: String;
         organization: string;
@@ -451,9 +476,6 @@ export class ReportController {
         position: string;
         skill: string;
         skillLevel: string;
-        name: string;
-        type: string;
-        booking: string;
         buyRate: number;
         sellRate: number;
         startDate: Date | null;
@@ -477,6 +499,7 @@ export class ReportController {
           'contactPersonOrganization.contactPerson.allocations.opportunityResource.milestone.project.organization',
           'employmentContracts',
         ],
+        where: { active: true },
       });
 
       for (let employee of employees) {
@@ -492,8 +515,9 @@ export class ReportController {
           continue;
         }
 
-        let type = employee.getActiveContract?.type ?? 0;
-        let resourceType = 2;
+        let employmentType = employee.getActiveContract?.type ?? 0;
+        let resourceType =
+          employee.contactPersonOrganization.organizationId == 1 ? 1 : 2;
 
         if (!employeeAllocations.length) {
           if (
@@ -503,7 +527,24 @@ export class ReportController {
             continue;
           }
 
+          //ignoring inner loop queries
+          if (
+            queryWorkId.length ||
+            queryOrganizationId.length ||
+            queryWorkStatus.length ||
+            queryWorkType.length ||
+            queryResourceType.length ||
+            querySkillId.length ||
+            queryLevelId.length
+          ) {
+            continue;
+          }
+
           allocations.push({
+            name: employee.getFullName,
+            resourceType: parseResourceType(resourceType),
+            employmentType: parseContractType(employmentType),
+            bookingType: 'Unallocated',
             workType: '-',
             title: '-',
             organization: '-',
@@ -511,9 +552,6 @@ export class ReportController {
             position: '-',
             skill: '-',
             skillLevel: '-',
-            name: employee.getFullName,
-            type: parseContractType(type),
-            booking: 'Unassigned',
             buyRate: 0,
             sellRate: 0,
             startDate: null,
@@ -550,6 +588,13 @@ export class ReportController {
             continue;
           }
 
+          if (
+            queryOrganizationId.length &&
+            !queryOrganizationId.includes(work.organization.id)
+          ) {
+            continue;
+          }
+
           let workStatus = projectStatuses.includes(work.status) ? 1 : 0;
           if (
             (queryWorkStatus.length && !queryWorkStatus.includes(workStatus)) ||
@@ -558,7 +603,7 @@ export class ReportController {
             continue;
           }
 
-          resourceType = allocation.isMarkedAsSelected ? 1 : 0;
+          let bookingType = allocation.isMarkedAsSelected ? 2 : 0;
 
           if (
             queryResourceType.length &&
@@ -579,6 +624,10 @@ export class ReportController {
           }
 
           allocations.push({
+            name: employee.getFullName,
+            resourceType: parseResourceType(resourceType),
+            employmentType: parseContractType(employmentType),
+            bookingType: parseBookingType(bookingType),
             workType: workStatus ? 'Project' : 'Opportunity',
             title: work.title,
             organization: work.organization.title,
@@ -586,9 +635,6 @@ export class ReportController {
             position: position.title ?? '-',
             skill: position.panelSkill.standardSkill.label,
             skillLevel: position.panelSkillStandardLevel.standardLevel.label,
-            name: employee.getFullName,
-            type: parseContractType(type),
-            booking: resourceType ? 'Allocated' : 'Assigned',
             buyRate: allocation.buyingRate,
             sellRate: allocation.sellingRate,
             startDate: position.startDate,

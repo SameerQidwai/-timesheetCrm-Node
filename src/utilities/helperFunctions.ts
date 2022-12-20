@@ -4,7 +4,8 @@ import { Employee } from '../entities/employee';
 import { Opportunity } from '../entities/opportunity';
 import { GlobalVariableLabel } from '../entities/globalVariableLabel';
 import { getManager } from 'typeorm';
-import { EmploymentType } from 'src/constants/constants';
+import { EmploymentType } from '../constants/constants';
+import { ContactPerson } from '../entities/contactPerson';
 
 export let getProjectsByUserId = (
   projects: Opportunity[],
@@ -241,5 +242,17 @@ export let parseContractType = (type: EmploymentType | number): string => {
     ? 'Part Time'
     : type === 3
     ? 'Full Time'
-    : 'Inactive Contract';
+    : '-';
+};
+
+export let parseResourceType = (type: number): string => {
+  return type === 0
+    ? 'Contact Person'
+    : type === 1
+    ? 'Employee'
+    : 'Subcontractor';
+};
+
+export let parseBookingType = (type: number): string => {
+  return type === 1 ? 'Soft-booked' : type === 2 ? 'Allocated' : 'Assigned';
 };

@@ -102,6 +102,18 @@ export class ContactPerson extends Base {
   )
   allocations: OpportunityResourceAllocation[];
 
+  public get getActiveOrganization(): ContactPersonOrganization | null {
+    let activeOrganization = this.contactPersonOrganizations.filter(
+      (contactPersonOrganization) => contactPersonOrganization.status == true
+    );
+
+    if (activeOrganization.length < 1) {
+      return null;
+    }
+
+    return activeOrganization[0];
+  }
+
   public get getEmployee(): Employee | null {
     let activeOrganization = this.contactPersonOrganizations.filter(
       (contactPersonOrganization) => contactPersonOrganization.status == true
