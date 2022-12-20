@@ -156,11 +156,16 @@ export class ReportController {
       let querySkillId = this._customQueryParser(req.query.skillId as string);
       let queryLevelId = this._customQueryParser(req.query.levelId as string);
 
+      let queryResourceType = this._customQueryParser(
+        req.query.resourceType as string
+      );
+
       let worforce: {
         skill: string;
         skillLevel: string;
         name: string;
-        type: string;
+        resourceType: string;
+        employmentType: string;
         buyRate: number;
       }[] = [];
 
@@ -194,7 +199,16 @@ export class ReportController {
 
           if (!employee.active) continue;
 
-          let type = employee.getActiveContract.type;
+          let employmentType = employee.getActiveContract?.type ?? 0;
+          let resourceType =
+            employee.contactPersonOrganization.organizationId == 1 ? 1 : 2;
+
+          if (
+            queryResourceType.length &&
+            !queryResourceType.includes(resourceType)
+          ) {
+            continue;
+          }
 
           if (
             (!querySkillId.length ||
@@ -206,7 +220,8 @@ export class ReportController {
               skill: standardSkillLevel.standardSkill.label,
               skillLevel: standardSkillLevel.standardLevel.label,
               name: contactPerson.getFullName,
-              type: parseContractType(type),
+              resourceType: parseResourceType(resourceType),
+              employmentType: parseContractType(employmentType),
               buyRate: await buyRateByEmployee(employee),
             });
         }
