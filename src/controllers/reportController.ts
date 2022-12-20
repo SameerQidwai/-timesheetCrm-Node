@@ -10,7 +10,6 @@ import {
 } from '../utilities/helperFunctions';
 import { StandardSkillStandardLevel } from '../entities/standardSkillStandardLevel';
 import { Opportunity } from '../entities/opportunity';
-import { string } from 'joi';
 
 export class ReportController {
   _customQueryParser(query = '') {
@@ -30,6 +29,10 @@ export class ReportController {
       let queryStartDate = req.query.startDate as string;
       let queryEndDate = req.query.endDate as string;
 
+      let queryResourceType = this._customQueryParser(
+        req.query.resourceType as string
+      );
+
       let startDate = moment().startOf('year');
       let endDate = moment().endOf('year');
 
@@ -40,7 +43,8 @@ export class ReportController {
 
       let resources: {
         name: string;
-        type: string;
+        resourceType: string;
+        employmentType: string;
         skills: resSkill[];
         buyRate: number;
       }[] = [];
@@ -74,6 +78,7 @@ export class ReportController {
           'contactPersonOrganization.contactPerson.allocations',
           'contactPersonOrganization.contactPerson.allocations.opportunityResource',
         ],
+        where: { active: true },
       });
 
       for (let employee of employees) {
@@ -102,7 +107,17 @@ export class ReportController {
       }
 
       for (let employee of employees) {
-        let type = employee.getActiveContract?.type ?? 0;
+        let employmentType = employee.getActiveContract?.type ?? 0;
+        let resourceType =
+          employee.contactPersonOrganization.organizationId == 1 ? 1 : 2;
+
+        if (
+          queryResourceType.length &&
+          !queryResourceType.includes(resourceType)
+        ) {
+          continue;
+        }
+
         if (!ignoreIds.includes(employee.id)) {
           let skills =
             employee.contactPersonOrganization.contactPerson.standardSkillStandardLevels.map(
@@ -116,7 +131,8 @@ export class ReportController {
 
           resources.push({
             name: employee.getFullName,
-            type: parseContractType(type),
+            resourceType: parseResourceType(resourceType),
+            employmentType: parseContractType(employmentType),
             buyRate: await buyRateByEmployee(employee),
             skills,
           });
@@ -175,6 +191,8 @@ export class ReportController {
           if (!employee) continue;
 
           if (!employee.getActiveContract) continue;
+
+          if (!employee.active) continue;
 
           let type = employee.getActiveContract.type;
 
