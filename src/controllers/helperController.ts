@@ -76,6 +76,7 @@ export class HelperController {
     let employeeId = parseInt(req.query.employee?.toString() ?? '');
     let contactId = parseInt(req.query.contact?.toString() ?? '');
     let organizationId = parseInt(req.query.organization?.toString() ?? '');
+    let delegateId = parseInt(req.query.delegate?.toString() ?? '');
 
     try {
       const repository = getCustomRepository(OpportunityRepository);
@@ -83,7 +84,8 @@ export class HelperController {
         type,
         employeeId,
         contactId,
-        organizationId
+        organizationId,
+        delegateId
       );
       res.status(200).json({
         success: true,

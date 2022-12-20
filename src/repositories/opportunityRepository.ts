@@ -1867,7 +1867,8 @@ export class OpportunityRepository extends Repository<Opportunity> {
     type: string,
     employeeId: number,
     contactId: number,
-    organizationId: number
+    organizationId: number,
+    delegateId: number,
   ): Promise<any | undefined> {
     let work: Opportunity[];
     let data: any = [];
@@ -1945,13 +1946,23 @@ export class OpportunityRepository extends Repository<Opportunity> {
       }
     }
 
-    if (!isNaN(contactId) && contactId != 0) {
-      let contact = await this.manager.findOne(ContactPerson, contactId, {
-        // relations: [
-        //   'contactPersonOrganization',
-        //   'contactPersonOrganization.contactPerson',
-        // ],
+    if (!isNaN(delegateId) && delegateId != 0) {
+      let contact = await this.manager.findOne(ContactPerson, delegateId);
+
+      if (!contact) {
+        throw new Error('Contact not found');
+      }
+
+      let delegateContactPersonId = contact.id;
+      work.forEach((project, index) => {
+        if (project.contactPersonId === delegateContactPersonId){
+          data.push(project)
+        }
       });
+    }
+
+    if (!isNaN(contactId) && contactId != 0) {
+      let contact = await this.manager.findOne(ContactPerson, contactId);
       if (!contact) {
         throw new Error('Contact not found');
       }
@@ -2003,6 +2014,8 @@ export class OpportunityRepository extends Repository<Opportunity> {
         }
       });
     }
+
+    if (!isNaN(delegateId) && delegateId != 0) return data;
 
     if (!isNaN(employeeId) && employeeId != 0) return data;
 
