@@ -2367,7 +2367,7 @@ export class ProjectRepository extends Repository<Opportunity> {
                   cpo.contact_person_id = ora.contact_person_id 
                     JOIN employees e ON 
                     e.contact_person_organization_id = cpo.id 
-            WHERE o.id = ${projectId} AND ora.is_marked_as_selected = 1) as project 
+            WHERE o.id = ${projectId} AND ora.is_marked_as_selected = 1 AND ora.deleted_at IS NULL AND o_r.deleted_at IS NULL) as project 
 
         JOIN (
             Select t.employee_id, tpe.milestone_id , te.date e_date, te.id entry_id, te.actual_hours actual 
@@ -2421,7 +2421,7 @@ export class ProjectRepository extends Repository<Opportunity> {
                           ec.employee_id = e.id
       WHERE o.id = ${projectId} AND ora.is_marked_as_selected = 1 AND ec.start_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y') 
       AND (ec.end_date IS NULL ||  ec.end_date >= STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y')) 
-      AND o_r.start_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y') ;`
+      AND o_r.start_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y') AND ec.deleted_at IS NULL AND ora.deleted_at IS NULL`
       // AND (o_r.end_date IS NULL ||  STR_TO_DATE(DATE_FORMAT(o_r.end_date,'%e-%m-%Y'),'%e-%m-%Y') <= STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y'))
     );
 
