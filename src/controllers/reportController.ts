@@ -368,6 +368,11 @@ export class ReportController {
             }
 
             if (!position.opportunityResourceAllocations.length) {
+
+              if(queryContactPersonId.length || queryResourceType.length){
+                continue;
+              }
+
               allocations.push({
                 workType: workStatus ? 'Project' : 'Opportunity',
                 title: work.title,
