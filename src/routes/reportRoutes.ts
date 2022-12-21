@@ -16,5 +16,8 @@ router
 router
   .route('/allocations-all')
   .get([isLoggedIn], contr.employeeAllocations.bind(contr));
+router
+  .route('/revenue-analysis')
+  .get([isLoggedIn], contr.projectRevnueAnalysis.bind(contr));
 
 export default router;
