@@ -77,9 +77,13 @@ export class ReportController {
           'contactPersonOrganization.contactPerson.standardSkillStandardLevels.standardLevel',
           'contactPersonOrganization.contactPerson.allocations',
           'contactPersonOrganization.contactPerson.allocations.opportunityResource',
+          'contactPersonOrganization.contactPerson.allocations.opportunityResource.milestone',
+          'contactPersonOrganization.contactPerson.allocations.opportunityResource.milestone.project',
         ],
         where: { active: true },
       });
+
+      const projectStatuses = ['P', 'C'];
 
       for (let employee of employees) {
         let ignore = false;
@@ -88,6 +92,9 @@ export class ReportController {
           let position = allocation.opportunityResource;
 
           if (position) {
+            if (!projectStatuses.includes(position.milestone.project.status))
+              continue;
+
             let allocationStart = moment(position.startDate);
             let allocationEnd = moment(position.endDate);
             if (
@@ -368,6 +375,10 @@ export class ReportController {
             }
 
             if (!position.opportunityResourceAllocations.length) {
+              if (queryContactPersonId.length || queryResourceType.length) {
+                continue;
+              }
+
               allocations.push({
                 workType: workStatus ? 'Project' : 'Opportunity',
                 title: work.title,
