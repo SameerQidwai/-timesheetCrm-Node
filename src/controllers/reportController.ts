@@ -10,6 +10,7 @@ import {
 } from '../utilities/helperFunctions';
 import { StandardSkillStandardLevel } from '../entities/standardSkillStandardLevel';
 import { Opportunity } from '../entities/opportunity';
+import { ProfitView } from '../entities/views';
 // import { ResourceView } from '../entities/views';
 
 export class ReportController {
@@ -700,42 +701,88 @@ export class ReportController {
 
   async projectRevnueAnalysis(req: Request ,res: Response, next: NextFunction){
     
-    // const actual = await getManager().query(`
-    //   SELECT *, SUM(buying_rate * actual ) month_total_buy, SUM(selling_rate * actual  ) month_total_sell, SUM(actual) actual,
-    //   DATE_FORMAT(STR_TO_DATE(e_date,'%e-%m-%Y'), '%b %y') month FROM (
-    //         Select o_r.opportunity_id, o_r.milestone_id milestoneId, o_r.start_date res_start, o_r.end_date res_end, ora.buying_rate, ora.selling_rate, 
-    //         ora.contact_person_id, e.id employee_id, o.cm_percentage cm
-    //         FROM opportunities o 
-    //           JOIN opportunity_resources o_r ON 
-    //           o_r.opportunity_id = o.id 
-    //             JOIN opportunity_resource_allocations ora ON 
-    //             ora.opportunity_resource_id = o_r.id 
-    //               JOIN contact_person_organizations cpo ON 
-    //               cpo.contact_person_id = ora.contact_person_id 
-    //                 JOIN employees e ON 
-    //                 e.contact_person_organization_id = cpo.id 
-    //         WHERE o.id = ${'projectId'} AND ora.is_marked_as_selected = 1) as project 
+    const actual = await getManager().query(`
+      SELECT revenue_calculator.*, name project_manager_name  
+      FROM (SELECT 
+        project_type,
+        project_amount,
+        profit_view.project_id,
+        project_organization_id,
+        project_organization_name,
+        project_title,
+        project_manager_id, 
+        (CASE WHEN project_type = 2 
+          THEN 
+            SUM( resource_buying_rate * actual_hours ) 
+          ELSE 
+            0 
+          END )
+        month_total_buy, 
 
-    //     JOIN (
-            // Select t.employee_id, tpe.milestone_id , te.date e_date, te.id entry_id, te.actual_hours actual 
-            // From timesheets t 
-            //   JOIN timesheet_project_entries tpe ON 
-            //   tpe.timesheet_id = t.id 
-            //     JOIN timesheet_entries te ON 
-            //     te.milestone_entry_id = tpe.id 
-            // WHERE STR_TO_DATE(te.date,'%e-%m-%Y') <= STR_TO_DATE('${'fiscalYear.actual'}' ,'%e-%m-%Y'))as times 
-    //     ON 
-    //       project.employee_id = times.employee_id
-    //     AND
-    //       project.milestoneId = times.milestone_id
-    //       AND
-          // STR_TO_DATE(times.e_date,'%e-%m-%Y') BETWEEN STR_TO_DATE(DATE_FORMAT(project.res_start,'%e-%m-%Y'),'%e-%m-%Y')  
-          // AND project.res_end
-    //     GROUP BY month;
-    //   `);
+        (CASE WHEN project_type = 2 
+          THEN 
+              SUM( resource_selling_rate * actual_hours ) 
+          ELSE 
+            project_schedule_segments.amount 
+          END )
+        month_total_sell, 
+        
+        SUM(actual_hours) actual_hours, 
+        (CASE WHEN project_type = 2 
+          THEN 
+            DATE_FORMAT(STR_TO_DATE(entry_date,'%e-%m-%Y'), '%b %y') 
+          ELSE 
+            DATE_FORMAT(project_schedule_segments.start_date, '%b %y') 
+          END) 
+        month
+      
+        FROM profit_view
+          LEFT JOIN project_schedules ON
+            profit_view.project_id = project_schedules.project_id
+              LEFT JOIN project_schedule_segments  ON 
+                project_schedules.id = project_schedule_segments.schedule_id 
+                
+        WHERE ( project_status = 'P' OR project_status = 'C' ) AND project_schedules.deleted_at IS NULL AND project_schedule_segments.deleted_at IS NULL 
+        GROUP BY project_id, month 
+      ) as revenue_calculator
+            
+        LEFT JOIN contact_person_View ON
+          contact_person_View.employee_id = project_manager_id
+    `);
+      
+    let actualStatement: any = {};
+    actual.forEach((el: any) =>{
+      actualStatement[el.project_id] = {
+        ...(actualStatement?.[el.project_id]??
+          {
+            projectValue: el.project_amount,
+            projectId: el.project_id,
+            organizationId: el.project_organization_id,
+            organizationName: el.project_organization_name,
+            projectTitle: el.project_title,
+            projectManagerId: el.project_manager_id,
+            projectManagerName: el.project_manager_name,
+            projectType: el.project_type
+          }
+        ),
+        // month: el.month,
+        [el.month]: {
+          monthTotalBuy: el.month_total_buy,
+          monthTotalSell:el.month_total_sell,
+        },
+        totalSell: actualStatement?.[el.project_id]
+          ? (actualStatement[el.project_id]['totalSell'] += el.month_total_sell)
+          : el.month_total_sell,
+        totalBuy: actualStatement?.[el.project_id]
+          ? (actualStatement[el.project_id]['totalBuy'] += el.month_total_buy)
+          : el.month_total_buy,
+      };
+    })
 
-    // let actualStatement: any = {};
-    // let viewTest = getManager().find(ResourceView)
-    // console.log(viewTest)
+    res.status(200).json({
+      success: true,
+      message: 'Project Revenue Analysis',
+      data: Object.values(actualStatement),
+    });
   }
 }

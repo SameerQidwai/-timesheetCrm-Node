@@ -1,4 +1,4 @@
-import { ViewEntity, PrimaryGeneratedColumn, ViewColumn } from "typeorm"
+import { ViewEntity, ViewColumn } from "typeorm"
 
 @ViewEntity({
     name: 'contact_person_View',
@@ -14,56 +14,46 @@ import { ViewEntity, PrimaryGeneratedColumn, ViewColumn } from "typeorm"
             org.id = cpo.organization_id
     WHERE cp.deleted_at IS NULL AND cpo.deleted_at IS NULL AND e.deleted_at IS NULL`,
 })
-export class ResourceView {
+export class ContactPersonView {
  
   @ViewColumn()
-  opportunity_id: number
+  contact_person_id: number
   
   @ViewColumn()
-  milestone_id: number
-  
-  @ViewColumn()
-  resource_buying_rate: number
-  
-  @ViewColumn()
-  resource_selling_rate: number
-  
-  @ViewColumn()
-  resource_contact_person_id: number
-  
-  @ViewColumn()
-  resource_employee_id: number
-  
-  @ViewColumn()
-  project_cm_percentage: number
-  
-  @ViewColumn()
-  project_organization_id: number
-  
-  @ViewColumn()
-  project_manager_id: number
-  
-  @ViewColumn()
-  project_amount: number
+  employee_id: number
 
   @ViewColumn()
-  resource_start: Date
-
-  @ViewColumn()
-  resource_end: Date
+  organization_id: number
   
   @ViewColumn()
-  project_type: number
+  state_id: number
   
   @ViewColumn()
-  project_status: Boolean
+  gender: string
   
   @ViewColumn()
-  project_phase: Boolean
+  phone_number: string
+  
+  @ViewColumn()
+  email: string 
+  
+  @ViewColumn()
+  designation: string 
+  
+  @ViewColumn()
+  role_id: number
+  
+  
+  @ViewColumn()
+  line_manager_id: number 
+  
+  @ViewColumn()
+  active: boolean
 
   @ViewColumn()
-  resource_name: String
+  organization_name: string
 
   @ViewColumn()
-  organization_name: String
+  name: String 
+
 }

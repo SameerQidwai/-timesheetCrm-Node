@@ -2,7 +2,7 @@ import { ViewEntity, PrimaryGeneratedColumn, ViewColumn } from "typeorm"
 
 @ViewEntity({
     name: 'Resource_View',
-    expression: `Select o_r.opportunity_id , o_r.milestone_id, o_r.start_date resource_start, 
+    expression: `Select o_r.opportunity_id project_id, o_r.milestone_id, o_r.start_date resource_start, 
     o_r.end_date resource_end, ora.buying_rate resource_buying_rate, ora.selling_rate resource_selling_rate, 
     ora.contact_person_id resource_contact_person_id, cpv.employee_id resource_employee_id, cpv.name resource_name,
     o.cm_percentage project_cm_percentage, o.organization_id project_organization_id, org.name project_organization_name, o.project_manager_id, 
@@ -19,16 +19,13 @@ import { ViewEntity, PrimaryGeneratedColumn, ViewColumn } from "typeorm"
     WHERE ora.is_marked_as_selected = 1 AND o.deleted_at IS NULL AND ora.deleted_at IS NULL AND o_r.deleted_at IS NULL`,
 })
 
-// JOIN contact_person_organizations cpo ON 
-          // cpo.contact_person_id = ora.contact_person_id 
-          //   JOIN contact_persons ON 
-          //   contact_persons.id = cpo.contact_person_id
-          //     JOIN employees e ON 
-          //     e.contact_person_organization_id = cpo.id
 export class ResourceView {
  
   @ViewColumn()
-  opportunity_id: number
+  project_id: number
+
+  @ViewColumn()
+  project_title: string
   
   @ViewColumn()
   milestone_id: number
@@ -76,5 +73,5 @@ export class ResourceView {
   resource_name: String
 
   @ViewColumn()
-  organization_name: String
+  project_organization_name: String
 }
