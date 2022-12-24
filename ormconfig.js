@@ -20,3 +20,4 @@ module.exports = {
 // "username": "root" || process.env.DATABASE_USERNAME,
 // "password": "Account1!" || process.env.DATABASE_PASSWORD,
 // "database": "oneLmDev" ||  process.env.DATABASE_NAME,
+ 

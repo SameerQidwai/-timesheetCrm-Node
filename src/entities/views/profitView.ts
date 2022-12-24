@@ -8,7 +8,7 @@ import { ViewEntity, ViewColumn } from "typeorm"
             project_organization_id, project_organization_name, 
         project_type, project_amount, project_status, project_manager_id, 
         project_phase, project_title, time_entries_view.entry_date, time_entries_view.entry_id, 
-        time_entries_view.actual_hours
+        time_entries_view.actual_hours, project_start, project_end
 
         FROM resource_view
             LEFT JOIN time_entries_view
@@ -62,6 +62,12 @@ export class ProfitView {
 
     @ViewColumn()
     resource_end: Date
+
+    @ViewColumn()
+    project_start: Date
+
+    @ViewColumn()
+    project_end: Date
     
     @ViewColumn()
     project_type: number

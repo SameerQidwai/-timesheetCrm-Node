@@ -701,6 +701,17 @@ export class ReportController {
 
   async projectRevnueAnalysis(req: Request ,res: Response, next: NextFunction){
     
+    let fiscalYearStart = req.query.fiscalYearStart as string;
+    let fiscalYearEnd = req.query.fiscalYearEnd as string;
+    // let projectId = this._customQueryParser(req.query.projectId as string);
+    let projectId = req.query.projectId as string;
+    let excludeProjectId = req.query.excludeProjectId as string;
+    // let organizationId = this._customQueryParser(req.query.organizationId as string);
+    let organizationId = req.query.organizationId as string;
+    let projectFilter = projectId? `AND profit_view.project_id IN (${projectId})` :''
+    let excludeProjectFilter = excludeProjectId? `AND profit_view.project_id NOT IN (${excludeProjectId})` :''
+    let organizationFilter =organizationId? `AND project_organization_id IN (${organizationId})` :''
+    
     const actual = await getManager().query(`
       SELECT revenue_calculator.*, name project_manager_name  
       FROM (SELECT 
@@ -742,33 +753,36 @@ export class ReportController {
               LEFT JOIN project_schedule_segments  ON 
                 project_schedules.id = project_schedule_segments.schedule_id 
                 
-        WHERE ( project_status = 'P' OR project_status = 'C' ) AND project_schedules.deleted_at IS NULL AND project_schedule_segments.deleted_at IS NULL 
+        WHERE ( project_status = 'P' OR project_status = 'C' ) 
+        
+        AND project_start <= STR_TO_DATE('${fiscalYearEnd}' ,'%Y-%m-%d') 
+        AND project_end >= STR_TO_DATE('${fiscalYearStart}' ,'%Y-%m-%d') 
+        AND project_schedules.deleted_at IS NULL 
+        AND project_schedule_segments.deleted_at IS NULL 
+        ${projectFilter} ${organizationFilter} ${excludeProjectFilter} 
+
         GROUP BY project_id, month 
       ) as revenue_calculator
             
         LEFT JOIN contact_person_View ON
           contact_person_View.employee_id = project_manager_id
     `);
-      
     let actualStatement: any = {};
     actual.forEach((el: any) =>{
       actualStatement[el.project_id] = {
-        ...(actualStatement?.[el.project_id]??
-          {
-            projectValue: el.project_amount,
-            projectId: el.project_id,
-            organizationId: el.project_organization_id,
-            organizationName: el.project_organization_name,
-            projectTitle: el.project_title,
-            projectManagerId: el.project_manager_id,
-            projectManagerName: el.project_manager_name,
-            projectType: el.project_type
-          }
-        ),
-        // month: el.month,
+        ...(actualStatement?.[el.project_id] ?? {
+          projectValue: el.project_amount,
+          projectId: el.project_id,
+          organizationId: el.project_organization_id,
+          organizationName: el.project_organization_name,
+          projectTitle: el.project_title,
+          projectManagerId: el.project_manager_id,
+          projectManagerName: el.project_manager_name,
+          projectType: el.project_type,
+        }),
         [el.month]: {
           monthTotalBuy: el.month_total_buy,
-          monthTotalSell:el.month_total_sell,
+          monthTotalSell: el.month_total_sell,
         },
         totalSell: actualStatement?.[el.project_id]
           ? (actualStatement[el.project_id]['totalSell'] += el.month_total_sell)
@@ -776,6 +790,17 @@ export class ReportController {
         totalBuy: actualStatement?.[el.project_id]
           ? (actualStatement[el.project_id]['totalBuy'] += el.month_total_buy)
           : el.month_total_buy,
+        YTDTotalSell: moment(el.month, 'MMM YY').isBetween(
+          fiscalYearStart,
+          fiscalYearEnd,
+          'month',
+          '[]'
+        )
+          ? actualStatement[el.project_id]
+            ? (actualStatement[el.project_id]['YTDTotalSell'] +=
+                el.month_total_sell)
+            : el.month_total_sell
+          : actualStatement?.[el.project_id]?.['YTDTotalSell'] ?? 0,
       };
     })
 

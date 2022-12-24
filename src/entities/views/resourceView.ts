@@ -6,7 +6,9 @@ import { ViewEntity, PrimaryGeneratedColumn, ViewColumn } from "typeorm"
     o_r.end_date resource_end, ora.buying_rate resource_buying_rate, ora.selling_rate resource_selling_rate, 
     ora.contact_person_id resource_contact_person_id, cpv.employee_id resource_employee_id, cpv.name resource_name,
     o.cm_percentage project_cm_percentage, o.organization_id project_organization_id, org.name project_organization_name, o.project_manager_id, 
-    o.type project_type, o.value project_amount, o.status project_status, o.phase project_phase, o.title project_title
+    o.type project_type, o.value project_amount, o.status project_status, o.phase project_phase, o.title project_title, 
+    o.start_date project_start, o.end_date project_end
+
     FROM opportunities o 
       JOIN opportunity_resources o_r ON 
       o_r.opportunity_id = o.id 
@@ -59,6 +61,12 @@ export class ResourceView {
 
   @ViewColumn()
   resource_end: Date
+
+  @ViewColumn()
+  project_start: Date
+
+  @ViewColumn()
+  project_end: Date
   
   @ViewColumn()
   project_type: number
