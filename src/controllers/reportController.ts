@@ -696,4 +696,140 @@ export class ReportController {
       next(e);
     }
   }
+
+  async timesheetSummary(req: Request, res: Response, next: NextFunction) {
+    try {
+      const manager = getManager();
+
+      let queryStartDate = req.query.startDate as string;
+      let queryEndDate = req.query.endDate as string;
+      let startDate = moment().startOf('year');
+      let endDate = moment().endOf('year');
+
+      let employees = await manager.find(Employee, {
+        relations: [
+          'contactPersonOrganization',
+          'contactPersonOrganization.contactPerson',
+          'employmentContracts',
+          'timesheets',
+          'timesheets.milestoneEntries',
+          'timesheets.milestoneEntries.entries',
+          'timesheets.milestoneEntries.milestone',
+          'timesheets.milestoneEntries.milestone.project',
+          'timesheets.milestoneEntries.milestone.project.organization',
+        ],
+        where: { active: true },
+      });
+
+      if (queryStartDate) {
+        if (moment(queryStartDate).isValid()) {
+          startDate = moment(queryStartDate);
+        }
+      }
+
+      if (queryEndDate) {
+        if (moment(queryEndDate).isValid()) {
+          endDate = moment(queryEndDate);
+        }
+      }
+
+      let months: {
+        [key: string]: any;
+      } = {};
+
+      let startDateClone = startDate.clone();
+
+      while (
+        endDate > startDateClone ||
+        startDateClone.format('M') === endDate.format('M')
+      ) {
+        months[startDateClone.format('YYYY-MM')] = {
+          startDate: startDateClone.clone().startOf('month'),
+          endDate: startDateClone.clone().endOf('month'),
+
+          totalDaysInMonth: startDateClone.daysInMonth(),
+          totalHours: 0,
+          submittedHours: 0,
+          approvedHours: 0,
+        };
+        startDateClone.add(1, 'month');
+      }
+
+      let summary: {
+        employeeName: string;
+        employeeCode: number;
+        projectName: String;
+        projectCode: number;
+        purchaseOrders: string[];
+        organizationName: string;
+        months: any;
+      }[] = [];
+
+      for (let employee of employees) {
+        for (let timesheet of employee.timesheets) {
+          if (
+            !moment(timesheet.startDate).isBetween(
+              startDate,
+              endDate,
+              'date',
+              '[]'
+            ) ||
+            !moment(timesheet.endDate).isBetween(
+              startDate,
+              endDate,
+              'date',
+              '[]'
+            )
+          )
+            continue;
+
+          let localMonths = JSON.parse(JSON.stringify(months));
+
+          let project: Opportunity | null = null;
+
+          for (let milestoneEntry of timesheet.milestoneEntries) {
+            project = milestoneEntry.milestone.project;
+
+            for (let entry of milestoneEntry.entries) {
+              if (!entry.submittedAt) continue;
+
+              const entryDate = moment(entry.date, 'DD-MM-YYYY').format(
+                'YYYY-MM'
+              );
+
+              // if (!months[entryDate]) continue;
+
+              let entryHours = parseFloat(entry.hours.toFixed(2));
+
+              localMonths[entryDate].totalHours += entryHours;
+              if (entry.submittedAt)
+                localMonths[entryDate].submittedHours += entryHours;
+              if (entry.approvedAt)
+                localMonths[entryDate].approvedHours += entryHours;
+            }
+          }
+
+          if (!project) continue;
+
+          summary.push({
+            employeeName: employee.getFullName,
+            employeeCode: employee.id,
+            projectName: project.title,
+            projectCode: project.id,
+            purchaseOrders: [],
+            organizationName: project.organization.name,
+            months: localMonths,
+          });
+        }
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Timesheet Summary',
+        data: summary,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }
