@@ -9,7 +9,13 @@ import {
   SettingsDTO,
   TrainingDTO,
 } from '../dto';
-import { EntityRepository, getRepository, Repository } from 'typeorm';
+import {
+  EntityRepository,
+  getRepository,
+  IsNull,
+  Not,
+  Repository,
+} from 'typeorm';
 import { ContactPerson } from './../entities/contactPerson';
 import { ContactPersonOrganization } from './../entities/contactPersonOrganization';
 import { State } from './../entities/state';
@@ -29,6 +35,7 @@ import { Comment } from '../entities/comment';
 import { GlobalVariableLabel } from '../entities/globalVariableLabel';
 import { GlobalVariableValue } from '../entities/globalVariableValue';
 import { CalendarHoliday } from '../entities/calendarHoliday';
+import { LeaveRequest } from '../entities/leaveRequest';
 
 import {
   EntityType,
@@ -77,12 +84,60 @@ export class EmployeeRepository extends Repository<Employee> {
           );
         }
 
+        let oldEmployees = await transactionalEntityManager.find(Employee, {
+          withDeleted: true,
+          relations: [
+            'contactPersonOrganization',
+            'contactPersonOrganization.contactPerson',
+            'employmentContracts',
+            'bankAccounts',
+            'leases',
+            'leaveRequests',
+            'leaveRequestBalances',
+          ],
+          where: {
+            contactPersonOrganizationId: contactPersonOrganization.id,
+            deletedAt: Not(IsNull()),
+          },
+        });
+
+        if (oldEmployees.length) {
+          let oldEmployee = oldEmployees[0];
+
+          oldEmployee.employmentContracts =
+            await transactionalEntityManager.find(EmploymentContract, {
+              where: { employeeId: oldEmployee.id },
+              withDeleted: true,
+            });
+          oldEmployee.bankAccounts = await transactionalEntityManager.find(
+            BankAccount,
+            { where: { employeeId: oldEmployee.id }, withDeleted: true }
+          );
+          oldEmployee.leases = await transactionalEntityManager.find(Lease, {
+            where: { employeeId: oldEmployee.id },
+            withDeleted: true,
+          });
+          oldEmployee.leaveRequests = await transactionalEntityManager.find(
+            LeaveRequest,
+            { where: { employeeId: oldEmployee.id }, withDeleted: true }
+          );
+          oldEmployee.leaveRequestBalances =
+            await transactionalEntityManager.find(LeaveRequestBalance, {
+              where: { employeeId: oldEmployee.id },
+              withDeleted: true,
+            });
+
+          console.log(oldEmployee);
+          await this._deleteEmployee(oldEmployee, false);
+        }
+
         contactPersonOrganization.status = true;
         await transactionalEntityManager.save(
           ContactPersonOrganization,
           contactPersonOrganization
         );
       }
+
       contactPersonObj.firstName = employeeDTO.firstName;
       contactPersonObj.lastName = employeeDTO.lastName;
       contactPersonObj.email = employeeDTO.email;
@@ -689,23 +744,30 @@ ${process.env.ORGANIZATION} Support Team`
   }
 
   async deleteCustom(id: number): Promise<any | undefined> {
+    let employee = await this.findOne(id, {
+      relations: [
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+        'employmentContracts',
+        'bankAccounts',
+        'leases',
+        'leaveRequests',
+        'leaveRequestBalances',
+      ],
+    });
+
+    if (!employee) {
+      throw new Error('Employee not found');
+    }
+
+    return await this._deleteEmployee(employee);
+  }
+
+  async _deleteEmployee(
+    employee: Employee,
+    softDelete = true
+  ): Promise<any | undefined> {
     return this.manager.transaction(async (transactionalEntityManager) => {
-      let employee = await transactionalEntityManager.findOne(Employee, id, {
-        relations: [
-          'contactPersonOrganization',
-          'contactPersonOrganization.contactPerson',
-          'employmentContracts',
-          'bankAccounts',
-          'leases',
-          'leaveRequests',
-          'leaveRequestBalances',
-        ],
-      });
-
-      if (!employee) {
-        throw new Error('Employee not found');
-      }
-
       let allocations = await transactionalEntityManager.find(
         OpportunityResourceAllocation,
         {
@@ -726,10 +788,10 @@ ${process.env.ORGANIZATION} Support Team`
 
       let works = await transactionalEntityManager.find(Opportunity, {
         where: [
-          { projectManagerId: id },
-          { accountDirectorId: id },
-          { opportunityManagerId: id },
-          { accountManagerId: id },
+          { projectManagerId: employee.id },
+          { accountDirectorId: employee.id },
+          { opportunityManagerId: employee.id },
+          { accountManagerId: employee.id },
         ],
       });
 
@@ -738,7 +800,7 @@ ${process.env.ORGANIZATION} Support Team`
       }
 
       let juniors = await transactionalEntityManager.find(Employee, {
-        where: { lineManagerId: id },
+        where: { lineManagerId: employee.id },
       });
 
       if (juniors.length > 0) {
@@ -746,26 +808,57 @@ ${process.env.ORGANIZATION} Support Team`
       }
 
       let attachments = await transactionalEntityManager.find(Attachment, {
-        where: { targetType: EntityType.EMPLOYEE, targetId: id },
+        where: { targetType: EntityType.EMPLOYEE, targetId: employee.id },
       });
 
       let comments = await transactionalEntityManager.find(Comment, {
-        where: { targetType: EntityType.EMPLOYEE, targetId: id },
+        where: { targetType: EntityType.EMPLOYEE, targetId: employee.id },
       });
 
       employee.contactPersonOrganization.status = false;
 
-      transactionalEntityManager.save(employee.contactPersonOrganization);
+      await transactionalEntityManager.save(employee.contactPersonOrganization);
 
       delete (employee as any).contactPersonOrganization;
 
-      if (attachments.length > 0)
-        transactionalEntityManager.softRemove(Attachment, attachments);
+      if (softDelete) {
+        if (attachments.length)
+          await transactionalEntityManager.softRemove(Attachment, attachments);
 
-      if (comments.length > 0)
-        transactionalEntityManager.softRemove(Comment, comments);
+        if (comments.length)
+          await transactionalEntityManager.softRemove(Comment, comments);
 
-      return transactionalEntityManager.softRemove(Employee, employee);
+        return transactionalEntityManager.softRemove(Employee, employee);
+      }
+
+      if (attachments.length)
+        await transactionalEntityManager.remove(Attachment, attachments);
+
+      if (comments.length)
+        await transactionalEntityManager.remove(Comment, comments);
+
+      if (employee.leaveRequestBalances.length)
+        await transactionalEntityManager.remove(
+          LeaveRequestBalance,
+          employee.leaveRequestBalances
+        );
+
+      if (employee.bankAccounts.length)
+        await transactionalEntityManager.remove(
+          BankAccount,
+          employee.bankAccounts
+        );
+
+      if (employee.leases.length)
+        await transactionalEntityManager.remove(Lease, employee.leases);
+
+      if (employee.employmentContracts.length)
+        await transactionalEntityManager.remove(
+          EmploymentContract,
+          employee.employmentContracts
+        );
+
+      return transactionalEntityManager.remove(Employee, employee);
     });
   }
 
