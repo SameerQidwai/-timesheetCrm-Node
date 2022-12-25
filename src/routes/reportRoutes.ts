@@ -20,4 +20,8 @@ router
   .route('/project-revenue-analysis')
   .get([isLoggedIn], contr.projectRevnueAnalysis.bind(contr));
 
+router
+  .route('/client-revenue-analysis')
+  .get([isLoggedIn], contr.clientRevnueAnalysis.bind(contr));
+
 export default router;
