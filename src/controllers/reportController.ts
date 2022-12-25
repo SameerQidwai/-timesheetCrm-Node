@@ -7,6 +7,7 @@ import {
   parseBookingType,
   parseContractType,
   parseResourceType,
+  parseWorkStatus,
 } from '../utilities/helperFunctions';
 import { StandardSkillStandardLevel } from '../entities/standardSkillStandardLevel';
 import { Opportunity } from '../entities/opportunity';
@@ -262,6 +263,9 @@ export class ReportController {
       let queryResourceType = this._customQueryParser(
         req.query.resourceType as string
       );
+      let queryBookingType = this._customQueryParser(
+        req.query.resourceType as string
+      );
       let queryWorkStatus = this._customQueryParser(
         req.query.workStatus as string
       );
@@ -270,6 +274,9 @@ export class ReportController {
         req.query.contactPersonId as string
       );
       let queryWorkId = this._customQueryParser(req.query.workId as string);
+      let queryWorkPhase = this._customQueryParser(
+        req.query.workPhase as string
+      );
       let queryOrganizationId = this._customQueryParser(
         req.query.organizationId as string
       );
@@ -292,6 +299,7 @@ export class ReportController {
       interface allocation {
         workType: string;
         title: String;
+        workStatus: String;
         organization: string;
         milestone: string;
         position: string;
@@ -338,6 +346,13 @@ export class ReportController {
           continue;
         }
 
+        if (
+          queryWorkPhase.length &&
+          !queryWorkPhase.includes(work.phase ? 1 : 0)
+        ) {
+          continue;
+        }
+
         if (queryWorkId.length && !queryWorkId.includes(work.id)) {
           continue;
         }
@@ -353,6 +368,7 @@ export class ReportController {
           for (let position of milestone.opportunityResources) {
             let positionStartDate = moment(position.startDate);
             let positionEndDate = moment(position.endDate);
+            let bookingType = 4;
 
             if (
               !positionStartDate.isBetween(startDate, endDate, 'date', '[]') &&
@@ -381,9 +397,17 @@ export class ReportController {
                 continue;
               }
 
+              if (
+                queryBookingType.length &&
+                !queryBookingType.includes(bookingType)
+              ) {
+                continue;
+              }
+
               allocations.push({
                 workType: workStatus ? 'Project' : 'Opportunity',
                 title: work.title,
+                workStatus: parseWorkStatus(work.phase),
                 organization: work.organization.title,
                 milestone: work.type == 1 ? milestone.title : '-',
                 position: position.title ?? '-',
@@ -393,7 +417,7 @@ export class ReportController {
                 name: '-',
                 resourceType: '-',
                 employmentType: '-',
-                bookingType: 'Unallocated',
+                bookingType: parseBookingType(bookingType),
                 buyRate: 0,
                 sellRate: 0,
                 CMPercent: 0,
@@ -413,7 +437,8 @@ export class ReportController {
               let employmentType =
                 allocation.contactPerson.getEmployee?.getActiveContract?.type ??
                 0;
-              let bookingType = 0;
+
+              bookingType = 0;
               let resourceType = 0;
 
               if (allocation.contactPerson.getActiveOrganization)
@@ -436,6 +461,7 @@ export class ReportController {
               allocations.push({
                 workType: workStatus ? 'Project' : 'Opportunity',
                 title: work.title,
+                workStatus: parseWorkStatus(work.phase),
                 organization: work.organization.title,
                 milestone: work.type == 1 ? milestone.title : '-',
                 position: position.title ?? '-',
@@ -483,6 +509,9 @@ export class ReportController {
       let queryResourceType = this._customQueryParser(
         req.query.resourceType as string
       );
+      let queryBookingType = this._customQueryParser(
+        req.query.resourceType as string
+      );
       let queryWorkStatus = this._customQueryParser(
         req.query.workStatus as string
       );
@@ -517,6 +546,7 @@ export class ReportController {
         bookingType: string;
         workType: string;
         title: String;
+        workStatus: string;
         organization: string;
         milestone: string;
         position: string;
@@ -549,6 +579,8 @@ export class ReportController {
       });
 
       for (let employee of employees) {
+        let bookingType = 4;
+
         let employeeAllocations =
           employee.contactPersonOrganization.contactPerson.allocations;
 
@@ -573,6 +605,13 @@ export class ReportController {
             continue;
           }
 
+          if (
+            queryBookingType.length &&
+            !queryBookingType.includes(bookingType)
+          ) {
+            continue;
+          }
+
           //ignoring inner loop queries
           if (
             queryWorkId.length ||
@@ -590,9 +629,10 @@ export class ReportController {
             name: employee.getFullName,
             resourceType: parseResourceType(resourceType),
             employmentType: parseContractType(employmentType),
-            bookingType: 'Unallocated',
+            bookingType: parseBookingType(bookingType),
             workType: '-',
             title: '-',
+            workStatus: '-',
             organization: '-',
             milestone: '-',
             position: '-',
@@ -642,6 +682,7 @@ export class ReportController {
           }
 
           let workStatus = projectStatuses.includes(work.status) ? 1 : 0;
+
           if (
             (queryWorkStatus.length && !queryWorkStatus.includes(workStatus)) ||
             (queryWorkType.length && !queryWorkType.includes(work.type))
@@ -649,7 +690,7 @@ export class ReportController {
             continue;
           }
 
-          let bookingType = allocation.isMarkedAsSelected ? 2 : 0;
+          bookingType = allocation.isMarkedAsSelected ? 2 : 0;
 
           if (
             queryResourceType.length &&
@@ -676,6 +717,7 @@ export class ReportController {
             bookingType: parseBookingType(bookingType),
             workType: workStatus ? 'Project' : 'Opportunity',
             title: work.title,
+            workStatus: parseWorkStatus(work.phase),
             organization: work.organization.title,
             milestone: work.type == 1 ? milestone.title : '-',
             position: position.title ?? '-',
@@ -925,5 +967,190 @@ export class ReportController {
       message: 'Project Revenue Analysis',
       data: Object.values(actualStatement),
     });
+  }
+  async timesheetSummary(req: Request, res: Response, next: NextFunction) {
+    try {
+      const manager = getManager();
+
+      let queryStartDate = req.query.startDate as string;
+      let queryEndDate = req.query.endDate as string;
+
+      let currentMoment = moment();
+
+      let startDate = moment(
+        `${currentMoment.year()}-${process.env.FISCAL_YEAR_START ?? '07'}-01`
+      ).startOf('month');
+      let endDate = startDate.clone().add(1, 'year').subtract(1, 'day');
+
+      let employeeProjectIndexes: { [key: string]: number } = {};
+
+      let employees = await manager.find(Employee, {
+        relations: [
+          'contactPersonOrganization',
+          'contactPersonOrganization.contactPerson',
+          'employmentContracts',
+          'timesheets',
+          'timesheets.milestoneEntries',
+          'timesheets.milestoneEntries.entries',
+          'timesheets.milestoneEntries.milestone',
+          'timesheets.milestoneEntries.milestone.project',
+          'timesheets.milestoneEntries.milestone.project.organization',
+        ],
+        where: { active: true },
+      });
+
+      if (queryStartDate) {
+        if (moment(queryStartDate).isValid()) {
+          startDate = moment(queryStartDate);
+        }
+      }
+
+      if (queryEndDate) {
+        if (moment(queryEndDate).isValid()) {
+          endDate = moment(queryEndDate);
+        }
+      }
+
+      interface MonthInterface {
+        [key: string]: {
+          startDate: Moment;
+          endDate: Moment;
+          totalDaysInMonth: number;
+          totalHours: number;
+          submittedHours: number;
+          approvedHours: number;
+        };
+      }
+
+      let months: MonthInterface = {};
+
+      let startDateClone = startDate.clone();
+
+      while (
+        endDate > startDateClone ||
+        startDateClone.format('M') === endDate.format('M')
+      ) {
+        months[startDateClone.format('YYYY-MM')] = {
+          startDate: startDateClone.clone().startOf('month'),
+          endDate: startDateClone.clone().endOf('month'),
+
+          totalDaysInMonth: startDateClone.daysInMonth(),
+          totalHours: 0,
+          submittedHours: 0,
+          approvedHours: 0,
+        };
+        startDateClone.add(1, 'month');
+      }
+
+      let summary: {
+        employeeName: string;
+        employeeCode: number;
+        projectName: String;
+        projectCode: number;
+        purchaseOrders: string[];
+        organizationName: string;
+        months: MonthInterface;
+        currentMonth: any;
+      }[] = [];
+
+      for (let employee of employees) {
+        for (let timesheet of employee.timesheets) {
+          if (
+            !moment(timesheet.startDate).isBetween(
+              startDate,
+              endDate,
+              'date',
+              '[]'
+            ) ||
+            !moment(timesheet.endDate).isBetween(
+              startDate,
+              endDate,
+              'date',
+              '[]'
+            )
+          )
+            continue;
+
+          let project: Opportunity | null = null;
+
+          for (let milestoneEntry of timesheet.milestoneEntries) {
+            let localMonths = JSON.parse(JSON.stringify(months));
+
+            project = milestoneEntry.milestone.project;
+
+            if (!project) continue;
+
+            if (
+              employeeProjectIndexes[`${employee.id}_${project.id}`] !==
+              undefined
+            ) {
+              for (let entry of milestoneEntry.entries) {
+                if (!entry.submittedAt) continue;
+
+                const entryDate = moment(entry.date, 'DD-MM-YYYY').format(
+                  'YYYY-MM'
+                );
+
+                // if (!months[entryDate]) continue;
+
+                let entryHours = parseFloat(entry.hours.toFixed(2));
+
+                summary[
+                  employeeProjectIndexes[`${employee.id}_${project.id}`]
+                ].months[entryDate].totalHours += entryHours;
+                if (entry.submittedAt)
+                  summary[
+                    employeeProjectIndexes[`${employee.id}_${project.id}`]
+                  ].months[entryDate].submittedHours += entryHours;
+                if (entry.approvedAt)
+                  summary[
+                    employeeProjectIndexes[`${employee.id}_${project.id}`]
+                  ].months[entryDate].approvedHours += entryHours;
+              }
+            } else {
+              for (let entry of milestoneEntry.entries) {
+                if (!entry.submittedAt) continue;
+
+                const entryDate = moment(entry.date, 'DD-MM-YYYY').format(
+                  'YYYY-MM'
+                );
+
+                // if (!months[entryDate]) continue;
+
+                let entryHours = parseFloat(entry.hours.toFixed(2));
+
+                localMonths[entryDate].totalHours += entryHours;
+                if (entry.submittedAt)
+                  localMonths[entryDate].submittedHours += entryHours;
+                if (entry.approvedAt)
+                  localMonths[entryDate].approvedHours += entryHours;
+              }
+
+              employeeProjectIndexes[`${employee.id}_${project.id}`] =
+                summary.length;
+
+              summary.push({
+                employeeName: employee.getFullName,
+                employeeCode: employee.id,
+                projectName: project.title,
+                projectCode: project.id,
+                purchaseOrders: [],
+                organizationName: project.organization.name,
+                months: localMonths,
+                currentMonth: localMonths[moment().format('YYYY-MM')] ?? {},
+              });
+            }
+          }
+        }
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Timesheet Summary',
+        data: summary,
+      });
+    } catch (e) {
+      next(e);
+    }
   }
 }

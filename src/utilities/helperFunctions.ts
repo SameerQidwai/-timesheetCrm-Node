@@ -254,5 +254,15 @@ export let parseResourceType = (type: number): string => {
 };
 
 export let parseBookingType = (type: number): string => {
-  return type === 1 ? 'Soft-booked' : type === 2 ? 'Allocated' : 'Assigned';
+  return type === 0
+    ? 'Reserved'
+    : type === 1
+    ? 'Soft-booked'
+    : type === 2
+    ? 'Allocated'
+    : 'Unallocated';
+};
+
+export let parseWorkStatus = (type: boolean): string => {
+  return type ? 'Open' : 'Closed';
 };

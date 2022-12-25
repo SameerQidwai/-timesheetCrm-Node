@@ -18,6 +18,7 @@ export const leaveRequestMonthlyCron = cron.schedule(
           'employmentContracts.leaveRequestPolicy.leaveRequestPolicyLeaveRequestTypes',
           'leaveRequestBalances',
         ],
+        where: { active: true },
       });
 
       let promises: any = [];
@@ -111,6 +112,7 @@ export const leaveRequestYearlyCron = cron.schedule(
           'employmentContracts.leaveRequestPolicy.leaveRequestPolicyLeaveRequestTypes',
           'leaveRequestBalances',
         ],
+        where: { active: true },
       });
 
       let promises: any = [];

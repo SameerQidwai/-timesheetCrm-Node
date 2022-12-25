@@ -24,4 +24,6 @@ router
   .route('/client-revenue-analysis')
   .get([isLoggedIn], contr.clientRevnueAnalysis.bind(contr));
 
+router.route('/timesheet-summary').get([isLoggedIn], contr.timesheetSummary.bind(contr));
+
 export default router;
