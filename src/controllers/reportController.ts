@@ -262,7 +262,7 @@ export class ReportController {
         req.query.resourceType as string
       );
       let queryBookingType = this._customQueryParser(
-        req.query.resourceType as string
+        req.query.bookingType as string
       );
       let queryWorkStatus = this._customQueryParser(
         req.query.workStatus as string
@@ -508,7 +508,7 @@ export class ReportController {
         req.query.resourceType as string
       );
       let queryBookingType = this._customQueryParser(
-        req.query.resourceType as string
+        req.query.bookingType as string
       );
       let queryWorkStatus = this._customQueryParser(
         req.query.workStatus as string
