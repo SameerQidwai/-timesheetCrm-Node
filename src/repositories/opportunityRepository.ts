@@ -1772,6 +1772,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
       opportunityObj.status = opportunityLostDTO.status ?? 'L';
       opportunityObj.feedback = opportunityLostDTO.feedback;
       opportunityObj.wonById = opportunityObj.wonById;
+      opportunityObj.phase = 0;
       // opportunityObj.opportunityManagerId = 1;
       opportunityObj.lostDate = new Date()
         .toISOString()
@@ -1868,7 +1869,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
     employeeId: number,
     contactId: number,
     organizationId: number,
-    delegateId: number,
+    delegateId: number
   ): Promise<any | undefined> {
     let work: Opportunity[];
     let data: any = [];
@@ -1955,8 +1956,8 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
       let delegateContactPersonId = contact.id;
       work.forEach((project, index) => {
-        if (project.contactPersonId === delegateContactPersonId){
-          data.push(project)
+        if (project.contactPersonId === delegateContactPersonId) {
+          data.push(project);
         }
       });
     }

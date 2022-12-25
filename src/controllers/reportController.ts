@@ -7,6 +7,7 @@ import {
   parseBookingType,
   parseContractType,
   parseResourceType,
+  parseWorkStatus,
 } from '../utilities/helperFunctions';
 import { StandardSkillStandardLevel } from '../entities/standardSkillStandardLevel';
 import { Opportunity } from '../entities/opportunity';
@@ -260,6 +261,9 @@ export class ReportController {
       let queryResourceType = this._customQueryParser(
         req.query.resourceType as string
       );
+      let queryBookingType = this._customQueryParser(
+        req.query.resourceType as string
+      );
       let queryWorkStatus = this._customQueryParser(
         req.query.workStatus as string
       );
@@ -268,6 +272,9 @@ export class ReportController {
         req.query.contactPersonId as string
       );
       let queryWorkId = this._customQueryParser(req.query.workId as string);
+      let queryWorkPhase = this._customQueryParser(
+        req.query.workPhase as string
+      );
       let queryOrganizationId = this._customQueryParser(
         req.query.organizationId as string
       );
@@ -290,6 +297,7 @@ export class ReportController {
       interface allocation {
         workType: string;
         title: String;
+        workStatus: String;
         organization: string;
         milestone: string;
         position: string;
@@ -336,6 +344,13 @@ export class ReportController {
           continue;
         }
 
+        if (
+          queryWorkPhase.length &&
+          !queryWorkPhase.includes(work.phase ? 1 : 0)
+        ) {
+          continue;
+        }
+
         if (queryWorkId.length && !queryWorkId.includes(work.id)) {
           continue;
         }
@@ -351,6 +366,7 @@ export class ReportController {
           for (let position of milestone.opportunityResources) {
             let positionStartDate = moment(position.startDate);
             let positionEndDate = moment(position.endDate);
+            let bookingType = 4;
 
             if (
               !positionStartDate.isBetween(startDate, endDate, 'date', '[]') &&
@@ -379,9 +395,17 @@ export class ReportController {
                 continue;
               }
 
+              if (
+                queryBookingType.length &&
+                !queryBookingType.includes(bookingType)
+              ) {
+                continue;
+              }
+
               allocations.push({
                 workType: workStatus ? 'Project' : 'Opportunity',
                 title: work.title,
+                workStatus: parseWorkStatus(work.phase),
                 organization: work.organization.title,
                 milestone: work.type == 1 ? milestone.title : '-',
                 position: position.title ?? '-',
@@ -391,7 +415,7 @@ export class ReportController {
                 name: '-',
                 resourceType: '-',
                 employmentType: '-',
-                bookingType: 'Unallocated',
+                bookingType: parseBookingType(bookingType),
                 buyRate: 0,
                 sellRate: 0,
                 CMPercent: 0,
@@ -411,7 +435,8 @@ export class ReportController {
               let employmentType =
                 allocation.contactPerson.getEmployee?.getActiveContract?.type ??
                 0;
-              let bookingType = 0;
+
+              bookingType = 0;
               let resourceType = 0;
 
               if (allocation.contactPerson.getActiveOrganization)
@@ -434,6 +459,7 @@ export class ReportController {
               allocations.push({
                 workType: workStatus ? 'Project' : 'Opportunity',
                 title: work.title,
+                workStatus: parseWorkStatus(work.phase),
                 organization: work.organization.title,
                 milestone: work.type == 1 ? milestone.title : '-',
                 position: position.title ?? '-',
@@ -481,6 +507,9 @@ export class ReportController {
       let queryResourceType = this._customQueryParser(
         req.query.resourceType as string
       );
+      let queryBookingType = this._customQueryParser(
+        req.query.resourceType as string
+      );
       let queryWorkStatus = this._customQueryParser(
         req.query.workStatus as string
       );
@@ -515,6 +544,7 @@ export class ReportController {
         bookingType: string;
         workType: string;
         title: String;
+        workStatus: string;
         organization: string;
         milestone: string;
         position: string;
@@ -547,6 +577,8 @@ export class ReportController {
       });
 
       for (let employee of employees) {
+        let bookingType = 4;
+
         let employeeAllocations =
           employee.contactPersonOrganization.contactPerson.allocations;
 
@@ -571,6 +603,13 @@ export class ReportController {
             continue;
           }
 
+          if (
+            queryBookingType.length &&
+            !queryBookingType.includes(bookingType)
+          ) {
+            continue;
+          }
+
           //ignoring inner loop queries
           if (
             queryWorkId.length ||
@@ -588,9 +627,10 @@ export class ReportController {
             name: employee.getFullName,
             resourceType: parseResourceType(resourceType),
             employmentType: parseContractType(employmentType),
-            bookingType: 'Unallocated',
+            bookingType: parseBookingType(bookingType),
             workType: '-',
             title: '-',
+            workStatus: '-',
             organization: '-',
             milestone: '-',
             position: '-',
@@ -640,6 +680,7 @@ export class ReportController {
           }
 
           let workStatus = projectStatuses.includes(work.status) ? 1 : 0;
+
           if (
             (queryWorkStatus.length && !queryWorkStatus.includes(workStatus)) ||
             (queryWorkType.length && !queryWorkType.includes(work.type))
@@ -647,7 +688,7 @@ export class ReportController {
             continue;
           }
 
-          let bookingType = allocation.isMarkedAsSelected ? 2 : 0;
+          bookingType = allocation.isMarkedAsSelected ? 2 : 0;
 
           if (
             queryResourceType.length &&
@@ -674,6 +715,7 @@ export class ReportController {
             bookingType: parseBookingType(bookingType),
             workType: workStatus ? 'Project' : 'Opportunity',
             title: work.title,
+            workStatus: parseWorkStatus(work.phase),
             organization: work.organization.title,
             milestone: work.type == 1 ? milestone.title : '-',
             position: position.title ?? '-',
@@ -703,8 +745,15 @@ export class ReportController {
 
       let queryStartDate = req.query.startDate as string;
       let queryEndDate = req.query.endDate as string;
-      let startDate = moment().startOf('year');
-      let endDate = moment().endOf('year');
+
+      let currentMoment = moment();
+
+      let startDate = moment(
+        `${currentMoment.year()}-${process.env.FISCAL_YEAR_START ?? '07'}-01`
+      ).startOf('month');
+      let endDate = startDate.clone().add(1, 'year').subtract(1, 'day');
+
+      console.log(startDate, endDate);
 
       let employees = await manager.find(Employee, {
         relations: [
@@ -763,6 +812,7 @@ export class ReportController {
         purchaseOrders: string[];
         organizationName: string;
         months: any;
+        currentMonth: any;
       }[] = [];
 
       for (let employee of employees) {
@@ -819,6 +869,7 @@ export class ReportController {
             purchaseOrders: [],
             organizationName: project.organization.name,
             months: localMonths,
+            currentMonth: localMonths[moment().format('YYYY-MM')] ?? {},
           });
         }
       }
