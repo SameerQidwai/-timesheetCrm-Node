@@ -753,7 +753,7 @@ export class ReportController {
       ).startOf('month');
       let endDate = startDate.clone().add(1, 'year').subtract(1, 'day');
 
-      console.log(startDate, endDate);
+      let employeeProjectIndexes: { [key: string]: number } = {};
 
       let employees = await manager.find(Employee, {
         relations: [
@@ -782,9 +782,18 @@ export class ReportController {
         }
       }
 
-      let months: {
-        [key: string]: any;
-      } = {};
+      interface MonthInterface {
+        [key: string]: {
+          startDate: Moment;
+          endDate: Moment;
+          totalDaysInMonth: number;
+          totalHours: number;
+          submittedHours: number;
+          approvedHours: number;
+        };
+      }
+
+      let months: MonthInterface = {};
 
       let startDateClone = startDate.clone();
 
@@ -811,7 +820,7 @@ export class ReportController {
         projectCode: number;
         purchaseOrders: string[];
         organizationName: string;
-        months: any;
+        months: MonthInterface;
         currentMonth: any;
       }[] = [];
 
@@ -833,44 +842,76 @@ export class ReportController {
           )
             continue;
 
-          let localMonths = JSON.parse(JSON.stringify(months));
-
           let project: Opportunity | null = null;
 
           for (let milestoneEntry of timesheet.milestoneEntries) {
+            let localMonths = JSON.parse(JSON.stringify(months));
+
             project = milestoneEntry.milestone.project;
 
-            for (let entry of milestoneEntry.entries) {
-              if (!entry.submittedAt) continue;
+            if (!project) continue;
 
-              const entryDate = moment(entry.date, 'DD-MM-YYYY').format(
-                'YYYY-MM'
-              );
+            if (
+              employeeProjectIndexes[`${employee.id}_${project.id}`] !==
+              undefined
+            ) {
+              for (let entry of milestoneEntry.entries) {
+                if (!entry.submittedAt) continue;
 
-              // if (!months[entryDate]) continue;
+                const entryDate = moment(entry.date, 'DD-MM-YYYY').format(
+                  'YYYY-MM'
+                );
 
-              let entryHours = parseFloat(entry.hours.toFixed(2));
+                // if (!months[entryDate]) continue;
 
-              localMonths[entryDate].totalHours += entryHours;
-              if (entry.submittedAt)
-                localMonths[entryDate].submittedHours += entryHours;
-              if (entry.approvedAt)
-                localMonths[entryDate].approvedHours += entryHours;
+                let entryHours = parseFloat(entry.hours.toFixed(2));
+
+                summary[
+                  employeeProjectIndexes[`${employee.id}_${project.id}`]
+                ].months[entryDate].totalHours += entryHours;
+                if (entry.submittedAt)
+                  summary[
+                    employeeProjectIndexes[`${employee.id}_${project.id}`]
+                  ].months[entryDate].submittedHours += entryHours;
+                if (entry.approvedAt)
+                  summary[
+                    employeeProjectIndexes[`${employee.id}_${project.id}`]
+                  ].months[entryDate].approvedHours += entryHours;
+              }
+            } else {
+              for (let entry of milestoneEntry.entries) {
+                if (!entry.submittedAt) continue;
+
+                const entryDate = moment(entry.date, 'DD-MM-YYYY').format(
+                  'YYYY-MM'
+                );
+
+                // if (!months[entryDate]) continue;
+
+                let entryHours = parseFloat(entry.hours.toFixed(2));
+
+                localMonths[entryDate].totalHours += entryHours;
+                if (entry.submittedAt)
+                  localMonths[entryDate].submittedHours += entryHours;
+                if (entry.approvedAt)
+                  localMonths[entryDate].approvedHours += entryHours;
+              }
+
+              employeeProjectIndexes[`${employee.id}_${project.id}`] =
+                summary.length;
+
+              summary.push({
+                employeeName: employee.getFullName,
+                employeeCode: employee.id,
+                projectName: project.title,
+                projectCode: project.id,
+                purchaseOrders: [],
+                organizationName: project.organization.name,
+                months: localMonths,
+                currentMonth: localMonths[moment().format('YYYY-MM')] ?? {},
+              });
             }
           }
-
-          if (!project) continue;
-
-          summary.push({
-            employeeName: employee.getFullName,
-            employeeCode: employee.id,
-            projectName: project.title,
-            projectCode: project.id,
-            purchaseOrders: [],
-            organizationName: project.organization.name,
-            months: localMonths,
-            currentMonth: localMonths[moment().format('YYYY-MM')] ?? {},
-          });
         }
       }
 
