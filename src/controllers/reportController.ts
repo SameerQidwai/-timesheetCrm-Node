@@ -747,10 +747,13 @@ export class ReportController {
       let queryEndDate = req.query.endDate as string;
       let queryCurrentDate = req.query.currentDate as string;
 
-      let currentMoment =
-        queryStartDate && moment(queryCurrentDate).isValid()
-          ? moment(queryCurrentDate)
-          : moment();
+      let currentMoment = moment();
+      
+      if (queryCurrentDate) {
+        if (moment(queryCurrentDate).isValid()) {
+          currentMoment = moment(queryCurrentDate);
+        }
+      }
 
       let startDate = moment(
         `${currentMoment.year()}-${process.env.FISCAL_YEAR_START ?? '07'}-01`
