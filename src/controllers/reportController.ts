@@ -11,6 +11,8 @@ import {
 } from '../utilities/helperFunctions';
 import { StandardSkillStandardLevel } from '../entities/standardSkillStandardLevel';
 import { Opportunity } from '../entities/opportunity';
+import { ProfitView } from '../entities/views';
+// import { ResourceView } from '../entities/views';
 
 export class ReportController {
   _customQueryParser(query = '') {
@@ -739,6 +741,222 @@ export class ReportController {
     }
   }
 
+  async projectRevnueAnalysis(req: Request ,res: Response, next: NextFunction){
+    
+    let fiscalYearStart = req.query.fiscalYearStart as string;
+    let fiscalYearEnd = req.query.fiscalYearEnd as string;
+    // let projectId = this._customQueryParser(req.query.projectId as string);
+    let projectId = req.query.projectId as string;
+    let excludeProjectId = req.query.excludeProjectId as string;
+    // let organizationId = this._customQueryParser(req.query.organizationId as string);
+    let organizationId = req.query.organizationId as string;
+    let projectFilter = projectId? `AND profit_view.project_id IN (${projectId})` :''
+    let excludeProjectFilter = excludeProjectId? `AND profit_view.project_id NOT IN (${excludeProjectId})` :''
+    let organizationFilter =organizationId? `AND project_organization_id IN (${organizationId})` :''
+    
+    const actual = await getManager().query(`
+      SELECT revenue_calculator.*, name project_manager_name  
+      FROM (SELECT 
+        project_type,
+        project_amount,
+        profit_view.project_id,
+        project_organization_id,
+        project_organization_name,
+        project_title,
+        project_manager_id, 
+        (CASE WHEN project_type = 2 
+          THEN 
+            SUM( resource_buying_rate * actual_hours ) 
+          ELSE 
+            0 
+          END )
+        month_total_buy, 
+
+        (CASE WHEN project_type = 2 
+          THEN 
+              SUM( resource_selling_rate * actual_hours ) 
+          ELSE 
+            project_schedule_segments.amount 
+          END )
+        month_total_sell, 
+        
+        SUM(actual_hours) actual_hours, 
+        (CASE WHEN project_type = 2 
+          THEN 
+            DATE_FORMAT(STR_TO_DATE(entry_date,'%e-%m-%Y'), '%b %y') 
+          ELSE 
+            DATE_FORMAT(project_schedule_segments.start_date, '%b %y') 
+          END) 
+        month
+      
+        FROM profit_view
+          LEFT JOIN project_schedules ON
+            profit_view.project_id = project_schedules.project_id
+              LEFT JOIN project_schedule_segments  ON 
+                project_schedules.id = project_schedule_segments.schedule_id 
+                
+        WHERE ( project_status = 'P' OR project_status = 'C' ) 
+        
+        AND project_start <= STR_TO_DATE('${fiscalYearEnd}' ,'%Y-%m-%d') 
+        AND project_end >= STR_TO_DATE('${fiscalYearStart}' ,'%Y-%m-%d') 
+        AND project_schedules.deleted_at IS NULL 
+        AND project_schedule_segments.deleted_at IS NULL 
+        ${projectFilter} ${organizationFilter} ${excludeProjectFilter} 
+
+        GROUP BY project_id, month 
+      ) as revenue_calculator
+            
+        LEFT JOIN contact_person_View ON
+          contact_person_View.employee_id = project_manager_id
+    `);
+    let actualStatement: any = {};
+    actual.forEach((el: any) =>{
+      actualStatement[el.project_id] = {
+        ...(actualStatement?.[el.project_id] ?? {
+          projectValue: el.project_amount,
+          projectId: el.project_id,
+          organizationId: el.project_organization_id,
+          organizationName: el.project_organization_name,
+          projectTitle: el.project_title,
+          projectManagerId: el.project_manager_id,
+          projectManagerName: el.project_manager_name,
+          projectType: el.project_type,
+        }),
+        //don't need buy rate for now... if it needed will uncoment this
+        // [el.month]: {
+        //   monthTotalBuy: el.month_total_buy,
+        //   monthTotalSell: el.month_total_sell,
+        // },
+        [el.month]: el.month_total_sell,
+        totalSell: (actualStatement?.[el.project_organization_id]?.['totalSell']??0) + el.month_total_sell,
+        totalBuy: (actualStatement?.[el.project_organization_id]?.['totalBuy']??0) + el.month_total_buy,
+        YTDTotalSell: moment(el.month, 'MMM YY').isBetween(
+          fiscalYearStart,
+          fiscalYearEnd,
+          'month',
+          '[]'
+        )
+            ? ((actualStatement?.[el.project_organization_id]?.['YTDTotalSell']??0) + el.month_total_sell)
+          : (actualStatement?.[el.project_organization_id]?.['YTDTotalSell']??0)
+      };
+    })
+
+    res.status(200).json({
+      success: true,
+      message: 'Project Revenue Analysis',
+      data: Object.values(actualStatement),
+    });
+  }
+
+  async clientRevnueAnalysis(req: Request ,res: Response, next: NextFunction){
+    
+    let fiscalYearStart = req.query.fiscalYearStart as string;
+    let fiscalYearEnd = req.query.fiscalYearEnd as string;
+
+    let organizationId = req.query.organizationId as string;
+    let excludeOrganizationId = req.query.excludeOrganizationId as string;
+
+    let organizationFilter =organizationId? `AND project_organization_id IN (${organizationId})` :''
+    let excludeOrganizationFilter = excludeOrganizationId? `AND profit_view.project_organization_id NOT IN (${excludeOrganizationId})` :''
+    
+    const actual = await getManager().query(`
+      SELECT 
+        project_type,
+        project_amount,
+        profit_view.project_id,
+        project_organization_id,
+        project_organization_name,
+        (CASE WHEN project_type = 2 
+          THEN 
+            SUM( resource_buying_rate * actual_hours ) 
+          ELSE 
+            0 
+          END )
+        month_total_buy, 
+
+        (CASE WHEN project_type = 2 
+          THEN 
+              SUM( resource_selling_rate * actual_hours ) 
+          ELSE 
+            project_schedule_segments.amount 
+          END )
+        month_total_sell, 
+        
+        SUM(actual_hours) actual_hours, 
+        (CASE WHEN project_type = 2 
+          THEN 
+            DATE_FORMAT(STR_TO_DATE(entry_date,'%e-%m-%Y'), '%b %y') 
+          ELSE 
+            DATE_FORMAT(project_schedule_segments.start_date, '%b %y') 
+          END) 
+        month
+      
+        FROM profit_view
+          LEFT JOIN project_schedules ON
+            profit_view.project_id = project_schedules.project_id
+              LEFT JOIN project_schedule_segments  ON 
+                project_schedules.id = project_schedule_segments.schedule_id 
+                
+        WHERE ( project_status = 'P' OR project_status = 'C' ) 
+        
+        AND project_start <= STR_TO_DATE('${fiscalYearEnd}' ,'%Y-%m-%d') 
+        AND project_end >= STR_TO_DATE('${fiscalYearStart}' ,'%Y-%m-%d') 
+        AND project_schedules.deleted_at IS NULL 
+        AND project_schedule_segments.deleted_at IS NULL 
+        ${organizationFilter} ${excludeOrganizationFilter} 
+
+        GROUP BY project_organization_id, profit_view.project_id, month 
+    `);
+    let actualStatement: any = {};
+    let projectsValues: any = {}
+
+    actual.forEach((el: any) =>{
+      actualStatement[el.project_organization_id] = {
+        ...(actualStatement?.[el.project_organization_id] ?? {
+          organizationId: el.project_organization_id,
+          organizationName: el.project_organization_name,
+          projectType: el.project_type,
+        }),
+        //don't need buy rate for now... if it needed will uncoment this
+        // [el.month]: {
+        //   monthTotalBuy: (actualStatement?.[el.project_organization_id]?.[el.month]?.['monthTotalBuy'] ??0) + el.month_total_buy,
+        //   monthTotalSell: (actualStatement?.[el.project_organization_id]?.[el.month]?.['monthTotalSell'] ??0) + el.month_total_sell,
+        // },
+        [el.month]: (actualStatement?.[el.project_organization_id]?.[el.month]?.['monthTotalSell'] ??0) + el.month_total_sell,
+
+        totalSell: (actualStatement?.[el.project_organization_id]?.['totalSell']??0) + el.month_total_sell,
+        totalBuy: (actualStatement?.[el.project_organization_id]?.['totalBuy']??0) + el.month_total_buy,
+
+        projectsValue: 
+          projectsValues?.[el.project_organization_id]?.[el.project_id]? 
+            (actualStatement?.[el.project_organization_id]?.['projectsValue']??0): 
+            (actualStatement?.[el.project_organization_id]?.['projectsValue']??0) + el.project_amount,
+
+        YTDTotalSell: moment(el.month, 'MMM YY').isBetween(
+          fiscalYearStart,
+          fiscalYearEnd,
+          'month',
+          '[]'
+        )
+            ? ((actualStatement?.[el.project_organization_id]?.['YTDTotalSell']??0) + el.month_total_sell)
+          : (actualStatement?.[el.project_organization_id]?.['YTDTotalSell']??0)
+      };
+      //sum of all projectValues
+      projectsValues = {
+        ...projectsValues,
+        [el.project_organization_id]: {
+          ...(projectsValues[el.project_organization_id]??{}),
+          [el.project_id]: true
+        }
+      }
+    })
+
+    res.status(200).json({
+      success: true,
+      message: 'Project Revenue Analysis',
+      data: Object.values(actualStatement),
+    });
+  }
   async timesheetSummary(req: Request, res: Response, next: NextFunction) {
     try {
       const manager = getManager();
