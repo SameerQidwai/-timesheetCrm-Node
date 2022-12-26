@@ -11,8 +11,6 @@ import {
 } from '../utilities/helperFunctions';
 import { StandardSkillStandardLevel } from '../entities/standardSkillStandardLevel';
 import { Opportunity } from '../entities/opportunity';
-import { ProfitView } from '../entities/views';
-// import { ResourceView } from '../entities/views';
 
 export class ReportController {
   _customQueryParser(query = '') {
