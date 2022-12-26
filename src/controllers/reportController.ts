@@ -264,7 +264,7 @@ export class ReportController {
         req.query.resourceType as string
       );
       let queryBookingType = this._customQueryParser(
-        req.query.resourceType as string
+        req.query.bookingType as string
       );
       let queryWorkStatus = this._customQueryParser(
         req.query.workStatus as string
@@ -510,7 +510,7 @@ export class ReportController {
         req.query.resourceType as string
       );
       let queryBookingType = this._customQueryParser(
-        req.query.resourceType as string
+        req.query.bookingType as string
       );
       let queryWorkStatus = this._customQueryParser(
         req.query.workStatus as string
@@ -963,8 +963,12 @@ export class ReportController {
 
       let queryStartDate = req.query.startDate as string;
       let queryEndDate = req.query.endDate as string;
+      let queryCurrentDate = req.query.currentDate as string;
 
-      let currentMoment = moment();
+      let currentMoment =
+        queryStartDate && moment(queryCurrentDate).isValid()
+          ? moment(queryCurrentDate)
+          : moment();
 
       let startDate = moment(
         `${currentMoment.year()}-${process.env.FISCAL_YEAR_START ?? '07'}-01`
@@ -1019,7 +1023,7 @@ export class ReportController {
         endDate > startDateClone ||
         startDateClone.format('M') === endDate.format('M')
       ) {
-        months[startDateClone.format('YYYY-MM')] = {
+        months[startDateClone.format('MMM YY')] = {
           startDate: startDateClone.clone().startOf('month'),
           endDate: startDateClone.clone().endOf('month'),
 
@@ -1077,7 +1081,7 @@ export class ReportController {
                 if (!entry.submittedAt) continue;
 
                 const entryDate = moment(entry.date, 'DD-MM-YYYY').format(
-                  'YYYY-MM'
+                  'MMM YY'
                 );
 
                 // if (!months[entryDate]) continue;
@@ -1101,7 +1105,7 @@ export class ReportController {
                 if (!entry.submittedAt) continue;
 
                 const entryDate = moment(entry.date, 'DD-MM-YYYY').format(
-                  'YYYY-MM'
+                  'MMM YY'
                 );
 
                 // if (!months[entryDate]) continue;
@@ -1126,7 +1130,7 @@ export class ReportController {
                 purchaseOrders: [],
                 organizationName: project.organization.name,
                 months: localMonths,
-                currentMonth: localMonths[moment().format('YYYY-MM')] ?? {},
+                currentMonth: localMonths[moment(currentMoment).format('MMM YY')] ?? {},
               });
             }
           }
