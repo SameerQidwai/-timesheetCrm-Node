@@ -822,27 +822,14 @@ export class ReportController {
           projectManagerName: el.project_manager_name,
           projectType: el.project_type,
         }),
-        [el.month]: {
-          monthTotalBuy: el.month_total_buy,
-          monthTotalSell: el.month_total_sell,
-        },
-        // totalSell: actualStatement?.[el.project_id]
-        //   ? (actualStatement[el.project_id]['totalSell'] += el.month_total_sell)
-        //   : el.month_total_sell,
+        //don't need buy rate for now... if it needed will uncoment this
+        // [el.month]: {
+        //   monthTotalBuy: el.month_total_buy,
+        //   monthTotalSell: el.month_total_sell,
+        // },
+        [el.month]: el.month_total_sell,
         totalSell: (actualStatement?.[el.project_organization_id]?.['totalSell']??0) + el.month_total_sell,
         totalBuy: (actualStatement?.[el.project_organization_id]?.['totalBuy']??0) + el.month_total_buy,
-
-        // YTDTotalSell: moment(el.month, 'MMM YY').isBetween(
-        //   fiscalYearStart,
-        //   fiscalYearEnd,
-        //   'month',
-        //   '[]'
-        // )
-        //   ? actualStatement[el.project_id]
-        //     ? (actualStatement[el.project_id]['YTDTotalSell'] +=
-        //         el.month_total_sell)
-        //     : el.month_total_sell
-        //   : actualStatement?.[el.project_id]?.['YTDTotalSell'] ?? 0,
         YTDTotalSell: moment(el.month, 'MMM YY').isBetween(
           fiscalYearStart,
           fiscalYearEnd,
@@ -930,10 +917,12 @@ export class ReportController {
           organizationName: el.project_organization_name,
           projectType: el.project_type,
         }),
-        [el.month]: {
-          monthTotalBuy: (actualStatement?.[el.project_organization_id]?.[el.month]?.['monthTotalBuy'] ??0) + el.month_total_buy,
-          monthTotalSell: (actualStatement?.[el.project_organization_id]?.[el.month]?.['monthTotalSell'] ??0) + el.month_total_sell,
-        },
+        //don't need buy rate for now... if it needed will uncoment this
+        // [el.month]: {
+        //   monthTotalBuy: (actualStatement?.[el.project_organization_id]?.[el.month]?.['monthTotalBuy'] ??0) + el.month_total_buy,
+        //   monthTotalSell: (actualStatement?.[el.project_organization_id]?.[el.month]?.['monthTotalSell'] ??0) + el.month_total_sell,
+        // },
+        [el.month]: (actualStatement?.[el.project_organization_id]?.[el.month]?.['monthTotalSell'] ??0) + el.month_total_sell,
 
         totalSell: (actualStatement?.[el.project_organization_id]?.['totalSell']??0) + el.month_total_sell,
         totalBuy: (actualStatement?.[el.project_organization_id]?.['totalBuy']??0) + el.month_total_buy,
