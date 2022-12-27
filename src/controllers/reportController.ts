@@ -990,6 +990,16 @@ export class ReportController {
       let queryEndDate = req.query.endDate as string;
       let queryCurrentDate = req.query.currentDate as string;
 
+      let queryEmployeeId = this._customQueryParser(
+        req.query.employeeId as string
+      );
+      let queryProjectId = this._customQueryParser(
+        req.query.projectId as string
+      );
+      let queryOrgId = this._customQueryParser(
+        req.query.organizationId as string
+      );
+
       let currentMoment = moment();
 
       if (queryCurrentDate) {
@@ -1031,8 +1041,6 @@ export class ReportController {
           endDate = moment(queryEndDate);
         }
       }
-
-      console.log(startDate, endDate);
 
       interface MonthInterface {
         [key: string]: {
@@ -1079,6 +1087,9 @@ export class ReportController {
       }[] = [];
 
       for (let employee of employees) {
+        if (queryEmployeeId.length && !queryEmployeeId.includes(employee.id))
+          continue;
+
         for (let timesheet of employee.timesheets) {
           if (
             !moment(timesheet.startDate).isBetween(
@@ -1106,6 +1117,15 @@ export class ReportController {
             project = milestoneEntry.milestone.project;
 
             if (!project) continue;
+
+            if (queryProjectId.length && !queryProjectId.includes(project.id))
+              continue;
+
+            if (
+              queryOrgId.length &&
+              !queryOrgId.includes(project.organization.id)
+            )
+              continue;
 
             let sumOfHours = 0;
 
@@ -1223,6 +1243,16 @@ export class ReportController {
       let queryStartDate = req.query.startDate as string;
       let queryEndDate = req.query.endDate as string;
 
+      let queryEmployeeId = this._customQueryParser(
+        req.query.employeeId as string
+      );
+      let queryProjectId = this._customQueryParser(
+        req.query.projectId as string
+      );
+      let queryLeaveType = this._customQueryParser(
+        req.query.leaveType as string
+      );
+
       let employees = await manager.find(Employee, {
         relations: [
           'contactPersonOrganization',
@@ -1268,6 +1298,9 @@ export class ReportController {
       let summary: SummaryInterface[] = [];
 
       for (let employee of employees) {
+        if (queryEmployeeId.length && !queryEmployeeId.includes(employee.id))
+          continue;
+
         let summaryObj: SummaryInterface = {
           employeeCode: employee.id,
           employeeName: employee.getFullName,
@@ -1276,6 +1309,20 @@ export class ReportController {
         };
 
         for (let leaveRequest of employee.leaveRequests) {
+          if (
+            queryProjectId.length &&
+            !queryProjectId.includes(leaveRequest.work?.id ?? 0)
+          )
+            continue;
+
+          if (
+            queryLeaveType.length &&
+            !queryLeaveType.includes(
+              leaveRequest.type?.leaveRequestType.id ?? 0
+            )
+          )
+            continue;
+
           let leaveRequestTotalHours = parseFloat(
             leaveRequest.getEntriesDetails.totalHours.toFixed(2)
           );
