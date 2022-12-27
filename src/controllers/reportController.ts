@@ -1301,4 +1301,90 @@ export class ReportController {
       next(e);
     }
   }
+
+  async leaveRequestSummaryView(req: Request, res: Response, next: NextFunction) {
+    try {
+      const manager = getManager();
+
+      let queryStartDate = req.query.startDate as string;
+      let queryEndDate = req.query.endDate as string;
+      let startDate = moment('2022-04-15').startOf('month').format('YYYY-MM-DD')
+      let endDate = moment('2022-04-15').endOf('month').format('YYYY-MM-DD')
+      
+      const leave_requests = await manager.query(`
+      SELECT 
+        leave_request_id,
+        leave_status,
+        leave_type_id,
+        leave_type_name,
+        employee_id,
+        employee_name,
+        project_id,
+        project_title,
+        SUM(leave_entry_hours) total_request_hours,
+        MIN(leave_entry_date) start_leave_date,
+        MAX(leave_entry_date) end_leave_date
+      
+        FROM leaves_view 
+        WHERE leave_entry_date >= STR_TO_DATE('${startDate}' ,'%Y-%m-%d')
+          AND leave_entry_date >= STR_TO_DATE('${endDate}' ,'%Y-%m-%d')
+      GROUP BY employee_id, leave_request_id
+      `)
+
+      interface SummaryInterface {
+        employeeName: string;
+        employeeCode: number;
+        totalHours: number;
+
+        leaveRequests: {
+          projectCode: number | null;
+          hours: number;
+          leaveRequestId: number;
+          leaveStatus: string;
+          leaveTypeId: number;
+          leaveType: string;
+          projectId: number;
+          startDate: Moment,
+          endDate: Moment,
+          projectTitle: string;
+        }[];
+      }
+
+      // let summary: SummaryInterface[] = [];
+      let summary:  {[key: string]: SummaryInterface} ={}
+      leave_requests.forEach((request: any) =>{
+        summary[request.employee_id] = {
+          employeeName: request.employee_name,
+          employeeCode: request.employee_id,
+          totalHours:
+            (summary?.[request.employee_id]?.['totalHours'] ?? 0) +
+            request.total_request_hours,
+          leaveRequests: [
+            ...(summary?.[request.employee_id]?.['leaveRequests'] || []),
+            {
+              projectTitle: request.project_title,
+              projectCode: request.project_id,
+              leaveTypeId: request.leave_type_id,
+              leaveType: request.leave_type_name,
+              hours: request.total_request_hours,
+              leaveRequestId: request.leave_request_id,
+              leaveStatus: request.leave_status,
+              projectId: request.project_id,
+              startDate: moment(request.start_leave_date),
+              endDate: moment(request.end_leave_date)
+            },
+          ],
+        };
+      })
+  
+
+      res.status(200).json({
+        success: true,
+        message: 'Leave Request Summary',
+        data: Object.values(summary),
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

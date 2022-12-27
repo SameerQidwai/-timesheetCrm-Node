@@ -22,4 +22,8 @@ router
   .route('/leave-request-summary')
   .get([], contr.leaveRequestSummary.bind(contr));
 
+  router
+  .route('/leave-request-summary-view')
+  .get([], contr.leaveRequestSummaryView.bind(contr));
+
 export default router;
