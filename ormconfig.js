@@ -6,7 +6,7 @@ module.exports = {
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
   entities: ['src/entities/*.ts', 'src/entities/views/*.ts'],
-  synchronize: true,
+  synchronize: false,
   logging: false,
   migrations: ['src/migrations/*.ts'],
   cli: {
@@ -20,4 +20,3 @@ module.exports = {
 // "username": "root" || process.env.DATABASE_USERNAME,
 // "password": "Account1!" || process.env.DATABASE_PASSWORD,
 // "database": "oneLmDev" ||  process.env.DATABASE_NAME,
- 

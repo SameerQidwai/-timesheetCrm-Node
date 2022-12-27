@@ -739,8 +739,7 @@ export class ReportController {
     }
   }
 
-  async projectRevnueAnalysis(req: Request ,res: Response, next: NextFunction){
-    
+  async projectRevnueAnalysis(req: Request, res: Response, next: NextFunction) {
     let fiscalYearStart = req.query.fiscalYearStart as string;
     let fiscalYearEnd = req.query.fiscalYearEnd as string;
     // let projectId = this._customQueryParser(req.query.projectId as string);
@@ -748,10 +747,16 @@ export class ReportController {
     let excludeProjectId = req.query.excludeProjectId as string;
     // let organizationId = this._customQueryParser(req.query.organizationId as string);
     let organizationId = req.query.organizationId as string;
-    let projectFilter = projectId? `AND profit_view.project_id IN (${projectId})` :''
-    let excludeProjectFilter = excludeProjectId? `AND profit_view.project_id NOT IN (${excludeProjectId})` :''
-    let organizationFilter =organizationId? `AND project_organization_id IN (${organizationId})` :''
-    
+    let projectFilter = projectId
+      ? `AND profit_view.project_id IN (${projectId})`
+      : '';
+    let excludeProjectFilter = excludeProjectId
+      ? `AND profit_view.project_id NOT IN (${excludeProjectId})`
+      : '';
+    let organizationFilter = organizationId
+      ? `AND project_organization_id IN (${organizationId})`
+      : '';
+
     const actual = await getManager().query(`
       SELECT revenue_calculator.*, name project_manager_name  
       FROM (SELECT 
@@ -808,7 +813,7 @@ export class ReportController {
           contact_person_View.employee_id = project_manager_id
     `);
     let actualStatement: any = {};
-    actual.forEach((el: any) =>{
+    actual.forEach((el: any) => {
       actualStatement[el.project_id] = {
         ...(actualStatement?.[el.project_id] ?? {
           projectValue: el.project_amount,
@@ -826,18 +831,24 @@ export class ReportController {
         //   monthTotalSell: el.month_total_sell,
         // },
         [el.month]: el.month_total_sell,
-        totalSell: (actualStatement?.[el.project_organization_id]?.['totalSell']??0) + el.month_total_sell,
-        totalBuy: (actualStatement?.[el.project_organization_id]?.['totalBuy']??0) + el.month_total_buy,
+        totalSell:
+          (actualStatement?.[el.project_organization_id]?.['totalSell'] ?? 0) +
+          el.month_total_sell,
+        totalBuy:
+          (actualStatement?.[el.project_organization_id]?.['totalBuy'] ?? 0) +
+          el.month_total_buy,
         YTDTotalSell: moment(el.month, 'MMM YY').isBetween(
           fiscalYearStart,
           fiscalYearEnd,
           'month',
           '[]'
         )
-            ? ((actualStatement?.[el.project_organization_id]?.['YTDTotalSell']??0) + el.month_total_sell)
-          : (actualStatement?.[el.project_organization_id]?.['YTDTotalSell']??0)
+          ? (actualStatement?.[el.project_organization_id]?.['YTDTotalSell'] ??
+              0) + el.month_total_sell
+          : actualStatement?.[el.project_organization_id]?.['YTDTotalSell'] ??
+            0,
       };
-    })
+    });
 
     res.status(200).json({
       success: true,
@@ -846,17 +857,20 @@ export class ReportController {
     });
   }
 
-  async clientRevnueAnalysis(req: Request ,res: Response, next: NextFunction){
-    
+  async clientRevnueAnalysis(req: Request, res: Response, next: NextFunction) {
     let fiscalYearStart = req.query.fiscalYearStart as string;
     let fiscalYearEnd = req.query.fiscalYearEnd as string;
 
     let organizationId = req.query.organizationId as string;
     let excludeOrganizationId = req.query.excludeOrganizationId as string;
 
-    let organizationFilter =organizationId? `AND project_organization_id IN (${organizationId})` :''
-    let excludeOrganizationFilter = excludeOrganizationId? `AND profit_view.project_organization_id NOT IN (${excludeOrganizationId})` :''
-    
+    let organizationFilter = organizationId
+      ? `AND project_organization_id IN (${organizationId})`
+      : '';
+    let excludeOrganizationFilter = excludeOrganizationId
+      ? `AND profit_view.project_organization_id NOT IN (${excludeOrganizationId})`
+      : '';
+
     const actual = await getManager().query(`
       SELECT 
         project_type,
@@ -906,9 +920,9 @@ export class ReportController {
         GROUP BY project_organization_id, profit_view.project_id, month 
     `);
     let actualStatement: any = {};
-    let projectsValues: any = {}
+    let projectsValues: any = {};
 
-    actual.forEach((el: any) =>{
+    actual.forEach((el: any) => {
       actualStatement[el.project_organization_id] = {
         ...(actualStatement?.[el.project_organization_id] ?? {
           organizationId: el.project_organization_id,
@@ -920,15 +934,25 @@ export class ReportController {
         //   monthTotalBuy: (actualStatement?.[el.project_organization_id]?.[el.month]?.['monthTotalBuy'] ??0) + el.month_total_buy,
         //   monthTotalSell: (actualStatement?.[el.project_organization_id]?.[el.month]?.['monthTotalSell'] ??0) + el.month_total_sell,
         // },
-        [el.month]: (actualStatement?.[el.project_organization_id]?.[el.month]?.['monthTotalSell'] ??0) + el.month_total_sell,
+        [el.month]:
+          (actualStatement?.[el.project_organization_id]?.[el.month]?.[
+            'monthTotalSell'
+          ] ?? 0) + el.month_total_sell,
 
-        totalSell: (actualStatement?.[el.project_organization_id]?.['totalSell']??0) + el.month_total_sell,
-        totalBuy: (actualStatement?.[el.project_organization_id]?.['totalBuy']??0) + el.month_total_buy,
+        totalSell:
+          (actualStatement?.[el.project_organization_id]?.['totalSell'] ?? 0) +
+          el.month_total_sell,
+        totalBuy:
+          (actualStatement?.[el.project_organization_id]?.['totalBuy'] ?? 0) +
+          el.month_total_buy,
 
-        projectsValue: 
-          projectsValues?.[el.project_organization_id]?.[el.project_id]? 
-            (actualStatement?.[el.project_organization_id]?.['projectsValue']??0): 
-            (actualStatement?.[el.project_organization_id]?.['projectsValue']??0) + el.project_amount,
+        projectsValue: projectsValues?.[el.project_organization_id]?.[
+          el.project_id
+        ]
+          ? actualStatement?.[el.project_organization_id]?.['projectsValue'] ??
+            0
+          : (actualStatement?.[el.project_organization_id]?.['projectsValue'] ??
+              0) + el.project_amount,
 
         YTDTotalSell: moment(el.month, 'MMM YY').isBetween(
           fiscalYearStart,
@@ -936,18 +960,20 @@ export class ReportController {
           'month',
           '[]'
         )
-            ? ((actualStatement?.[el.project_organization_id]?.['YTDTotalSell']??0) + el.month_total_sell)
-          : (actualStatement?.[el.project_organization_id]?.['YTDTotalSell']??0)
+          ? (actualStatement?.[el.project_organization_id]?.['YTDTotalSell'] ??
+              0) + el.month_total_sell
+          : actualStatement?.[el.project_organization_id]?.['YTDTotalSell'] ??
+            0,
       };
       //sum of all projectValues
       projectsValues = {
         ...projectsValues,
         [el.project_organization_id]: {
-          ...(projectsValues[el.project_organization_id]??{}),
-          [el.project_id]: true
-        }
-      }
-    })
+          ...(projectsValues[el.project_organization_id] ?? {}),
+          [el.project_id]: true,
+        },
+      };
+    });
 
     res.status(200).json({
       success: true,
@@ -955,6 +981,7 @@ export class ReportController {
       data: Object.values(actualStatement),
     });
   }
+
   async timesheetSummary(req: Request, res: Response, next: NextFunction) {
     try {
       const manager = getManager();
@@ -964,7 +991,7 @@ export class ReportController {
       let queryCurrentDate = req.query.currentDate as string;
 
       let currentMoment = moment();
-      
+
       if (queryCurrentDate) {
         if (moment(queryCurrentDate).isValid()) {
           currentMoment = moment(queryCurrentDate);
@@ -1005,6 +1032,8 @@ export class ReportController {
         }
       }
 
+      console.log(startDate, endDate);
+
       interface MonthInterface {
         [key: string]: {
           startDate: Moment;
@@ -1041,10 +1070,12 @@ export class ReportController {
         employeeCode: number;
         projectName: String;
         projectCode: number;
+        projectType: number;
         purchaseOrders: string[];
         organizationName: string;
         months: MonthInterface;
-        currentMonth: any;
+        currentMonth: number;
+        currentYear: number;
       }[] = [];
 
       for (let employee of employees) {
@@ -1068,11 +1099,15 @@ export class ReportController {
           let project: Opportunity | null = null;
 
           for (let milestoneEntry of timesheet.milestoneEntries) {
-            let localMonths = JSON.parse(JSON.stringify(months));
+            let localMonths: MonthInterface = JSON.parse(
+              JSON.stringify(months)
+            );
 
             project = milestoneEntry.milestone.project;
 
             if (!project) continue;
+
+            let sumOfHours = 0;
 
             if (
               employeeProjectIndexes[`${employee.id}_${project.id}`] !==
@@ -1092,15 +1127,22 @@ export class ReportController {
                 summary[
                   employeeProjectIndexes[`${employee.id}_${project.id}`]
                 ].months[entryDate].totalHours += entryHours;
-                if (entry.submittedAt)
+                if (entry.submittedAt) {
                   summary[
                     employeeProjectIndexes[`${employee.id}_${project.id}`]
                   ].months[entryDate].submittedHours += entryHours;
+                  sumOfHours += entryHours;
+                }
+
                 if (entry.approvedAt)
                   summary[
                     employeeProjectIndexes[`${employee.id}_${project.id}`]
                   ].months[entryDate].approvedHours += entryHours;
               }
+
+              summary[
+                employeeProjectIndexes[`${employee.id}_${project.id}`]
+              ].currentYear += sumOfHours;
             } else {
               for (let entry of milestoneEntry.entries) {
                 if (!entry.submittedAt) continue;
@@ -1114,8 +1156,10 @@ export class ReportController {
                 let entryHours = parseFloat(entry.hours.toFixed(2));
 
                 localMonths[entryDate].totalHours += entryHours;
-                if (entry.submittedAt)
+                if (entry.submittedAt) {
                   localMonths[entryDate].submittedHours += entryHours;
+                  sumOfHours += entryHours;
+                }
                 if (entry.approvedAt)
                   localMonths[entryDate].approvedHours += entryHours;
               }
@@ -1128,19 +1172,129 @@ export class ReportController {
                 employeeCode: employee.id,
                 projectName: project.title,
                 projectCode: project.id,
+                projectType: project.type,
                 purchaseOrders: [],
                 organizationName: project.organization.name,
                 months: localMonths,
-                currentMonth: localMonths[moment(currentMoment).format('MMM YY')] ?? {},
+                currentMonth:
+                  localMonths[moment(currentMoment).format('MMM YY')]
+                    .submittedHours ?? {},
+                currentYear: sumOfHours,
               });
             }
           }
         }
       }
 
+      let milestoneProjectSummary: any = [];
+      let timeProjectSummary: any = [];
+      let milestoneProjectTotalHours = 0;
+      let timeProjectTotalHours = 0;
+
+      summary.forEach((summ) => {
+        if (summ.projectType === 1) {
+          milestoneProjectTotalHours += summ.currentMonth;
+          milestoneProjectSummary.push(summ);
+        } else if (summ.projectType === 2) {
+          milestoneProjectTotalHours += summ.currentMonth;
+          timeProjectSummary.push(summ);
+        }
+      });
+
       res.status(200).json({
         success: true,
         message: 'Timesheet Summary',
+        data: {
+          milestoneProjectSummary,
+          timeProjectSummary,
+          milestoneProjectTotalHours,
+          timeProjectTotalHours,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async leaveRequestSummary(req: Request, res: Response, next: NextFunction) {
+    try {
+      const manager = getManager();
+
+      let queryStartDate = req.query.startDate as string;
+      let queryEndDate = req.query.endDate as string;
+
+      let employees = await manager.find(Employee, {
+        relations: [
+          'contactPersonOrganization',
+          'contactPersonOrganization.contactPerson',
+          'employmentContracts',
+          'leaveRequests',
+          'leaveRequests.entries',
+          'leaveRequests.work',
+          'leaveRequests.type',
+          'leaveRequests.type.leaveRequestType',
+        ],
+        where: { active: true },
+      });
+
+      let startDate = moment().startOf('month');
+      let endDate = moment().endOf('month');
+
+      if (queryStartDate) {
+        if (moment(queryStartDate).isValid()) {
+          startDate = moment(queryStartDate);
+        }
+      }
+
+      if (queryEndDate) {
+        if (moment(queryEndDate).isValid()) {
+          endDate = moment(queryEndDate);
+        }
+      }
+
+      interface SummaryInterface {
+        employeeName: string;
+        employeeCode: number;
+
+        hours: number;
+        leaveRequests: {
+          projectName: String;
+          projectCode: number | null;
+          leaveType: string;
+          hours: number;
+        }[];
+      }
+
+      let summary: SummaryInterface[] = [];
+
+      for (let employee of employees) {
+        let summaryObj: SummaryInterface = {
+          employeeCode: employee.id,
+          employeeName: employee.getFullName,
+          hours: 0,
+          leaveRequests: [],
+        };
+
+        for (let leaveRequest of employee.leaveRequests) {
+          let leaveRequestTotalHours = parseFloat(
+            leaveRequest.getEntriesDetails.totalHours.toFixed(2)
+          );
+
+          summaryObj.leaveRequests.push({
+            projectCode: leaveRequest.workId,
+            projectName: leaveRequest.work?.title ?? '-',
+            leaveType: leaveRequest.type?.leaveRequestType.label ?? 'Unpaid',
+            hours: leaveRequestTotalHours,
+          });
+          summaryObj.hours += leaveRequestTotalHours;
+        }
+
+        summary.push(summaryObj);
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Leave Request Summary',
         data: summary,
       });
     } catch (e) {
