@@ -34,6 +34,8 @@ import { ViewEntity, ViewColumn } from "typeorm"
         lr.employee_id,
 
         cpv.name employee_name,
+        
+        cpv.contact_person_id,
 
         lr.work_id project_id,
 
