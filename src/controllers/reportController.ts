@@ -18,7 +18,7 @@ export class ReportController {
 
     for (let item of query.split(',')) {
       if (isNaN(parseInt(item))) continue;
-
+      
       ids.push(parseInt(item));
     }
 
@@ -832,21 +832,21 @@ export class ReportController {
         // },
         [el.month]: el.month_total_sell,
         totalSell:
-          (actualStatement?.[el.project_organization_id]?.['totalSell'] ?? 0) +
+          (actualStatement?.[el.project_id]?.['totalSell'] ?? 0) +
           el.month_total_sell,
         totalBuy:
-          (actualStatement?.[el.project_organization_id]?.['totalBuy'] ?? 0) +
+          (actualStatement?.[el.project_id]?.['totalBuy'] ?? 0) +
           el.month_total_buy,
-        YTDTotalSell: moment(el.month, 'MMM YY').isBetween(
+        YTDTotalSell: (moment(el.month, 'MMM YY').isBetween(
           fiscalYearStart,
           fiscalYearEnd,
           'month',
           '[]'
         )
-          ? (actualStatement?.[el.project_organization_id]?.['YTDTotalSell'] ??
-              0) + el.month_total_sell
-          : actualStatement?.[el.project_organization_id]?.['YTDTotalSell'] ??
-            0,
+          ? ((actualStatement?.[el.project_id]?.['YTDTotalSell'] ??
+              0) + el.month_total_sell)
+          : (actualStatement?.[el.project_id]?.['YTDTotalSell'] ??
+            0)),
       };
     });
 
@@ -1358,6 +1358,7 @@ export class ReportController {
       let queryProjectId = req.query.projectId as string;
       let queryLeaveTypeId = req.query.leaveTypeId as string;
       let queryContactPersonId = req.query.contactPersonId as string;
+      let queryleaveStatus = req.query.leaveStatus as string;
 
       let startDate = queryStartDate ?? moment().startOf('month').format('YYYY-MM-DD')
       let endDate = queryEndDate ?? moment().endOf('month').format('YYYY-MM-DD')
@@ -1373,11 +1374,16 @@ export class ReportController {
       let contactPersonFilter = queryContactPersonId
       ? `AND contact_person_id IN (${queryContactPersonId})`
       : '';
+
+      let leaveStatusFilter = queryleaveStatus
+      ? `AND leave_status_index IN (${queryleaveStatus})`
+      : '';
       
       const leave_requests = await manager.query(`
       SELECT 
         leave_request_id,
         leave_status,
+        leave_status_index,
         leave_type_id,
         leave_type_name,
         contact_person_id,
@@ -1392,7 +1398,7 @@ export class ReportController {
         FROM leaves_view 
         WHERE leave_entry_date >= STR_TO_DATE('${startDate}' ,'%Y-%m-%d')
           AND leave_entry_date <= STR_TO_DATE('${endDate}' ,'%Y-%m-%d')
-          ${projectFilter} ${leaveTypeFilter} ${contactPersonFilter}
+          ${projectFilter} ${leaveTypeFilter} ${contactPersonFilter} ${leaveStatusFilter}
       GROUP BY employee_id, leave_request_id
       `)
 

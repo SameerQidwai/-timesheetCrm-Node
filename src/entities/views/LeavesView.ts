@@ -16,6 +16,17 @@ import { ViewEntity, ViewColumn } from "typeorm"
                     'SUBMITTED'
         END) leave_status,
 
+        (CASE WHEN approved_by IS NOT NULL 
+                THEN
+                    2
+            WHEN rejected_by IS NOT NULL
+                THEN
+                    0
+            WHEN submitted_by IS NOT NULL 
+                THEN 
+                    1
+        END) leave_status_index,
+
         lre.id leave_entry_id,
 
         hours leave_entry_hours,
