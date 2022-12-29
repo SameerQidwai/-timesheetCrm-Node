@@ -366,7 +366,7 @@ export class ReportController {
           for (let position of milestone.opportunityResources) {
             let positionStartDate = moment(position.startDate);
             let positionEndDate = moment(position.endDate);
-            let bookingType = 4;
+            let bookingType = 3;
 
             if (
               !positionStartDate.isBetween(startDate, endDate, 'date', '[]') &&
@@ -456,6 +456,13 @@ export class ReportController {
                 continue;
               }
 
+              if (
+                queryBookingType.length &&
+                !queryBookingType.includes(bookingType)
+              ) {
+                continue;
+              }
+
               allocations.push({
                 workType: workStatus ? 'Project' : 'Opportunity',
                 title: work.title,
@@ -518,6 +525,11 @@ export class ReportController {
         req.query.contactPersonId as string
       );
       let queryWorkId = this._customQueryParser(req.query.workId as string);
+
+      let queryWorkPhase = this._customQueryParser(
+        req.query.workPhase as string
+      );
+
       let queryOrganizationId = this._customQueryParser(
         req.query.organizationId as string
       );
@@ -577,7 +589,7 @@ export class ReportController {
       });
 
       for (let employee of employees) {
-        let bookingType = 4;
+        let bookingType = 3;
 
         let employeeAllocations =
           employee.contactPersonOrganization.contactPerson.allocations;
@@ -618,7 +630,8 @@ export class ReportController {
             queryWorkType.length ||
             queryResourceType.length ||
             querySkillId.length ||
-            queryLevelId.length
+            queryLevelId.length ||
+            queryWorkPhase
           ) {
             continue;
           }
@@ -669,6 +682,13 @@ export class ReportController {
           let work = milestone.project;
 
           if (queryWorkId.length && !queryWorkId.includes(work.id)) {
+            continue;
+          }
+
+          if (
+            queryWorkPhase.length &&
+            !queryWorkPhase.includes(work.phase ? 1 : 0)
+          ) {
             continue;
           }
 
@@ -983,6 +1003,7 @@ export class ReportController {
   }
 
   async timesheetSummary(req: Request, res: Response, next: NextFunction) {
+    //STATUS IN MONTHS SUBMITTED APPROVED NOT SUBMITTED NOT APPLICABLE
     try {
       const manager = getManager();
 
@@ -1216,7 +1237,7 @@ export class ReportController {
           milestoneProjectTotalHours += summ.currentMonth;
           milestoneProjectSummary.push(summ);
         } else if (summ.projectType === 2) {
-          milestoneProjectTotalHours += summ.currentMonth;
+          timeProjectSummary += summ.currentMonth;
           timeProjectSummary.push(summ);
         }
       });
