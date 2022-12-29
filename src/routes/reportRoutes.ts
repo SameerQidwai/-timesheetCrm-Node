@@ -30,8 +30,12 @@ router
   .route('/leave-request-summary')
   .get([isLoggedIn], contr.leaveRequestSummary.bind(contr));
 
-  router
+router
   .route('/leave-request-summary-view')
   .get([], contr.leaveRequestSummaryView.bind(contr));
+
+  router
+  .route('/work-in-hand-forecast')
+  .get([], contr.WorkInHandForecast.bind(contr));
 
 export default router;

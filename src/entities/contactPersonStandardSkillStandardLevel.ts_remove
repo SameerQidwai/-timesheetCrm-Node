@@ -15,3 +15,137 @@
 //    standardSkillStandardLevel: StandardSkillStandardLevel;
 
 // }
+
+
+
+
+DELIMITER //
+CREATE  PROCEDURE dorepeat(startdate DATE, enddate DATE)
+  BEGIN
+    SET @x = STR_TO_DATE(startdate,'%e-%m-%Y');
+    REPEAT 
+      SET @x = ADDDATE(@x, INTERVAL 1 MONTH); 
+      SELECT @x month, SUM(resource_selling_rate* actual_hours) FROM profit_view 
+      GROUP BY month;
+    UNTIL @x >= STR_TO_DATE(enddate,'%e-%m-%Y') 
+    END REPEAT;
+  END
+//
+DELIMITER ;
+
+
+CREATE  PROCEDURE dorepeat()
+  BEGIN
+  SELECT SUM(resource_selling_rate* actual_hours) FROM profit_view ;
+  END;
+
+
+
+
+
+  DELIMITER //
+  CREATE PROCEDURE dorepeat(startDate DATE, endDate DATE)
+    BEGIN
+        SET @x = STR_TO_DATE(startDate,'%Y-%m-%d');
+      SET @y = STR_TO_DATE(endDate,'%Y-%m-%d');
+      REPEAT 
+          SELECT 
+              project_type,
+              project_amount,
+              (CASE WHEN project_type = 2 
+                THEN 
+                  SUM( resource_buying_rate * actual_hours ) 
+                ELSE 
+                  0 
+                END )
+              month_total_buy, 
+  
+              (CASE WHEN project_type = 2 
+                THEN 
+                    SUM( resource_selling_rate * actual_hours ) 
+                ELSE 
+                  project_schedule_segments.amount 
+                END )
+              month_total_sell, 
+  
+              SUM(actual_hours) actual_hours, 
+              #(CASE WHEN project_type = 2 
+                #THEN 
+                  #DATE_FORMAT(STR_TO_DATE(entry_date,'%e-%m-%Y'), '%b %y') 
+                #ELSE 
+                  #DATE_FORMAT(project_schedule_segments.start_date, '%b %y') 
+                #END) 
+                DATE_FORMAT( @x, '%b %y') month
+  
+              FROM profit_view
+                LEFT JOIN project_schedules ON
+                  profit_view.project_id = project_schedules.project_id
+                    LEFT JOIN project_schedule_segments  ON 
+                      project_schedules.id = project_schedule_segments.schedule_id 
+  
+              WHERE ( project_status = 'P' OR project_status = 'C' ) 
+              AND project_start <= STR_TO_DATE('01-07-2022' ,'%Y-%m-%d') 
+              AND project_end >= STR_TO_DATE('30-06-2023' ,'%Y-%m-%d') 
+              AND project_schedules.deleted_at IS NULL 
+              AND project_schedule_segments.deleted_at IS NULL 
+              GROUP BY project_type, month;
+              SET @x =DATE_ADD(@x, INTERVAL 1 MONTH);
+              UNTIL @x <= @y
+            END REPEAT;
+    END
+    //
+
+
+
+
+
+
+    CREATE PROCEDURE dorepeat(startDate DATE, endDate DATE)
+  BEGIN
+  	SET @x = 0;
+    SET @y = STR_TO_DATE(endDate,'%Y-%m-%d');
+    REPEAT 
+        SELECT 
+            project_type,
+            project_amount,
+            (CASE WHEN project_type = 2 
+              THEN 
+                SUM( resource_buying_rate * actual_hours ) 
+              ELSE 
+                0 
+              END )
+            month_total_buy, 
+
+            (CASE WHEN project_type = 2 
+              THEN 
+                  SUM( resource_selling_rate * actual_hours ) 
+              ELSE 
+                project_schedule_segments.amount 
+              END )
+            month_total_sell, 
+
+            SUM(actual_hours) actual_hours, 
+            (CASE WHEN project_type = 2 
+              THEN 
+                DATE_FORMAT(STR_TO_DATE(entry_date,'%e-%m-%Y'), '%b %y') 
+              ELSE 
+                DATE_FORMAT(project_schedule_segments.start_date, '%b %y') 
+              END) 
+              #DATE_FORMAT( @x, '%b %y') month
+
+            FROM profit_view
+              LEFT JOIN project_schedules ON
+                profit_view.project_id = project_schedules.project_id
+                  LEFT JOIN project_schedule_segments  ON 
+                    project_schedules.id = project_schedule_segments.schedule_id 
+
+            WHERE ( project_status = 'P' OR project_status = 'C' ) 
+            AND project_start <= STR_TO_DATE('01-07-2022' ,'%Y-%m-%d') 
+            AND project_end >= STR_TO_DATE('30-06-2023' ,'%Y-%m-%d') 
+            AND project_schedules.deleted_at IS NULL 
+            AND project_schedule_segments.deleted_at IS NULL 
+            GROUP BY project_type, month;
+            SET @x = @x+1;
+            UNTIL @x <= @y
+          END REPEAT;
+  END;;

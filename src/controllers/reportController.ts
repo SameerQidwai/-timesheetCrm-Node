@@ -832,6 +832,14 @@ export class ReportController {
         LEFT JOIN contact_person_View ON
           contact_person_View.employee_id = project_manager_id
     `);
+          /*********
+           * I don't know how this fiscal year project getting me correct data ... need to fix
+           * solution
+              ((start_date  BETWEEN STR_TO_DATE('2022-07-01' ,'%Y-%m-%d') AND STR_TO_DATE('2023-06-30' ,'%Y-%m-%d')) OR 
+              (end_date  BETWEEN STR_TO_DATE('2022-07-01' ,'%Y-%m-%d') AND STR_TO_DATE('2023-06-30' ,'%Y-%m-%d')) OR 
+              (start_date  <= STR_TO_DATE('2022-07-01' ,'%Y-%m-%d') AND end_date  >= STR_TO_DATE('2023-06-30' ,'%Y-%m-%d')))
+           **************/
+
     let actualStatement: any = {};
     actual.forEach((el: any) => {
       actualStatement[el.project_id] = {
@@ -1237,7 +1245,7 @@ export class ReportController {
           milestoneProjectTotalHours += summ.currentMonth;
           milestoneProjectSummary.push(summ);
         } else if (summ.projectType === 2) {
-          timeProjectSummary += summ.currentMonth;
+          timeProjectTotalHours += summ.currentMonth;
           timeProjectSummary.push(summ);
         }
       });
@@ -1478,5 +1486,65 @@ export class ReportController {
     } catch (e) {
       next(e);
     }
+  }
+
+  async WorkInHandForecast(req: Request, res: Response, next: NextFunction) {
+    let fiscalYearStart = req.query.fiscalYearStart as string;
+    let fiscalYearEnd = req.query.fiscalYearEnd as string;
+    console.log('await start')
+    const rawData = await getManager().query(`CALL dorepeat(${fiscalYearStart}, ${fiscalYearEnd})`)
+    console.log('await ended')
+    // const rawData = await getManager().query(`
+    //   SELECT 
+    //     project_type,
+    //     project_amount,
+        
+    //     (CASE WHEN project_type = 2 
+    //       THEN 
+    //         SUM( resource_buying_rate * actual_hours ) 
+    //       ELSE 
+    //         0 
+    //       END )
+    //     month_total_buy, 
+
+    //     (CASE WHEN project_type = 2 
+    //       THEN 
+    //           SUM( resource_selling_rate * actual_hours ) 
+    //       ELSE 
+    //         project_schedule_segments.amount 
+    //       END )
+    //     month_total_sell, 
+        
+    //      SUM(actual_hours) actual_hours, 
+    //     (CASE WHEN project_type = 2 
+    //       THEN 
+    //         DATE_FORMAT(STR_TO_DATE(entry_date,'%e-%m-%Y'), '%b %y') 
+    //       ELSE 
+    //         DATE_FORMAT(project_schedule_segments.start_date, '%b %y') 
+    //       END) 
+    //     month
+
+    //     SET @mount = ADDDATE('2008-01-02', INTERVAL 1 MONTH) tempMonth;
+      
+    //     FROM profit_view
+    //       LEFT JOIN project_schedules ON
+    //         profit_view.project_id = project_schedules.project_id
+    //           LEFT JOIN project_schedule_segments  ON 
+    //             project_schedules.id = project_schedule_segments.schedule_id 
+                
+    //     WHERE ( project_status = 'P' OR project_status = 'C' ) 
+    //     AND project_start <= STR_TO_DATE('${fiscalYearEnd}' ,'%Y-%m-%d') 
+    //     AND project_end >= STR_TO_DATE('${fiscalYearStart}' ,'%Y-%m-%d') 
+    //     AND project_schedules.deleted_at IS NULL 
+    //     AND project_schedule_segments.deleted_at IS NULL 
+    //     GROUP BY project_type, month, profit_view.project_id
+
+    // `);
+
+    res.status(200).json({
+      success: true,
+      message: 'Work In Hand Forecasting',
+      data: rawData.data,
+    });
   }
 }
