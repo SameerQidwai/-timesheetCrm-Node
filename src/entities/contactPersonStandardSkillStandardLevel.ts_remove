@@ -149,3 +149,145 @@ CREATE  PROCEDURE dorepeat()
             UNTIL @x <= @y
           END REPEAT;
   END;;
+
+
+
+  `Select o_r.start_date res_startDate, o_r.end_date res_endDate, ec.start_date con_startDate, ec.end_date con_endDate, 
+      (ora.buying_rate *( (ec.no_of_hours /5) * (ora.effort_rate /100) ) ) forecastBuyRateDaily, 
+      (ora.selling_rate *( (ec.no_of_hours /5) * (ora.effort_rate /100) ) ) forecastSellRateDaily
+      FROM opportunities o 
+        JOIN opportunity_resources o_r ON 
+          o_r.opportunity_id = o.id 
+                JOIN opportunity_resource_allocations ora ON 
+                    ora.opportunity_resource_id = o_r.id 
+                    JOIN contact_person_organizations cpo ON 
+                        cpo.contact_person_id = ora.contact_person_id 
+                        JOIN employees e ON 
+                        e.contact_person_organization_id = cpo.id
+                        JOIN employment_contracts ec ON
+                          ec.employee_id = e.id
+      WHERE o.id = ${projectId} AND ora.is_marked_as_selected = 1 AND ec.start_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y') 
+      AND (ec.end_date IS NULL ||  ec.end_date >= STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y')) 
+      AND o_r.start_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y') AND ec.deleted_at IS NULL AND ora.deleted_at IS NULL`
+
+
+
+    DELIMITER //
+CREATE PROCEDURE dorepeat(startDate DATE, endDate DATE)
+  BEGIN
+    DECLARE SS DATE DEFAULT STR_TO_DATE(startDate,'%Y-%m-%d');
+    DECLARE S DATE DEFAULT STR_TO_DATE(startDate,'%Y-%m-%d');
+    DECLARE E DATE DEFAULT STR_TO_DATE(endDate,'%Y-%m-%d');
+    -- SET S = STR_TO_DATE(startDate,'%Y-%m-%d');
+    -- SET E = STR_TO_DATE(endDate,'%Y-%m-%d');
+    
+      SELECT 
+      
+          SUM(forcaste_buy_rate) forcaste_buy_rates,
+          SUM(forcaste_sell_rate) forcaste_sell_rates,
+        (SELECT  WHILE (S <= E) DO
+          ((5 * (DATEDIFF(E, S) DIV 7) + 
+          MID('0123444401233334012222340111123400001234000123440', 
+            7 * WEEKDAY(S) + 
+            WEEKDAY(E) + 1, 
+            1)+1) - 
+          (SELECT COUNT(*) FROM calendar_holidays 
+            WHERE (WEEKDAY(calendar_holidays.date) < 5)
+            AND (calendar_holidays.date BETWEEN  S  AND E)
+          )) working_days,
+          DATE_FORMAT(S, '%b %y') month;
+          SET S = DATE_ADD(S, INTERVAL 1 MONTH);
+        END WHILE;
+        ) as holidays
+
+      FROM forecaste_view
+      WHERE ( project_status = 'P' OR project_status = 'C' )
+            AND resource_contract_start <= SS
+            AND (resource_contract_end IS NULL OR  resource_contract_end >= CURRENT_DATE())
+            AND (resource_start BETWEEN  SS AND E);
+  END
+//
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE loop_date(startDate DATE, endDate DATE)
+BEGIN
+    DECLARE dateStart DATETIME DEFAULT startDate;
+    DECLARE dateEnd DATETIME DEFAULT endDate;
+    
+    WHILE (dateStart < '2020-01-01 00:00:00') DO
+        INSERT INTO my_table(time_key) VALUES (dateStart);
+        SET dateStart = dateStart + INTERVAL 3 HOUR;
+    END WHILE;
+END //
+
+DELIMITER ;
+
+
+
+SELECT COUNT(*) holidays,
+ (5 * (DATEDIFF('2022-10-31', '2022-10-01') DIV 7) + 
+    MID('0123444401233334012222340111123400001234000123440', 
+      7 * WEEKDAY('2022-10-01') + 
+      WEEKDAY('2022-10-31') + 1, 
+      1)+1) number_of_days
+FROM calendar_holidays  
+      WHERE (calendar_holidays.date BETWEEN  STR_TO_DATE('2022-10-01' ,'%Y-%m-%d')  AND STR_TO_DATE('2022-10-31' ,'%Y-%m-%d'))
+      AND (WEEKDAY(calendar_holidays.date) < 5);
+
+    SELECT actual.* , forecaste.* 
+      FROM (SELECT 
+        profit_view.project_id,
+        project_type,
+        (CASE WHEN project_type = 2 
+          THEN 
+              SUM( resource_selling_rate * actual_hours ) 
+          ELSE 
+            project_schedule_segments.amount 
+          END )
+        month_total_sell, 
+        
+        (CASE WHEN project_type = 2 
+          THEN 
+            DATE_FORMAT(STR_TO_DATE(entry_date,'%e-%m-%Y'), '%b %y') 
+          ELSE 
+            DATE_FORMAT(project_schedule_segments.start_date, '%b %y') 
+          END) 
+        month
+      
+        FROM profit_view
+          LEFT JOIN project_schedules ON
+            profit_view.project_id = project_schedules.project_id
+              LEFT JOIN project_schedule_segments  ON 
+                project_schedules.id = project_schedule_segments.schedule_id 
+                
+        WHERE ( project_status = 'P' OR project_status = 'C' ) 
+        
+        AND project_start <= STR_TO_DATE('2023-30-06' ,'%Y-%m-%d') 
+        AND project_end >= STR_TO_DATE('2022-07-01' ,'%Y-%m-%d') 
+        AND project_schedules.deleted_at IS NULL 
+        AND project_schedule_segments.deleted_at IS NULL 
+
+        GROUP BY project_id, month) as actual
+
+        LEFT JOIN 
+        (
+          SELECT 
+          project_type,
+          resource_start,
+          resource_end,
+          resource_contract_start,
+          resource_contract_end,
+          SUM(forcaste_buy_rate) forcaste_buy_rates,
+          SUM(forcaste_sell_rate) forcaste_sell_rates
+
+      FROM forecaste_view
+      WHERE ( project_status = 'P' OR project_status = 'C' )
+            AND resource_contract_start <= STR_TO_DATE('2023-30-06' ,'%Y-%m-%d') 
+            AND (resource_contract_end IS NULL OR  resource_contract_end >= CURRENT_DATE())
+            AND (resource_start BETWEEN  STR_TO_DATE('2023-30-06' ,'%Y-%m-%d')  AND STR_TO_DATE('2023-30-06' ,'%Y-%m-%d')  )
+        ) as forecaste
+
+      ON forecaste.project_type = actual.project_type;

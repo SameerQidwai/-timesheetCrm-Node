@@ -2359,7 +2359,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       SELECT *, SUM(resource_buying_rate * actual_hours) month_total_buy, SUM(resource_selling_rate * actual_hours) 
         month_total_sell, SUM(actual_hours) actual_hours, DATE_FORMAT(STR_TO_DATE(entry_date,'%e-%m-%Y'), '%b %y') month 
       FROM profit_view
-        WHERE opportunity_id = ${projectId} 
+        WHERE project_id = ${projectId} 
           AND STR_TO_DATE(entry_date,'%e-%m-%Y') <= STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y')
       GROUP BY month;
           `);
