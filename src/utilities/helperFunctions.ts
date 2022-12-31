@@ -266,3 +266,22 @@ export let parseBookingType = (type: number): string => {
 export let parseWorkStatus = (type: boolean): string => {
   return type ? 'Open' : 'Closed';
 };
+
+export let parseTimesheetSummaryStatus = (type: number): string => {
+  return type === 0
+    ? 'Not Applicable'
+    : type === 1
+    ? 'Not Submitted'
+    : type === 2
+    ? 'Submitted'
+    : type === 3
+    ? 'Approved'
+    : 'Not Applicable';
+};
+
+export let getFiscalYear = (momentObj: Moment | null): number => {
+  if (!momentObj) momentObj = moment();
+  if (momentObj.month() >= 7 && momentObj.month() <= 12)
+    return momentObj.year();
+  else return momentObj.subtract(1, 'year').year();
+};

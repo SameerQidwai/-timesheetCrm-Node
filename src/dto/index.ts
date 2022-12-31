@@ -205,6 +205,7 @@ export interface EmploymentContractDTO extends Base {
   payFrequency: Frequency;
   startDate: Date;
   endDate: Date | null;
+  bohPercent: number;
   type: EmploymentType;
   noOfHours: number;
   noOfDays: number;
