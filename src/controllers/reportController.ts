@@ -1491,16 +1491,16 @@ export class ReportController {
   async WorkInHandForecast(req: Request, res: Response, next: NextFunction) {
     let fiscalYearStart = req.query.fiscalYearStart as string;
     let fiscalYearEnd = req.query.fiscalYearEnd as string;
-    const rawData = await getManager().query(`
+    const actual = await getManager().query(`
       SELECT 
         project_type,
         project_amount,
         
         (CASE WHEN project_type = 2 
           THEN 
-              SUM( resource_selling_rate * actual_hours ) 
+            SUM( resource_selling_rate * actual_hours ) 
           ELSE 
-            SUM (project_schedule_segments.amount )
+            project_schedule_segments.amount 
           END )
         month_total_sell, 
         
@@ -1527,10 +1527,50 @@ export class ReportController {
 
     `);
 
+      const forecast = await getManager().query(`
+        SELECT 
+          project_type,
+          resource_start,
+          resource_end,
+          resource_contract_start,
+          resource_contract_end,
+          SUM(forcaste_buy_rate) forcaste_buy_rates,
+          SUM(forcaste_sell_rate) forcaste_sell_rates
+
+      FROM forecaste_view
+      WHERE ( project_status = 'P' OR project_status = 'C' )
+            AND resource_contract_start <= STR_TO_DATE('2023-30-06' ,'%Y-%m-%d') 
+            AND (resource_contract_end IS NULL OR  resource_contract_end >= CURRENT_DATE())
+            AND (resource_start BETWEEN  STR_TO_DATE('2023-30-06' ,'%Y-%m-%d')  AND STR_TO_DATE('2023-30-06' ,'%Y-%m-%d')  )
+        GROUP BY project_id
+
+      `);
+
+      interface CalendarInterface {
+        date: string;
+        holiday_type_id: number;
+      }
+
+      let calendar: CalendarInterface[] = await getManager().query(`
+      SELECT DATE_FORMAT(date, '%Y-%m-%d') date, holiday_type_id FROM  calendar_holidays 
+      WHERE  date <= STR_TO_DATE('${fiscalYearEnd}' ,'%Y-%m-%d') 
+        AND date >= STR_TO_DATE('${fiscalYearStart}' ,'%Y-%m-%d')`);
+
+      interface HolidayInterface {
+        [date: string]: number
+      }
+
+      let holidays: HolidayInterface = calendar.reduce(
+        (a, { date, holiday_type_id }) => ({ ...a, [date]: holiday_type_id }),
+        {}
+      ); 
+
+      
+
     res.status(200).json({
       success: true,
       message: 'Work In Hand Forecasting',
-      data: rawData,
+      data: actual,
     });
   }
 }

@@ -1,7 +1,7 @@
 import { ViewEntity, ViewColumn } from "typeorm"
 
 @ViewEntity({
-    name: 'forecaste_view',
+    name: 'forecast_views',
     expression: `Select 
     o_r.opportunity_id project_id, o_r.milestone_id, o_r.start_date resource_start, 
     o_r.end_date resource_end, 
@@ -35,10 +35,10 @@ import { ViewEntity, ViewColumn } from "typeorm"
             LEFT JOIN employment_contracts ec ON
             cpv.employee_id = ec.id
 
-    WHERE ora.is_marked_as_selected = 1 AND o.deleted_at IS NULL AND ora.deleted_at IS NULL AND o_r.deleted_at IS NULL`,
+    WHERE ora.is_marked_as_selected = 1 AND o.deleted_at IS NULL AND ora.deleted_at IS NULL AND o_r.deleted_at IS NULL AND ec.deleted_at IS NULL`,
 })
 
-export class ForecasteView {
+export class ForecastView {
  
     @ViewColumn()
     project_id: number
