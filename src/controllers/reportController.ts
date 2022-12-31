@@ -1041,8 +1041,8 @@ export class ReportController {
       ).startOf('month');
       let endDate = startDate.clone().add(1, 'year').subtract(1, 'day');
 
-      let currentStartOfMonth = moment().startOf('month');
-      let currentEndOfMonth = moment().endOf('month');
+      let currentStartOfMonth = currentMoment.startOf('month');
+      let currentEndOfMonth = currentMoment.endOf('month');
 
       let employeeProjectIndexes: { [key: string]: number } = {};
 
@@ -1429,7 +1429,7 @@ export class ReportController {
                 organizationName: project.organization.name,
                 months: localMonths,
                 currentMonth:
-                  localMonths[moment(moment()).format('MMM YY')]
+                  localMonths[moment(currentMoment).format('MMM YY')]
                     .filteredHours ?? {},
                 currentYear: sumOfHours,
               });
