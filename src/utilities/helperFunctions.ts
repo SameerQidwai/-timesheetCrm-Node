@@ -283,5 +283,5 @@ export let getFiscalYear = (momentObj: Moment | null): number => {
   if (!momentObj) momentObj = moment();
   if (momentObj.month() >= 7 && momentObj.month() <= 12)
     return momentObj.year();
-  else return momentObj.subtract(1, 'year').year();
+  else return momentObj.clone().subtract(1, 'year').year();
 };
