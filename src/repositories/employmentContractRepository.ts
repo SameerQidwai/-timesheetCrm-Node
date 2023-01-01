@@ -91,6 +91,7 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
         } else {
           (obj.endDate as any) = null;
         }
+        obj.bohPercent = employmentContractDTO.bohPercent;
         obj.type = employmentContractDTO.type;
         obj.noOfHours = employmentContractDTO.noOfHours;
         obj.noOfDays = employmentContractDTO.noOfDays;
@@ -248,6 +249,8 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
         } else {
           (employmentContractObj.endDate as any) = null;
         }
+
+        employmentContractObj.bohPercent = employmentContractDTO.bohPercent;
         employmentContractObj.type = employmentContractDTO.type;
         employmentContractObj.noOfHours = employmentContractDTO.noOfHours;
         employmentContractObj.noOfDays = employmentContractDTO.noOfDays;

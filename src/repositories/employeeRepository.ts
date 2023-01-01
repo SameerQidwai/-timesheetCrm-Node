@@ -225,6 +225,7 @@ export class EmployeeRepository extends Repository<Employee> {
         payFrequency,
         startDate,
         endDate,
+        bohPercent,
         type,
         noOfHours,
         noOfDays,
@@ -241,6 +242,7 @@ export class EmployeeRepository extends Repository<Employee> {
       if (endDate) {
         employmentContract.endDate = new Date(endDate);
       }
+      employmentContract.bohPercent = bohPercent;
       employmentContract.type = type;
       employmentContract.noOfHours = noOfHours;
       employmentContract.noOfDays = noOfDays;
@@ -471,6 +473,7 @@ ${process.env.ORGANIZATION} Support Team`
         payFrequency,
         startDate,
         endDate,
+        bohPercent,
         type,
         noOfHours,
         noOfDays,
@@ -588,6 +591,7 @@ ${process.env.ORGANIZATION} Support Team`
       if (endDate) {
         employmentContract.endDate = moment(endDate).toDate();
       }
+      employmentContract.bohPercent = bohPercent;
       employmentContract.type = type;
       employmentContract.noOfHours = noOfHours;
       employmentContract.noOfDays = noOfDays;

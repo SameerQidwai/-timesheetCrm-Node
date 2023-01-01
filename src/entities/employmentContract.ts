@@ -45,6 +45,9 @@ export class EmploymentContract extends Base {
   @Column({ name: 'no_of_days', default: 5 })
   noOfDays: number;
 
+  @Column({ name: 'boh_percent', default: 0 })
+  bohPercent: number;
+
   // @Column({
   //   type: 'enum',
   //   enum: Frequency,
