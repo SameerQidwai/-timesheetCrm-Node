@@ -965,10 +965,7 @@ export class ReportController {
         //   monthTotalBuy: (actualStatement?.[el.project_organization_id]?.[el.month]?.['monthTotalBuy'] ??0) + el.month_total_buy,
         //   monthTotalSell: (actualStatement?.[el.project_organization_id]?.[el.month]?.['monthTotalSell'] ??0) + el.month_total_sell,
         // },
-        [el.month]:
-          (actualStatement?.[el.project_organization_id]?.[el.month]?.[
-            'monthTotalSell'
-          ] ?? 0) + el.month_total_sell,
+        [el.month]: (actualStatement?.[el.project_organization_id]?.[el.month]?? 0) + el.month_total_sell,
 
         totalSell:
           (actualStatement?.[el.project_organization_id]?.['totalSell'] ?? 0) +
