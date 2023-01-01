@@ -1,16 +1,19 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, query } from 'express';
 import { Employee } from '../entities/employee';
-import { getManager } from 'typeorm';
+import { Between, getManager, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import moment, { Moment } from 'moment';
 import {
   buyRateByEmployee,
+  getFiscalYear,
   parseBookingType,
   parseContractType,
   parseResourceType,
+  parseTimesheetSummaryStatus,
   parseWorkStatus,
 } from '../utilities/helperFunctions';
 import { StandardSkillStandardLevel } from '../entities/standardSkillStandardLevel';
 import { Opportunity } from '../entities/opportunity';
+import { PurchaseOrder } from '../entities/purchaseOrder';
 
 export class ReportController {
   _customQueryParser(query = '') {
@@ -711,8 +714,8 @@ export class ReportController {
           bookingType = allocation.isMarkedAsSelected ? 2 : 0;
 
           if (
-            queryResourceType.length &&
-            !queryResourceType.includes(resourceType)
+            queryBookingType.length &&
+            !queryBookingType.includes(resourceType)
           ) {
             continue;
           }
@@ -1021,6 +1024,8 @@ export class ReportController {
         req.query.organizationId as string
       );
 
+      let queryStatus = this._customQueryParser(req.query.status as string);
+
       let currentMoment = moment();
 
       if (queryCurrentDate) {
@@ -1030,16 +1035,25 @@ export class ReportController {
       }
 
       let startDate = moment(
-        `${currentMoment.year()}-${process.env.FISCAL_YEAR_START ?? '07'}-01`
+        `${getFiscalYear(currentMoment)}-${
+          process.env.FISCAL_YEAR_START ?? '07'
+        }-01`
       ).startOf('month');
       let endDate = startDate.clone().add(1, 'year').subtract(1, 'day');
 
+      let currentStartOfMonth = moment().startOf('month');
+      let currentEndOfMonth = moment().endOf('month');
+
       let employeeProjectIndexes: { [key: string]: number } = {};
 
-      let employees = await manager.find(Employee, {
+      const employees = await manager.find(Employee, {
         relations: [
           'contactPersonOrganization',
           'contactPersonOrganization.contactPerson',
+          'contactPersonOrganization.contactPerson.allocations',
+          'contactPersonOrganization.contactPerson.allocations.opportunityResource',
+          'contactPersonOrganization.contactPerson.allocations.opportunityResource.milestone',
+          'contactPersonOrganization.contactPerson.allocations.opportunityResource.milestone.project',
           'employmentContracts',
           'timesheets',
           'timesheets.milestoneEntries',
@@ -1050,6 +1064,33 @@ export class ReportController {
         ],
         where: { active: true },
       });
+
+      const purchaseOrders = await manager.find(PurchaseOrder, {
+        where: [
+          {
+            issueDate: Between(
+              currentStartOfMonth.toDate(),
+              currentEndOfMonth.toDate()
+            ),
+          },
+          {
+            expiryDate: Between(
+              currentStartOfMonth.toDate(),
+              currentEndOfMonth.toDate()
+            ),
+          },
+          {
+            issueDate: LessThanOrEqual(currentStartOfMonth.toDate()),
+            expiryDate: MoreThanOrEqual(currentEndOfMonth.toDate()),
+          },
+        ],
+      });
+
+      let projectPurchaseOrders: { [key: number]: PurchaseOrder } = {};
+
+      for (let purchaseOrder of purchaseOrders) {
+        projectPurchaseOrders[purchaseOrder.projectId] = purchaseOrder;
+      }
 
       if (queryStartDate) {
         if (moment(queryStartDate).isValid()) {
@@ -1069,8 +1110,12 @@ export class ReportController {
           endDate: Moment;
           totalDaysInMonth: number;
           totalHours: number;
+          savedHours: number;
           submittedHours: number;
           approvedHours: number;
+          rejectedHours: number;
+          filteredHours: number;
+          status: string;
         };
       }
 
@@ -1088,9 +1133,14 @@ export class ReportController {
 
           totalDaysInMonth: startDateClone.daysInMonth(),
           totalHours: 0,
+          savedHours: 0,
           submittedHours: 0,
           approvedHours: 0,
+          rejectedHours: 0,
+          filteredHours: 0,
+          status: 'Not Applicable',
         };
+
         startDateClone.add(1, 'month');
       }
 
@@ -1100,7 +1150,7 @@ export class ReportController {
         projectName: String;
         projectCode: number;
         projectType: number;
-        purchaseOrders: string[];
+        purchaseOrder: number | null;
         organizationName: string;
         months: MonthInterface;
         currentMonth: number;
@@ -1110,6 +1160,40 @@ export class ReportController {
       for (let employee of employees) {
         if (queryEmployeeId.length && !queryEmployeeId.includes(employee.id))
           continue;
+
+        let employeeAllocations: { [key: string]: { [key: string]: boolean } } =
+          {};
+
+        for (let allocation of employee.contactPersonOrganization.contactPerson
+          .allocations) {
+          let project = allocation.opportunityResource?.milestone?.project;
+          if (!project) continue;
+
+          let { startDate: allocationStartDate, endDate: allocationEndDate } =
+            allocation.opportunityResource;
+
+          let mAllocationStartDate = moment(allocationStartDate);
+          let mAllocationEndDate = moment(allocationEndDate);
+
+          let mAllocationStartDateClone = mAllocationStartDate.clone();
+
+          while (mAllocationEndDate > mAllocationStartDateClone) {
+            if (!employeeAllocations[project.id])
+              employeeAllocations[project.id] = {};
+
+            if (
+              !employeeAllocations[project.id][
+                mAllocationStartDateClone.format('MMM YY')
+              ]
+            ) {
+              employeeAllocations[project.id][
+                mAllocationStartDateClone.format('MMM YY')
+              ] = true;
+            }
+
+            mAllocationStartDateClone.add(1, 'month');
+          }
+        }
 
         for (let timesheet of employee.timesheets) {
           if (
@@ -1155,30 +1239,99 @@ export class ReportController {
               undefined
             ) {
               for (let entry of milestoneEntry.entries) {
-                if (!entry.submittedAt) continue;
+                // if (!entry.submittedAt) continue;
 
                 const entryDate = moment(entry.date, 'DD-MM-YYYY').format(
                   'MMM YY'
                 );
 
-                // if (!months[entryDate]) continue;
+                //NOT APPLICABLE
+                let summaryStatus = 0;
+
+                //NOT APPLICABLE, NOT SUBMITTED, SUBMITTED, APPROVED,
+                if (employeeAllocations[project.id][entryDate]) {
+                  //NOT SUBMITTED;
+                  summaryStatus = 1;
+                }
 
                 let entryHours = parseFloat(entry.hours.toFixed(2));
+                sumOfHours += entryHours;
 
                 summary[
                   employeeProjectIndexes[`${employee.id}_${project.id}`]
                 ].months[entryDate].totalHours += entryHours;
-                if (entry.submittedAt) {
+
+                if (
+                  !entry.submittedAt &&
+                  !entry.rejectedAt &&
+                  !entry.approvedAt
+                ) {
+                  summary[
+                    employeeProjectIndexes[`${employee.id}_${project.id}`]
+                  ].months[entryDate].savedHours += entryHours;
+                  summaryStatus = 1;
+                }
+
+                if (
+                  entry.submittedAt &&
+                  !entry.rejectedAt &&
+                  !entry.approvedAt
+                ) {
                   summary[
                     employeeProjectIndexes[`${employee.id}_${project.id}`]
                   ].months[entryDate].submittedHours += entryHours;
-                  sumOfHours += entryHours;
+                  summaryStatus = 2;
                 }
 
-                if (entry.approvedAt)
+                if (entry.approvedAt) {
                   summary[
                     employeeProjectIndexes[`${employee.id}_${project.id}`]
                   ].months[entryDate].approvedHours += entryHours;
+                  summaryStatus = 3;
+                }
+
+                if (entry.rejectedAt) {
+                  summary[
+                    employeeProjectIndexes[`${employee.id}_${project.id}`]
+                  ].months[entryDate].rejectedHours += entryHours;
+                  summaryStatus = 1;
+                }
+
+                if (queryStatus.length) {
+                  if (
+                    queryStatus.includes(1) &&
+                    !entry.submittedAt &&
+                    !entry.rejectedAt &&
+                    !entry.approvedAt
+                  ) {
+                    summary[
+                      employeeProjectIndexes[`${employee.id}_${project.id}`]
+                    ].months[entryDate].filteredHours += entryHours;
+                  } else if (
+                    queryStatus.includes(2) &&
+                    entry.submittedAt &&
+                    !entry.rejectedAt &&
+                    !entry.approvedAt
+                  ) {
+                    summary[
+                      employeeProjectIndexes[`${employee.id}_${project.id}`]
+                    ].months[entryDate].filteredHours += entryHours;
+                  } else if (queryStatus.includes(3) && entry.approvedAt) {
+                    summary[
+                      employeeProjectIndexes[`${employee.id}_${project.id}`]
+                    ].months[entryDate].filteredHours += entryHours;
+                  }
+                } else {
+                  if (entry.submittedAt && !entry.rejectedAt)
+                    summary[
+                      employeeProjectIndexes[`${employee.id}_${project.id}`]
+                    ].months[entryDate].filteredHours += entryHours;
+                }
+
+                summary[
+                  employeeProjectIndexes[`${employee.id}_${project.id}`]
+                ].months[entryDate].status =
+                  parseTimesheetSummaryStatus(summaryStatus);
               }
 
               summary[
@@ -1186,23 +1339,81 @@ export class ReportController {
               ].currentYear += sumOfHours;
             } else {
               for (let entry of milestoneEntry.entries) {
-                if (!entry.submittedAt) continue;
-
                 const entryDate = moment(entry.date, 'DD-MM-YYYY').format(
                   'MMM YY'
                 );
 
-                // if (!months[entryDate]) continue;
+                //NOT APPLICABLE
+                let summaryStatus = 0;
+
+                //NOT APPLICABLE, NOT SUBMITTED, SUBMITTED, APPROVED,
+                if (employeeAllocations[project.id][entryDate]) {
+                  //NOT SUBMITTED;
+                  summaryStatus = 1;
+                }
 
                 let entryHours = parseFloat(entry.hours.toFixed(2));
 
                 localMonths[entryDate].totalHours += entryHours;
-                if (entry.submittedAt) {
-                  localMonths[entryDate].submittedHours += entryHours;
-                  sumOfHours += entryHours;
+                sumOfHours += entryHours;
+
+                if (
+                  !entry.submittedAt &&
+                  !entry.rejectedAt &&
+                  !entry.approvedAt
+                ) {
+                  localMonths[entryDate].savedHours += entryHours;
+                  //NOT SUBMITTED
+                  summaryStatus = 1;
                 }
-                if (entry.approvedAt)
+
+                if (
+                  entry.submittedAt &&
+                  !entry.rejectedAt &&
+                  !entry.approvedAt
+                ) {
+                  localMonths[entryDate].submittedHours += entryHours;
+                  //SUBMITTED
+                  summaryStatus = 2;
+                }
+
+                if (entry.approvedAt) {
                   localMonths[entryDate].approvedHours += entryHours;
+                  //APPROVED
+                  summaryStatus = 3;
+                }
+
+                if (entry.rejectedAt) {
+                  localMonths[entryDate].rejectedHours += entryHours;
+                  //NOT SUBMITTED;
+                  summaryStatus = 1;
+                }
+
+                if (queryStatus.length) {
+                  if (
+                    queryStatus.includes(1) &&
+                    !entry.submittedAt &&
+                    !entry.rejectedAt &&
+                    !entry.approvedAt
+                  ) {
+                    localMonths[entryDate].filteredHours += entryHours;
+                  } else if (
+                    queryStatus.includes(2) &&
+                    entry.submittedAt &&
+                    !entry.rejectedAt &&
+                    !entry.approvedAt
+                  ) {
+                    localMonths[entryDate].filteredHours += entryHours;
+                  } else if (queryStatus.includes(3) && entry.approvedAt) {
+                    localMonths[entryDate].filteredHours += entryHours;
+                  }
+                } else {
+                  if (entry.submittedAt && !entry.rejectedAt)
+                    localMonths[entryDate].filteredHours += entryHours;
+                }
+
+                localMonths[entryDate].status =
+                  parseTimesheetSummaryStatus(summaryStatus);
               }
 
               employeeProjectIndexes[`${employee.id}_${project.id}`] =
@@ -1214,12 +1425,12 @@ export class ReportController {
                 projectName: project.title,
                 projectCode: project.id,
                 projectType: project.type,
-                purchaseOrders: [],
+                purchaseOrder: projectPurchaseOrders[project.id]?.id ?? null,
                 organizationName: project.organization.name,
                 months: localMonths,
                 currentMonth:
-                  localMonths[moment(currentMoment).format('MMM YY')]
-                    .submittedHours ?? {},
+                  localMonths[moment(moment()).format('MMM YY')]
+                    .filteredHours ?? {},
                 currentYear: sumOfHours,
               });
             }
@@ -1237,7 +1448,7 @@ export class ReportController {
           milestoneProjectTotalHours += summ.currentMonth;
           milestoneProjectSummary.push(summ);
         } else if (summ.projectType === 2) {
-          timeProjectSummary += summ.currentMonth;
+          timeProjectTotalHours += summ.currentMonth;
           timeProjectSummary.push(summ);
         }
       });
