@@ -21,7 +21,7 @@ connection
       await getManager().save(balance);
     }
 
-    console.log('resources updated');
+    console.log('balances updated');
 
     return true;
   })
