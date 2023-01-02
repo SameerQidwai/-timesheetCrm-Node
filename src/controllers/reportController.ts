@@ -275,6 +275,11 @@ export class ReportController {
         req.query.contactPersonId as string
       );
       let queryWorkId = this._customQueryParser(req.query.workId as string);
+
+      let queryExcludeWorkId = this._customQueryParser(
+        req.query.excludeWorkId as string
+      );
+
       let queryWorkPhase = this._customQueryParser(
         req.query.workPhase as string
       );
@@ -355,6 +360,10 @@ export class ReportController {
         }
 
         if (queryWorkId.length && !queryWorkId.includes(work.id)) {
+          continue;
+        }
+
+        if (queryExcludeWorkId.length && queryExcludeWorkId.includes(work.id)) {
           continue;
         }
 
@@ -529,6 +538,10 @@ export class ReportController {
       );
       let queryWorkId = this._customQueryParser(req.query.workId as string);
 
+      let queryExcludeWorkId = this._customQueryParser(
+        req.query.excludeWorkId as string
+      );
+
       let queryWorkPhase = this._customQueryParser(
         req.query.workPhase as string
       );
@@ -628,6 +641,7 @@ export class ReportController {
           //ignoring inner loop queries
           if (
             queryWorkId.length ||
+            queryExcludeWorkId ||
             queryOrganizationId.length ||
             queryWorkStatus.length ||
             queryWorkType.length ||
@@ -685,6 +699,13 @@ export class ReportController {
           let work = milestone.project;
 
           if (queryWorkId.length && !queryWorkId.includes(work.id)) {
+            continue;
+          }
+
+          if (
+            queryExcludeWorkId.length &&
+            queryExcludeWorkId.includes(work.id)
+          ) {
             continue;
           }
 
