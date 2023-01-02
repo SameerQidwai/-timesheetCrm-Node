@@ -133,15 +133,23 @@ export class HelperController {
   ) {
     let employeeId = parseInt(req.query.userId?.toString() ?? '');
     let phase = parseInt(req.query.phase?.toString() ?? '');
+
+    let queryStartDate = req.query.startDate as string;
+    let queryEndDate = req.query.endDate as string;
+
     if (isNaN(employeeId) || employeeId == 0) {
       throw new Error('Employee Id is required');
     }
     try {
       const repository = getCustomRepository(ProjectRepository);
+
       let records = await repository.helperGetMilestonesByUserId(
         employeeId,
-        isNaN(phase) ? 1 : phase
+        isNaN(phase) ? 1 : phase,
+        queryStartDate,
+        queryEndDate
       );
+
       res.status(200).json({
         success: true,
         message: 'Get All Milestones By Id',
