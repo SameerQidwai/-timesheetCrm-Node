@@ -3110,15 +3110,9 @@ export class ProjectRepository extends Repository<Opportunity> {
         startDate: LessThanOrEqual(startDate.toDate()),
         endDate: MoreThanOrEqual(endDate.toDate()),
       };
-    }
-
-    if (queryStartDate && queryEndDate) {
       dateCondition2 = {
         startDate: Between(startDate.toDate(), endDate.toDate()),
       };
-    }
-
-    if (queryStartDate && queryEndDate) {
       dateCondition3 = {
         endDate: Between(startDate.toDate(), endDate.toDate()),
       };
