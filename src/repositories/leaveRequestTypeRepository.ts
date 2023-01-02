@@ -85,7 +85,7 @@ export class LeaveRequestTypeRepository extends Repository<LeaveRequestType> {
 
     let balanceByType: any = {};
     employee.leaveRequestBalances.forEach((balance) => {
-      balanceByType[balance.type.leaveRequestTypeId] = balance.balanceHours;
+      balanceByType[balance.typeId] = balance.balanceHours;
     });
 
     let leaveRequestTypes =

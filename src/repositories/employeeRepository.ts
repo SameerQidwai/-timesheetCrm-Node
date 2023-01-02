@@ -1448,7 +1448,6 @@ ${process.env.ORGANIZATION} Support Team`
         'employmentContracts',
         'leaveRequestBalances',
         'leaveRequestBalances.type',
-        'leaveRequestBalances.type.leaveRequestType',
       ],
     });
 
@@ -1510,7 +1509,7 @@ ${process.env.ORGANIZATION} Support Team`
         variables.push('Public Holidays');
 
         employee?.leaveRequestBalances.forEach((el) => {
-          variables.push(el.type.leaveRequestType.label);
+          variables.push(el.type.label);
         });
       }
 
