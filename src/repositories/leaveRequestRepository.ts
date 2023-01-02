@@ -317,7 +317,12 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
   async getAnyLeaveRequest(requestId: number): Promise<any | undefined> {
     let leaveRequest = await this.findOne(requestId, {
-      relations: ['entries', 'employee', 'employee.employmentContracts'],
+      relations: [
+        'entries',
+        'employee',
+        'employee.employmentContracts',
+        'type',
+      ],
     });
 
     if (!leaveRequest) {
@@ -375,7 +380,12 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     let projectIds = await this._userManagesProjectIds(authId);
 
     let leaveRequest = await this.findOne(requestId, {
-      relations: ['entries', 'employee', 'employee.employmentContracts'],
+      relations: [
+        'entries',
+        'employee',
+        'employee.employmentContracts',
+        'type',
+      ],
       where: [{ employeeId: In(employeeIds) }, { workId: In(projectIds) }],
     });
 
@@ -431,7 +441,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     requestId: number
   ): Promise<any | undefined> {
     let leaveRequest = await this.findOne(requestId, {
-      relations: ['entries'],
+      relations: ['entries', 'type'],
       where: { employeeId: authId },
     });
 
