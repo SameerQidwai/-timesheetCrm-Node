@@ -1260,12 +1260,45 @@ export class ReportController {
                 }
 
                 let entryHours = parseFloat(entry.hours.toFixed(2));
-                sumOfHours += entryHours;
+                let filteredHours = 0;
+
+                if (queryStatus.length) {
+                  if (
+                    queryStatus.includes(1) &&
+                    !entry.submittedAt &&
+                    !entry.rejectedAt &&
+                    !entry.approvedAt
+                  ) {
+                    filteredHours += entryHours;
+                  } else if (
+                    queryStatus.includes(2) &&
+                    entry.submittedAt &&
+                    !entry.rejectedAt &&
+                    !entry.approvedAt
+                  ) {
+                    filteredHours += entryHours;
+                  } else if (queryStatus.includes(3) && entry.approvedAt) {
+                    filteredHours += entryHours;
+                  }
+                } else {
+                  if (
+                    entry.submittedAt &&
+                    !entry.rejectedAt &&
+                    !entry.approvedAt
+                  )
+                    filteredHours += entryHours;
+                }
+
+                summary[
+                  employeeProjectIndexes[`${employee.id}_${project.id}`]
+                ].months[entryDate].filteredHours += filteredHours;
+                sumOfHours += filteredHours;
 
                 summary[
                   employeeProjectIndexes[`${employee.id}_${project.id}`]
                 ].months[entryDate].totalHours += entryHours;
 
+                //SAVED
                 if (
                   !entry.submittedAt &&
                   !entry.rejectedAt &&
@@ -1277,6 +1310,7 @@ export class ReportController {
                   summaryStatus = 1;
                 }
 
+                //SUBMITTED
                 if (
                   entry.submittedAt &&
                   !entry.rejectedAt &&
@@ -1288,6 +1322,7 @@ export class ReportController {
                   summaryStatus = 2;
                 }
 
+                //APPROVED
                 if (entry.approvedAt) {
                   summary[
                     employeeProjectIndexes[`${employee.id}_${project.id}`]
@@ -1295,6 +1330,7 @@ export class ReportController {
                   summaryStatus = 3;
                 }
 
+                //REJECTED
                 if (entry.rejectedAt) {
                   summary[
                     employeeProjectIndexes[`${employee.id}_${project.id}`]
@@ -1302,42 +1338,18 @@ export class ReportController {
                   summaryStatus = 1;
                 }
 
-                if (queryStatus.length) {
-                  if (
-                    queryStatus.includes(1) &&
-                    !entry.submittedAt &&
-                    !entry.rejectedAt &&
-                    !entry.approvedAt
-                  ) {
-                    summary[
-                      employeeProjectIndexes[`${employee.id}_${project.id}`]
-                    ].months[entryDate].filteredHours += entryHours;
-                  } else if (
-                    queryStatus.includes(2) &&
-                    entry.submittedAt &&
-                    !entry.rejectedAt &&
-                    !entry.approvedAt
-                  ) {
-                    summary[
-                      employeeProjectIndexes[`${employee.id}_${project.id}`]
-                    ].months[entryDate].filteredHours += entryHours;
-                  } else if (queryStatus.includes(3) && entry.approvedAt) {
-                    summary[
-                      employeeProjectIndexes[`${employee.id}_${project.id}`]
-                    ].months[entryDate].filteredHours += entryHours;
-                  }
-                } else {
-                  if (entry.submittedAt && !entry.rejectedAt)
-                    summary[
-                      employeeProjectIndexes[`${employee.id}_${project.id}`]
-                    ].months[entryDate].filteredHours += entryHours;
-                }
-
                 summary[
                   employeeProjectIndexes[`${employee.id}_${project.id}`]
                 ].months[entryDate].status =
                   parseTimesheetSummaryStatus(summaryStatus);
               }
+
+              summary[
+                employeeProjectIndexes[`${employee.id}_${project.id}`]
+              ].currentMonth =
+                summary[
+                  employeeProjectIndexes[`${employee.id}_${project.id}`]
+                ].months[moment(currentMoment).format('MMM YY')].filteredHours;
 
               summary[
                 employeeProjectIndexes[`${employee.id}_${project.id}`]
@@ -1360,8 +1372,40 @@ export class ReportController {
                 let entryHours = parseFloat(entry.hours.toFixed(2));
 
                 localMonths[entryDate].totalHours += entryHours;
-                sumOfHours += entryHours;
 
+                let filteredHours = 0;
+
+                if (queryStatus.length) {
+                  if (
+                    queryStatus.includes(1) &&
+                    !entry.submittedAt &&
+                    !entry.rejectedAt &&
+                    !entry.approvedAt
+                  ) {
+                    filteredHours += entryHours;
+                  } else if (
+                    queryStatus.includes(2) &&
+                    entry.submittedAt &&
+                    !entry.rejectedAt &&
+                    !entry.approvedAt
+                  ) {
+                    filteredHours += entryHours;
+                  } else if (queryStatus.includes(3) && entry.approvedAt) {
+                    filteredHours += entryHours;
+                  }
+                } else {
+                  if (
+                    entry.submittedAt &&
+                    !entry.rejectedAt &&
+                    !entry.approvedAt
+                  )
+                    filteredHours += entryHours;
+                }
+
+                sumOfHours += filteredHours;
+                localMonths[entryDate].filteredHours += filteredHours;
+
+                //SAVED HOURS
                 if (
                   !entry.submittedAt &&
                   !entry.rejectedAt &&
@@ -1372,6 +1416,7 @@ export class ReportController {
                   summaryStatus = 1;
                 }
 
+                //SUBMITTED HOURS
                 if (
                   entry.submittedAt &&
                   !entry.rejectedAt &&
@@ -1382,39 +1427,18 @@ export class ReportController {
                   summaryStatus = 2;
                 }
 
+                //APPROVED HOURS
                 if (entry.approvedAt) {
                   localMonths[entryDate].approvedHours += entryHours;
                   //APPROVED
                   summaryStatus = 3;
                 }
 
+                //NOT SUBMITTED HOURS
                 if (entry.rejectedAt) {
                   localMonths[entryDate].rejectedHours += entryHours;
                   //NOT SUBMITTED;
                   summaryStatus = 1;
-                }
-
-                if (queryStatus.length) {
-                  if (
-                    queryStatus.includes(1) &&
-                    !entry.submittedAt &&
-                    !entry.rejectedAt &&
-                    !entry.approvedAt
-                  ) {
-                    localMonths[entryDate].filteredHours += entryHours;
-                  } else if (
-                    queryStatus.includes(2) &&
-                    entry.submittedAt &&
-                    !entry.rejectedAt &&
-                    !entry.approvedAt
-                  ) {
-                    localMonths[entryDate].filteredHours += entryHours;
-                  } else if (queryStatus.includes(3) && entry.approvedAt) {
-                    localMonths[entryDate].filteredHours += entryHours;
-                  }
-                } else {
-                  if (entry.submittedAt && !entry.rejectedAt)
-                    localMonths[entryDate].filteredHours += entryHours;
                 }
 
                 localMonths[entryDate].status =
@@ -1435,7 +1459,7 @@ export class ReportController {
                 months: localMonths,
                 currentMonth:
                   localMonths[moment(currentMoment).format('MMM YY')]
-                    .filteredHours ?? {},
+                    .filteredHours ?? 0,
                 currentYear: sumOfHours,
               });
             }
@@ -1450,10 +1474,10 @@ export class ReportController {
 
       summary.forEach((summ) => {
         if (summ.projectType === 1) {
-          milestoneProjectTotalHours += summ.currentMonth;
+          milestoneProjectTotalHours += summ.currentYear;
           milestoneProjectSummary.push(summ);
         } else if (summ.projectType === 2) {
-          timeProjectTotalHours += summ.currentMonth;
+          timeProjectTotalHours += summ.currentYear;
           timeProjectSummary.push(summ);
         }
       });
