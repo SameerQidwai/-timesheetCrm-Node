@@ -133,7 +133,7 @@ export let buyRateByEmployee = async (employee: Employee): Promise<number> => {
       variables.push('Public Holidays');
 
       employee?.leaveRequestBalances.forEach((el) => {
-        variables.push(el.type.leaveRequestType.label);
+        variables.push(el.type.label);
       });
     }
 

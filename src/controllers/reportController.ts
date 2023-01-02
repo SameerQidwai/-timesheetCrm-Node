@@ -75,7 +75,6 @@ export class ReportController {
           'contactPersonOrganization.contactPerson.state',
           'leaveRequestBalances',
           'leaveRequestBalances.type',
-          'leaveRequestBalances.type.leaveRequestType',
           'contactPersonOrganization.contactPerson.standardSkillStandardLevels',
           'contactPersonOrganization.contactPerson.standardSkillStandardLevels.standardSkill',
           'contactPersonOrganization.contactPerson.standardSkillStandardLevels.standardLevel',
@@ -196,7 +195,6 @@ export class ReportController {
           'contactPersons.contactPersonOrganizations.employee.employmentContracts',
           'contactPersons.contactPersonOrganizations.employee.leaveRequestBalances',
           'contactPersons.contactPersonOrganizations.employee.leaveRequestBalances.type',
-          'contactPersons.contactPersonOrganizations.employee.leaveRequestBalances.type.leaveRequestType',
         ],
       });
 

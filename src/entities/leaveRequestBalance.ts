@@ -18,9 +18,9 @@ export class LeaveRequestBalance extends Base {
   @Column({ name: 'type_id' })
   typeId: number;
 
-  @ManyToOne(() => LeaveRequestPolicyLeaveRequestType)
+  @ManyToOne(() => LeaveRequestType)
   @JoinColumn({ name: 'type_id' })
-  type: LeaveRequestPolicyLeaveRequestType;
+  type: LeaveRequestType;
 
   @Column({ name: 'employee_id' })
   employeeId: number;

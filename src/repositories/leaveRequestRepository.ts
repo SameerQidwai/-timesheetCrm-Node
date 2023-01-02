@@ -1375,11 +1375,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     }
 
     let employee = await this.manager.findOne(Employee, employeeId, {
-      relations: [
-        'leaveRequestBalances',
-        'leaveRequestBalances.type',
-        'leaveRequestBalances.type.leaveRequestType',
-      ],
+      relations: ['leaveRequestBalances', 'leaveRequestBalances.type'],
     });
 
     if (!employee) {
@@ -1388,7 +1384,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
     let leaveRequestBalances = employee.leaveRequestBalances;
     leaveRequestBalances.forEach((balance) => {
-      (balance as any).name = balance.type.leaveRequestType.label;
+      (balance as any).name = balance.type.label;
     });
 
     return leaveRequestBalances;
@@ -1396,11 +1392,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
   async getLeaveRequestBalances(authId: number): Promise<any | undefined> {
     let employee = await this.manager.findOne(Employee, authId, {
-      relations: [
-        'leaveRequestBalances',
-        'leaveRequestBalances.type',
-        'leaveRequestBalances.type.leaveRequestType',
-      ],
+      relations: ['leaveRequestBalances', 'leaveRequestBalances.type'],
     });
 
     if (!employee) {
@@ -1409,7 +1401,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
     let leaveRequestBalances = employee.leaveRequestBalances;
     leaveRequestBalances.forEach((balance) => {
-      (balance as any).name = balance.type.leaveRequestType.label;
+      (balance as any).name = balance.type.label;
     });
 
     return leaveRequestBalances;
