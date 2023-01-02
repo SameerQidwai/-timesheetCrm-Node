@@ -31,7 +31,7 @@ router
 router
   .route('/:id')
   .get(
-    [isLoggedIn, can(Action.READ, Resource.PROJECTS, 'id'), projectOpen('id')],
+    [isLoggedIn, can(Action.READ, Resource.PROJECTS, 'id')],
     contr.get.bind(contr)
   )
   .put(
