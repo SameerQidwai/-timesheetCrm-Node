@@ -8,6 +8,7 @@ import { isLoggedIn } from './../middlewares/loggedIn';
 import { can } from './../middlewares/can';
 import { ProjectMilestoneController } from '../controllers/projectMilestoneController';
 import { ProjectScheduleController } from '../controllers/projectScheduleController';
+import { projectOpen } from '../middlewares/projectOpen';
 
 const router = Router();
 let contr = new ProjectController(ProjectRepository);
@@ -34,11 +35,19 @@ router
     contr.get.bind(contr)
   )
   .put(
-    [isLoggedIn, can(Action.UPDATE, Resource.PROJECTS, 'id')],
+    [
+      isLoggedIn,
+      can(Action.UPDATE, Resource.PROJECTS, 'id'),
+      projectOpen('id'),
+    ],
     contr.update.bind(contr)
   )
   .delete(
-    [isLoggedIn, can(Action.DELETE, Resource.PROJECTS, 'id')],
+    [
+      isLoggedIn,
+      can(Action.DELETE, Resource.PROJECTS, 'id'),
+      projectOpen('id'),
+    ],
     contr.delete.bind(contr)
   );
 
@@ -59,59 +68,101 @@ router
 router
   .route('/:projectId/milestones')
   .get([isLoggedIn], milestoneContr.index.bind(milestoneContr))
-  .post([isLoggedIn], milestoneContr.create.bind(milestoneContr));
+  .post(
+    [isLoggedIn, projectOpen('projectId')],
+    milestoneContr.create.bind(milestoneContr)
+  );
 
 router
   .route('/:projectId/milestones/:id')
   .get([isLoggedIn], milestoneContr.get.bind(milestoneContr))
-  .put([isLoggedIn], milestoneContr.update.bind(milestoneContr))
-  .delete([isLoggedIn], milestoneContr.delete.bind(milestoneContr));
+  .put(
+    [isLoggedIn, projectOpen('projectId')],
+    milestoneContr.update.bind(milestoneContr)
+  )
+  .delete(
+    [isLoggedIn, projectOpen('projectId')],
+    milestoneContr.delete.bind(milestoneContr)
+  );
 
 //-- SCHEDULES
 
 router
   .route('/:projectId/schedules')
   .get([isLoggedIn], scheduleContr.index.bind(scheduleContr))
-  .post([isLoggedIn], scheduleContr.create.bind(scheduleContr));
+  .post(
+    [isLoggedIn, projectOpen('projectId')],
+    scheduleContr.create.bind(scheduleContr)
+  );
 
 router
   .route('/:projectId/schedules/:id')
   .get([isLoggedIn], scheduleContr.get.bind(scheduleContr))
-  .put([isLoggedIn], scheduleContr.update.bind(scheduleContr))
-  .delete([isLoggedIn], scheduleContr.delete.bind(scheduleContr));
+  .put(
+    [isLoggedIn, projectOpen('projectId')],
+    scheduleContr.update.bind(scheduleContr)
+  )
+  .delete(
+    [isLoggedIn, projectOpen('projectId')],
+    scheduleContr.delete.bind(scheduleContr)
+  );
 
 router
   .route('/:projectId/milestones/:milestoneId/resources')
   .get([isLoggedIn], resourceContr.index.bind(resourceContr))
-  .post([isLoggedIn], resourceContr.create.bind(resourceContr));
+  .post(
+    [isLoggedIn, projectOpen('projectId')],
+    resourceContr.create.bind(resourceContr)
+  );
 
 router
   .route('/:projectId/milestones/:milestoneId/resources/:id')
   .get([isLoggedIn], resourceContr.get.bind(resourceContr))
-  .put([isLoggedIn], resourceContr.update.bind(resourceContr))
-  .delete([isLoggedIn], resourceContr.delete.bind(resourceContr));
+  .put(
+    [isLoggedIn, projectOpen('projectId')],
+    resourceContr.update.bind(resourceContr)
+  )
+  .delete(
+    [isLoggedIn, projectOpen('projectId')],
+    resourceContr.delete.bind(resourceContr)
+  );
 
 router
   .route('/:projectId/milestones/:milestoneId/expenses')
   .get([isLoggedIn], milestoneContr.expenseIndex.bind(milestoneContr))
-  .post([isLoggedIn], milestoneContr.expenseCreate.bind(milestoneContr));
+  .post(
+    [isLoggedIn, projectOpen('projectId')],
+    milestoneContr.expenseCreate.bind(milestoneContr)
+  );
 
 router
   .route('/:projectId/milestones/:milestoneId/expenses/:id')
   .get([isLoggedIn], milestoneContr.expenseGet.bind(milestoneContr))
-  .put([isLoggedIn], milestoneContr.expenseUpdate.bind(milestoneContr))
-  .delete([isLoggedIn], milestoneContr.expenseDelete.bind(milestoneContr));
+  .put(
+    [isLoggedIn, projectOpen('projectId')],
+    milestoneContr.expenseUpdate.bind(milestoneContr)
+  )
+  .delete(
+    [isLoggedIn, projectOpen('projectId')],
+    milestoneContr.expenseDelete.bind(milestoneContr)
+  );
 
 router
   .route('/:projectId/purchaseOrders')
   .get([isLoggedIn], orderContr.index.bind(orderContr))
-  .post([isLoggedIn], orderContr.create.bind(orderContr));
+  .post(
+    [isLoggedIn, projectOpen('projectId')],
+    orderContr.create.bind(orderContr)
+  );
 
 router
   .route('/:projectId/purchaseOrders/:id')
   .put([isLoggedIn], orderContr.update.bind(orderContr))
-  .get([isLoggedIn], orderContr.get.bind(orderContr))
-  .delete([isLoggedIn], orderContr.delete.bind(orderContr));
+  .get([isLoggedIn, projectOpen('projectId')], orderContr.get.bind(orderContr))
+  .delete(
+    [isLoggedIn, projectOpen('projectId')],
+    orderContr.delete.bind(orderContr)
+  );
 
 router
   .route('/:projectId/phase/open')
@@ -124,6 +175,9 @@ router
 router
   .route('/:projectId/calculatedValue')
   .get([isLoggedIn], contr.getCalculatedValue.bind(contr))
-  .put([isLoggedIn], contr.updateProjectValue.bind(contr));
+  .put(
+    [isLoggedIn, projectOpen('projectId')],
+    contr.updateProjectValue.bind(contr)
+  );
 
 export default router;

@@ -2333,13 +2333,13 @@ export class ProjectRepository extends Repository<Opportunity> {
     }
     console.log(projectId, 'PROJECT ID ===================');
 
-    const project = await this.findOne(projectId)
+    const project = await this.findOne(projectId);
 
-    if (!project){
+    if (!project) {
       throw new Error('Opportunity not found ');
     }
-    let segmentsRevenue: {[key: string]: number} ={}
-    if (project?.type ==1){
+    let segmentsRevenue: { [key: string]: number } = {};
+    if (project?.type == 1) {
       let segments = await this.query(
         `SELECT DATE_FORMAT(pss.start_date, '%b %y') month, pss.amount revenue
         FROM project_schedules ps
@@ -2347,10 +2347,10 @@ export class ProjectRepository extends Repository<Opportunity> {
                   ps.id = pss.schedule_id
       WHERE ps.project_id = ${projectId} AND( pss.start_date >= STR_TO_DATE('${fiscalYear.start}' ,'%e-%m-%Y')) 
       AND pss.end_date <= STR_TO_DATE('${fiscalYear.end}' ,'%e-%m-%Y') AND ps.deleted_at IS NULL AND pss.deleted_at IS NULL;`
-      )
-      segments.forEach((el: {month: string, revenue: number})=>{
-        segmentsRevenue[el.month] = el.revenue
-      })
+      );
+      segments.forEach((el: { month: string; revenue: number }) => {
+        segmentsRevenue[el.month] = el.revenue;
+      });
     }
     // o.id = ${projectId}
     // STR_TO_DATE(te.date,'%e-%m-%Y') <= STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y')
@@ -2359,45 +2359,44 @@ export class ProjectRepository extends Repository<Opportunity> {
       SELECT *, SUM(resource_buying_rate * actual_hours) month_total_buy, SUM(resource_selling_rate * actual_hours) 
         month_total_sell, SUM(actual_hours) actual_hours, DATE_FORMAT(STR_TO_DATE(entry_date,'%e-%m-%Y'), '%b %y') month 
       FROM profit_view
-        WHERE opportunity_id = ${projectId} 
+        WHERE project_id = ${projectId} 
           AND STR_TO_DATE(entry_date,'%e-%m-%Y') <= STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y')
       GROUP BY month;
           `);
-          // AND
-          // STR_TO_DATE(times.e_date,'%e-%m-%Y') BETWEEN STR_TO_DATE(DATE_FORMAT(project.res_start,'%e-%m-%Y'),'%e-%m-%Y')  
-          // AND project.res_end
-
+    // AND
+    // STR_TO_DATE(times.e_date,'%e-%m-%Y') BETWEEN STR_TO_DATE(DATE_FORMAT(project.res_start,'%e-%m-%Y'),'%e-%m-%Y')
+    // AND project.res_end
 
     // const actual = await this.query(`
     //   SELECT *, SUM(buying_rate * actual ) month_total_buy, SUM(selling_rate * actual  ) month_total_sell, SUM(actual) actual,
     //   DATE_FORMAT(STR_TO_DATE(e_date,'%e-%m-%Y'), '%b %y') month FROM (
-    //         Select o_r.opportunity_id, o_r.milestone_id milestoneId, o_r.start_date res_start, o_r.end_date res_end, ora.buying_rate, ora.selling_rate, 
+    //         Select o_r.opportunity_id, o_r.milestone_id milestoneId, o_r.start_date res_start, o_r.end_date res_end, ora.buying_rate, ora.selling_rate,
     //         ora.contact_person_id, e.id employee_id, o.cm_percentage cm
-    //         FROM opportunities o 
-    //           JOIN opportunity_resources o_r ON 
-    //           o_r.opportunity_id = o.id 
-    //             JOIN opportunity_resource_allocations ora ON 
-    //             ora.opportunity_resource_id = o_r.id 
-    //               JOIN contact_person_organizations cpo ON 
-    //               cpo.contact_person_id = ora.contact_person_id 
-    //                 JOIN employees e ON 
-    //                 e.contact_person_organization_id = cpo.id 
-    //         WHERE o.id = ${projectId} AND ora.is_marked_as_selected = 1 AND ora.deleted_at IS NULL AND o_r.deleted_at IS NULL) as project 
+    //         FROM opportunities o
+    //           JOIN opportunity_resources o_r ON
+    //           o_r.opportunity_id = o.id
+    //             JOIN opportunity_resource_allocations ora ON
+    //             ora.opportunity_resource_id = o_r.id
+    //               JOIN contact_person_organizations cpo ON
+    //               cpo.contact_person_id = ora.contact_person_id
+    //                 JOIN employees e ON
+    //                 e.contact_person_organization_id = cpo.id
+    //         WHERE o.id = ${projectId} AND ora.is_marked_as_selected = 1 AND ora.deleted_at IS NULL AND o_r.deleted_at IS NULL) as project
 
     //     JOIN (
-    //         Select t.employee_id, tpe.milestone_id , te.date e_date, te.id entry_id, te.actual_hours actual 
-    //         From timesheets t 
-    //           JOIN timesheet_project_entries tpe ON 
-    //           tpe.timesheet_id = t.id 
-    //             JOIN timesheet_entries te ON 
-    //             te.milestone_entry_id = tpe.id 
-    //         WHERE STR_TO_DATE(te.date,'%e-%m-%Y') <= STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y'))as times 
-    //     ON 
+    //         Select t.employee_id, tpe.milestone_id , te.date e_date, te.id entry_id, te.actual_hours actual
+    //         From timesheets t
+    //           JOIN timesheet_project_entries tpe ON
+    //           tpe.timesheet_id = t.id
+    //             JOIN timesheet_entries te ON
+    //             te.milestone_entry_id = tpe.id
+    //         WHERE STR_TO_DATE(te.date,'%e-%m-%Y') <= STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y'))as times
+    //     ON
     //       project.employee_id = times.employee_id
     //     AND
     //       project.milestoneId = times.milestone_id
     //       AND
-    //       STR_TO_DATE(times.e_date,'%e-%m-%Y') BETWEEN STR_TO_DATE(DATE_FORMAT(project.res_start,'%e-%m-%Y'),'%e-%m-%Y')  
+    //       STR_TO_DATE(times.e_date,'%e-%m-%Y') BETWEEN STR_TO_DATE(DATE_FORMAT(project.res_start,'%e-%m-%Y'),'%e-%m-%Y')
     //       AND project.res_end
     //     GROUP BY month;
     //   `);
@@ -2452,7 +2451,13 @@ export class ProjectRepository extends Repository<Opportunity> {
       });
     }
 
-    return { actualStatement, actualTotal, forecast, holidays, segmentsRevenue };
+    return {
+      actualStatement,
+      actualTotal,
+      forecast,
+      holidays,
+      segmentsRevenue,
+    };
   }
 
   async getProjectTracking(
@@ -3073,8 +3078,45 @@ export class ProjectRepository extends Repository<Opportunity> {
     return response;
   }
 
-  async helperGetMilestonesByUserId(employeeId: number, phase: number) {
+  async helperGetMilestonesByUserId(
+    employeeId: number,
+    phase: number,
+    queryStartDate: string | undefined,
+    queryEndDate: string | undefined
+  ) {
     let response: any = [];
+
+    let startDate = moment().add(10, 'years').startOf('year');
+    let endDate = moment().subtract(10, 'years').endOf('year');
+
+    if (queryStartDate) {
+      if (moment(queryStartDate, 'DD-MM-YYYY').isValid()) {
+        startDate = moment(queryStartDate, 'DD-MM-YYYY');
+      }
+    }
+
+    if (queryEndDate) {
+      if (moment(queryEndDate, 'DD-MM-YYYY').isValid()) {
+        endDate = moment(queryEndDate, 'DD-MM-YYYY');
+      }
+    }
+
+    let dateCondition1 = {};
+    let dateCondition2 = {};
+    let dateCondition3 = {};
+
+    if (queryStartDate && queryEndDate) {
+      dateCondition1 = {
+        startDate: LessThanOrEqual(startDate.toDate()),
+        endDate: MoreThanOrEqual(endDate.toDate()),
+      };
+      dateCondition2 = {
+        startDate: Between(startDate.toDate(), endDate.toDate()),
+      };
+      dateCondition3 = {
+        endDate: Between(startDate.toDate(), endDate.toDate()),
+      };
+    }
 
     let employee = await this.manager.findOne(Employee, employeeId, {
       relations: [
@@ -3090,7 +3132,20 @@ export class ProjectRepository extends Repository<Opportunity> {
       employee.contactPersonOrganization.contactPerson.id;
 
     let result = await this.find({
-      where: [{ status: 'P' }, { status: 'C' }],
+      where: [
+        {
+          status: In([OpportunityStatus.COMPLETED, OpportunityStatus.WON]),
+          ...dateCondition1,
+        },
+        {
+          status: In([OpportunityStatus.COMPLETED, OpportunityStatus.WON]),
+          ...dateCondition2,
+        },
+        {
+          status: In([OpportunityStatus.COMPLETED, OpportunityStatus.WON]),
+          ...dateCondition3,
+        },
+      ],
       relations: [
         'organization',
         'milestones',

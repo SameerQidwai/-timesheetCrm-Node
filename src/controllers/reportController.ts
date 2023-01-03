@@ -21,7 +21,7 @@ export class ReportController {
 
     for (let item of query.split(',')) {
       if (isNaN(parseInt(item))) continue;
-
+      
       ids.push(parseInt(item));
     }
 
@@ -273,6 +273,11 @@ export class ReportController {
         req.query.contactPersonId as string
       );
       let queryWorkId = this._customQueryParser(req.query.workId as string);
+
+      let queryExcludeWorkId = this._customQueryParser(
+        req.query.excludeWorkId as string
+      );
+
       let queryWorkPhase = this._customQueryParser(
         req.query.workPhase as string
       );
@@ -353,6 +358,10 @@ export class ReportController {
         }
 
         if (queryWorkId.length && !queryWorkId.includes(work.id)) {
+          continue;
+        }
+
+        if (queryExcludeWorkId.length && queryExcludeWorkId.includes(work.id)) {
           continue;
         }
 
@@ -527,6 +536,10 @@ export class ReportController {
       );
       let queryWorkId = this._customQueryParser(req.query.workId as string);
 
+      let queryExcludeWorkId = this._customQueryParser(
+        req.query.excludeWorkId as string
+      );
+
       let queryWorkPhase = this._customQueryParser(
         req.query.workPhase as string
       );
@@ -626,6 +639,7 @@ export class ReportController {
           //ignoring inner loop queries
           if (
             queryWorkId.length ||
+            queryExcludeWorkId ||
             queryOrganizationId.length ||
             queryWorkStatus.length ||
             queryWorkType.length ||
@@ -683,6 +697,13 @@ export class ReportController {
           let work = milestone.project;
 
           if (queryWorkId.length && !queryWorkId.includes(work.id)) {
+            continue;
+          }
+
+          if (
+            queryExcludeWorkId.length &&
+            queryExcludeWorkId.includes(work.id)
+          ) {
             continue;
           }
 
@@ -833,6 +854,14 @@ export class ReportController {
         LEFT JOIN contact_person_View ON
           contact_person_View.employee_id = project_manager_id
     `);
+          /*********
+           * I don't know how this fiscal year project getting me correct data ... need to fix
+           * solution
+              ((start_date  BETWEEN STR_TO_DATE('2022-07-01' ,'%Y-%m-%d') AND STR_TO_DATE('2023-06-30' ,'%Y-%m-%d')) OR 
+              (end_date  BETWEEN STR_TO_DATE('2022-07-01' ,'%Y-%m-%d') AND STR_TO_DATE('2023-06-30' ,'%Y-%m-%d')) OR 
+              (start_date  <= STR_TO_DATE('2022-07-01' ,'%Y-%m-%d') AND end_date  >= STR_TO_DATE('2023-06-30' ,'%Y-%m-%d')))
+           **************/
+
     let actualStatement: any = {};
     actual.forEach((el: any) => {
       actualStatement[el.project_id] = {
@@ -853,21 +882,21 @@ export class ReportController {
         // },
         [el.month]: el.month_total_sell,
         totalSell:
-          (actualStatement?.[el.project_organization_id]?.['totalSell'] ?? 0) +
+          (actualStatement?.[el.project_id]?.['totalSell'] ?? 0) +
           el.month_total_sell,
         totalBuy:
-          (actualStatement?.[el.project_organization_id]?.['totalBuy'] ?? 0) +
+          (actualStatement?.[el.project_id]?.['totalBuy'] ?? 0) +
           el.month_total_buy,
-        YTDTotalSell: moment(el.month, 'MMM YY').isBetween(
+        YTDTotalSell: (moment(el.month, 'MMM YY').isBetween(
           fiscalYearStart,
           fiscalYearEnd,
           'month',
           '[]'
         )
-          ? (actualStatement?.[el.project_organization_id]?.['YTDTotalSell'] ??
-              0) + el.month_total_sell
-          : actualStatement?.[el.project_organization_id]?.['YTDTotalSell'] ??
-            0,
+          ? ((actualStatement?.[el.project_id]?.['YTDTotalSell'] ??
+              0) + el.month_total_sell)
+          : (actualStatement?.[el.project_id]?.['YTDTotalSell'] ??
+            0)),
       };
     });
 
@@ -955,10 +984,7 @@ export class ReportController {
         //   monthTotalBuy: (actualStatement?.[el.project_organization_id]?.[el.month]?.['monthTotalBuy'] ??0) + el.month_total_buy,
         //   monthTotalSell: (actualStatement?.[el.project_organization_id]?.[el.month]?.['monthTotalSell'] ??0) + el.month_total_sell,
         // },
-        [el.month]:
-          (actualStatement?.[el.project_organization_id]?.[el.month]?.[
-            'monthTotalSell'
-          ] ?? 0) + el.month_total_sell,
+        [el.month]: (actualStatement?.[el.project_organization_id]?.[el.month]?? 0) + el.month_total_sell,
 
         totalSell:
           (actualStatement?.[el.project_organization_id]?.['totalSell'] ?? 0) +
@@ -1601,5 +1627,201 @@ export class ReportController {
     } catch (e) {
       next(e);
     }
+  }
+
+  async leaveRequestSummaryView(req: Request, res: Response, next: NextFunction) {
+    try {
+      const manager = getManager();
+
+      let queryStartDate = req.query.startDate as string;
+      let queryEndDate = req.query.endDate as string;
+      let queryProjectId = req.query.projectId as string;
+      let queryLeaveTypeId = req.query.leaveTypeId as string;
+      let queryContactPersonId = req.query.contactPersonId as string;
+      let queryleaveStatus = req.query.leaveStatus as string;
+
+      let startDate = queryStartDate ?? moment().startOf('month').format('YYYY-MM-DD')
+      let endDate = queryEndDate ?? moment().endOf('month').format('YYYY-MM-DD')
+
+      let projectFilter = queryProjectId
+      ? `AND project_id IN (${queryProjectId})`
+      : '';
+
+      let leaveTypeFilter = queryLeaveTypeId
+      ? `AND leave_type_id IN (${queryLeaveTypeId})`
+      : '';
+      
+      let contactPersonFilter = queryContactPersonId
+      ? `AND contact_person_id IN (${queryContactPersonId})`
+      : '';
+
+      let leaveStatusFilter = queryleaveStatus
+      ? `AND leave_status_index IN (${queryleaveStatus})`
+      : '';
+      
+      const leave_requests = await manager.query(`
+      SELECT 
+        leave_request_id,
+        leave_status,
+        leave_status_index,
+        leave_type_id,
+        leave_type_name,
+        contact_person_id,
+        employee_id,
+        employee_name,
+        project_id,
+        project_title,
+        SUM(leave_entry_hours) total_request_hours,
+        MIN(leave_entry_date) start_leave_date,
+        MAX(leave_entry_date) end_leave_date
+      
+        FROM leaves_view 
+        WHERE leave_entry_date >= STR_TO_DATE('${startDate}' ,'%Y-%m-%d')
+          AND leave_entry_date <= STR_TO_DATE('${endDate}' ,'%Y-%m-%d')
+          ${projectFilter} ${leaveTypeFilter} ${contactPersonFilter} ${leaveStatusFilter}
+      GROUP BY employee_id, leave_request_id
+      `)
+
+      interface SummaryInterface {
+        employeeName: string;
+        employeeCode: number;
+        totalHours: number;
+
+        leaveRequests: {
+          projectCode: number | null;
+          hours: number;
+          leaveRequestId: number;
+          leaveStatus: string;
+          leaveTypeId: number;
+          leaveType: string;
+          projectId: number;
+          startDate: Moment,
+          endDate: Moment,
+          projectTitle: string;
+        }[];
+      }
+
+      // let summary: SummaryInterface[] = [];
+      let summary:  {[key: string]: SummaryInterface} ={}
+      leave_requests.forEach((request: any) =>{
+        summary[request.employee_id] = {
+          employeeName: request.employee_name,
+          employeeCode: request.employee_id,
+          totalHours:
+            (summary?.[request.employee_id]?.['totalHours'] ?? 0) +
+            request.total_request_hours,
+          leaveRequests: [
+            ...(summary?.[request.employee_id]?.['leaveRequests'] || []),
+            {
+              projectTitle: request.project_title,
+              projectCode: request.project_id,
+              leaveTypeId: request.leave_type_id,
+              leaveType: request.leave_type_name,
+              hours: request.total_request_hours,
+              leaveRequestId: request.leave_request_id,
+              leaveStatus: request.leave_status,
+              projectId: request.project_id,
+              startDate: moment(request.start_leave_date),
+              endDate: moment(request.end_leave_date)
+            },
+          ],
+        };
+      })
+  
+
+      res.status(200).json({
+        success: true,
+        message: 'Leave Request Summary',
+        data: Object.values(summary),
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async WorkInHandForecast(req: Request, res: Response, next: NextFunction) {
+    let fiscalYearStart = req.query.fiscalYearStart as string;
+    let fiscalYearEnd = req.query.fiscalYearEnd as string;
+    const actual = await getManager().query(`
+      SELECT 
+        project_type,
+        project_amount,
+        
+        (CASE WHEN project_type = 2 
+          THEN 
+            SUM( resource_selling_rate * actual_hours ) 
+          ELSE 
+            project_schedule_segments.amount 
+          END )
+        month_total_sell, 
+        
+        (CASE WHEN project_type = 2 
+          THEN 
+            DATE_FORMAT(STR_TO_DATE(entry_date,'%e-%m-%Y'), '%b %y') 
+          ELSE 
+            DATE_FORMAT(project_schedule_segments.start_date, '%b %y') 
+          END) 
+        month
+      
+        FROM profit_view
+          LEFT JOIN project_schedules ON
+            profit_view.project_id = project_schedules.project_id
+              LEFT JOIN project_schedule_segments  ON 
+                project_schedules.id = project_schedule_segments.schedule_id 
+                
+        WHERE ( project_status = 'P' OR project_status = 'C' ) 
+        AND project_start <= STR_TO_DATE('${fiscalYearEnd}' ,'%Y-%m-%d') 
+        AND project_end >= STR_TO_DATE('${fiscalYearStart}' ,'%Y-%m-%d') 
+        AND project_schedules.deleted_at IS NULL 
+        AND project_schedule_segments.deleted_at IS NULL 
+        GROUP BY project_type, month
+
+    `);
+
+      const forecast = await getManager().query(`
+        SELECT 
+          project_type,
+          resource_start,
+          resource_end,
+          resource_contract_start,
+          resource_contract_end,
+          SUM(forcaste_buy_rate) forcaste_buy_rates,
+          SUM(forcaste_sell_rate) forcaste_sell_rates
+
+      FROM forecaste_view
+      WHERE ( project_status = 'P' OR project_status = 'C' )
+            AND resource_contract_start <= STR_TO_DATE('2023-30-06' ,'%Y-%m-%d') 
+            AND (resource_contract_end IS NULL OR  resource_contract_end >= CURRENT_DATE())
+            AND (resource_start BETWEEN  STR_TO_DATE('2023-30-06' ,'%Y-%m-%d')  AND STR_TO_DATE('2023-30-06' ,'%Y-%m-%d')  )
+        GROUP BY project_id
+
+      `);
+
+      interface CalendarInterface {
+        date: string;
+        holiday_type_id: number;
+      }
+
+      let calendar: CalendarInterface[] = await getManager().query(`
+      SELECT DATE_FORMAT(date, '%Y-%m-%d') date, holiday_type_id FROM  calendar_holidays 
+      WHERE  date <= STR_TO_DATE('${fiscalYearEnd}' ,'%Y-%m-%d') 
+        AND date >= STR_TO_DATE('${fiscalYearStart}' ,'%Y-%m-%d')`);
+
+      interface HolidayInterface {
+        [date: string]: number
+      }
+
+      let holidays: HolidayInterface = calendar.reduce(
+        (a, { date, holiday_type_id }) => ({ ...a, [date]: holiday_type_id }),
+        {}
+      ); 
+
+      
+
+    res.status(200).json({
+      success: true,
+      message: 'Work In Hand Forecasting',
+      data: actual,
+    });
   }
 }

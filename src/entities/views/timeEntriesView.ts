@@ -11,7 +11,7 @@ import { ViewEntity, ViewColumn } from "typeorm"
             JOIN milestones m ON
             m.id = tpe.milestone_id`,
 })
-export class TimeEntriesViews {    
+export class TimeEntriesView {    
     
     @ViewColumn()
     employee_id: number
