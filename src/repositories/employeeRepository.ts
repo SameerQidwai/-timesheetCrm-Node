@@ -264,7 +264,7 @@ export class EmployeeRepository extends Repository<Employee> {
         leaveRequestBalanceObj.balanceHours = 0;
         leaveRequestBalanceObj.carryForward = 0;
         leaveRequestBalanceObj.used = 0;
-        leaveRequestBalanceObj.typeId = policy.id;
+        leaveRequestBalanceObj.typeId = policy.leaveRequestTypeId;
         leaveRequestBalanceObj.employeeId = employeeObj.id;
 
         await transactionalEntityManager.save(leaveRequestBalanceObj);
@@ -637,7 +637,10 @@ ${process.env.ORGANIZATION} Support Team`
           .leaveRequestPolicyLeaveRequestTypes) {
           let _flag_found = 0;
           for (let balance of employeeObj.leaveRequestBalances) {
-            if (policy.id == balance.typeId && _flag_found == 0) {
+            if (
+              policy.leaveRequestTypeId == balance.typeId &&
+              _flag_found == 0
+            ) {
               _flag_found = 1;
             }
           }
@@ -647,7 +650,7 @@ ${process.env.ORGANIZATION} Support Team`
             leaveRequestBalanceObj.balanceHours = 0;
             leaveRequestBalanceObj.carryForward = 0;
             leaveRequestBalanceObj.used = 0;
-            leaveRequestBalanceObj.typeId = policy.id;
+            leaveRequestBalanceObj.typeId = policy.leaveRequestTypeId;
             leaveRequestBalanceObj.employeeId = employeeObj.id;
 
             await transactionalEntityManager.save(leaveRequestBalanceObj);
