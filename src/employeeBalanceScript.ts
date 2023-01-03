@@ -24,14 +24,17 @@ connection
               (policy) => {
                 let _flag_found = 0;
                 employee.leaveRequestBalances.forEach((balance) => {
-                  if (policy.id == balance.typeId && _flag_found == 0) {
+                  if (
+                    policy.leaveRequestTypeId == balance.typeId &&
+                    _flag_found == 0
+                  ) {
                     _flag_found = 1;
                   }
                 });
                 if (_flag_found == 0) {
                   let leaveRequestBalanceObj = new LeaveRequestBalance();
                   leaveRequestBalanceObj.balanceHours = 0;
-                  leaveRequestBalanceObj.typeId = policy.id;
+                  leaveRequestBalanceObj.typeId = policy.leaveRequestTypeId;
                   leaveRequestBalanceObj.employeeId = employee.id;
                   leaveRequestBalanceObj.carryForward = 0;
                   leaveRequestBalanceObj.used = 0;

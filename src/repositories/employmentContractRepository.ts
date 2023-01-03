@@ -121,7 +121,10 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
             .leaveRequestPolicyLeaveRequestTypes) {
             let _flag_found = 0;
             for (let balance of employee.leaveRequestBalances) {
-              if (policy.id == balance.typeId && _flag_found == 0) {
+              if (
+                policy.leaveRequestTypeId == balance.typeId &&
+                _flag_found == 0
+              ) {
                 _flag_found = 1;
               }
             }
@@ -130,7 +133,7 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
               leaveRequestBalanceObj.balanceHours = 0;
               leaveRequestBalanceObj.carryForward = 0;
               leaveRequestBalanceObj.used = 0;
-              leaveRequestBalanceObj.typeId = policy.id;
+              leaveRequestBalanceObj.typeId = policy.leaveRequestTypeId;
               leaveRequestBalanceObj.employeeId = employee.id;
 
               await transactionalEntityManager.save(leaveRequestBalanceObj);
@@ -288,7 +291,10 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
             .leaveRequestPolicyLeaveRequestTypes) {
             let _flag_found = 0;
             for (let balance of employee.leaveRequestBalances) {
-              if (policy.id == balance.typeId && _flag_found == 0) {
+              if (
+                policy.leaveRequestTypeId == balance.typeId &&
+                _flag_found == 0
+              ) {
                 _flag_found = 1;
               }
             }
@@ -297,7 +303,7 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
               leaveRequestBalanceObj.balanceHours = 0;
               leaveRequestBalanceObj.carryForward = 0;
               leaveRequestBalanceObj.used = 0;
-              leaveRequestBalanceObj.typeId = policy.id;
+              leaveRequestBalanceObj.typeId = policy.leaveRequestTypeId;
               leaveRequestBalanceObj.employeeId = employee.id;
 
               await transactionalEntityManager.save(leaveRequestBalanceObj);

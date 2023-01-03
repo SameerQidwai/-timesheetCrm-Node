@@ -37,7 +37,10 @@ let runYearly = async () => {
                 let _flag_create = 1;
                 employee.leaveRequestBalances.forEach((balance) => {
                   let _flag_found = 0;
-                  if (policy.id == balance.typeId && _flag_found == 0) {
+                  if (
+                    policy.leaveRequestTypeId == balance.typeId &&
+                    _flag_found == 0
+                  ) {
                     _flag_found = 1;
                     _flag_create = 0;
                   }
@@ -76,7 +79,7 @@ let runYearly = async () => {
                   ) {
                     leaveRequestBalanceObj.balanceHours = policy.resetHours;
                   }
-                  leaveRequestBalanceObj.typeId = policy.id;
+                  leaveRequestBalanceObj.typeId = policy.leaveRequestTypeId;
                   leaveRequestBalanceObj.employeeId = employee.id;
                   leaveRequestBalanceObj.carryForward = 0;
                   leaveRequestBalanceObj.used = 0;
