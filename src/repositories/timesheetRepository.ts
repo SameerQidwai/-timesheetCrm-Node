@@ -11,6 +11,8 @@ import {
   In,
   Not,
   IsNull,
+  MoreThanOrEqual,
+  LessThanOrEqual,
 } from 'typeorm';
 import { Timesheet } from '../entities/timesheet';
 import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
@@ -1935,7 +1937,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     //-- END OF MODIFIED RESPONSE FOR FRONTEND
   }
 
-  async getMilestoneResources(
+  async _getMilestoneResources(
     milestoneId: number,
     type: string = 'A&M'
   ): Promise<any | undefined> {
@@ -2039,11 +2041,12 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
     console.log(cStartDate, cEndDate);
 
-    let users = await this.getMilestoneResources(milestoneId, 'Allocations');
+    let users = await this._getMilestoneResources(milestoneId, 'Allocations');
+
     let timesheets = await this.find({
       where: {
-        startDate: cStartDate,
-        endDate: cEndDate,
+        startDate: MoreThanOrEqual(cStartDate),
+        endDate: LessThanOrEqual(cEndDate),
         employeeId: In(users.ids),
       },
       relations: [
