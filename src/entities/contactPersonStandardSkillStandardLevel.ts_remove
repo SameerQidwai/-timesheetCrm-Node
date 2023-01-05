@@ -396,3 +396,54 @@ SELECT
       DATE_FORMAT(project_schedule_segments.end_date,'%Y-%m-%d'))
 
     GROUP BY project_type, month;
+
+
+//FORECAST REVENUE FINAL
+  SELECT 
+  month_total_buy,
+  time_base.project_type,
+  month,
+  (CASE WHEN project_type = 2 
+    THEN 
+        time_base.month_total_sell
+    ELSE 
+      SUM(project_schedule_segments.amount)
+    END ) month_total_sell
+  FROM (SELECT 
+      SUM(cost_rate)  month_total_buy, 
+      SUM(revenue_rate) month_total_sell, 
+      project_type, 
+      calendar_date,
+      DATE_FORMAT(STR_TO_DATE(calendar_view_filtered.calendar_date,'%Y-%m-%d'), '%b %y') month
+
+        From (
+            SELECT * FROM calendar_view
+              WHERE (calendar_view.calendar_date BETWEEN '2022-07-01' AND '2023-06-30')
+            ) as calendar_view_filtered
+
+            LEFT JOIN revenue_cost_view
+            ON (
+              (calendar_view_filtered.calendar_date BETWEEN 
+                DATE_FORMAT(resource_start,'%Y-%m-%d') AND 
+                DATE_FORMAT(resource_end,'%Y-%m-%d')
+              ) AND
+              (calendar_view_filtered.calendar_date BETWEEN 
+                DATE_FORMAT(resource_contract_start,'%Y-%m-%d') AND 
+                DATE_FORMAT(IFNULL(resource_contract_end, '2049-06-30'),'%Y-%m-%d')
+              )
+            )
+
+        WHERE is_holidays = 0 AND is_weekday = 1
+
+        GROUP BY project_type, month ) as time_base
+
+    LEFT JOIN opportunities
+      ON opportunities.type = project_type
+    LEFT JOIN  project_schedules 
+      ON project_schedules.project_id = opportunities.id 
+      LEFT JOIN project_schedule_segments
+      ON project_schedule_segments.schedule_id = project_schedules.id
+      AND (time_base.calendar_date BETWEEN DATE_FORMAT(project_schedule_segments.start_date,'%Y-%m-%d') AND 
+      DATE_FORMAT(project_schedule_segments.end_date,'%Y-%m-%d'))
+    WHERE project_schedule_segments.deleted_at IS NULL AND project_schedules.deleted_at IS NULL
+  GROUP BY project_type, month  
