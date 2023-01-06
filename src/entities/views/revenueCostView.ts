@@ -17,8 +17,9 @@ import { ViewEntity, ViewColumn } from "typeorm"
     o.start_date project_start, o.end_date project_end, 
 
     org.name project_organization_name,
-    ec.no_of_hours resource_contract_hours, ec.start_date resource_contract_start, 
-    ec.end_date  resource_contract_end, ec.remuneration_amount salary, ec.remuneration_amount_per salary_per,
+    ec.no_of_hours resource_contract_hours, ec.no_of_days resource_contract_days_per_week, 
+    ec.start_date resource_contract_start, ec.end_date  resource_contract_end, 
+    ec.remuneration_amount salary, ec.remuneration_amount_per salary_per,
     ec.type employment_type, ec.boh_percent,
 
     (ora.buying_rate *( (ec.no_of_hours /5) * (ora.effort_rate /100) ) ) cost_rate,
