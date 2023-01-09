@@ -6,6 +6,7 @@ import { GlobalVariableLabel } from '../entities/globalVariableLabel';
 import { getManager } from 'typeorm';
 import { EmploymentType } from '../constants/constants';
 import { ContactPerson } from '../entities/contactPerson';
+import { Milestone } from '../entities/milestone';
 
 export let getProjectsByUserId = (
   projects: Opportunity[],
@@ -284,4 +285,17 @@ export let getFiscalYear = (momentObj: Moment | null): number => {
   if (momentObj.month() >= 7 && momentObj.month() <= 12)
     return momentObj.year();
   else return momentObj.clone().subtract(1, 'year').year();
+};
+
+export let pushMilestoneInArray = (
+  array: Array<any>,
+  milestone: Milestone,
+  project: Opportunity,
+  type = 'id'
+): Array<any> => {
+  if (type === 'value') {
+  } else {
+  }
+
+  return array;
 };

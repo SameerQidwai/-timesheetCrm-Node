@@ -21,7 +21,7 @@ export class ReportController {
 
     for (let item of query.split(',')) {
       if (isNaN(parseInt(item))) continue;
-      
+
       ids.push(parseInt(item));
     }
 
@@ -32,6 +32,10 @@ export class ReportController {
     try {
       let queryStartDate = req.query.startDate as string;
       let queryEndDate = req.query.endDate as string;
+
+      let queryExcludeWorkId = this._customQueryParser(
+        req.query.excludeWorkId as string
+      );
 
       let queryResourceType = this._customQueryParser(
         req.query.resourceType as string
@@ -83,7 +87,10 @@ export class ReportController {
           'contactPersonOrganization.contactPerson.allocations.opportunityResource.milestone',
           'contactPersonOrganization.contactPerson.allocations.opportunityResource.milestone.project',
         ],
-        where: { active: true },
+        where: {
+          active: true,
+          createdAt: LessThanOrEqual(endDate.toDate()),
+        },
       });
 
       const projectStatuses = ['P', 'C'];
@@ -94,9 +101,23 @@ export class ReportController {
           .allocations) {
           let position = allocation.opportunityResource;
 
+          let milestone = position.milestone;
+
+          if (!milestone) continue;
+
+          let project = milestone.project;
+
+          if (!project) continue;
+
           if (position) {
-            if (!projectStatuses.includes(position.milestone.project.status))
+            if (!projectStatuses.includes(project.status)) continue;
+
+            if (
+              queryExcludeWorkId.length &&
+              queryExcludeWorkId.includes(project.id)
+            ) {
               continue;
+            }
 
             let allocationStart = moment(position.startDate);
             let allocationEnd = moment(position.endDate);
@@ -854,7 +875,7 @@ export class ReportController {
         LEFT JOIN contact_person_View ON
           contact_person_View.employee_id = project_manager_id
     `);
-          /*********
+    /*********
            * I don't know how this fiscal year project getting me correct data ... need to fix
            * solution
               ((start_date  BETWEEN STR_TO_DATE('2022-07-01' ,'%Y-%m-%d') AND STR_TO_DATE('2023-06-30' ,'%Y-%m-%d')) OR 
@@ -887,16 +908,15 @@ export class ReportController {
         totalBuy:
           (actualStatement?.[el.project_id]?.['totalBuy'] ?? 0) +
           el.month_total_buy,
-        YTDTotalSell: (moment(el.month, 'MMM YY').isBetween(
+        YTDTotalSell: moment(el.month, 'MMM YY').isBetween(
           fiscalYearStart,
           fiscalYearEnd,
           'month',
           '[]'
         )
-          ? ((actualStatement?.[el.project_id]?.['YTDTotalSell'] ??
-              0) + el.month_total_sell)
-          : (actualStatement?.[el.project_id]?.['YTDTotalSell'] ??
-            0)),
+          ? (actualStatement?.[el.project_id]?.['YTDTotalSell'] ?? 0) +
+            el.month_total_sell
+          : actualStatement?.[el.project_id]?.['YTDTotalSell'] ?? 0,
       };
     });
 
@@ -984,7 +1004,9 @@ export class ReportController {
         //   monthTotalBuy: (actualStatement?.[el.project_organization_id]?.[el.month]?.['monthTotalBuy'] ??0) + el.month_total_buy,
         //   monthTotalSell: (actualStatement?.[el.project_organization_id]?.[el.month]?.['monthTotalSell'] ??0) + el.month_total_sell,
         // },
-        [el.month]: (actualStatement?.[el.project_organization_id]?.[el.month]?? 0) + el.month_total_sell,
+        [el.month]:
+          (actualStatement?.[el.project_organization_id]?.[el.month] ?? 0) +
+          el.month_total_sell,
 
         totalSell:
           (actualStatement?.[el.project_organization_id]?.['totalSell'] ?? 0) +
@@ -1629,7 +1651,11 @@ export class ReportController {
     }
   }
 
-  async leaveRequestSummaryView(req: Request, res: Response, next: NextFunction) {
+  async leaveRequestSummaryView(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
     try {
       const manager = getManager();
 
@@ -1640,25 +1666,27 @@ export class ReportController {
       let queryContactPersonId = req.query.contactPersonId as string;
       let queryleaveStatus = req.query.leaveStatus as string;
 
-      let startDate = queryStartDate ?? moment().startOf('month').format('YYYY-MM-DD')
-      let endDate = queryEndDate ?? moment().endOf('month').format('YYYY-MM-DD')
+      let startDate =
+        queryStartDate ?? moment().startOf('month').format('YYYY-MM-DD');
+      let endDate =
+        queryEndDate ?? moment().endOf('month').format('YYYY-MM-DD');
 
       let projectFilter = queryProjectId
-      ? `AND project_id IN (${queryProjectId})`
-      : '';
+        ? `AND project_id IN (${queryProjectId})`
+        : '';
 
       let leaveTypeFilter = queryLeaveTypeId
-      ? `AND leave_type_id IN (${queryLeaveTypeId})`
-      : '';
-      
+        ? `AND leave_type_id IN (${queryLeaveTypeId})`
+        : '';
+
       let contactPersonFilter = queryContactPersonId
-      ? `AND contact_person_id IN (${queryContactPersonId})`
-      : '';
+        ? `AND contact_person_id IN (${queryContactPersonId})`
+        : '';
 
       let leaveStatusFilter = queryleaveStatus
-      ? `AND leave_status_index IN (${queryleaveStatus})`
-      : '';
-      
+        ? `AND leave_status_index IN (${queryleaveStatus})`
+        : '';
+
       const leave_requests = await manager.query(`
       SELECT 
         leave_request_id,
@@ -1680,7 +1708,7 @@ export class ReportController {
           AND leave_entry_date <= STR_TO_DATE('${endDate}' ,'%Y-%m-%d')
           ${projectFilter} ${leaveTypeFilter} ${contactPersonFilter} ${leaveStatusFilter}
       GROUP BY employee_id, leave_request_id
-      `)
+      `);
 
       interface SummaryInterface {
         employeeName: string;
@@ -1695,15 +1723,15 @@ export class ReportController {
           leaveTypeId: number;
           leaveType: string;
           projectId: number;
-          startDate: Moment,
-          endDate: Moment,
+          startDate: Moment;
+          endDate: Moment;
           projectTitle: string;
         }[];
       }
 
       // let summary: SummaryInterface[] = [];
-      let summary:  {[key: string]: SummaryInterface} ={}
-      leave_requests.forEach((request: any) =>{
+      let summary: { [key: string]: SummaryInterface } = {};
+      leave_requests.forEach((request: any) => {
         summary[request.employee_id] = {
           employeeName: request.employee_name,
           employeeCode: request.employee_id,
@@ -1722,12 +1750,11 @@ export class ReportController {
               leaveStatus: request.leave_status,
               projectId: request.project_id,
               startDate: moment(request.start_leave_date),
-              endDate: moment(request.end_leave_date)
+              endDate: moment(request.end_leave_date),
             },
           ],
         };
-      })
-  
+      });
 
       res.status(200).json({
         success: true,
@@ -1778,7 +1805,7 @@ export class ReportController {
 
     `);
 
-      const forecast = await getManager().query(`
+    const forecast = await getManager().query(`
         SELECT 
           project_type,
           resource_start,
@@ -1797,26 +1824,24 @@ export class ReportController {
 
       `);
 
-      interface CalendarInterface {
-        date: string;
-        holiday_type_id: number;
-      }
+    interface CalendarInterface {
+      date: string;
+      holiday_type_id: number;
+    }
 
-      let calendar: CalendarInterface[] = await getManager().query(`
+    let calendar: CalendarInterface[] = await getManager().query(`
       SELECT DATE_FORMAT(date, '%Y-%m-%d') date, holiday_type_id FROM  calendar_holidays 
       WHERE  date <= STR_TO_DATE('${fiscalYearEnd}' ,'%Y-%m-%d') 
         AND date >= STR_TO_DATE('${fiscalYearStart}' ,'%Y-%m-%d')`);
 
-      interface HolidayInterface {
-        [date: string]: number
-      }
+    interface HolidayInterface {
+      [date: string]: number;
+    }
 
-      let holidays: HolidayInterface = calendar.reduce(
-        (a, { date, holiday_type_id }) => ({ ...a, [date]: holiday_type_id }),
-        {}
-      ); 
-
-      
+    let holidays: HolidayInterface = calendar.reduce(
+      (a, { date, holiday_type_id }) => ({ ...a, [date]: holiday_type_id }),
+      {}
+    );
 
     res.status(200).json({
       success: true,
