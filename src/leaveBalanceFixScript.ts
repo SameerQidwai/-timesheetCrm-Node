@@ -11,7 +11,7 @@ connection
       let policyTypePivot = await getManager().findOne(
         LeaveRequestPolicyLeaveRequestType,
         balance.typeId,
-        { relations: ['leaveRequestType'] }
+        { relations: ['leaveRequestType'], withDeleted: true }
       );
 
       if (!policyTypePivot) continue;
