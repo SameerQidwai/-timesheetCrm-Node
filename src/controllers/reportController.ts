@@ -1701,7 +1701,7 @@ export class ReportController {
         employee_name,
         project_id,
         project_title,
-        SUM(leave_entry_hours) total_request_hours,
+        CAST(sum(leave_entry_hours) AS DECIMAL(32,4)) total_request_hours,
         MIN(leave_entry_date) start_leave_date,
         MAX(leave_entry_date) end_leave_date
       

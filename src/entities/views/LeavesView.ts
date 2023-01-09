@@ -58,8 +58,10 @@ import { ViewEntity, ViewColumn } from "typeorm"
                 lr.id = lre.leave_request_id
             JOIN contact_person_View cpv ON
                 lr.employee_id = cpv.employee_id
+            LEFT JOIN leave_request_policy_leave_request_types policy_type ON 
+                lr.type_id = policy_type.id
             LEFT JOIN leave_request_types lrt ON
-                lr.type_id = lrt.id
+                policy_type.leave_request_type_id = lrt.id
             LEFT JOIN opportunities o ON
                 lr.work_id = o.id
 

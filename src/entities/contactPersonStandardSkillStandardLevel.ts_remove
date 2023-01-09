@@ -345,7 +345,7 @@ SELECT
     GROUP BY project_type, month;
 
   SELECT  
-    month_total_buy,
+    month_total_buy, 
     time_base.project_type,
     month,
     (CASE WHEN project_type = 2 
@@ -474,7 +474,7 @@ SELECT
   GROUP BY month;
 
 
--- SQL CASUAL WILL RUN ON EVERY DAY MONTHLY
+-- SQL perminant WILL RUN ON EVERY DAY MONTHLY
   SELECT 
     SUM(salary * (ABS(boh_percent - 100)/100)) permemnant_salaries ,-- to seperate boh percent for salaries
     SUM(salary * (ABS(boh_percent - 100)/100) * (SELECT
