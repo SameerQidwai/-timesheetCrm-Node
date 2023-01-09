@@ -102,6 +102,8 @@ export class ReportController {
           .allocations) {
           let position = allocation.opportunityResource;
 
+          if (!position) continue;
+
           let milestone = position.milestone;
 
           if (!milestone) continue;
@@ -110,29 +112,28 @@ export class ReportController {
 
           if (!project) continue;
 
-          if (position) {
-            if (!projectStatuses.includes(project.status)) continue;
+          if (!projectStatuses.includes(project.status)) continue;
 
-            if (
-              queryExcludeWorkId.length &&
-              queryExcludeWorkId.includes(project.id)
-            ) {
-              continue;
-            }
+          if (
+            queryExcludeWorkId.length &&
+            queryExcludeWorkId.includes(project.id)
+          ) {
+            continue;
+          }
 
-            let allocationStart = moment(position.startDate);
-            let allocationEnd = moment(position.endDate);
-            if (
-              allocationStart.isBetween(startDate, endDate, 'date', '[]') ||
-              allocationEnd.isBetween(startDate, endDate, 'date', '[]') ||
-              (allocationStart.isBefore(startDate) &&
-                allocationEnd.isAfter(endDate))
-            ) {
-              ignore = true;
-              break;
-            }
+          let allocationStart = moment(position.startDate);
+          let allocationEnd = moment(position.endDate);
+          if (
+            allocationStart.isBetween(startDate, endDate, 'date', '[]') ||
+            allocationEnd.isBetween(startDate, endDate, 'date', '[]') ||
+            (allocationStart.isBefore(startDate) &&
+              allocationEnd.isAfter(endDate))
+          ) {
+            ignore = true;
+            break;
           }
         }
+
         if (ignore) {
           ignoreIds.push(employee.id);
         }

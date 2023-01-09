@@ -572,6 +572,7 @@ export class ProjectRepository extends Repository<Opportunity> {
           'milestones',
           'milestones.timesheetMilestoneEntries',
           'milestones.opportunityResources',
+          'milestones.opportunityResources.opportunityResourceAllocations',
           'leaveRequests',
         ],
       });
