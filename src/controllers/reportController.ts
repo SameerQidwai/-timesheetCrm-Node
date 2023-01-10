@@ -101,6 +101,8 @@ export class ReportController {
           .allocations) {
           let position = allocation.opportunityResource;
 
+          if (!position) continue;
+
           let milestone = position.milestone;
 
           if (!milestone) continue;
@@ -109,29 +111,28 @@ export class ReportController {
 
           if (!project) continue;
 
-          if (position) {
-            if (!projectStatuses.includes(project.status)) continue;
+          if (!projectStatuses.includes(project.status)) continue;
 
-            if (
-              queryExcludeWorkId.length &&
-              queryExcludeWorkId.includes(project.id)
-            ) {
-              continue;
-            }
+          if (
+            queryExcludeWorkId.length &&
+            queryExcludeWorkId.includes(project.id)
+          ) {
+            continue;
+          }
 
-            let allocationStart = moment(position.startDate);
-            let allocationEnd = moment(position.endDate);
-            if (
-              allocationStart.isBetween(startDate, endDate, 'date', '[]') ||
-              allocationEnd.isBetween(startDate, endDate, 'date', '[]') ||
-              (allocationStart.isBefore(startDate) &&
-                allocationEnd.isAfter(endDate))
-            ) {
-              ignore = true;
-              break;
-            }
+          let allocationStart = moment(position.startDate);
+          let allocationEnd = moment(position.endDate);
+          if (
+            allocationStart.isBetween(startDate, endDate, 'date', '[]') ||
+            allocationEnd.isBetween(startDate, endDate, 'date', '[]') ||
+            (allocationStart.isBefore(startDate) &&
+              allocationEnd.isAfter(endDate))
+          ) {
+            ignore = true;
+            break;
           }
         }
+
         if (ignore) {
           ignoreIds.push(employee.id);
         }
@@ -1699,7 +1700,7 @@ export class ReportController {
         employee_name,
         project_id,
         project_title,
-        SUM(leave_entry_hours) total_request_hours,
+        CAST(sum(leave_entry_hours) AS DECIMAL(32,4)) total_request_hours,
         MIN(leave_entry_date) start_leave_date,
         MAX(leave_entry_date) end_leave_date
       

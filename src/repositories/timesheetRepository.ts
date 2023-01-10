@@ -132,7 +132,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
       milestones.push(milestone);
     }
 
-    let leaveRequest = await this.manager.find(LeaveRequest, {
+    let leaveRequests = await this.manager.find(LeaveRequest, {
       where: [
         {
           employeeId: userId,
@@ -145,18 +145,18 @@ export class TimesheetRepository extends Repository<Timesheet> {
     });
 
     let _projectAndTypeIndexer: any = {};
-    leaveRequest.forEach((leaveRequest) => {
+    leaveRequests.forEach((leaveRequest) => {
       let leaveRequestDetails = leaveRequest.getEntriesDetails;
       if (
         moment(leaveRequestDetails.startDate).isBetween(
-          cStartDate,
-          cEndDate,
+          mStartDate,
+          mEndDate,
           'date',
           '[]'
-        ) &&
+        ) ||
         moment(leaveRequestDetails.endDate).isBetween(
-          cStartDate,
-          cEndDate,
+          mStartDate,
+          mEndDate,
           'date',
           '[]'
         )
@@ -170,13 +170,24 @@ export class TimesheetRepository extends Repository<Timesheet> {
           let resLeaveRequest = milestones[_checker];
 
           leaveRequest.entries.forEach((entry) => {
-            resLeaveRequest[moment(entry.date, 'YYYY-MM-DD').format('D/M')] = {
-              date: moment(entry.date, 'YYYY-MM-DD').format('D-M-Y'),
-              hours: entry.hours,
-              status: leaveRequest.getStatus,
-              statusMsg: leaveRequest.note,
-              notes: leaveRequest.desc,
-            };
+            if (
+              entry.hours > 0 &&
+              moment(entry.date, 'YYYY-MM-DD').isBetween(
+                mStartDate,
+                mEndDate,
+                'date',
+                '[]'
+              )
+            ) {
+              resLeaveRequest[moment(entry.date, 'YYYY-MM-DD').format('D/M')] =
+                {
+                  date: moment(entry.date, 'YYYY-MM-DD').format('D-M-Y'),
+                  hours: entry.hours,
+                  status: leaveRequest.getStatus,
+                  statusMsg: leaveRequest.note,
+                  notes: leaveRequest.desc,
+                };
+            }
           });
         } else {
           _projectAndTypeIndexer[
@@ -193,10 +204,15 @@ export class TimesheetRepository extends Repository<Timesheet> {
           };
 
           leaveRequest.entries.forEach((entry) => {
+            console.log(mStartDate, mEndDate, entry.date);
             if (
               entry.hours > 0 &&
-              moment(entry.date, 'YYYY-MM-DD').isSameOrAfter(mStartDate) &&
-              moment(entry.date, 'YYYY-MM-DD').isSameOrBefore(mEndDate)
+              moment(entry.date, 'YYYY-MM-DD').isBetween(
+                mStartDate,
+                mEndDate,
+                'date',
+                '[]'
+              )
             ) {
               resLeaveRequest[moment(entry.date, 'YYYY-MM-DD').format('D/M')] =
                 {
