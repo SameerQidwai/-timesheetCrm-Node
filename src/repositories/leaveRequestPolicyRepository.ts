@@ -1,12 +1,5 @@
 import { LeaveRequestPolicyDTO } from '../dto';
-import {
-  EntityManager,
-  EntityRepository,
-  getManager,
-  Repository,
-  Transaction,
-  TransactionManager,
-} from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import { LeaveRequestPolicy } from '../entities/leaveRequestPolicy';
 import { LeaveRequestPolicyLeaveRequestType } from '../entities/leaveRequestPolicyLeaveRequestType';
 import { LeaveRequestType } from '../entities/leaveRequestType';
