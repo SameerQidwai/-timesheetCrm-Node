@@ -460,19 +460,46 @@ export class TimesheetController {
 
       const { grantLevel } = res.locals;
       const { user } = res.locals;
+      let records: any = [];
 
-      console.log('PROJECT => ', milestoneId);
-      let record = await repository.getAnyTimesheetByMilestone(
-        startDate,
-        endDate,
-        milestoneId,
-        user.id
-      );
+      if (grantLevel.includes('ANY')) {
+        let milestoneIds = await repository._getUserAnyMilestones('array');
+
+        if (!milestoneIds.includes(milestoneId) && milestoneId != 0) {
+          throw new Error('Milestone not found');
+        }
+
+        records = await repository.getAnyTimesheetByMilestone(
+          startDate,
+          endDate,
+          milestoneId == 0 ? milestoneIds : [milestoneId],
+          user.id
+        );
+      } else if (grantLevel.includes('MANAGE')) {
+        let milestoneIds = await repository._getUserManageMilestones(
+          user.id,
+          'array'
+        );
+
+        if (!milestoneIds.includes(milestoneId) && milestoneId != 0) {
+          throw new Error('Milestone not found');
+        }
+
+        records = await repository.getAnyTimesheetByMilestone(
+          startDate,
+          endDate,
+          milestoneId == 0 ? milestoneIds : [milestoneId],
+          user.id
+        );
+      } else {
+        records = [];
+      }
+
       res.status(200).json({
         success: true,
         // message: `Win Opportunity ${req.params.id}`,
         message: 'Specific Timesheet by Date (Milestone)',
-        data: record,
+        data: records,
       });
     } catch (e) {
       next(e);
@@ -485,8 +512,21 @@ export class TimesheetController {
     next: NextFunction
   ) {
     try {
+      let records: any = [];
       const repository = getCustomRepository(TimesheetRepository);
-      let records = await repository.getAnyUserMilestones();
+      const { grantLevel } = res.locals;
+      const { user } = res.locals;
+
+      if (grantLevel.includes('ANY')) {
+        records = await repository._getUserAnyMilestones();
+      } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
+        records = await repository._getUserManageAndOwnMilestones(user.id);
+      } else if (grantLevel.includes('MANAGE')) {
+        records = await repository._getUserManageMilestones(user.id);
+      } else if (grantLevel.includes('OWN')) {
+        records = await repository._getUserOwnMilestones(user.id);
+      }
+
       console.log('records: ', records);
       res.status(200).json({
         success: true,
@@ -496,5 +536,17 @@ export class TimesheetController {
     } catch (e) {
       next(e);
     }
+  }
+
+  _customQueryParser(query = '') {
+    let ids = [];
+
+    for (let item of query.split(',')) {
+      if (isNaN(parseInt(item))) continue;
+
+      ids.push(parseInt(item));
+    }
+
+    return ids;
   }
 }

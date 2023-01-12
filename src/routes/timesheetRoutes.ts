@@ -16,7 +16,10 @@ router
 
 router
   .route('/milestones')
-  .get([isLoggedIn], contr.getTimesheetUserMilestones.bind(contr));
+  .get(
+    [isLoggedIn, can(Action.APPROVAL, Resource.TIMESHEETS)],
+    contr.getTimesheetUserMilestones.bind(contr)
+  );
 
 router
   .route('/milestoneEntriesUpdate')
@@ -25,7 +28,7 @@ router
 router
   .route('/milestone/:startDate&:endDate&:milestoneId')
   .get(
-    [isLoggedIn, can(Action.READ, Resource.TIMESHEETS)],
+    [isLoggedIn, can(Action.APPROVAL, Resource.TIMESHEETS)],
     contr.getTimesheetByMilestone.bind(contr)
   );
 
