@@ -187,6 +187,7 @@ export class LeaveRequestPolicyRepository extends Repository<LeaveRequestPolicy>
       );
 
       for (let contract of contracts) {
+        if (!contract.isActive) continue;
         for (let policy of contract.leaveRequestPolicy
           .leaveRequestPolicyLeaveRequestTypes) {
           let _flag_found = 0;

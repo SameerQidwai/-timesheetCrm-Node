@@ -4,6 +4,7 @@ import { Base } from './common/base';
 import { Employee } from './employee';
 import { File } from './file';
 import { LeaveRequestPolicy } from './leaveRequestPolicy';
+import moment from 'moment';
 
 @Entity('employment_contracts')
 export class EmploymentContract extends Base {
@@ -90,4 +91,15 @@ export class EmploymentContract extends Base {
   @ManyToOne(() => Employee, (employee) => employee.employmentContracts)
   @JoinColumn({ name: 'employee_id' })
   employee: Employee;
+
+  public get isActive(): boolean {
+    if (
+      this.endDate == null ||
+      moment().isBetween(this.startDate, this.endDate, 'date', '[]')
+    ) {
+      return true;
+    }
+
+    return false;
+  }
 }
