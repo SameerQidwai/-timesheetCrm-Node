@@ -24,7 +24,8 @@
     "updateEmployeeBalance": "ts-node src/employeeBalanceScript.ts",
     "fixOpportunityResources": "ts-node src/deleteEmptyResourceScript.ts",
     "imexBaseSeed": "ts-node src/importsExportsSeed.ts",
-    "leaveBalanceFix": "ts-node src/leaveBalanceFixScript.ts"
+    "leaveBalanceFix": "ts-node src/leaveBalanceFixScript.ts",
+    "calendarDaysGenerate": "ts-node src/calendarDaysFillScript.ts"
   },
   "author": "",
   "license": "ISC",
