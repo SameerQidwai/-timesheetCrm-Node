@@ -13,6 +13,7 @@ import { Employee } from './employee';
 import { LeaveRequestPolicyLeaveRequestType } from './leaveRequestPolicyLeaveRequestType';
 import { LeaveRequestEntry } from './leaveRequestEntry';
 import { LeaveRequestStatus } from '../constants/constants';
+import { LeaveRequestType } from './leaveRequestType';
 
 @Entity('leave_requests')
 export class LeaveRequest extends Base {
@@ -62,9 +63,9 @@ export class LeaveRequest extends Base {
   @Column({ name: 'type_id', nullable: true })
   typeId: number | null;
 
-  @ManyToOne(() => LeaveRequestPolicyLeaveRequestType)
+  @ManyToOne(() => LeaveRequestType)
   @JoinColumn({ name: 'type_id' })
-  type: LeaveRequestPolicyLeaveRequestType;
+  type: LeaveRequestType;
 
   @Column({ name: 'work_id', nullable: true })
   workId: number | null;

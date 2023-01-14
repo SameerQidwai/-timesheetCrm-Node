@@ -135,7 +135,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         },
         { employeeId: userId, approvedAt: Not(IsNull()), rejectedAt: IsNull() },
       ],
-      relations: ['entries', 'work', 'type', 'type.leaveRequestType'],
+      relations: ['entries', 'work', 'type'],
     });
 
     let _projectAndTypeIndexer: any = {};
@@ -181,7 +181,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
             leaveRequest: true,
             project: leaveRequest.work?.title ?? '-',
             workId: leaveRequest.workId,
-            leaveType: leaveRequest.type?.leaveRequestType.label ?? 'Unpaid',
+            leaveType: leaveRequest.type?.label ?? 'Unpaid',
             typeId: leaveRequest.typeId,
             totalHours: 0.0,
           };
@@ -345,7 +345,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         },
         { employeeId: userId, approvedAt: Not(IsNull()), rejectedAt: IsNull() },
       ],
-      relations: ['entries', 'work', 'type', 'type.leaveRequestType'],
+      relations: ['entries', 'work', 'type'],
     });
 
     let _projectAndTypeIndexer: any = {};
@@ -391,7 +391,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
             leaveRequest: true,
             project: leaveRequest.work?.title ?? '-',
             workId: leaveRequest.workId,
-            leaveType: leaveRequest.type?.leaveRequestType.label ?? 'Unpaid',
+            leaveType: leaveRequest.type?.label ?? 'Unpaid',
             typeId: leaveRequest.typeId,
             totalHours: 0.0,
           };
@@ -552,7 +552,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         },
         { employeeId: userId, approvedAt: Not(IsNull()), rejectedAt: IsNull() },
       ],
-      relations: ['entries', 'work', 'type', 'type.leaveRequestType'],
+      relations: ['entries', 'work', 'type'],
     });
 
     let _projectAndTypeIndexer: any = {};
@@ -598,7 +598,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
             leaveRequest: true,
             project: leaveRequest.work?.title ?? '-',
             workId: leaveRequest.workId,
-            leaveType: leaveRequest.type?.leaveRequestType.label ?? 'Unpaid',
+            leaveType: leaveRequest.type?.label ?? 'Unpaid',
             typeId: leaveRequest.typeId,
             totalHours: 0.0,
           };
