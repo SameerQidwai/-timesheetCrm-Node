@@ -323,7 +323,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
   }
 
   async findOneCustom(authId: number, id: number): Promise<any | undefined> {
-    let result = await this._findOneCustom(authId, id);
+    let result = await this._findOneCustom(null, id);
     // console.log('==================SHOWING===============')
     // result.expenseSheetExpenses.map((el:any)=>{
     //     console.log(el.expenseId)
@@ -1055,9 +1055,14 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
     return new ExpenseSheetsResponse(expenseSheets);
   }
 
-  async _findOneCustom(authId: number, id: number): Promise<any | undefined> {
+  async _findOneCustom(
+    authId: number | null = null,
+    id: number
+  ): Promise<any | undefined> {
+    let whereCondition = authId ? { createdBy: authId } : {};
+
     let result = await this.findOne(id, {
-      where: { createdBy: authId },
+      where: { ...whereCondition },
       relations: [
         'expenseSheetExpenses',
         'expenseSheetExpenses.expense',
@@ -1077,9 +1082,11 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       throw new Error('Expense not found');
     }
 
-    result.expenseSheetExpenses = await this._getAttachments(result.expenseSheetExpenses)
+    result.expenseSheetExpenses = await this._getAttachments(
+      result.expenseSheetExpenses
+    );
 
-    return result
+    return result;
   }
 
   async _findManyCustom(options: {}): Promise<ExpenseSheet[] | []> {
@@ -1108,12 +1115,11 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
     expenseSheetExpenses: ExpenseSheetExpense[]
   ): Promise<Array<ExpenseSheetExpense & { attachments: Attachment[] | [] }>> {
     let resultIds = expenseSheetExpenses.map((el: any) => el.expenseId);
-    
+
     let attachments = await this.manager.find(Attachment, {
       where: { targetType: EntityType.EXPENSE, targetId: In(resultIds) },
       relations: ['file'],
     });
-
 
     let attachmentObj: { [key: number]: Attachment[] } = {};
     attachments.forEach((el: Attachment) => {
@@ -1128,7 +1134,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       el.attachments = attachmentObj[el.expenseId] || [];
       return el;
     });
-    
+
     return expenses;
   }
 }

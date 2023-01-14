@@ -3,6 +3,8 @@ import { Employee } from './../entities/employee';
 import { Opportunity } from './../entities/opportunity';
 import { getManager } from 'typeorm';
 import { Action, Grant, Resource } from './../constants/authorization';
+import { ExpenseSheet } from '../entities/expenseSheet';
+import { getProjectsByUserId } from '../utilities/helperFunctions';
 
 export const can = (
   action: Action,
@@ -137,6 +139,53 @@ export const where = async (
        * Validate if project is managed by user for MANAGE
        * Validate if timesheet UserId is equal to auth user for OWM
        */
+    }
+    case Resource.EXPENSES: {
+      // if (grantLevel.includes('MANAGE')) {
+      //   let employee = await entityManager.findOne(Employee, userId, {
+      //     relations: [
+      //       'contactPersonOrganization',
+      //       'contactPersonOrganization.contactPerson',
+      //     ],
+      //   });
+      //   if (!employee) {
+      //     throw new Error('Employee not found');
+      //   }
+      //   const expenseSheet = await entityManager.findOne(
+      //     ExpenseSheet,
+      //     resourceId,
+      //     { relations: ['creator'] }
+      //   );
+      //   if (!expenseSheet) {
+      //     throw new Error('Expense sheet not found');
+      //   }
+      //   if (employee.lineManagerId == userId) {
+      //     return true;
+      //   }
+      //   let projects = await entityManager.find(Opportunity, {
+      //     where: [{ status: 'P' }, { status: 'C' }],
+      //     relations: [
+      //       'organization',
+      //       'opportunityResources',
+      //       'opportunityResources.panelSkill',
+      //       'opportunityResources.panelSkillStandardLevel',
+      //       'opportunityResources.opportunityResourceAllocations',
+      //       'opportunityResources.opportunityResourceAllocations.contactPerson',
+      //     ],
+      //   });
+      //   let projectIds: Array<number> = getProjectsByUserId(
+      //     projects,
+      //     'm',
+      //     0,
+      //     employee.contactPersonOrganization.contactPersonId,
+      //     userId,
+      //     true
+      //   );
+      //   if (projectIds.includes(expenseSheet.projectId)) {
+      //     return true;
+      //   }
+      //   return false;
+      // }
     }
   }
 };

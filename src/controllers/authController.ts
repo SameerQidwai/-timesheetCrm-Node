@@ -342,10 +342,17 @@ export class AuthController {
   async getUserUsers(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(EmployeeRepository);
+      let records: any = [];
       const { user } = res.locals;
+      const { grantLevel } = res.locals;
+
       let authId = parseInt(user.id);
 
-      let records = await repository.authGetUserUsers(authId);
+      if (grantLevel.includes('ANY')) {
+        records = await repository.authGetUserAnyUsers();
+      } else if (grantLevel.includes('MANAGE')) {
+        records = await repository.authGetUserManageUsers(authId);
+      }
 
       res.status(200).json({
         success: true,

@@ -34,7 +34,12 @@ router
   .get([isLoggedIn], contr.getTraining.bind(contr))
   .patch([isLoggedIn], contr.updateTraining.bind(contr));
 
-router.route('/auth/users').get([isLoggedIn], contr.getUserUsers.bind(contr));
+router
+  .route('/auth/users')
+  .get(
+    [isLoggedIn, can(Action.APPROVAL, Resource.LEAVE_REQUESTS)],
+    contr.getUserUsers.bind(contr)
+  );
 
 router
   .route('/auth/projects')
