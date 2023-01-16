@@ -1344,7 +1344,24 @@ ${process.env.ORGANIZATION} Support Team`
     return employee;
   }
 
-  async authGetUserUsers(authId: number) {
+  async authGetUserAnyUsers() {
+    let employees = await this.find({
+      relations: [
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+      ],
+    });
+
+    let response: any = [];
+
+    employees.forEach((employee) => {
+      response.push({ label: employee.getFullName, value: employee.id });
+    });
+
+    return response;
+  }
+
+  async authGetUserManageUsers(authId: number) {
     if (!authId) {
       throw new Error('Employee not found!');
     }
