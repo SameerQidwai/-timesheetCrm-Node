@@ -323,7 +323,6 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         'employee',
         'employee.employmentContracts',
         'type',
-        'type.leaveRequestType',
         'work',
       ],
     });
@@ -388,7 +387,6 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         'employee',
         'employee.employmentContracts',
         'type',
-        'type.leaveRequestType',
         'work',
       ],
       where: [{ employeeId: In(employeeIds) }, { workId: In(projectIds) }],
@@ -446,7 +444,6 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     requestId: number
   ): Promise<any | undefined> {
     let leaveRequest = await this.findOne(requestId, {
-      relations: ['entries', 'type', 'type.leaveRequestType', 'work'],
       where: { employeeId: authId },
     });
 
@@ -1164,7 +1161,6 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
             LeaveRequestBalance,
             {
               where: {
-                typeId: leaveRequestPolicyType.leaveRequestTypeId,
                 employeeId: authId,
               },
             }
