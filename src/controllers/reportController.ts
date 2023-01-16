@@ -1565,7 +1565,6 @@ export class ReportController {
           'leaveRequests.entries',
           'leaveRequests.work',
           'leaveRequests.type',
-          'leaveRequests.type.leaveRequestType',
         ],
         where: { active: true },
       });
@@ -1620,9 +1619,7 @@ export class ReportController {
 
           if (
             queryLeaveType.length &&
-            !queryLeaveType.includes(
-              leaveRequest.type?.leaveRequestType.id ?? 0
-            )
+            !queryLeaveType.includes(leaveRequest.type?.id ?? 0)
           )
             continue;
 
@@ -1633,7 +1630,7 @@ export class ReportController {
           summaryObj.leaveRequests.push({
             projectCode: leaveRequest.workId,
             projectName: leaveRequest.work?.title ?? '-',
-            leaveType: leaveRequest.type?.leaveRequestType.label ?? 'Unpaid',
+            leaveType: leaveRequest.type?.label ?? 'Unpaid',
             hours: leaveRequestTotalHours,
           });
           summaryObj.hours += leaveRequestTotalHours;

@@ -30,6 +30,22 @@ export class LeaveRequestTypeRepository extends Repository<LeaveRequestType> {
   }
 
   async deleteCustom(id: number): Promise<any | undefined> {
+    if (!id) {
+      throw new Error('Leave Request Type not found');
+    }
+
+    let leaveRequestType = await this.findOne(id, {
+      relations: ['leaveRequestPolicyLeaveRequestTypes'],
+    });
+
+    if (!leaveRequestType) {
+      throw new Error('Leave Request Type not found');
+    }
+
+    if (leaveRequestType?.leaveRequestPolicyLeaveRequestTypes.length) {
+      throw new Error('Leave Request is assigned in Policy');
+    }
+
     return this.softDelete(id);
   }
 
@@ -93,6 +109,7 @@ export class LeaveRequestTypeRepository extends Repository<LeaveRequestType> {
         .leaveRequestPolicyLeaveRequestTypes;
 
     leaveRequestTypes.forEach((type) => {
+      type.id = type.leaveRequestTypeId;
       (type as any).name = type.leaveRequestType.label;
       (type as any).balance = balanceByType[type.leaveRequestTypeId] ?? 0;
 

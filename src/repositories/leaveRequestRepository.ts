@@ -39,7 +39,6 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         'employee.contactPersonOrganization',
         'employee.contactPersonOrganization.contactPerson',
         'type',
-        'type.leaveRequestType',
         'work',
       ],
     });
@@ -55,7 +54,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         leaveRequest as any
       ).employeeName = `${leaveRequest.employee.contactPersonOrganization.contactPerson.firstName} ${leaveRequest.employee.contactPersonOrganization.contactPerson.lastName}`;
       (leaveRequest as any).leaveRequestName =
-        leaveRequest.type?.leaveRequestType.label ?? 'Unpaid';
+        leaveRequest.type?.label ?? 'Unpaid';
       (leaveRequest as any).status = leaveRequest.getStatus;
       let leavRequestDetails = leaveRequest.getEntriesDetails;
       (leaveRequest as any).startDate = leavRequestDetails.startDate;
@@ -85,31 +84,12 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         }
 
         let leaveRequestObj = new LeaveRequest();
+        let _leaveRequestTypeId = null;
+        let leaveRequestPolicyType:
+          | LeaveRequestPolicyLeaveRequestType
+          | undefined;
 
         leaveRequestObj.desc = leaveRequestDTO.description;
-
-        let leaveRequestPolicyType = await transactionalEntityManager.findOne(
-          LeaveRequestPolicyLeaveRequestType,
-          leaveRequestDTO.typeId
-        );
-
-        if (!leaveRequestPolicyType && leaveRequestDTO.typeId != 0) {
-          throw new Error('Leave Request Type not found!');
-        }
-
-        if (leaveRequestDTO.workId) {
-          var project = await transactionalEntityManager.findOne(
-            Opportunity,
-            leaveRequestDTO.workId
-          );
-
-          if (!project) {
-            throw new Error('Project not found!');
-          }
-        }
-        leaveRequestObj.workId = leaveRequestDTO.workId;
-        leaveRequestObj.typeId =
-          leaveRequestDTO.typeId == 0 ? null : leaveRequestDTO.typeId;
 
         let employee = await transactionalEntityManager.findOne(
           Employee,
@@ -133,22 +113,44 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           throw new Error('No Active Contract of Employee');
         }
 
-        if (!employee.getActiveContract.leaveRequestPolicy) {
-          console.log(
-            '🚀 ~ file: leaveRequestRepository.ts ~ line 137 ~ LeaveRequestRepository ~ employee',
-            employee
-          );
-          console.log(
-            '🚀 ~ file: leaveRequestRepository.ts ~ line 137 ~ LeaveRequestRepository ~ getActiveContract',
-            employee.getActiveContract
-          );
-          console.log(
-            '🚀 ~ file: leaveRequestRepository.ts ~ line 137 ~ LeaveRequestRepository ~ leaveRequestPolicy',
-            employee.getActiveContract.leaveRequestPolicy
-          );
+        let employeeActivePolicy =
+          employee.getActiveContract.leaveRequestPolicy;
 
+        if (!employeeActivePolicy) {
           throw new Error('No Active Leave Request of Employee');
         }
+
+        if (leaveRequestDTO.typeId != 0) {
+          _leaveRequestTypeId = leaveRequestDTO.typeId;
+
+          leaveRequestPolicyType = await transactionalEntityManager.findOne(
+            LeaveRequestPolicyLeaveRequestType,
+            {
+              where: {
+                leaveRequestTypeId: _leaveRequestTypeId,
+                leaveRequestPolicyId: employeeActivePolicy.id,
+              },
+            }
+          );
+
+          if (!leaveRequestPolicyType) {
+            throw new Error('Leave Request Type not found!');
+          }
+        }
+
+        if (leaveRequestDTO.workId) {
+          var project = await transactionalEntityManager.findOne(
+            Opportunity,
+            leaveRequestDTO.workId
+          );
+
+          if (!project) {
+            throw new Error('Project not found!');
+          }
+        }
+
+        leaveRequestObj.workId = leaveRequestDTO.workId;
+        leaveRequestObj.typeId = _leaveRequestTypeId;
 
         let _firstDate = moment(leaveRequestDTO.entries[0].date).format(
           'YYYY-MM-DD'
@@ -160,8 +162,6 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         console.log('FIRSTTT DATEEE', _firstDate);
         console.log('LASTTTT DATEEE', _lastDate);
 
-        let _leaveRequestTypeId =
-          leaveRequestDTO.typeId == 0 ? null : leaveRequestDTO.typeId;
         let _leaveRequestWorkId =
           leaveRequestDTO.workId == undefined ? null : leaveRequestDTO.workId;
 
@@ -259,7 +259,9 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
         //Checking if current balance has less hours than minimum required
 
-        if (leaveRequestBalance && leaveRequestPolicyType) {
+        console.log(leaveRequestBalance, leaveRequestPolicyType);
+        if (leaveRequestDTO.typeId == 0) {
+        } else if (leaveRequestBalance && leaveRequestPolicyType) {
           if (
             leaveRequestBalance.balanceHours <
             leaveRequestPolicyType.minimumBalanceRequired
@@ -284,7 +286,6 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           leaveRequestBalance = await transactionalEntityManager.save(
             leaveRequestBalance
           );
-        } else if (leaveRequestDTO.typeId == 0) {
         } else {
           throw new Error('Leave Balance not found');
         }
@@ -487,7 +488,6 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         'employee.contactPersonOrganization',
         'employee.contactPersonOrganization.contactPerson',
         'type',
-        'type.leaveRequestType',
         'work',
       ],
     });
@@ -509,7 +509,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         leaveRequest as any
       ).employeeName = `${leaveRequest.employee.contactPersonOrganization.contactPerson.firstName} ${leaveRequest.employee.contactPersonOrganization.contactPerson.lastName}`;
       (leaveRequest as any).leaveRequestName =
-        leaveRequest.type?.leaveRequestType.label ?? 'Unpaid';
+        leaveRequest.type?.label ?? 'Unpaid';
       (leaveRequest as any).status = requestStatus;
       let leavRequestDetails = leaveRequest.getEntriesDetails;
       (leaveRequest as any).startDate = leavRequestDetails.startDate;
@@ -559,7 +559,6 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         'employee.contactPersonOrganization',
         'employee.contactPersonOrganization.contactPerson',
         'type',
-        'type.leaveRequestType',
         'work',
       ],
     });
@@ -581,7 +580,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         leaveRequest as any
       ).employeeName = `${leaveRequest.employee.contactPersonOrganization.contactPerson.firstName} ${leaveRequest.employee.contactPersonOrganization.contactPerson.lastName}`;
       (leaveRequest as any).leaveRequestName =
-        leaveRequest.type?.leaveRequestType.label ?? 'Unpaid';
+        leaveRequest.type?.label ?? 'Unpaid';
       (leaveRequest as any).status = requestStatus;
       let leavRequestDetails = leaveRequest.getEntriesDetails;
       (leaveRequest as any).startDate = leavRequestDetails.startDate;
@@ -1022,32 +1021,6 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           throw new Error('Cannot edit Approved Request!');
         }
 
-        leaveRequestObj.desc = leaveRequestDTO.description;
-
-        let leaveRequestPolicyType = await transactionalEntityManager.findOne(
-          LeaveRequestPolicyLeaveRequestType,
-          leaveRequestDTO.typeId
-        );
-
-        if (!leaveRequestPolicyType && leaveRequestDTO.typeId != 0) {
-          throw new Error('Leave Request Type not found!');
-        }
-
-        if (leaveRequestDTO.workId) {
-          var project = await transactionalEntityManager.findOne(
-            Opportunity,
-            leaveRequestDTO.workId
-          );
-
-          if (!project) {
-            throw new Error('Project not found!');
-          }
-
-          leaveRequestObj.workId = leaveRequestDTO.workId;
-        } else {
-          leaveRequestObj.workId = null;
-        }
-
         let employee = await transactionalEntityManager.findOne(
           Employee,
           authId,
@@ -1070,8 +1043,42 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           throw new Error('No Active Contract of Employee');
         }
 
-        if (!employee.getActiveContract.leaveRequestPolicy) {
+        let employeeLeaveRequestPolicy =
+          employee.getActiveContract.leaveRequestPolicy;
+
+        if (!employeeLeaveRequestPolicy) {
           throw new Error('No Active Policy of Employee');
+        }
+
+        leaveRequestObj.desc = leaveRequestDTO.description;
+
+        let leaveRequestPolicyType = await transactionalEntityManager.findOne(
+          LeaveRequestPolicyLeaveRequestType,
+          {
+            where: {
+              leaveRequestTypeId: leaveRequestDTO.typeId,
+              leaveRequestPolicyId: employeeLeaveRequestPolicy.id,
+            },
+          }
+        );
+
+        if (!leaveRequestPolicyType && leaveRequestDTO.typeId != 0) {
+          throw new Error('Leave Request Type not found!');
+        }
+
+        if (leaveRequestDTO.workId) {
+          var project = await transactionalEntityManager.findOne(
+            Opportunity,
+            leaveRequestDTO.workId
+          );
+
+          if (!project) {
+            throw new Error('Project not found!');
+          }
+
+          leaveRequestObj.workId = leaveRequestDTO.workId;
+        } else {
+          leaveRequestObj.workId = null;
         }
 
         let _firstDate = moment(leaveRequestDTO.entries[0].date).format(
@@ -1157,7 +1164,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
             LeaveRequestBalance,
             {
               where: {
-                typeId: leaveRequestPolicyType.id,
+                typeId: leaveRequestPolicyType.leaveRequestTypeId,
                 employeeId: authId,
               },
             }
