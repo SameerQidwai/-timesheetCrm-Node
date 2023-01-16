@@ -1007,32 +1007,6 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           throw new Error('Cannot edit Approved Request!');
         }
 
-        leaveRequestObj.desc = leaveRequestDTO.description;
-
-        let leaveRequestPolicyType = await transactionalEntityManager.findOne(
-          LeaveRequestPolicyLeaveRequestType,
-          leaveRequestDTO.typeId
-        );
-
-        if (!leaveRequestPolicyType && leaveRequestDTO.typeId != 0) {
-          throw new Error('Leave Request Type not found!');
-        }
-
-        if (leaveRequestDTO.workId) {
-          var project = await transactionalEntityManager.findOne(
-            Opportunity,
-            leaveRequestDTO.workId
-          );
-
-          if (!project) {
-            throw new Error('Project not found!');
-          }
-
-          leaveRequestObj.workId = leaveRequestDTO.workId;
-        } else {
-          leaveRequestObj.workId = null;
-        }
-
         let employee = await transactionalEntityManager.findOne(
           Employee,
           authId,
@@ -1055,8 +1029,42 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           throw new Error('No Active Contract of Employee');
         }
 
-        if (!employee.getActiveContract.leaveRequestPolicy) {
+        let employeeLeaveRequestPolicy =
+          employee.getActiveContract.leaveRequestPolicy;
+
+        if (!employeeLeaveRequestPolicy) {
           throw new Error('No Active Policy of Employee');
+        }
+
+        leaveRequestObj.desc = leaveRequestDTO.description;
+
+        let leaveRequestPolicyType = await transactionalEntityManager.findOne(
+          LeaveRequestPolicyLeaveRequestType,
+          {
+            where: {
+              leaveRequestTypeId: leaveRequestDTO.typeId,
+              leaveRequestPolicyId: employeeLeaveRequestPolicy.id,
+            },
+          }
+        );
+
+        if (!leaveRequestPolicyType && leaveRequestDTO.typeId != 0) {
+          throw new Error('Leave Request Type not found!');
+        }
+
+        if (leaveRequestDTO.workId) {
+          var project = await transactionalEntityManager.findOne(
+            Opportunity,
+            leaveRequestDTO.workId
+          );
+
+          if (!project) {
+            throw new Error('Project not found!');
+          }
+
+          leaveRequestObj.workId = leaveRequestDTO.workId;
+        } else {
+          leaveRequestObj.workId = null;
         }
 
         let _firstDate = moment(leaveRequestDTO.entries[0].date).format(
@@ -1142,7 +1150,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
             LeaveRequestBalance,
             {
               where: {
-                typeId: leaveRequestPolicyType.id,
+                typeId: leaveRequestPolicyType.leaveRequestTypeId,
                 employeeId: authId,
               },
             }
