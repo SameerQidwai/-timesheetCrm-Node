@@ -1102,12 +1102,18 @@ export class ReportController {
           'contactPersonOrganization.contactPerson.allocations.opportunityResource.milestone',
           'contactPersonOrganization.contactPerson.allocations.opportunityResource.milestone.project',
           'employmentContracts',
+        ],
+        where: { active: true },
+      });
+
+      const employeeTimesheets = await manager.find(Employee, {
+        relations: [
           'timesheets',
           'timesheets.milestoneEntries',
-          'timesheets.milestoneEntries.entries',
           'timesheets.milestoneEntries.milestone',
           'timesheets.milestoneEntries.milestone.project',
           'timesheets.milestoneEntries.milestone.project.organization',
+          'timesheets.milestoneEntries.entries',
         ],
         where: { active: true },
       });
@@ -1204,6 +1210,7 @@ export class ReportController {
         currentYear: number;
       }[] = [];
 
+      let _index = 0;
       for (let employee of employees) {
         if (queryEmployeeId.length && !queryEmployeeId.includes(employee.id))
           continue;
@@ -1242,7 +1249,7 @@ export class ReportController {
           }
         }
 
-        for (let timesheet of employee.timesheets) {
+        for (let timesheet of employeeTimesheets[_index].timesheets) {
           if (
             !moment(timesheet.startDate).isBetween(
               startDate,
@@ -1507,6 +1514,7 @@ export class ReportController {
             }
           }
         }
+        _index++;
       }
 
       let milestoneProjectSummary: any = [];
