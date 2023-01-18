@@ -35,6 +35,8 @@ connection
         }
       }
 
+      allBalances = await trx.find(LeaveRequestBalance, {});
+
       for (let balance of allBalances) {
         let policyTypePivot = await trx.findOne(
           LeaveRequestPolicyLeaveRequestType,
