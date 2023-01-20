@@ -1743,7 +1743,7 @@ export class ReportController {
           employeeCode: request.employee_id,
           totalHours:
             (summary?.[request.employee_id]?.['totalHours'] ?? 0) +
-            request.total_request_hours,
+            parseFloat(request.total_request_hours),
           leaveRequests: [
             ...(summary?.[request.employee_id]?.['leaveRequests'] || []),
             {
