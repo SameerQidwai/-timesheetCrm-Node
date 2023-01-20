@@ -2186,6 +2186,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
     for (const id of users.ids) {
       let resTimesheet: any = {
+        userId: id,
         user: users.details[id],
         milestones: [],
         milestoneStatuses: [],
