@@ -79,14 +79,25 @@ export class ReportController {
       let employees = await manager.find(Employee, {
         relations: [
           'employmentContracts',
+          'leaveRequestBalances',
+          'leaveRequestBalances.type',
           'contactPersonOrganization',
           'contactPersonOrganization.contactPerson',
           'contactPersonOrganization.contactPerson.state',
-          'leaveRequestBalances',
-          'leaveRequestBalances.type',
           'contactPersonOrganization.contactPerson.standardSkillStandardLevels',
           'contactPersonOrganization.contactPerson.standardSkillStandardLevels.standardSkill',
           'contactPersonOrganization.contactPerson.standardSkillStandardLevels.standardLevel',
+        ],
+        where: {
+          active: true,
+          createdAt: LessThanOrEqual(endDate.toDate()),
+        },
+      });
+
+      let employeesAllocations = await manager.find(Employee, {
+        relations: [
+          'contactPersonOrganization',
+          'contactPersonOrganization.contactPerson',
           'contactPersonOrganization.contactPerson.allocations',
           'contactPersonOrganization.contactPerson.allocations.opportunityResource',
           'contactPersonOrganization.contactPerson.allocations.opportunityResource.milestone',
@@ -100,10 +111,11 @@ export class ReportController {
 
       const projectStatuses = ['P', 'C'];
 
+      let _index = 0;
       for (let employee of employees) {
         let ignore = false;
-        for (let allocation of employee.contactPersonOrganization.contactPerson
-          .allocations) {
+        for (let allocation of employeesAllocations[_index]
+          .contactPersonOrganization.contactPerson.allocations) {
           let position = allocation.opportunityResource;
 
           if (!position) continue;
@@ -141,6 +153,8 @@ export class ReportController {
         if (ignore) {
           ignoreIds.push(employee.id);
         }
+
+        _index++;
       }
 
       for (let employee of employees) {

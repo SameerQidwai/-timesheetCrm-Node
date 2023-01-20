@@ -1,43 +1,33 @@
 import { Router } from 'express';
-import { isLoggedIn } from '../middlewares/loggedIn';
+import {} from '../middlewares/loggedIn';
 import { ReportController } from '../controllers/reportController';
 
 const router = Router();
 const contr = new ReportController();
-router
-  .route('/bench-resources')
-  .get([isLoggedIn], contr.benchResources.bind(contr));
-router
-  .route('/workforce-skills')
-  .get([isLoggedIn], contr.workforceSkills.bind(contr));
-router
-  .route('/allocations')
-  .get([isLoggedIn], contr.opportunityAllocations.bind(contr));
-router
-  .route('/allocations-all')
-  .get([isLoggedIn], contr.employeeAllocations.bind(contr));
+router.route('/bench-resources').get([], contr.benchResources.bind(contr));
+router.route('/workforce-skills').get([], contr.workforceSkills.bind(contr));
+router.route('/allocations').get([], contr.opportunityAllocations.bind(contr));
+router.route('/allocations-all').get([], contr.employeeAllocations.bind(contr));
 router
   .route('/project-revenue-analysis')
-  .get([isLoggedIn], contr.projectRevnueAnalysis.bind(contr));
+  .get([], contr.projectRevnueAnalysis.bind(contr));
 
 router
   .route('/client-revenue-analysis')
-  .get([isLoggedIn], contr.clientRevnueAnalysis.bind(contr));
+  .get([], contr.clientRevnueAnalysis.bind(contr));
 
-router
-  .route('/timesheet-summary')
-  .get([isLoggedIn], contr.timesheetSummary.bind(contr));
+router.route('/timesheet-summary').get([], contr.timesheetSummary.bind(contr));
 
 router
   .route('/leave-request-summary')
-  .get([isLoggedIn], contr.leaveRequestSummary.bind(contr));
+  .get([], contr.leaveRequestSummary.bind(contr));
 
 router
   .route('/leave-request-summary-view')
-  .get([isLoggedIn], contr.leaveRequestSummaryView.bind(contr));
+  .get([], contr.leaveRequestSummaryView.bind(contr));
 
 router
   .route('/work-in-hand-forecast')
-  .get([isLoggedIn], contr.WorkInHandForecast.bind(contr));
+  .get([], contr.WorkInHandForecast.bind(contr));
 
 export default router;
