@@ -2098,6 +2098,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
     for (let timesheet of timesheets) {
       let resTimesheet: any = {
+        userId: timesheet.employeeId,
         user: `${timesheet.employee.contactPersonOrganization.contactPerson.firstName} ${timesheet.employee.contactPersonOrganization.contactPerson.lastName}`,
         milestones: [],
         milestoneStatuses: [],
@@ -2186,8 +2187,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
     for (const id of users.ids) {
       let resTimesheet: any = {
-        userId: id,
         user: users.details[id],
+        userId: id,
         milestones: [],
         milestoneStatuses: [],
         timesheetStatus: TimesheetStatus.NOT_CREATED,
