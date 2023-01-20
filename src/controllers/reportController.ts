@@ -41,8 +41,13 @@ export class ReportController {
         req.query.resourceType as string
       );
 
-      let startDate = moment().startOf('year');
-      let endDate = moment().endOf('year');
+      let currentMoment = moment();
+      let startDate = moment(
+        `${getFiscalYear(currentMoment)}-${
+          process.env.FISCAL_YEAR_START ?? '07'
+        }-01`
+      ).startOf('month');
+      let endDate = startDate.clone().add(1, 'year').subtract(1, 'day');
 
       interface resSkill {
         skill: string;
@@ -307,8 +312,13 @@ export class ReportController {
         req.query.organizationId as string
       );
 
-      let startDate = moment().startOf('year');
-      let endDate = moment().endOf('year');
+      let currentMoment = moment();
+      let startDate = moment(
+        `${getFiscalYear(currentMoment)}-${
+          process.env.FISCAL_YEAR_START ?? '07'
+        }-01`
+      ).startOf('month');
+      let endDate = startDate.clone().add(1, 'year').subtract(1, 'day');
 
       if (queryStartDate) {
         if (moment(queryStartDate).isValid()) {
@@ -570,8 +580,13 @@ export class ReportController {
         req.query.organizationId as string
       );
 
-      let startDate = moment().startOf('year');
-      let endDate = moment().endOf('year');
+      let currentMoment = moment();
+      let startDate = moment(
+        `${getFiscalYear(currentMoment)}-${
+          process.env.FISCAL_YEAR_START ?? '07'
+        }-01`
+      ).startOf('month');
+      let endDate = startDate.clone().add(1, 'year').subtract(1, 'day');
 
       if (queryStartDate) {
         if (moment(queryStartDate).isValid()) {
