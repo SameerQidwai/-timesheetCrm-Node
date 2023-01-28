@@ -1130,6 +1130,7 @@ export class ReportController {
           'contactPersonOrganization.contactPerson.allocations.opportunityResource',
           'contactPersonOrganization.contactPerson.allocations.opportunityResource.milestone',
           'contactPersonOrganization.contactPerson.allocations.opportunityResource.milestone.project',
+          'contactPersonOrganization.contactPerson.allocations.opportunityResource.milestone.project.organization',
           'employmentContracts',
         ],
         where: { active: true },
@@ -1203,6 +1204,15 @@ export class ReportController {
 
       let months: MonthInterface = {};
 
+      let projectData: {
+        [key: string]: {
+          id: number;
+          title: String;
+          type: number;
+          organization: string;
+        };
+      } = {};
+
       let startDateClone = startDate.clone();
 
       while (
@@ -1220,7 +1230,7 @@ export class ReportController {
           approvedHours: 0,
           rejectedHours: 0,
           filteredHours: 0,
-          status: 'Not Applicable',
+          status: parseTimesheetSummaryStatus(0),
         };
 
         startDateClone.add(1, 'month');
@@ -1241,8 +1251,10 @@ export class ReportController {
 
       let _index = 0;
       for (let employee of employees) {
-        if (queryEmployeeId.length && !queryEmployeeId.includes(employee.id))
+        if (queryEmployeeId.length && !queryEmployeeId.includes(employee.id)) {
+          _index++;
           continue;
+        }
 
         let employeeAllocations: { [key: string]: { [key: string]: boolean } } =
           {};
@@ -1250,7 +1262,16 @@ export class ReportController {
         for (let allocation of employee.contactPersonOrganization.contactPerson
           .allocations) {
           let project = allocation.opportunityResource?.milestone?.project;
+
           if (!project) continue;
+
+          if (!projectData['project.id'])
+            projectData[project.id] = {
+              id: project.id,
+              title: project.title,
+              type: project.type,
+              organization: project.organization.name,
+            };
 
           let { startDate: allocationStartDate, endDate: allocationEndDate } =
             allocation.opportunityResource;
@@ -1261,6 +1282,18 @@ export class ReportController {
           let mAllocationStartDateClone = mAllocationStartDate.clone();
 
           while (mAllocationEndDate > mAllocationStartDateClone) {
+            if (
+              !mAllocationStartDateClone.isBetween(
+                startDate,
+                endDate,
+                'date',
+                '[]'
+              )
+            ) {
+              mAllocationStartDateClone.add(1, 'month');
+              continue;
+            }
+
             if (!employeeAllocations[project.id])
               employeeAllocations[project.id] = {};
 
@@ -1331,10 +1364,13 @@ export class ReportController {
                 //NOT APPLICABLE
                 let summaryStatus = 0;
 
+                if (!employeeAllocations[project.id]) continue;
+
                 //NOT APPLICABLE, NOT SUBMITTED, SUBMITTED, APPROVED,
                 if (employeeAllocations[project.id][entryDate]) {
                   //NOT SUBMITTED;
                   summaryStatus = 1;
+                  employeeAllocations[project.id][entryDate] = false;
                 }
 
                 let entryHours = parseFloat(entry.hours.toFixed(2));
@@ -1445,6 +1481,7 @@ export class ReportController {
                 if (employeeAllocations[project.id][entryDate]) {
                   //NOT SUBMITTED;
                   summaryStatus = 1;
+                  employeeAllocations[project.id][entryDate] = false;
                 }
 
                 let entryHours = parseFloat(entry.hours.toFixed(2));
@@ -1543,6 +1580,56 @@ export class ReportController {
             }
           }
         }
+
+        for (let allocationProject in employeeAllocations) {
+          let localMonths: MonthInterface = JSON.parse(JSON.stringify(months));
+
+          let _partialTrue: Boolean = false;
+          let _fullTrue: Boolean = true;
+          let _partiallyTrueMonths: Array<string> = [];
+
+          for (let allocationMonth in employeeAllocations[allocationProject]) {
+            let status =
+              employeeAllocations[allocationProject][allocationMonth];
+            if (!_partialTrue && status) {
+              _partialTrue = true;
+              _partiallyTrueMonths.push(allocationMonth);
+            }
+
+            if (!status) _fullTrue = false;
+
+            localMonths[allocationMonth].status =
+              parseTimesheetSummaryStatus(1);
+          }
+
+          if (_fullTrue) {
+            summary.push({
+              employeeName: employee.getFullName,
+              employeeCode: employee.id,
+              projectName: projectData[allocationProject].title,
+              projectCode: projectData[allocationProject].id,
+              projectType: projectData[allocationProject].type,
+              purchaseOrder:
+                projectPurchaseOrders[projectData[allocationProject].id]?.id ??
+                null,
+              organizationName: projectData[allocationProject].organization,
+              months: localMonths,
+              currentMonth:
+                localMonths[moment(currentMoment).format('MMM YY')]
+                  .filteredHours ?? 0,
+              currentYear: 0,
+            });
+          } else if (_partialTrue) {
+            for (let changeMonth of _partiallyTrueMonths) {
+              summary[
+                employeeProjectIndexes[
+                  `${employee.id}_${projectData[allocationProject].id}`
+                ]
+              ].months[changeMonth].status = parseTimesheetSummaryStatus(1);
+            }
+          }
+        }
+
         _index++;
       }
 
