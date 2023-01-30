@@ -938,14 +938,14 @@ export class ReportExportController {
     actual.forEach((el: any) => {
       actualStatement[el.project_id] = {
         ...(actualStatement?.[el.project_id] ?? {
-          projectValue: el.project_amount,
-          projectId: el.project_id,
-          organizationId: el.project_organization_id,
-          organizationName: el.project_organization_name,
-          projectTitle: el.project_title,
-          projectManagerId: el.project_manager_id,
-          projectManagerName: el.project_manager_name,
-          projectType: el.project_type,
+          'Project Value': el.project_amount,
+          'Project ID': el.project_id,
+          'Organization Id': el.project_organization_id,
+          'Organization Name': el.project_organization_name,
+          'Project Title': el.project_title,
+          'Project Manager ID': el.project_manager_id,
+          'Project Manager Name': el.project_manager_name,
+          'Project Type': el.project_type,
         }),
         //don't need buy rate for now... if it needed will uncoment this
         // [el.month]: {
@@ -953,28 +953,30 @@ export class ReportExportController {
         //   monthTotalSell: el.month_total_sell,
         // },
         [el.month]: el.month_total_sell,
-        totalSell:
-          (actualStatement?.[el.project_id]?.['totalSell'] ?? 0) +
+        'Total Sell':
+          (actualStatement?.[el.project_id]?.['Total Sell'] ?? 0) +
           el.month_total_sell,
-        totalBuy:
-          (actualStatement?.[el.project_id]?.['totalBuy'] ?? 0) +
+        'Total Buy':
+          (actualStatement?.[el.project_id]?.['Total Buy'] ?? 0) +
           el.month_total_buy,
-        YTDTotalSell: moment(el.month, 'MMM YY').isBetween(
+        'YTD Total Sell': moment(el.month, 'MMM YY').isBetween(
           fiscalYearStart,
           fiscalYearEnd,
           'month',
           '[]'
         )
-          ? (actualStatement?.[el.project_id]?.['YTDTotalSell'] ?? 0) +
+          ? (actualStatement?.[el.project_id]?.['YTD Total Sell'] ?? 0) +
             el.month_total_sell
-          : actualStatement?.[el.project_id]?.['YTDTotalSell'] ?? 0,
+          : actualStatement?.[el.project_id]?.['YTD Total Sell'] ?? 0,
       };
     });
+
+    await this.exportReport('any', Object.values(actualStatement));
 
     res.status(200).json({
       success: true,
       message: 'Project Revenue Analysis',
-      data: Object.values(actualStatement),
+      data: 'url',
     });
   }
 
@@ -1046,9 +1048,9 @@ export class ReportExportController {
     actual.forEach((el: any) => {
       actualStatement[el.project_organization_id] = {
         ...(actualStatement?.[el.project_organization_id] ?? {
-          organizationId: el.project_organization_id,
-          organizationName: el.project_organization_name,
-          projectType: el.project_type,
+          'Organization ID': el.project_organization_id,
+          'Organization Name': el.project_organization_name,
+          'Project Type': el.project_type,
         }),
         //don't need buy rate for now... if it needed will uncoment this
         // [el.month]: {
@@ -1059,30 +1061,32 @@ export class ReportExportController {
           (actualStatement?.[el.project_organization_id]?.[el.month] ?? 0) +
           el.month_total_sell,
 
-        totalSell:
-          (actualStatement?.[el.project_organization_id]?.['totalSell'] ?? 0) +
+        'Total Sell':
+          (actualStatement?.[el.project_organization_id]?.['Total Sell'] ?? 0) +
           el.month_total_sell,
-        totalBuy:
-          (actualStatement?.[el.project_organization_id]?.['totalBuy'] ?? 0) +
+        'Total Buy':
+          (actualStatement?.[el.project_organization_id]?.['Total Buy'] ?? 0) +
           el.month_total_buy,
 
-        projectsValue: projectsValues?.[el.project_organization_id]?.[
+        'Projects Value': projectsValues?.[el.project_organization_id]?.[
           el.project_id
         ]
-          ? actualStatement?.[el.project_organization_id]?.['projectsValue'] ??
+          ? actualStatement?.[el.project_organization_id]?.['Projects Value'] ??
             0
-          : (actualStatement?.[el.project_organization_id]?.['projectsValue'] ??
-              0) + el.project_amount,
+          : (actualStatement?.[el.project_organization_id]?.[
+              'Projects Value'
+            ] ?? 0) + el.project_amount,
 
-        YTDTotalSell: moment(el.month, 'MMM YY').isBetween(
+        'YTD Total Sell': moment(el.month, 'MMM YY').isBetween(
           fiscalYearStart,
           fiscalYearEnd,
           'month',
           '[]'
         )
-          ? (actualStatement?.[el.project_organization_id]?.['YTDTotalSell'] ??
-              0) + el.month_total_sell
-          : actualStatement?.[el.project_organization_id]?.['YTDTotalSell'] ??
+          ? (actualStatement?.[el.project_organization_id]?.[
+              'YTD Total Sell'
+            ] ?? 0) + el.month_total_sell
+          : actualStatement?.[el.project_organization_id]?.['YTD Total Sell'] ??
             0,
       };
       //sum of all projectValues
@@ -1095,10 +1099,12 @@ export class ReportExportController {
       };
     });
 
+    await this.exportReport('any', Object.values(actualStatement));
+
     res.status(200).json({
       success: true,
-      message: 'Project Revenue Analysis',
-      data: Object.values(actualStatement),
+      message: 'Client Revenue Analysis',
+      data: 'url',
     });
   }
 

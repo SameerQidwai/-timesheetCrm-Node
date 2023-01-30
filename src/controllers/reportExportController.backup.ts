@@ -18,7 +18,7 @@ import xlsx from 'xlsx';
 import fs, { stat } from 'fs';
 import path from 'path';
 
-export class ReportExportController {
+export class ReportExportBackupController {
   _customQueryParser(query = '') {
     let ids = [];
 
