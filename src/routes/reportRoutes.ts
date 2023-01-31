@@ -40,4 +40,6 @@ router
   .route('/work-in-hand-forecast')
   .get([isLoggedIn], contr.WorkInHandForecast.bind(contr));
 
+router.route('/download/:name').get([], contr.download.bind(contr));
+
 export default router;

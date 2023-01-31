@@ -198,12 +198,12 @@ export class ReportExportController {
         }
       }
 
-      await this.exportReport('any', resources);
+      let name = await this.exportReport('any', resources);
 
       res.status(200).json({
         success: true,
         message: 'Benched Resources',
-        data: 'url',
+        data: `${req.hostname}/api/v1/reports/download/${name}`,
       });
     } catch (e) {
       next(e);
@@ -287,12 +287,12 @@ export class ReportExportController {
         }
       }
 
-      await this.exportReport('any', worforce);
+      let name = await this.exportReport('any', worforce);
 
       res.status(200).json({
         success: true,
         message: 'Workforce skills',
-        data: 'url',
+        data: `${req.hostname}/api/v1/reports/download/${name}`,
       });
     } catch (e) {
       next(e);
@@ -565,12 +565,12 @@ export class ReportExportController {
         }
       }
 
-      await this.exportReport('any', allocations);
+      let name = await this.exportReport('any', allocations);
 
       res.status(200).json({
         success: true,
         message: 'Allocations',
-        data: 'url',
+        data: `${req.hostname}/api/v1/reports/download/${name}`,
       });
     } catch (e) {
       next(e);
@@ -841,12 +841,12 @@ export class ReportExportController {
         }
       }
 
-      await this.exportReport('any', allocations);
+      let name = await this.exportReport('any', allocations);
 
       res.status(200).json({
         success: true,
         message: 'Allocations',
-        data: 'url',
+        data: `${req.hostname}/api/v1/reports/download/${name}`,
       });
     } catch (e) {
       next(e);
@@ -971,12 +971,12 @@ export class ReportExportController {
       };
     });
 
-    await this.exportReport('any', Object.values(actualStatement));
+    let name = await this.exportReport('any', Object.values(actualStatement));
 
     res.status(200).json({
       success: true,
       message: 'Project Revenue Analysis',
-      data: 'url',
+      data: `${req.hostname}/api/v1/reports/download/${name}`,
     });
   }
 
@@ -1099,12 +1099,12 @@ export class ReportExportController {
       };
     });
 
-    await this.exportReport('any', Object.values(actualStatement));
+    let name = await this.exportReport('any', Object.values(actualStatement));
 
     res.status(200).json({
       success: true,
       message: 'Client Revenue Analysis',
-      data: 'url',
+      data: `${req.hostname}/api/v1/reports/download/${name}`,
     });
   }
 
@@ -1848,12 +1848,12 @@ export class ReportExportController {
         delete (employee as any).leaveRequests;
       }
 
-      await this.exportReport('any', exportData);
+      let name = await this.exportReport('any', exportData);
 
       res.status(200).json({
         success: true,
         message: 'Leave Request Summary',
-        data: 'url',
+        data: `${req.hostname}/api/v1/reports/download/${name}`,
       });
     } catch (e) {
       next(e);
@@ -1944,7 +1944,7 @@ export class ReportExportController {
     });
   }
 
-  async exportReport(reportType: string, data: any): Promise<Boolean> {
+  async exportReport(reportType: string, data: any): Promise<string> {
     let SMALLEST = 9999999;
     let BIGGEST = 1;
 
@@ -1975,6 +1975,6 @@ export class ReportExportController {
     // Writing to our file
     xlsx.writeFile(workbook, `./public/reports/report${BIGGEST + 1}.xlsx`);
 
-    return true;
+    return `report${BIGGEST + 1}.xlsx`;
   }
 }

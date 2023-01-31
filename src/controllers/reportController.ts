@@ -15,6 +15,7 @@ import { StandardSkillStandardLevel } from '../entities/standardSkillStandardLev
 import { Opportunity } from '../entities/opportunity';
 import { PurchaseOrder } from '../entities/purchaseOrder';
 import { ProjectType } from '../constants/constants';
+import path from 'path';
 
 export class ReportController {
   _customQueryParser(query = '') {
@@ -1892,7 +1893,7 @@ export class ReportController {
   async WorkInHandForecast(req: Request, res: Response, next: NextFunction) {
     let fiscalYearStart = req.query.fiscalYearStart as string;
     let fiscalYearEnd = req.query.fiscalYearEnd as string;
-    let actualMonth = moment().startOf("month").format('MMM YY')
+    let actualMonth = moment().startOf('month').format('MMM YY');
     const actual_revenue = await getManager().query(`
       SELECT 
         project_type,
@@ -1979,7 +1980,7 @@ export class ReportController {
       WHERE project_schedule_segments.deleted_at IS NULL AND project_schedules.deleted_at IS NULL
     GROUP BY project_type, month  
     `);
-    
+
     const causal_salaries = await getManager().query(`
     SELECT 
       SUM(salary * (resource_contract_hours/resource_contract_days_per_week)) casual_salaries,
@@ -2008,8 +2009,8 @@ export class ReportController {
         )
       WHERE is_holidays = 0 AND is_weekday = 1 
       GROUP BY month;
-    `)
-    
+    `);
+
     const permanent_salaries = await getManager().query(`
       SELECT 
       SUM(salary * (ABS(boh_percent - 100)/100)) permanent_salaries ,-- to seperate boh percent for salaries
@@ -2038,8 +2039,8 @@ export class ReportController {
             )
           )
       GROUP BY month;
-    `)
-      
+    `);
+
     const doh_salaries = await getManager().query(`
       SELECT 
       SUM(salary * (boh_percent)/100) doh_salaries ,-- to seperate boh percent for salaries
@@ -2068,87 +2069,115 @@ export class ReportController {
             )
           )
       GROUP BY month;
-    `)
+    `);
 
-    let length_of_loop = Math.max(...[actual_revenue.length, forecast_revenue.length])
+    let length_of_loop = Math.max(
+      ...[actual_revenue.length, forecast_revenue.length]
+    );
 
     let data: any = {
-      MILESTONE_BASE: {total: 0}, 
-      TIME_BASE: {total: 0}, 
-      CASUAL_SALARIES: {total:0}, 
-      PERMANENT_SALARIES: {total:0}, 
-      DOH_SALARIES: {total:0},
-      PERMANENT_SUPER: {total: 0},
-      CASUAL_SUPER: {total: 0},
-      DOH_SUPER: {total: 0},
-      TOTAL_REVENUE: {total:0},
-      TOTAL_COST: {total:0},
-      TOTAL_DOH: {total: 0}
-    }
-    for (let i = 0; i<length_of_loop; i++){
-      if (actual_revenue[i]){
-        let {project_type, month, month_total_sell = 0} = actual_revenue[i]
-        if (moment(month, 'MMM YY').isBefore(moment(), 'month') && project_type){
-          data[ProjectType[project_type]][month] = parseFloat(month_total_sell)
-          data[ProjectType[project_type]]['total'] += parseFloat(month_total_sell)
+      MILESTONE_BASE: { total: 0 },
+      TIME_BASE: { total: 0 },
+      CASUAL_SALARIES: { total: 0 },
+      PERMANENT_SALARIES: { total: 0 },
+      DOH_SALARIES: { total: 0 },
+      PERMANENT_SUPER: { total: 0 },
+      CASUAL_SUPER: { total: 0 },
+      DOH_SUPER: { total: 0 },
+      TOTAL_REVENUE: { total: 0 },
+      TOTAL_COST: { total: 0 },
+      TOTAL_DOH: { total: 0 },
+    };
+    for (let i = 0; i < length_of_loop; i++) {
+      if (actual_revenue[i]) {
+        let { project_type, month, month_total_sell = 0 } = actual_revenue[i];
+        if (
+          moment(month, 'MMM YY').isBefore(moment(), 'month') &&
+          project_type
+        ) {
+          data[ProjectType[project_type]][month] = parseFloat(month_total_sell);
+          data[ProjectType[project_type]]['total'] +=
+            parseFloat(month_total_sell);
 
           data['TOTAL_REVENUE'][month] = data['TOTAL_REVENUE'][month]
             ? data['TOTAL_REVENUE'][month] + parseFloat(month_total_sell)
             : parseFloat(month_total_sell);
-          data['TOTAL_REVENUE']['total'] += data['TOTAL_REVENUE'][month]
+          data['TOTAL_REVENUE']['total'] += data['TOTAL_REVENUE'][month];
         }
       }
-      if (forecast_revenue[i]){
-        let {project_type, month, month_total_sell =0} = forecast_revenue[i]
-        if (moment(month, 'MMM YY').isSameOrAfter(moment(), 'month') && project_type){
-          data[ProjectType[project_type]][month] = parseFloat(month_total_sell)
-          data[ProjectType[project_type]]['total'] += parseFloat(month_total_sell)
+      if (forecast_revenue[i]) {
+        let { project_type, month, month_total_sell = 0 } = forecast_revenue[i];
+        if (
+          moment(month, 'MMM YY').isSameOrAfter(moment(), 'month') &&
+          project_type
+        ) {
+          data[ProjectType[project_type]][month] = parseFloat(month_total_sell);
+          data[ProjectType[project_type]]['total'] +=
+            parseFloat(month_total_sell);
 
           data['TOTAL_REVENUE'][month] = data['TOTAL_REVENUE'][month]
             ? data['TOTAL_REVENUE'][month] + parseFloat(month_total_sell)
             : parseFloat(month_total_sell);
-          data['TOTAL_REVENUE']['total'] += (data['TOTAL_REVENUE'][month]??0)
+          data['TOTAL_REVENUE']['total'] += data['TOTAL_REVENUE'][month] ?? 0;
         }
       }
-      if (causal_salaries[i]){
-        let {month, causal_salaries: salary =0, casual_superannuation=0} = causal_salaries[i]
-        salary ||=0; casual_superannuation ||=0
-        data['CASUAL_SALARIES'][month] = parseFloat(salary)
-        data['CASUAL_SALARIES']['total'] += parseFloat(salary)
-        data['CASUAL_SUPER'][month] = parseFloat(casual_superannuation)
-        data['CASUAL_SUPER']['total'] +=parseFloat(casual_superannuation)
+      if (causal_salaries[i]) {
+        let {
+          month,
+          causal_salaries: salary = 0,
+          casual_superannuation = 0,
+        } = causal_salaries[i];
+        salary ||= 0;
+        casual_superannuation ||= 0;
+        data['CASUAL_SALARIES'][month] = parseFloat(salary);
+        data['CASUAL_SALARIES']['total'] += parseFloat(salary);
+        data['CASUAL_SUPER'][month] = parseFloat(casual_superannuation);
+        data['CASUAL_SUPER']['total'] += parseFloat(casual_superannuation);
 
         data['TOTAL_COST'][month] = data['TOTAL_COST'][month]
-            ? data['TOTAL_COST'][month] + (parseFloat(salary) + parseFloat(casual_superannuation))
-            : parseFloat(salary) + parseFloat(casual_superannuation);
-          data['TOTAL_COST']['total'] +=( data['TOTAL_COST'][month]??0)
-
+          ? data['TOTAL_COST'][month] +
+            (parseFloat(salary) + parseFloat(casual_superannuation))
+          : parseFloat(salary) + parseFloat(casual_superannuation);
+        data['TOTAL_COST']['total'] += data['TOTAL_COST'][month] ?? 0;
       }
-      if (permanent_salaries[i]){
-        let {month, permanent_salaries: salary =0, permanent_superannuation =0} = permanent_salaries[i]
-        salary ||=0; permanent_superannuation ||=0
-        data['PERMANENT_SALARIES'][month] = parseFloat(salary)
-        data['PERMANENT_SALARIES']['total'] += parseFloat(salary)
-        data['PERMANENT_SUPER'][month] =parseFloat(permanent_superannuation)
-        data['PERMANENT_SUPER']['total'] +=parseFloat(permanent_superannuation)
+      if (permanent_salaries[i]) {
+        let {
+          month,
+          permanent_salaries: salary = 0,
+          permanent_superannuation = 0,
+        } = permanent_salaries[i];
+        salary ||= 0;
+        permanent_superannuation ||= 0;
+        data['PERMANENT_SALARIES'][month] = parseFloat(salary);
+        data['PERMANENT_SALARIES']['total'] += parseFloat(salary);
+        data['PERMANENT_SUPER'][month] = parseFloat(permanent_superannuation);
+        data['PERMANENT_SUPER']['total'] += parseFloat(
+          permanent_superannuation
+        );
 
         data['TOTAL_COST'][month] = data['TOTAL_COST'][month]
-            ? data['TOTAL_COST'][month] + (parseFloat(salary) + parseFloat(permanent_superannuation))
-            : parseFloat(salary) + parseFloat(permanent_superannuation) ;
-        data['TOTAL_COST']['total'] += (data['TOTAL_COST'][month] ??0)
+          ? data['TOTAL_COST'][month] +
+            (parseFloat(salary) + parseFloat(permanent_superannuation))
+          : parseFloat(salary) + parseFloat(permanent_superannuation);
+        data['TOTAL_COST']['total'] += data['TOTAL_COST'][month] ?? 0;
       }
 
-      if (doh_salaries[i]){
-        let {month, doh_salaries: salary =0, doh_superannuation=0} = doh_salaries[i]
-        data['DOH_SALARIES'][month] = parseFloat(salary)
-        data['DOH_SALARIES']['total'] += parseFloat(salary)
-        data['DOH_SUPER'][month] = parseFloat(doh_superannuation)
-        data['DOH_SUPER']['total'] += parseFloat(doh_superannuation)
+      if (doh_salaries[i]) {
+        let {
+          month,
+          doh_salaries: salary = 0,
+          doh_superannuation = 0,
+        } = doh_salaries[i];
+        data['DOH_SALARIES'][month] = parseFloat(salary);
+        data['DOH_SALARIES']['total'] += parseFloat(salary);
+        data['DOH_SUPER'][month] = parseFloat(doh_superannuation);
+        data['DOH_SUPER']['total'] += parseFloat(doh_superannuation);
 
         data['TOTAL_DOH'][month] = data['TOTAL_DOH'][month]
-          ? data['TOTAL_DOH'][month] + (parseFloat(salary) + parseFloat(doh_superannuation))
+          ? data['TOTAL_DOH'][month] +
+            (parseFloat(salary) + parseFloat(doh_superannuation))
           : parseFloat(salary) + parseFloat(doh_superannuation);
-        data['TOTAL_DOH']['total'] += data['TOTAL_DOH'][month]
+        data['TOTAL_DOH']['total'] += data['TOTAL_DOH'][month];
       }
     }
 
@@ -2157,5 +2186,22 @@ export class ReportController {
       message: 'Work In Hand Forecasting',
       data: data,
     });
+  }
+
+  async download(req: Request, res: Response, next: NextFunction) {
+    try {
+      let name = req.params.name;
+      // let response: string = await repository.show(name);
+      res.sendFile(path.join(__dirname, `../../public/reports/${name}`));
+      // if no timesheet found
+      // return res.status(200).json({
+      //   success: true,
+      //   // message: `Win Opportunity ${req.params.id}`,
+      //   message: 'Files Uploaded Succesfully',
+      //   data: response,
+      // });
+    } catch (e) {
+      next(e);
+    }
   }
 }
