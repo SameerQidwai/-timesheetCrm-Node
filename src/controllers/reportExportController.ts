@@ -203,7 +203,7 @@ export class ReportExportController {
       res.status(200).json({
         success: true,
         message: 'Benched Resources',
-        data: `${req.hostname}/api/v1/reports/download/${name}`,
+        data: `reports/download/${name}`,
       });
     } catch (e) {
       next(e);
@@ -292,7 +292,7 @@ export class ReportExportController {
       res.status(200).json({
         success: true,
         message: 'Workforce skills',
-        data: `${req.hostname}/api/v1/reports/download/${name}`,
+        data: `reports/download/${name}`,
       });
     } catch (e) {
       next(e);
@@ -570,7 +570,7 @@ export class ReportExportController {
       res.status(200).json({
         success: true,
         message: 'Allocations',
-        data: `${req.hostname}/api/v1/reports/download/${name}`,
+        data: `reports/download/${name}`,
       });
     } catch (e) {
       next(e);
@@ -846,7 +846,7 @@ export class ReportExportController {
       res.status(200).json({
         success: true,
         message: 'Allocations',
-        data: `${req.hostname}/api/v1/reports/download/${name}`,
+        data: `reports/download/${name}`,
       });
     } catch (e) {
       next(e);
@@ -976,7 +976,7 @@ export class ReportExportController {
     res.status(200).json({
       success: true,
       message: 'Project Revenue Analysis',
-      data: `${req.hostname}/api/v1/reports/download/${name}`,
+      data: `reports/download/${name}`,
     });
   }
 
@@ -1104,7 +1104,7 @@ export class ReportExportController {
     res.status(200).json({
       success: true,
       message: 'Client Revenue Analysis',
-      data: `${req.hostname}/api/v1/reports/download/${name}`,
+      data: `reports/download/${name}`,
     });
   }
 
@@ -1853,7 +1853,7 @@ export class ReportExportController {
       res.status(200).json({
         success: true,
         message: 'Leave Request Summary',
-        data: `${req.hostname}/api/v1/reports/download/${name}`,
+        data: `reports/download/${name}`,
       });
     } catch (e) {
       next(e);
