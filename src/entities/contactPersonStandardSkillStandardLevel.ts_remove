@@ -446,8 +446,8 @@ SELECT
 
 -- SQL CASUAL WILL RUN ON EVERY DAY LOOP
   SELECT 
-      SUM(salary * (resource_contract_hours/resource_contract_days_per_week)) casual_salaries,
-      SUM(salary * (resource_contract_hours / resource_contract_days_per_week) * (SELECT
+      SUM(IFNULL(salary * (resource_contract_hours/resource_contract_days_per_week),0)) casual_salaries,
+      SUM(IFNULL(salary * (resource_contract_hours / resource_contract_days_per_week),0) * (SELECT
           SUM(global_variable_values.value/100) 
           FROM global_variable_labels
           JOIN global_variable_values ON global_variable_labels.id = global_variable_values.global_variable_id
@@ -476,7 +476,7 @@ SELECT
 
 -- SQL perminant WILL RUN ON EVERY DAY MONTHLY
   SELECT 
-    SUM(salary * (ABS(boh_percent - 100)/100)) permemnant_salaries ,-- to seperate boh percent for salaries
+    SUM(salary * (ABS(boh_percent - 100)/100)) permanent_salaries ,-- to seperate boh percent for salaries
     SUM(salary * (ABS(boh_percent - 100)/100) * (SELECT
       SUM(global_variable_values.value/100) 
         FROM global_variable_labels
@@ -484,7 +484,7 @@ SELECT
       WHERE
         global_variable_labels.name = 'Superannuation'
         AND calendar_view_filtered.calendar_date BETWEEN global_variable_values.start_date
-        AND global_variable_values.end_date)) permemnant_superannuation,
+        AND global_variable_values.end_date)) permanent_superannuation,
     DATE_FORMAT(STR_TO_DATE(calendar_view_filtered.calendar_date,'%Y-%m-%d'), '%b %y') month -- month wise salary checking contracts end 
       From ( 
         SELECT calendar_date FROM calendar_view

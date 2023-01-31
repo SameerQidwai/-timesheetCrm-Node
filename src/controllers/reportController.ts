@@ -14,6 +14,7 @@ import {
 import { StandardSkillStandardLevel } from '../entities/standardSkillStandardLevel';
 import { Opportunity } from '../entities/opportunity';
 import { PurchaseOrder } from '../entities/purchaseOrder';
+import { ProjectType } from '../constants/constants';
 
 export class ReportController {
   _customQueryParser(query = '') {
@@ -1891,7 +1892,8 @@ export class ReportController {
   async WorkInHandForecast(req: Request, res: Response, next: NextFunction) {
     let fiscalYearStart = req.query.fiscalYearStart as string;
     let fiscalYearEnd = req.query.fiscalYearEnd as string;
-    const actual = await getManager().query(`
+    let actualMonth = moment().startOf("month").format('MMM YY')
+    const actual_revenue = await getManager().query(`
       SELECT 
         project_type,
         project_amount,
@@ -1927,48 +1929,233 @@ export class ReportController {
 
     `);
 
-    const forecast = await getManager().query(`
-        SELECT 
-          project_type,
-          resource_start,
-          resource_end,
-          resource_contract_start,
-          resource_contract_end,
-          SUM(forcaste_buy_rate) forcaste_buy_rates,
-          SUM(forcaste_sell_rate) forcaste_sell_rates
+    const forecast_revenue = await getManager().query(`
+    SELECT 
+    month_total_buy,
+    time_base.project_type,
+    month,
+    (CASE WHEN project_type = 2 
+      THEN 
+          time_base.month_total_sell
+      ELSE 
+        SUM(project_schedule_segments.amount)
+      END ) month_total_sell
+    FROM (SELECT 
+        SUM(cost_rate)  month_total_buy, 
+        SUM(revenue_rate) month_total_sell, 
+        project_type, 
+        calendar_date,
+        DATE_FORMAT(STR_TO_DATE(calendar_view_filtered.calendar_date,'%Y-%m-%d'), '%b %y') month
+  
+          From (
+              SELECT * FROM calendar_view
+                WHERE (calendar_view.calendar_date BETWEEN '${fiscalYearStart}' AND '${fiscalYearEnd}')
+              ) as calendar_view_filtered
+  
+              LEFT JOIN revenue_cost_view
+              ON (
+                (calendar_view_filtered.calendar_date BETWEEN 
+                  DATE_FORMAT(resource_start,'%Y-%m-%d') AND 
+                  DATE_FORMAT(resource_end,'%Y-%m-%d')
+                ) AND
+                (calendar_view_filtered.calendar_date BETWEEN 
+                  DATE_FORMAT(resource_contract_start,'%Y-%m-%d') AND 
+                  DATE_FORMAT(IFNULL(resource_contract_end, '2049-06-30'),'%Y-%m-%d')
+                )
+              )
+  
+          WHERE is_holidays = 0 AND is_weekday = 1
+  
+          GROUP BY project_type, month ) as time_base
+  
+      LEFT JOIN opportunities
+        ON opportunities.type = project_type
+      LEFT JOIN  project_schedules 
+        ON project_schedules.project_id = opportunities.id 
+        LEFT JOIN project_schedule_segments
+        ON project_schedule_segments.schedule_id = project_schedules.id
+        AND (time_base.calendar_date BETWEEN DATE_FORMAT(project_schedule_segments.start_date,'%Y-%m-%d') AND 
+        DATE_FORMAT(project_schedule_segments.end_date,'%Y-%m-%d'))
+      WHERE project_schedule_segments.deleted_at IS NULL AND project_schedules.deleted_at IS NULL
+    GROUP BY project_type, month  
+    `);
+    
+    const causal_salaries = await getManager().query(`
+    SELECT 
+      SUM(salary * (resource_contract_hours/resource_contract_days_per_week)) casual_salaries,
+      SUM(salary * (resource_contract_hours / resource_contract_days_per_week) * (SELECT
+          SUM(global_variable_values.value/100) 
+          FROM global_variable_labels
+          JOIN global_variable_values ON global_variable_labels.id = global_variable_values.global_variable_id
+      WHERE
+          global_variable_labels.name = 'Superannuation'
+          AND calendar_view_filtered.calendar_date BETWEEN global_variable_values.start_date
+          AND global_variable_values.end_date)) casual_superannuation,
+      DATE_FORMAT(STR_TO_DATE(calendar_view_filtered.calendar_date,'%Y-%m-%d'), '%b %y') month 
+      From (
+        SELECT * FROM calendar_view
+          WHERE (calendar_view.calendar_date BETWEEN '${fiscalYearStart}' AND '${fiscalYearEnd}') 
+        ) as calendar_view_filtered
 
-      FROM forecaste_view
-      WHERE ( project_status = 'P' OR project_status = 'C' )
-            AND resource_contract_start <= STR_TO_DATE('2023-30-06' ,'%Y-%m-%d') 
-            AND (resource_contract_end IS NULL OR  resource_contract_end >= CURRENT_DATE())
-            AND (resource_start BETWEEN  STR_TO_DATE('2023-30-06' ,'%Y-%m-%d')  AND STR_TO_DATE('2023-30-06' ,'%Y-%m-%d')  )
-        GROUP BY project_id
+        LEFT JOIN (
+              SELECT * FROM revenue_cost_view 
+              WHERE employment_type = 1
+          ) as casual_employee
+        ON ((calendar_view_filtered.calendar_date BETWEEN  
+            DATE_FORMAT(resource_contract_start,'%Y-%m-%d') AND  
+            DATE_FORMAT(IFNULL(resource_contract_end, '2049-06-30'),'%Y-%m-%d')
+          )
+        )
+      WHERE is_holidays = 0 AND is_weekday = 1 
+      GROUP BY month;
+    `)
+    
+    const permanent_salaries = await getManager().query(`
+      SELECT 
+      SUM(salary * (ABS(boh_percent - 100)/100)) permanent_salaries ,-- to seperate boh percent for salaries
+      SUM(salary * (ABS(boh_percent - 100)/100) * (SELECT
+        SUM(global_variable_values.value/100) 
+          FROM global_variable_labels
+          JOIN global_variable_values ON global_variable_labels.id = global_variable_values.global_variable_id
+        WHERE
+          global_variable_labels.name = 'Superannuation'
+          AND calendar_view_filtered.calendar_date BETWEEN global_variable_values.start_date
+          AND global_variable_values.end_date)) permanent_superannuation,
+      DATE_FORMAT(STR_TO_DATE(calendar_view_filtered.calendar_date,'%Y-%m-%d'), '%b %y') month -- month wise salary checking contracts end 
+        From ( 
+          SELECT calendar_date FROM calendar_view
+            WHERE (calendar_view.calendar_date BETWEEN '${fiscalYearStart}' AND '${fiscalYearEnd}') -- checking for only one fiscal year 
+            GROUP BY calendar_view.month -- group by to get only a date for month
+          ) as calendar_view_filtered
 
-      `);
+          LEFT JOIN (
+            SELECT * FROM revenue_cost_view 
+            WHERE employment_type != 1
+          ) as casual_employee -- group by to get only ONE date for month  to check contracts running dates on every month
+          ON ((calendar_view_filtered.calendar_date BETWEEN 
+              DATE_FORMAT(resource_contract_start,'%Y-%m-%d') AND -- JOIN ONLY ON CONTRACT TO AVOID REPEATED ALLOCATIONs
+              DATE_FORMAT(IFNULL(resource_contract_end, '2049-06-30'),'%Y-%m-%d')
+            )
+          )
+      GROUP BY month;
+    `)
+      
+    const doh_salaries = await getManager().query(`
+      SELECT 
+      SUM(salary * (boh_percent)/100) doh_salaries ,-- to seperate boh percent for salaries
+      SUM(salary * (boh_percent)/100 * (SELECT
+        SUM(global_variable_values.value/100) 
+          FROM global_variable_labels
+          JOIN global_variable_values ON global_variable_labels.id = global_variable_values.global_variable_id
+        WHERE
+          global_variable_labels.name = 'Superannuation'
+          AND calendar_view_filtered.calendar_date BETWEEN global_variable_values.start_date
+          AND global_variable_values.end_date)) doh_superannuation,
+      DATE_FORMAT(STR_TO_DATE(calendar_view_filtered.calendar_date,'%Y-%m-%d'), '%b %y') month -- month wise salary checking contracts end 
+        From ( 
+          SELECT calendar_date FROM calendar_view
+            WHERE (calendar_view.calendar_date BETWEEN '${fiscalYearStart}' AND '${fiscalYearEnd}') -- checking for only one fiscal year 
+            GROUP BY calendar_view.month -- group by to get only a date for month
+          ) as calendar_view_filtered
 
-    interface CalendarInterface {
-      date: string;
-      holiday_type_id: number;
+          LEFT JOIN (
+            SELECT * FROM revenue_cost_view 
+            WHERE employment_type != 1
+          ) as casual_employee -- group by to get only ONE date for month  to check contracts running dates on every month
+          ON ((calendar_view_filtered.calendar_date BETWEEN 
+              DATE_FORMAT(resource_contract_start,'%Y-%m-%d') AND -- JOIN ONLY ON CONTRACT TO AVOID REPEATED ALLOCATIONs
+              DATE_FORMAT(IFNULL(resource_contract_end, '2049-06-30'),'%Y-%m-%d')
+            )
+          )
+      GROUP BY month;
+    `)
+
+    let length_of_loop = Math.max(...[actual_revenue.length, forecast_revenue.length])
+
+    let data: any = {
+      MILESTONE_BASE: {total: 0}, 
+      TIME_BASE: {total: 0}, 
+      CASUAL_SALARIES: {total:0}, 
+      PERMANENT_SALARIES: {total:0}, 
+      DOH_SALARIES: {total:0},
+      PERMANENT_SUPER: {total: 0},
+      CASUAL_SUPER: {total: 0},
+      DOH_SUPER: {total: 0},
+      TOTAL_REVENUE: {total:0},
+      TOTAL_COST: {total:0},
+      TOTAL_DOH: {total: 0}
     }
+    for (let i = 0; i<length_of_loop; i++){
+      if (actual_revenue[i]){
+        let {project_type, month, month_total_sell = 0} = actual_revenue[i]
+        if (moment(month, 'MMM YY').isBefore(moment(), 'month') && project_type){
+          data[ProjectType[project_type]][month] = parseFloat(month_total_sell)
+          data[ProjectType[project_type]]['total'] += parseFloat(month_total_sell)
 
-    let calendar: CalendarInterface[] = await getManager().query(`
-      SELECT DATE_FORMAT(date, '%Y-%m-%d') date, holiday_type_id FROM  calendar_holidays 
-      WHERE  date <= STR_TO_DATE('${fiscalYearEnd}' ,'%Y-%m-%d') 
-        AND date >= STR_TO_DATE('${fiscalYearStart}' ,'%Y-%m-%d')`);
+          data['TOTAL_REVENUE'][month] = data['TOTAL_REVENUE'][month]
+            ? data['TOTAL_REVENUE'][month] + parseFloat(month_total_sell)
+            : parseFloat(month_total_sell);
+          data['TOTAL_REVENUE']['total'] += data['TOTAL_REVENUE'][month]
+        }
+      }
+      if (forecast_revenue[i]){
+        let {project_type, month, month_total_sell =0} = forecast_revenue[i]
+        if (moment(month, 'MMM YY').isSameOrAfter(moment(), 'month') && project_type){
+          data[ProjectType[project_type]][month] = parseFloat(month_total_sell)
+          data[ProjectType[project_type]]['total'] += parseFloat(month_total_sell)
 
-    interface HolidayInterface {
-      [date: string]: number;
+          data['TOTAL_REVENUE'][month] = data['TOTAL_REVENUE'][month]
+            ? data['TOTAL_REVENUE'][month] + parseFloat(month_total_sell)
+            : parseFloat(month_total_sell);
+          data['TOTAL_REVENUE']['total'] += (data['TOTAL_REVENUE'][month]??0)
+        }
+      }
+      if (causal_salaries[i]){
+        let {month, causal_salaries: salary =0, casual_superannuation=0} = causal_salaries[i]
+        salary ||=0; casual_superannuation ||=0
+        data['CASUAL_SALARIES'][month] = parseFloat(salary)
+        data['CASUAL_SALARIES']['total'] += parseFloat(salary)
+        data['CASUAL_SUPER'][month] = parseFloat(casual_superannuation)
+        data['CASUAL_SUPER']['total'] +=parseFloat(casual_superannuation)
+
+        data['TOTAL_COST'][month] = data['TOTAL_COST'][month]
+            ? data['TOTAL_COST'][month] + (parseFloat(salary) + parseFloat(casual_superannuation))
+            : parseFloat(salary) + parseFloat(casual_superannuation);
+          data['TOTAL_COST']['total'] +=( data['TOTAL_COST'][month]??0)
+
+      }
+      if (permanent_salaries[i]){
+        let {month, permanent_salaries: salary =0, permanent_superannuation =0} = permanent_salaries[i]
+        salary ||=0; permanent_superannuation ||=0
+        data['PERMANENT_SALARIES'][month] = parseFloat(salary)
+        data['PERMANENT_SALARIES']['total'] += parseFloat(salary)
+        data['PERMANENT_SUPER'][month] =parseFloat(permanent_superannuation)
+        data['PERMANENT_SUPER']['total'] +=parseFloat(permanent_superannuation)
+
+        data['TOTAL_COST'][month] = data['TOTAL_COST'][month]
+            ? data['TOTAL_COST'][month] + (parseFloat(salary) + parseFloat(permanent_superannuation))
+            : parseFloat(salary) + parseFloat(permanent_superannuation) ;
+        data['TOTAL_COST']['total'] += (data['TOTAL_COST'][month] ??0)
+      }
+
+      if (doh_salaries[i]){
+        let {month, doh_salaries: salary =0, doh_superannuation=0} = doh_salaries[i]
+        data['DOH_SALARIES'][month] = parseFloat(salary)
+        data['DOH_SALARIES']['total'] += parseFloat(salary)
+        data['DOH_SUPER'][month] = parseFloat(doh_superannuation)
+        data['DOH_SUPER']['total'] += parseFloat(doh_superannuation)
+
+        data['TOTAL_DOH'][month] = data['TOTAL_DOH'][month]
+          ? data['TOTAL_DOH'][month] + (parseFloat(salary) + parseFloat(doh_superannuation))
+          : parseFloat(salary) + parseFloat(doh_superannuation);
+        data['TOTAL_DOH']['total'] += data['TOTAL_DOH'][month]
+      }
     }
-
-    let holidays: HolidayInterface = calendar.reduce(
-      (a, { date, holiday_type_id }) => ({ ...a, [date]: holiday_type_id }),
-      {}
-    );
 
     res.status(200).json({
       success: true,
       message: 'Work In Hand Forecasting',
-      data: actual,
+      data: data,
     });
   }
 }
