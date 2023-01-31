@@ -1977,4 +1977,8 @@ export class ReportExportController {
 
     return `report${BIGGEST + 1}.xlsx`;
   }
+
+  _generateReportUrl(name: string): string {
+    return `reports/download/${name}`;
+  }
 }
