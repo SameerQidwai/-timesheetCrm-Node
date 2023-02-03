@@ -17,6 +17,7 @@ import { PurchaseOrder } from '../entities/purchaseOrder';
 import xlsx from 'xlsx';
 import fs, { stat } from 'fs';
 import path from 'path';
+import { TimesheetSummaryStatus } from '../constants/constants';
 
 export class ReportExportController {
   _customQueryParser(query = '') {
@@ -1157,6 +1158,7 @@ export class ReportExportController {
           'contactPersonOrganization.contactPerson.allocations.opportunityResource',
           'contactPersonOrganization.contactPerson.allocations.opportunityResource.milestone',
           'contactPersonOrganization.contactPerson.allocations.opportunityResource.milestone.project',
+          'contactPersonOrganization.contactPerson.allocations.opportunityResource.milestone.project.organization',
           'employmentContracts',
         ],
         where: { active: true },
@@ -1215,20 +1217,22 @@ export class ReportExportController {
 
       interface MonthInterface {
         [key: string]: {
-          startDate: Moment;
-          endDate: Moment;
-          totalDaysInMonth: number;
-          totalHours: number;
-          savedHours: number;
-          submittedHours: number;
-          approvedHours: number;
-          rejectedHours: number;
           filteredHours: number;
-          status: string;
+          status: TimesheetSummaryStatus;
         };
       }
 
       let months: MonthInterface = {};
+
+      let projectData: {
+        [key: string]: {
+          id: number;
+          title: String;
+          type: number;
+          organization: string;
+          organizationId: number;
+        };
+      } = {};
 
       let startDateClone = startDate.clone();
 
@@ -1237,17 +1241,8 @@ export class ReportExportController {
         startDateClone.format('M') === endDate.format('M')
       ) {
         months[startDateClone.format('MMM YY')] = {
-          startDate: startDateClone.clone().startOf('month'),
-          endDate: startDateClone.clone().endOf('month'),
-
-          totalDaysInMonth: startDateClone.daysInMonth(),
-          totalHours: 0,
-          savedHours: 0,
-          submittedHours: 0,
-          approvedHours: 0,
-          rejectedHours: 0,
           filteredHours: 0,
-          status: 'Not Applicable',
+          status: 0,
         };
 
         startDateClone.add(1, 'month');
@@ -1268,8 +1263,10 @@ export class ReportExportController {
 
       let _index = 0;
       for (let employee of employees) {
-        if (queryEmployeeId.length && !queryEmployeeId.includes(employee.id))
+        if (queryEmployeeId.length && !queryEmployeeId.includes(employee.id)) {
+          _index++;
           continue;
+        }
 
         let employeeAllocations: { [key: string]: { [key: string]: boolean } } =
           {};
@@ -1277,7 +1274,17 @@ export class ReportExportController {
         for (let allocation of employee.contactPersonOrganization.contactPerson
           .allocations) {
           let project = allocation.opportunityResource?.milestone?.project;
+
           if (!project) continue;
+
+          if (!projectData['project.id'])
+            projectData[project.id] = {
+              id: project.id,
+              title: project.title,
+              type: project.type,
+              organization: project.organization.name,
+              organizationId: project.organization.id,
+            };
 
           let { startDate: allocationStartDate, endDate: allocationEndDate } =
             allocation.opportunityResource;
@@ -1288,6 +1295,18 @@ export class ReportExportController {
           let mAllocationStartDateClone = mAllocationStartDate.clone();
 
           while (mAllocationEndDate > mAllocationStartDateClone) {
+            if (
+              !mAllocationStartDateClone.isBetween(
+                startDate,
+                endDate,
+                'date',
+                '[]'
+              )
+            ) {
+              mAllocationStartDateClone.add(1, 'month');
+              continue;
+            }
+
             if (!employeeAllocations[project.id])
               employeeAllocations[project.id] = {};
 
@@ -1356,12 +1375,15 @@ export class ReportExportController {
                 );
 
                 //NOT APPLICABLE
-                let summaryStatus = 0;
+                let summaryStatus = TimesheetSummaryStatus.NOT_APPLICABLE;
+
+                if (!employeeAllocations[project.id]) continue;
 
                 //NOT APPLICABLE, NOT SUBMITTED, SUBMITTED, APPROVED,
                 if (employeeAllocations[project.id][entryDate]) {
                   //NOT SUBMITTED;
-                  summaryStatus = 1;
+                  summaryStatus = TimesheetSummaryStatus.NOT_SUBMITTED;
+                  employeeAllocations[project.id][entryDate] = false;
                 }
 
                 let entryHours = parseFloat(entry.hours.toFixed(2));
@@ -1369,20 +1391,26 @@ export class ReportExportController {
 
                 if (queryStatus.length) {
                   if (
-                    queryStatus.includes(1) &&
-                    !entry.submittedAt &&
-                    !entry.rejectedAt &&
-                    !entry.approvedAt
+                    queryStatus.includes(
+                      TimesheetSummaryStatus.NOT_SUBMITTED
+                    ) &&
+                    ((!entry.submittedAt &&
+                      !entry.rejectedAt &&
+                      !entry.approvedAt) ||
+                      entry.rejectedAt)
                   ) {
                     filteredHours += entryHours;
                   } else if (
-                    queryStatus.includes(2) &&
+                    queryStatus.includes(TimesheetSummaryStatus.SUBMITTED) &&
                     entry.submittedAt &&
                     !entry.rejectedAt &&
                     !entry.approvedAt
                   ) {
                     filteredHours += entryHours;
-                  } else if (queryStatus.includes(3) && entry.approvedAt) {
+                  } else if (
+                    queryStatus.includes(TimesheetSummaryStatus.APPROVED) &&
+                    entry.approvedAt
+                  ) {
                     filteredHours += entryHours;
                   }
                 } else {
@@ -1398,21 +1426,13 @@ export class ReportExportController {
                   employeeProjectIndexes[`${employee.id}_${project.id}`]
                 ].months[entryDate].filteredHours += filteredHours;
                 sumOfHours += filteredHours;
-
-                summary[
-                  employeeProjectIndexes[`${employee.id}_${project.id}`]
-                ].months[entryDate].totalHours += entryHours;
-
                 //SAVED
                 if (
                   !entry.submittedAt &&
                   !entry.rejectedAt &&
                   !entry.approvedAt
                 ) {
-                  summary[
-                    employeeProjectIndexes[`${employee.id}_${project.id}`]
-                  ].months[entryDate].savedHours += entryHours;
-                  summaryStatus = 1;
+                  summaryStatus = TimesheetSummaryStatus.NOT_SUBMITTED;
                 }
 
                 //SUBMITTED
@@ -1421,32 +1441,22 @@ export class ReportExportController {
                   !entry.rejectedAt &&
                   !entry.approvedAt
                 ) {
-                  summary[
-                    employeeProjectIndexes[`${employee.id}_${project.id}`]
-                  ].months[entryDate].submittedHours += entryHours;
-                  summaryStatus = 2;
+                  summaryStatus = TimesheetSummaryStatus.SUBMITTED;
                 }
 
                 //APPROVED
                 if (entry.approvedAt) {
-                  summary[
-                    employeeProjectIndexes[`${employee.id}_${project.id}`]
-                  ].months[entryDate].approvedHours += entryHours;
-                  summaryStatus = 3;
+                  summaryStatus = TimesheetSummaryStatus.APPROVED;
                 }
 
                 //REJECTED
                 if (entry.rejectedAt) {
-                  summary[
-                    employeeProjectIndexes[`${employee.id}_${project.id}`]
-                  ].months[entryDate].rejectedHours += entryHours;
-                  summaryStatus = 1;
+                  summaryStatus = TimesheetSummaryStatus.NOT_SUBMITTED;
                 }
 
                 summary[
                   employeeProjectIndexes[`${employee.id}_${project.id}`]
-                ].months[entryDate].status =
-                  parseTimesheetSummaryStatus(summaryStatus);
+                ].months[entryDate].status = summaryStatus;
               }
 
               summary[
@@ -1466,36 +1476,41 @@ export class ReportExportController {
                 );
 
                 //NOT APPLICABLE
-                let summaryStatus = 0;
+                let summaryStatus = TimesheetSummaryStatus.NOT_APPLICABLE;
 
                 //NOT APPLICABLE, NOT SUBMITTED, SUBMITTED, APPROVED,
                 if (employeeAllocations[project.id][entryDate]) {
                   //NOT SUBMITTED;
-                  summaryStatus = 1;
+                  summaryStatus = TimesheetSummaryStatus.SUBMITTED;
+                  employeeAllocations[project.id][entryDate] = false;
                 }
 
                 let entryHours = parseFloat(entry.hours.toFixed(2));
-
-                localMonths[entryDate].totalHours += entryHours;
 
                 let filteredHours = 0;
 
                 if (queryStatus.length) {
                   if (
-                    queryStatus.includes(1) &&
-                    !entry.submittedAt &&
-                    !entry.rejectedAt &&
-                    !entry.approvedAt
+                    queryStatus.includes(
+                      TimesheetSummaryStatus.NOT_SUBMITTED
+                    ) &&
+                    ((!entry.submittedAt &&
+                      !entry.rejectedAt &&
+                      !entry.approvedAt) ||
+                      entry.rejectedAt)
                   ) {
                     filteredHours += entryHours;
                   } else if (
-                    queryStatus.includes(2) &&
+                    queryStatus.includes(TimesheetSummaryStatus.SUBMITTED) &&
                     entry.submittedAt &&
                     !entry.rejectedAt &&
                     !entry.approvedAt
                   ) {
                     filteredHours += entryHours;
-                  } else if (queryStatus.includes(3) && entry.approvedAt) {
+                  } else if (
+                    queryStatus.includes(TimesheetSummaryStatus.APPROVED) &&
+                    entry.approvedAt
+                  ) {
                     filteredHours += entryHours;
                   }
                 } else {
@@ -1512,13 +1527,13 @@ export class ReportExportController {
 
                 //SAVED HOURS
                 if (
-                  !entry.submittedAt &&
-                  !entry.rejectedAt &&
-                  !entry.approvedAt
+                  (!entry.submittedAt &&
+                    !entry.rejectedAt &&
+                    !entry.approvedAt) ||
+                  entry.rejectedAt
                 ) {
-                  localMonths[entryDate].savedHours += entryHours;
                   //NOT SUBMITTED
-                  summaryStatus = 1;
+                  summaryStatus = TimesheetSummaryStatus.NOT_SUBMITTED;
                 }
 
                 //SUBMITTED HOURS
@@ -1527,27 +1542,17 @@ export class ReportExportController {
                   !entry.rejectedAt &&
                   !entry.approvedAt
                 ) {
-                  localMonths[entryDate].submittedHours += entryHours;
                   //SUBMITTED
-                  summaryStatus = 2;
+                  summaryStatus = TimesheetSummaryStatus.SUBMITTED;
                 }
 
                 //APPROVED HOURS
                 if (entry.approvedAt) {
-                  localMonths[entryDate].approvedHours += entryHours;
                   //APPROVED
-                  summaryStatus = 3;
+                  summaryStatus = TimesheetSummaryStatus.APPROVED;
                 }
 
-                //NOT SUBMITTED HOURS
-                if (entry.rejectedAt) {
-                  localMonths[entryDate].rejectedHours += entryHours;
-                  //NOT SUBMITTED;
-                  summaryStatus = 1;
-                }
-
-                localMonths[entryDate].status =
-                  parseTimesheetSummaryStatus(summaryStatus);
+                localMonths[entryDate].status = summaryStatus;
               }
 
               employeeProjectIndexes[`${employee.id}_${project.id}`] =
@@ -1570,6 +1575,65 @@ export class ReportExportController {
             }
           }
         }
+
+        for (let allocationProject in employeeAllocations) {
+          let localMonths: MonthInterface = JSON.parse(JSON.stringify(months));
+
+          let _partialTrue: Boolean = false;
+          let _fullTrue: Boolean = true;
+          let _partiallyTrueMonths: Array<string> = [];
+
+          for (let allocationMonth in employeeAllocations[allocationProject]) {
+            let status =
+              employeeAllocations[allocationProject][allocationMonth];
+
+            if (status) {
+              _partiallyTrueMonths.push(allocationMonth);
+              _partialTrue = true;
+            }
+
+            if (!status) _fullTrue = false;
+          }
+
+          if (_fullTrue) {
+            let project = projectData[allocationProject];
+
+            if (queryProjectId.length && !queryProjectId.includes(project.id))
+              continue;
+
+            if (
+              queryOrgId.length &&
+              !queryOrgId.includes(project.organizationId)
+            )
+              continue;
+
+            employeeProjectIndexes[`${employee.id}_${project.id}`] =
+              summary.length;
+            summary.push({
+              employeeName: employee.getFullName,
+              employeeCode: employee.id,
+              projectName: project.title,
+              projectCode: project.id,
+              projectType: project.type,
+              purchaseOrder: projectPurchaseOrders[project.id]?.id ?? null,
+              organizationName: project.organization,
+              months: localMonths,
+              currentMonth: 0,
+              currentYear: 0,
+            });
+          }
+          if (_partialTrue) {
+            for (let changeMonth of _partiallyTrueMonths) {
+              summary[
+                employeeProjectIndexes[
+                  `${employee.id}_${projectData[allocationProject].id}`
+                ]
+              ].months[changeMonth].status =
+                TimesheetSummaryStatus.NOT_SUBMITTED;
+            }
+          }
+        }
+
         _index++;
       }
 
@@ -1580,9 +1644,60 @@ export class ReportExportController {
 
       summary.forEach((summ) => {
         if (summ.projectType === 1) {
+          for (let month in summ.months) {
+            if (queryStatus.length) {
+              if (
+                queryStatus.includes(summ.months[month].status) &&
+                summ.months[month].status !==
+                  TimesheetSummaryStatus.NOT_APPLICABLE
+              ) {
+                (summ.months[month] as any) = summ.months[month].filteredHours;
+              } else if (
+                summ.months[month].status ===
+                TimesheetSummaryStatus.NOT_APPLICABLE
+              ) {
+                (summ.months[month] as any) = 'N/A';
+              } else {
+                (summ.months[month] as any) = '-';
+              }
+            } else {
+              if (
+                summ.months[month].status ===
+                  TimesheetSummaryStatus.SUBMITTED &&
+                summ.months[month].status !==
+                  TimesheetSummaryStatus.NOT_APPLICABLE
+              ) {
+                (summ.months[month] as any) = summ.months[month].filteredHours;
+              } else if (
+                summ.months[month].status ===
+                TimesheetSummaryStatus.NOT_APPLICABLE
+              ) {
+                (summ.months[month] as any) = 'N/A';
+              } else {
+                (summ.months[month] as any) = '-';
+              }
+            }
+          }
           milestoneProjectTotalHours += summ.currentYear;
           milestoneProjectSummary.push(summ);
         } else if (summ.projectType === 2) {
+          for (let month in summ.months) {
+            if (queryStatus.length) {
+              if (queryStatus.includes(summ.months[month].status)) {
+                (summ.months[month] as any) = summ.months[month].filteredHours;
+              } else {
+                (summ.months[month] as any) = '-';
+              }
+            } else {
+              if (
+                summ.months[month].status === TimesheetSummaryStatus.SUBMITTED
+              ) {
+                (summ.months[month] as any) = summ.months[month].filteredHours;
+              } else {
+                (summ.months[month] as any) = '-';
+              }
+            }
+          }
           timeProjectTotalHours += summ.currentYear;
           timeProjectSummary.push(summ);
         }

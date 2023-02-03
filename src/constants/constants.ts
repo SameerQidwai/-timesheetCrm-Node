@@ -129,3 +129,10 @@ export enum ExpenseSheetStatus {
   REJECTED = 'RJ',
   APPROVED = 'AP',
 }
+
+export enum TimesheetSummaryStatus {
+  NOT_APPLICABLE = 0,
+  NOT_SUBMITTED = 1,
+  SUBMITTED = 2,
+  APPROVED = 3,
+}

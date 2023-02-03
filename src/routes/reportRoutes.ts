@@ -24,9 +24,7 @@ router
   .route('/client-revenue-analysis')
   .get([isLoggedIn], contr.clientRevnueAnalysis.bind(contr));
 
-router
-  .route('/timesheet-summary')
-  .get([isLoggedIn], contr.timesheetSummary.bind(contr));
+router.route('/timesheet-summary').get([], contr.timesheetSummary.bind(contr));
 
 router
   .route('/leave-request-summary')
@@ -40,6 +38,6 @@ router
   .route('/work-in-hand-forecast')
   .get([isLoggedIn], contr.WorkInHandForecast.bind(contr));
 
-router.route('/download/:name').get([], contr.download.bind(contr));
+router.route('/download/:name').get([isLoggedIn], contr.download.bind(contr));
 
 export default router;
