@@ -1249,16 +1249,16 @@ export class ReportExportController {
       }
 
       let summary: {
-        employeeName: string;
-        employeeCode: number;
-        projectName: String;
-        projectCode: number;
-        projectType: number;
-        purchaseOrder: number | null;
-        organizationName: string;
-        months: MonthInterface;
-        currentMonth: number;
-        currentYear: number;
+        'Employee Name': string;
+        'Employee Code': number;
+        'Project Name': String;
+        'Project Code': number;
+        'Project Type': number;
+        'Purchase Order': number | null;
+        'Organization Name': string;
+        Months: MonthInterface;
+        'Current Month': number;
+        'Current Year': number;
       }[] = [];
 
       let _index = 0;
@@ -1424,7 +1424,7 @@ export class ReportExportController {
 
                 summary[
                   employeeProjectIndexes[`${employee.id}_${project.id}`]
-                ].months[entryDate].filteredHours += filteredHours;
+                ].Months[entryDate].filteredHours += filteredHours;
                 sumOfHours += filteredHours;
                 //SAVED
                 if (
@@ -1456,19 +1456,19 @@ export class ReportExportController {
 
                 summary[
                   employeeProjectIndexes[`${employee.id}_${project.id}`]
-                ].months[entryDate].status = summaryStatus;
+                ].Months[entryDate].status = summaryStatus;
               }
 
-              summary[
-                employeeProjectIndexes[`${employee.id}_${project.id}`]
-              ].currentMonth =
+              summary[employeeProjectIndexes[`${employee.id}_${project.id}`]][
+                'Current Month'
+              ] =
                 summary[
                   employeeProjectIndexes[`${employee.id}_${project.id}`]
-                ].months[moment(currentMoment).format('MMM YY')].filteredHours;
+                ].Months[moment(currentMoment).format('MMM YY')].filteredHours;
 
-              summary[
-                employeeProjectIndexes[`${employee.id}_${project.id}`]
-              ].currentYear += sumOfHours;
+              summary[employeeProjectIndexes[`${employee.id}_${project.id}`]][
+                'Current Year'
+              ] += sumOfHours;
             } else {
               for (let entry of milestoneEntry.entries) {
                 const entryDate = moment(entry.date, 'DD-MM-YYYY').format(
@@ -1559,18 +1559,18 @@ export class ReportExportController {
                 summary.length;
 
               summary.push({
-                employeeName: employee.getFullName,
-                employeeCode: employee.id,
-                projectName: project.title,
-                projectCode: project.id,
-                projectType: project.type,
-                purchaseOrder: projectPurchaseOrders[project.id]?.id ?? null,
-                organizationName: project.organization.name,
-                months: localMonths,
-                currentMonth:
+                'Employee Name': employee.getFullName,
+                'Employee Code': employee.id,
+                'Project Name': project.title,
+                'Project Code': project.id,
+                'Project Type': project.type,
+                'Purchase Order': projectPurchaseOrders[project.id]?.id ?? null,
+                'Organization Name': project.organization.name,
+                Months: localMonths,
+                'Current Month':
                   localMonths[moment(currentMoment).format('MMM YY')]
                     .filteredHours ?? 0,
-                currentYear: sumOfHours,
+                'Current Year': sumOfHours,
               });
             }
           }
@@ -1610,16 +1610,16 @@ export class ReportExportController {
             employeeProjectIndexes[`${employee.id}_${project.id}`] =
               summary.length;
             summary.push({
-              employeeName: employee.getFullName,
-              employeeCode: employee.id,
-              projectName: project.title,
-              projectCode: project.id,
-              projectType: project.type,
-              purchaseOrder: projectPurchaseOrders[project.id]?.id ?? null,
-              organizationName: project.organization,
-              months: localMonths,
-              currentMonth: 0,
-              currentYear: 0,
+              'Employee Name': employee.getFullName,
+              'Employee Code': employee.id,
+              'Project Name': project.title,
+              'Project Code': project.id,
+              'Project Type': project.type,
+              'Purchase Order': projectPurchaseOrders[project.id]?.id ?? null,
+              'Organization Name': project.organization,
+              Months: localMonths,
+              'Current Month': 0,
+              'Current Year': 0,
             });
           }
           if (_partialTrue) {
@@ -1628,7 +1628,7 @@ export class ReportExportController {
                 employeeProjectIndexes[
                   `${employee.id}_${projectData[allocationProject].id}`
                 ]
-              ].months[changeMonth].status =
+              ].Months[changeMonth].status =
                 TimesheetSummaryStatus.NOT_SUBMITTED;
             }
           }
@@ -1643,75 +1643,86 @@ export class ReportExportController {
       let timeProjectTotalHours = 0;
 
       summary.forEach((summ) => {
-        if (summ.projectType === 1) {
-          for (let month in summ.months) {
+        if (summ['Project Type'] === 1) {
+          for (let month in summ.Months) {
             if (queryStatus.length) {
               if (
-                queryStatus.includes(summ.months[month].status) &&
-                summ.months[month].status !==
+                queryStatus.includes(summ.Months[month].status) &&
+                summ.Months[month].status !==
                   TimesheetSummaryStatus.NOT_APPLICABLE
               ) {
-                (summ.months[month] as any) = summ.months[month].filteredHours;
+                (summ as any)[month] = summ.Months[month].filteredHours;
               } else if (
-                summ.months[month].status ===
+                summ.Months[month].status ===
                 TimesheetSummaryStatus.NOT_APPLICABLE
               ) {
-                (summ.months[month] as any) = 'N/A';
+                (summ as any)[month] = 'N/A';
               } else {
-                (summ.months[month] as any) = '-';
+                (summ as any)[month] = '-';
               }
             } else {
               if (
-                summ.months[month].status ===
+                summ.Months[month].status ===
                   TimesheetSummaryStatus.SUBMITTED &&
-                summ.months[month].status !==
+                summ.Months[month].status !==
                   TimesheetSummaryStatus.NOT_APPLICABLE
               ) {
-                (summ.months[month] as any) = summ.months[month].filteredHours;
+                (summ as any)[month] = summ.Months[month].filteredHours;
               } else if (
-                summ.months[month].status ===
+                summ.Months[month].status ===
                 TimesheetSummaryStatus.NOT_APPLICABLE
               ) {
-                (summ.months[month] as any) = 'N/A';
+                (summ as any)[month] = 'N/A';
               } else {
-                (summ.months[month] as any) = '-';
+                (summ as any)[month] = '-';
               }
             }
           }
-          milestoneProjectTotalHours += summ.currentYear;
+          milestoneProjectTotalHours += summ['Current Year'];
+          delete (summ as any).Months;
           milestoneProjectSummary.push(summ);
-        } else if (summ.projectType === 2) {
-          for (let month in summ.months) {
+        } else if (summ['Project Type'] === 2) {
+          for (let month in summ.Months) {
             if (queryStatus.length) {
-              if (queryStatus.includes(summ.months[month].status)) {
-                (summ.months[month] as any) = summ.months[month].filteredHours;
+              if (queryStatus.includes(summ.Months[month].status)) {
+                (summ as any)[month] = summ.Months[month].filteredHours;
               } else {
-                (summ.months[month] as any) = '-';
+                (summ as any)[month] = '-';
               }
             } else {
               if (
-                summ.months[month].status === TimesheetSummaryStatus.SUBMITTED
+                summ.Months[month].status === TimesheetSummaryStatus.SUBMITTED
               ) {
-                (summ.months[month] as any) = summ.months[month].filteredHours;
+                (summ as any)[month] = summ.Months[month].filteredHours;
               } else {
-                (summ.months[month] as any) = '-';
+                (summ as any)[month] = '-';
               }
             }
           }
-          timeProjectTotalHours += summ.currentYear;
+          timeProjectTotalHours += summ['Current Year'];
+          delete (summ as any).Months;
           timeProjectSummary.push(summ);
         }
       });
 
+      let name = await this.exportReport('any', [
+        // ...['', '', '', 'TIMEBASED PROJECT SUMMARY'],
+        ...timeProjectSummary,
+        // ...[''],
+        // ...['', '', '', 'MILESTONE PROJECT SUMMARY'],
+        ...milestoneProjectSummary,
+      ]);
+
       res.status(200).json({
         success: true,
         message: 'Timesheet Summary',
-        data: {
-          milestoneProjectSummary,
-          timeProjectSummary,
-          milestoneProjectTotalHours,
-          timeProjectTotalHours,
-        },
+        // data: {
+        //   milestoneProjectSummary,
+        //   timeProjectSummary,
+        //   milestoneProjectTotalHours,
+        //   timeProjectTotalHours,
+        // },
+        data: `reports/download/${name}`,
       });
     } catch (e) {
       next(e);
