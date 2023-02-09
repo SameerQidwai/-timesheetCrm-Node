@@ -1094,11 +1094,22 @@ export class ReportController {
       let queryEmployeeId = this._customQueryParser(
         req.query.employeeId as string
       );
+      let queryExcludeEmployeeId = this._customQueryParser(
+        req.query.excludeEmployeeId as string
+      );
+
       let queryProjectId = this._customQueryParser(
         req.query.projectId as string
       );
+      let queryExcludeProjectId = this._customQueryParser(
+        req.query.excludeProjectId as string
+      );
+
       let queryOrgId = this._customQueryParser(
         req.query.organizationId as string
+      );
+      let queryExcludeOrgId = this._customQueryParser(
+        req.query.excludeOrganizationId as string
       );
 
       let queryStatus = this._customQueryParser(req.query.status as string);
@@ -1241,6 +1252,14 @@ export class ReportController {
           continue;
         }
 
+        if (
+          queryExcludeEmployeeId.length &&
+          queryExcludeEmployeeId.includes(employee.id)
+        ) {
+          _index++;
+          continue;
+        }
+
         let employeeAllocations: { [key: string]: { [key: string]: boolean } } =
           {};
 
@@ -1329,8 +1348,20 @@ export class ReportController {
               continue;
 
             if (
+              queryExcludeProjectId.length &&
+              queryExcludeProjectId.includes(project.id)
+            )
+              continue;
+
+            if (
               queryOrgId.length &&
               !queryOrgId.includes(project.organization.id)
+            )
+              continue;
+
+            if (
+              queryExcludeOrgId.length &&
+              queryExcludeOrgId.includes(project.organization.id)
             )
               continue;
 
@@ -1367,22 +1398,29 @@ export class ReportController {
                     queryStatus.includes(
                       TimesheetSummaryStatus.NOT_SUBMITTED
                     ) &&
-                    ((!entry.submittedAt &&
-                      !entry.rejectedAt &&
-                      !entry.approvedAt) ||
-                      entry.rejectedAt)
+                    !entry.submittedAt &&
+                    !entry.rejectedAt &&
+                    !entry.approvedAt
                   ) {
                     filteredHours += entryHours;
-                  } else if (
+                  }
+                  if (
                     queryStatus.includes(TimesheetSummaryStatus.SUBMITTED) &&
                     entry.submittedAt &&
                     !entry.rejectedAt &&
                     !entry.approvedAt
                   ) {
                     filteredHours += entryHours;
-                  } else if (
+                  }
+                  if (
                     queryStatus.includes(TimesheetSummaryStatus.APPROVED) &&
                     entry.approvedAt
+                  ) {
+                    filteredHours += entryHours;
+                  }
+                  if (
+                    queryStatus.includes(TimesheetSummaryStatus.REJECTED) &&
+                    entry.rejectedAt
                   ) {
                     filteredHours += entryHours;
                   }
@@ -1424,7 +1462,7 @@ export class ReportController {
 
                 //REJECTED
                 if (entry.rejectedAt) {
-                  summaryStatus = TimesheetSummaryStatus.NOT_SUBMITTED;
+                  summaryStatus = TimesheetSummaryStatus.REJECTED;
                 }
 
                 summary[
@@ -1467,22 +1505,29 @@ export class ReportController {
                     queryStatus.includes(
                       TimesheetSummaryStatus.NOT_SUBMITTED
                     ) &&
-                    ((!entry.submittedAt &&
-                      !entry.rejectedAt &&
-                      !entry.approvedAt) ||
-                      entry.rejectedAt)
+                    !entry.submittedAt &&
+                    !entry.rejectedAt &&
+                    !entry.approvedAt
                   ) {
                     filteredHours += entryHours;
-                  } else if (
+                  }
+                  if (
                     queryStatus.includes(TimesheetSummaryStatus.SUBMITTED) &&
                     entry.submittedAt &&
                     !entry.rejectedAt &&
                     !entry.approvedAt
                   ) {
                     filteredHours += entryHours;
-                  } else if (
+                  }
+                  if (
                     queryStatus.includes(TimesheetSummaryStatus.APPROVED) &&
                     entry.approvedAt
+                  ) {
+                    filteredHours += entryHours;
+                  }
+                  if (
+                    queryStatus.includes(TimesheetSummaryStatus.REJECTED) &&
+                    entry.rejectedAt
                   ) {
                     filteredHours += entryHours;
                   }
@@ -1498,31 +1543,32 @@ export class ReportController {
                 sumOfHours += filteredHours;
                 localMonths[entryDate].filteredHours += filteredHours;
 
-                //SAVED HOURS
+                //NOT SUBMITTED
                 if (
-                  (!entry.submittedAt &&
-                    !entry.rejectedAt &&
-                    !entry.approvedAt) ||
-                  entry.rejectedAt
+                  !entry.submittedAt &&
+                  !entry.rejectedAt &&
+                  !entry.approvedAt
                 ) {
-                  //NOT SUBMITTED
                   summaryStatus = TimesheetSummaryStatus.NOT_SUBMITTED;
                 }
 
-                //SUBMITTED HOURS
+                //SUBMITTED
                 if (
                   entry.submittedAt &&
                   !entry.rejectedAt &&
                   !entry.approvedAt
                 ) {
-                  //SUBMITTED
                   summaryStatus = TimesheetSummaryStatus.SUBMITTED;
                 }
 
-                //APPROVED HOURS
+                //APPROVED
                 if (entry.approvedAt) {
-                  //APPROVED
                   summaryStatus = TimesheetSummaryStatus.APPROVED;
+                }
+
+                //REJECTED
+                if (entry.approvedAt) {
+                  summaryStatus = TimesheetSummaryStatus.REJECTED;
                 }
 
                 localMonths[entryDate].status = summaryStatus;
@@ -1575,8 +1621,19 @@ export class ReportController {
               continue;
 
             if (
+              queryExcludeProjectId.length &&
+              queryExcludeProjectId.includes(project.id)
+            )
+              continue;
+
+            if (
               queryOrgId.length &&
               !queryOrgId.includes(project.organizationId)
+            )
+              continue;
+            if (
+              queryExcludeOrgId.length &&
+              queryExcludeOrgId.includes(project.organizationId)
             )
               continue;
 
@@ -1595,6 +1652,7 @@ export class ReportController {
               currentYear: 0,
             });
           }
+
           if (_partialTrue) {
             for (let changeMonth of _partiallyTrueMonths) {
               summary[
