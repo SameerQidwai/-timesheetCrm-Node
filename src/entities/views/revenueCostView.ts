@@ -22,8 +22,8 @@ import { ViewEntity, ViewColumn } from "typeorm"
     ec.remuneration_amount salary, ec.remuneration_amount_per salary_per,
     ec.type employment_type, ec.boh_percent,
 
-    (ora.buying_rate *( (ec.no_of_hours /5) * (ora.effort_rate /100) ) ) cost_rate,
-    (ora.selling_rate *( (ec.no_of_hours /5) * (ora.effort_rate /100) ) ) revenue_rate
+    (ora.buying_rate *( (o.hours_per_day /5) * (ora.effort_rate /100) ) ) cost_rate,
+    (ora.selling_rate *( (o.hours_per_day /5) * (ora.effort_rate /100) ) ) revenue_rate
 
     FROM opportunities o 
       JOIN opportunity_resources o_r ON 
