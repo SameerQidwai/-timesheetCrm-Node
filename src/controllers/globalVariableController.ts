@@ -56,7 +56,8 @@ export class GlobalVariableController {
   ) {
     try {
       const repository = getCustomRepository(GlobalVariableValueRepository);
-      let records = await repository.costCalculatorVariable(parseInt(req.params.type));
+      let type = parseInt(req.query.type as string)
+      let records = await repository.costCalculatorVariable(type);
       res.status(200).json({
         success: true,
         message: 'ADD GLOBAL VARIABLE LABEL + VALUE',

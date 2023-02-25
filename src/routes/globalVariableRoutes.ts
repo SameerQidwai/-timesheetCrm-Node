@@ -12,6 +12,6 @@ router
   .post(contr.addOrUpdateGlobalVariable.bind(contr));
   
 router
-  .route('calculator-variable')
+  .route('/calculator-variable')
   .get(contr.getCostCalculatorVariable.bind(contr))
 export default router;

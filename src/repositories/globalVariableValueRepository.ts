@@ -134,6 +134,7 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
       })
       .getMany();
 
+
     let sortIndex: any = {
       Superannuation: 0,
       WorkCover: 1,
@@ -149,6 +150,7 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
           variableId: variable.id,
           valueId: value.id,
           value: value.value,
+          apply: 'Yes'
         };
 
         /** Checking if element is from a sort variables */
@@ -186,29 +188,33 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
           setGolobalVariables.push(manipulateVariable);
         }
      });
-   }
+    }
 
 
-    let stateVariables: any= ['GST']
+    // let stateVariables: any= ['GST']
 
     let states =  await this.manager.find(State)
-      states.forEach((el) => {
-        stateVariables.push(el.label);
-      });
+      // states.forEach((el) => {
+      //   stateVariables.push(el.label);
+      // });
 
     let stateTax: any = await this.manager.query(`
       Select gvv.value, gvl.id valueId, gvl.name label from global_variable_labels gvl
         JOIN global_variable_values gvv on gvv.global_variable_id = gvl.id
-        where gvl.name IN ${stateVariables}
-    `) //start
-    //startDate and dateDate quert look into income_tax workInHand api
-
+        WHERE gvl.name IN ('GST', ${states.map(({label})=> `'${label}'`)})
+        AND gvv.start_date <= '${moment().startOf('day').format('YYYY-MM-DD HH:mm:ss')}'
+        AND gvv.end_date >= '${moment().endOf('day').format('YYYY-MM-DD HH:mm:ss')}';`
+        )
+        //startDate and dateDate quert look into income_tax workInHand api
+        // AND gvv.start_date BETWEEN '${fiscalYearStart}' AND '${fiscalYearEnd}'
+        // AND gvv.start_date >= '${fiscalYearStart}' AND gvv.end_date <= '${fiscalYearEnd}'`
     let gst: number = 0
-    stateTax.filter((states: any)=>{
-      if (states === 'GST'){
+    stateTax = stateTax.filter((states: any)=>{
+      if (states.label === 'GST'){
         gst = states.value
+        // return false
       }else{
-        return states
+        return true
       }
     })
 
