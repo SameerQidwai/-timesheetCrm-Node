@@ -6,6 +6,7 @@ import {
   MilestoneUploadDTO,
   MilestoneExpenseDTO,
   ProjectScheduleDTO,
+  ProjectShutdownPeriodDTO,
 } from '../dto';
 import {
   Between,
@@ -46,7 +47,7 @@ import { EmploymentContract } from '../entities/employmentContract';
 import { getProjectsByUserId } from '../utilities/helperFunctions';
 import { ProjectSchedule } from '../entities/projectSchedule';
 import { ProjectScheduleSegment } from '../entities/projectScheduleSegment';
-import { where } from 'src/middlewares/can';
+import { ProjectShutdownPeriod } from '../entities/projectShutdownPeriod';
 
 @EntityRepository(Opportunity)
 export class ProjectRepository extends Repository<Opportunity> {
@@ -2237,6 +2238,147 @@ export class ProjectRepository extends Repository<Opportunity> {
     return projectSchedules;
   }
 
+  //-- SHUTDOWN PERIODS
+
+  async addShutdownPeriod(
+    projectId: number,
+    shutdownPeriodDTO: ProjectShutdownPeriodDTO
+  ): Promise<any> {
+    let id = await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let projectShutdownObj = new ProjectShutdownPeriod();
+
+        if (!projectId) {
+          throw new Error('Project not found');
+        }
+
+        let project = await transactionalEntityManager.findOne(
+          Opportunity,
+          projectId,
+          { where: { status: In(['P', 'C']) } }
+        );
+        if (!project) {
+          throw new Error('Project not found');
+        }
+        projectShutdownObj.project = project;
+
+        await this._validateShutdownPeriodDates(
+          moment(projectShutdownObj.startDate),
+          moment(projectShutdownObj.endDate),
+          project
+        );
+
+        projectShutdownObj.startDate = moment(
+          shutdownPeriodDTO.startDate
+        ).toDate();
+        projectShutdownObj.endDate = moment(shutdownPeriodDTO.endDate).toDate();
+
+        projectShutdownObj.notes = shutdownPeriodDTO.notes;
+
+        let shutdownPeriod = await transactionalEntityManager.save(
+          projectShutdownObj
+        );
+
+        return shutdownPeriod.id;
+      }
+    );
+    let shutdownPeriod = await this._findOneShutdownPeriod(projectId, id);
+    return shutdownPeriod;
+  }
+
+  async getAllShutdownPeriods(projectId: number): Promise<any> {
+    let results = await this._findManyShutdownPeriod(projectId);
+    return results;
+  }
+
+  async updateShutdownPeriod(
+    projectId: number,
+    id: number,
+    projectShutdownPeriodDTO: ProjectShutdownPeriodDTO
+  ): Promise<any> {
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      let shutdownPeriodObj = await this._findOneShutdownPeriod(projectId, id);
+
+      if (!projectId) {
+        throw new Error('Project not found');
+      }
+
+      let project = await transactionalEntityManager.findOne(
+        Opportunity,
+        projectId,
+        { where: { status: In(['P', 'C']) } }
+      );
+      if (!project) {
+        throw new Error('Project not found');
+      }
+      shutdownPeriodObj.project = project;
+
+      await this._validateShutdownPeriodDates(
+        moment(projectShutdownPeriodDTO.startDate),
+        moment(projectShutdownPeriodDTO.endDate),
+        project
+      );
+
+      shutdownPeriodObj.startDate = moment(
+        projectShutdownPeriodDTO.startDate
+      ).toDate();
+
+      shutdownPeriodObj.endDate = moment(
+        projectShutdownPeriodDTO.endDate
+      ).toDate();
+
+      shutdownPeriodObj.notes = projectShutdownPeriodDTO.notes;
+
+      let shutdownPeriod = await transactionalEntityManager.save(
+        shutdownPeriodObj
+      );
+
+      return shutdownPeriod;
+    });
+    let shutdownPeriod = await this._findOneShutdownPeriod(projectId, id);
+    return shutdownPeriod;
+  }
+
+  async findOneShutdownPeriod(projectId: number, id: number): Promise<any> {
+    let result = await this._findOneShutdownPeriod(projectId, id);
+    return result;
+  }
+
+  async deleteShutdownPeriod(projectId: number, id: number): Promise<any> {
+    let result = await this._findOneShutdownPeriod(projectId, id);
+    return await this.manager.softRemove(ProjectShutdownPeriod, result);
+  }
+
+  async _findOneShutdownPeriod(
+    projectId: number,
+    id: number,
+    options = {}
+  ): Promise<ProjectShutdownPeriod> {
+    let shutdownPeriod = await this.manager.findOne(ProjectShutdownPeriod, id, {
+      relations: ['project'],
+      where: { projectId: projectId },
+      ...options,
+    });
+    if (!shutdownPeriod) {
+      throw new Error('Project Shutdown Period not found');
+    }
+
+    return shutdownPeriod;
+  }
+
+  async _findManyShutdownPeriod(
+    projectId: number,
+    options = {}
+  ): Promise<ProjectShutdownPeriod[]> {
+    let shutdownPeriods = await this.manager.find(ProjectShutdownPeriod, {
+      relations: ['project'],
+      where: { projectId: projectId },
+      ...options,
+    });
+
+    return shutdownPeriods;
+  }
+
   //------------------------------------
 
   async markProjectAsOpen(id: number): Promise<any | undefined> {
@@ -3706,190 +3848,38 @@ export class ProjectRepository extends Repository<Opportunity> {
       );
     }
   }
+
+  async _validateShutdownPeriodDates(
+    startDate: Moment,
+    endDate: Moment,
+    project: Opportunity
+  ) {
+    if (!startDate || !endDate) {
+      throw new Error('Start Date and End Date is Required');
+    }
+
+    if (
+      !startDate.isBetween(
+        moment(project.startDate).startOf('month'),
+        moment(project.endDate).endOf('month'),
+        'date',
+        '[]'
+      )
+    ) {
+      throw new Error('Start of Period should be inside project dates');
+    }
+
+    if (
+      !endDate.isBetween(
+        moment(project.startDate).startOf('month'),
+        moment(project.endDate).endOf('month'),
+        'date',
+        '[]'
+      )
+    ) {
+      throw new Error('End of Period should be inside project dates');
+    }
+
+    return true;
+  }
 }
-
-// async getProjectTracking(
-//   projectId: number,
-//   fiscalYear: { start: string; end: string; actual: string }
-// ): Promise<any | undefined> {
-//   if (!projectId || isNaN(projectId)) {
-//     throw new Error('Project not found ');
-//   }
-//   console.log(projectId, 'PROJECT ID ===================');
-
-//   let project = await this.findOne(projectId, {
-//     relations: [
-//       'milestones',
-//       'milestones.opportunityResources',
-//       'milestones.opportunityResources.opportunityResourceAllocations',
-//       'milestones.opportunityResources.opportunityResourceAllocations.contactPerson',
-//       'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations',
-//       'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations.employee',
-//       'milestones.opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations.employee.employmentContracts',
-//     ],
-//   });
-
-//   if (!project) {
-//     throw new Error('Project not found');
-//   }
-
-//   interface monthDTO {
-//     isAllocated: Boolean;
-//     positionStart?: Moment | string;
-//     positionEnd?: Moment | string;
-//     actualHours: number;
-//     totalDaysInMonth: number;
-//     holidays: number;
-//   }
-//   interface allocationEntity {
-//     contactpersonId: number | null;
-//     employeeId: number | undefined;
-//     name: String;
-//     dailyHours: number;
-//     hourlySellRate: number;
-//     dailySellRate: number;
-//     dailyBuyRate: number;
-//     projectStartDate: string;
-//     projectEndDate: string;
-//     currentYear: {
-//       [key: string]: monthDTO;
-//     };
-//     previousYear: any;
-//     totals: any;
-//   }
-
-//   let startDate = moment(fiscalYear.start, 'DD-MM-YYYY');
-//   let startDateClone = startDate.clone();
-//   let endDate = moment(fiscalYear.end, 'DD-MM-YYYY');
-//   let months: {
-//     [key: string]: monthDTO;
-//   } = {};
-//   let allocationIds: number[] = [];
-
-//   let allocationEntities: allocationEntity[] = [];
-//   let allocationEntitiesIndex: any = {};
-
-//   while (
-//     endDate > startDateClone ||
-//     startDateClone.format('M') === endDate.format('M')
-//   ) {
-//     months[startDateClone.format('YYYY-MM-DD')] = {
-//       isAllocated: false,
-//       actualHours: 0,
-//       totalDaysInMonth: startDateClone.daysInMonth(),
-//       holidays: 0,
-//       //NOT SETTING
-//       // workingDays: 0,
-//       // effortRate: 0,
-//       // actualDays: 0,
-//       // revenue: 0,
-//       // cost: 0,
-//       // cm: 0,
-//       // cmPercent: 0,
-//     };
-//     startDateClone.add(1, 'month');
-//   }
-
-//   let calendars = await this.manager.find(Calendar, {
-//     relations: ['calendarHolidays', 'calendarHolidays.holidayType'],
-//   });
-
-//   calendars.forEach((calendar) => {
-//     calendar.calendarHolidays.forEach((holiday) => {
-//       if (
-//         months[moment(holiday.date, 'YYYY-MM-DD').format('YYYY-MM-DD')] !==
-//         undefined
-//       ) {
-//         months[
-//           moment(holiday.date, 'YYYY-MM-DD').format('YYYY-MM-DD')
-//         ].holidays += 1;
-//       }
-//     });
-//   });
-
-//   project.milestones.forEach((milestone) => {
-//     milestone.opportunityResources.forEach((position) => {
-//       let positionStartDate = moment(position.startDate, 'YYYY-MM-DD');
-//       let positionStartDateClone = positionStartDate.clone();
-//       let positionEndDate = moment(position.endDate, 'YYYY-MM-DD');
-//       // let positionMonths: any = {}
-//       if (
-//         positionStartDate.isBetween(startDate, endDate, 'date') ||
-//         positionEndDate.isBetween(startDate, endDate, 'date') ||
-//         startDate.isBetween(positionStartDate, positionEndDate, 'date') ||
-//         endDate.isBetween(positionStartDate, positionEndDate, 'date')
-//       )
-//         position.opportunityResourceAllocations.forEach((allocation) => {
-//           if (allocation.isMarkedAsSelected) {
-//             let currentYear = months;
-//             while (
-//               positionEndDate > positionStartDateClone ||
-//               positionStartDateClone.format('M') ===
-//                 positionEndDate.format('M')
-//             ) {
-//               let positionStartDateCloneFormatted = positionStartDateClone
-//                 .clone()
-//                 .startOf('month')
-//                 .format('YYYY-MM-DD');
-//               if (currentYear[positionStartDateCloneFormatted] != undefined) {
-//                 currentYear[positionStartDateCloneFormatted].isAllocated =
-//                   true;
-//                   currentYear[positionStartDateCloneFormatted].positionStart = positionStartDate
-//                   currentYear[positionStartDateCloneFormatted].positionEnd = positionEndDate
-//               }
-
-//               positionStartDateClone.add(1, 'month');
-//             }
-//             let newAllocationEntity: allocationEntity = {
-//               contactpersonId: allocation.contactPersonId,
-//               employeeId: allocation.contactPerson.getEmployee?.id,
-//               name: allocation.contactPerson.firstName,
-//               dailyHours: project?.hoursPerDay ?? 0,
-//               hourlySellRate: allocation.sellingRate,
-//               dailySellRate:
-//                 allocation.sellingRate * (project?.hoursPerDay ?? 0),
-//               projectStartDate: moment(project?.startDate).format(
-//                 'DD-MM-YYYY'
-//               ),
-//               dailyBuyRate:
-//                 allocation.buyingRate * (project?.hoursPerDay ?? 0),
-//               projectEndDate: moment(project?.endDate).format('DD-MM-YYYY'),
-//               currentYear: currentYear,
-//               previousYear: {},
-//               totals: {},
-//             };
-//             allocationIds.push(newAllocationEntity.employeeId as number);
-//             allocationEntities.push(newAllocationEntity);
-//             allocationEntitiesIndex[
-//               newAllocationEntity.employeeId as number
-//             ] = allocationEntities.length - 1;
-//           }
-//         });
-//     });
-//   });
-
-//   let timesheets = await this.manager.find(Timesheet, {
-//     where: {
-//       employeeId: In(allocationIds),
-//       startDate: MoreThanOrEqual(startDate.toDate()),
-//       endDate: LessThanOrEqual(endDate.toDate()),
-//     },
-//     relations: ['milestoneEntries', 'milestoneEntries.entries'],
-//   });
-
-//   timesheets.forEach((timesheet) => {
-//     let timesheetStartDate = moment(timesheet.startDate, 'YYYYY-MM-DD');
-//     let timesheetEndDate = moment(timesheet.endDate, 'YYYYY-MM-DD');
-//     timesheet.milestoneEntries.forEach((milestoneEntry) => {
-//       milestoneEntry.entries.forEach((entry) => {
-//         (allocationEntities as any)[
-//           allocationEntitiesIndex[timesheet.employeeId]
-//         ]['currentYear'][
-//           timesheetStartDate.format('YYYY-MM-DD')
-//         ].actualHours += entry.hours;
-//       });
-//     });
-//   });
-
-//   return allocationEntities;
-// }

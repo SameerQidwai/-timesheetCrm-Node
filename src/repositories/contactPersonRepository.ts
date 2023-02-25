@@ -48,6 +48,8 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
         );
       }
 
+      contactPersonObj.csidNumber = contactPersonDTO.csidNumber;
+
       let clearanceSponsor: Organization | undefined;
       if (contactPersonDTO.clearanceSponsorId) {
         clearanceSponsor = await this.manager.findOne(
@@ -186,6 +188,8 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
           contactPersonDTO.clearanceExpiryDate
         );
       }
+
+      contactPersonObj.csidNumber = contactPersonDTO.csidNumber;
 
       let clearanceSponsor: Organization | undefined;
       if (contactPersonDTO.clearanceSponsorId) {

@@ -155,6 +155,7 @@ export interface ContactPersonDTO extends Base {
   clearanceGrantedDate: Date | null;
   clearanceExpiryDate: Date | null;
   clearanceSponsorId: number | null;
+  csidNumber: string;
   standardSkillStandardLevelIds: number[];
   contactPersonOrganizations: ContactPersonOrganization[];
 }
@@ -743,4 +744,10 @@ export interface ProjectScheduleDTO extends Base {
     endDate: number;
     amount: number;
   }[];
+}
+
+export interface ProjectShutdownPeriodDTO extends Base {
+  startDate: Date;
+  endDate: Date;
+  notes: string;
 }

@@ -9,11 +9,13 @@ import { can } from './../middlewares/can';
 import { ProjectMilestoneController } from '../controllers/projectMilestoneController';
 import { ProjectScheduleController } from '../controllers/projectScheduleController';
 import { projectOpen } from '../middlewares/projectOpen';
+import { ProjectShutdownPeriodController } from '../controllers/projectShutdownPeriodController';
 
 const router = Router();
 let contr = new ProjectController(ProjectRepository);
 let milestoneContr = new ProjectMilestoneController();
 let scheduleContr = new ProjectScheduleController();
+let shutdownPeriodsContr = new ProjectShutdownPeriodController();
 let resourceContr = new ProjectResourceController();
 let orderContr = new PurchaseOrderController();
 
@@ -106,6 +108,30 @@ router
     [isLoggedIn, projectOpen('projectId')],
     scheduleContr.delete.bind(scheduleContr)
   );
+
+//-- SHUTDOWN PERIODS
+
+router
+  .route('/:projectId/shutdownPeriods')
+  .get([isLoggedIn], shutdownPeriodsContr.index.bind(shutdownPeriodsContr))
+  .post(
+    [isLoggedIn, projectOpen('projectId')],
+    shutdownPeriodsContr.create.bind(shutdownPeriodsContr)
+  );
+
+router
+  .route('/:projectId/shutdownPeriods/:id')
+  .get([isLoggedIn], shutdownPeriodsContr.get.bind(shutdownPeriodsContr))
+  .put(
+    [isLoggedIn, projectOpen('projectId')],
+    shutdownPeriodsContr.update.bind(shutdownPeriodsContr)
+  )
+  .delete(
+    [isLoggedIn, projectOpen('projectId')],
+    shutdownPeriodsContr.delete.bind(shutdownPeriodsContr)
+  );
+
+//-- MILESTONES
 
 router
   .route('/:projectId/milestones/:milestoneId/resources')

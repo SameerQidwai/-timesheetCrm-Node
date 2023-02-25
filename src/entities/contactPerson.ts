@@ -61,6 +61,9 @@ export class ContactPerson extends Base {
   })
   clearanceLevel: ClearanceLevel;
 
+  @Column({ name: 'csid_number', nullable: true })
+  csidNumber: string;
+
   @Column({ name: 'clearance_granted_date', nullable: true })
   clearanceGrantedDate: Date;
 
