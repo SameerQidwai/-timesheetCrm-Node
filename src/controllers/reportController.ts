@@ -2155,6 +2155,16 @@ export class ReportController {
       GROUP BY month;
     `);
 
+    const income_tax = await getManager().query(`
+      select gvl.name, gvv.start_date, gvv.end_date, gvv.value from global_variable_labels gvl
+            JOIN global_variable_values gvv on gvv.global_variable_id = gvl.id
+        WHERE gvl.name = "income_tax" 
+        AND gvv.start_date BETWEEN '${fiscalYearStart}' AND '${fiscalYearEnd}'
+        AND gvv.start_date >= '${fiscalYearStart}' AND gvv.end_date <= '${fiscalYearEnd}'
+        ORDER BY gvv.start_date
+        `)
+
+
     let length_of_loop = Math.max(
       ...[actual_revenue.length, forecast_revenue.length]
     );
@@ -2171,7 +2181,9 @@ export class ReportController {
       TOTAL_REVENUE: { total: 0 },
       TOTAL_COST: { total: 0 },
       TOTAL_DOH: { total: 0 },
+      income_tax: income_tax[0]
     };
+
     for (let i = 0; i < length_of_loop; i++) {
       if (actual_revenue[i]) {
         let { project_type, month, month_total_sell = 0 } = actual_revenue[i];
@@ -2180,13 +2192,13 @@ export class ReportController {
           project_type
         ) {
           data[ProjectType[project_type]][month] = parseFloat(month_total_sell);
-          data[ProjectType[project_type]]['total'] +=
-            parseFloat(month_total_sell);
+          // data[ProjectType[project_type]]['total'] +=
+          //   parseFloat(month_total_sell);
 
-          data['TOTAL_REVENUE'][month] = data['TOTAL_REVENUE'][month]
-            ? data['TOTAL_REVENUE'][month] + parseFloat(month_total_sell)
-            : parseFloat(month_total_sell);
-          data['TOTAL_REVENUE']['total'] += data['TOTAL_REVENUE'][month];
+          // data['TOTAL_REVENUE'][month] = data['TOTAL_REVENUE'][month]
+          //   ? data['TOTAL_REVENUE'][month] + parseFloat(month_total_sell)
+          //   : parseFloat(month_total_sell);
+          // data['TOTAL_REVENUE']['total'] += data['TOTAL_REVENUE'][month];
         }
       }
       if (forecast_revenue[i]) {
@@ -2196,13 +2208,13 @@ export class ReportController {
           project_type
         ) {
           data[ProjectType[project_type]][month] = parseFloat(month_total_sell);
-          data[ProjectType[project_type]]['total'] +=
-            parseFloat(month_total_sell);
+          // data[ProjectType[project_type]]['total'] +=
+          //   parseFloat(month_total_sell);
 
-          data['TOTAL_REVENUE'][month] = data['TOTAL_REVENUE'][month]
-            ? data['TOTAL_REVENUE'][month] + parseFloat(month_total_sell)
-            : parseFloat(month_total_sell);
-          data['TOTAL_REVENUE']['total'] += data['TOTAL_REVENUE'][month] ?? 0;
+          // data['TOTAL_REVENUE'][month] = data['TOTAL_REVENUE'][month]
+          //   ? data['TOTAL_REVENUE'][month] + parseFloat(month_total_sell)
+          //   : parseFloat(month_total_sell);
+          // data['TOTAL_REVENUE']['total'] += data['TOTAL_REVENUE'][month] ?? 0;
         }
       }
       if (causal_salaries[i]) {
@@ -2214,15 +2226,15 @@ export class ReportController {
         salary ||= 0;
         casual_superannuation ||= 0;
         data['CASUAL_SALARIES'][month] = parseFloat(salary);
-        data['CASUAL_SALARIES']['total'] += parseFloat(salary);
+        // data['CASUAL_SALARIES']['total'] += parseFloat(salary);
         data['CASUAL_SUPER'][month] = parseFloat(casual_superannuation);
-        data['CASUAL_SUPER']['total'] += parseFloat(casual_superannuation);
+        // data['CASUAL_SUPER']['total'] += parseFloat(casual_superannuation);
 
-        data['TOTAL_COST'][month] = data['TOTAL_COST'][month]
-          ? data['TOTAL_COST'][month] +
-            (parseFloat(salary) + parseFloat(casual_superannuation))
-          : parseFloat(salary) + parseFloat(casual_superannuation);
-        data['TOTAL_COST']['total'] += data['TOTAL_COST'][month] ?? 0;
+        // data['TOTAL_COST'][month] = data['TOTAL_COST'][month]
+        //   ? data['TOTAL_COST'][month] +
+        //     (parseFloat(salary) + parseFloat(casual_superannuation))
+        //   : parseFloat(salary) + parseFloat(casual_superannuation);
+        // data['TOTAL_COST']['total'] += data['TOTAL_COST'][month] ?? 0;
       }
       if (permanent_salaries[i]) {
         let {
@@ -2233,17 +2245,17 @@ export class ReportController {
         salary ||= 0;
         permanent_superannuation ||= 0;
         data['PERMANENT_SALARIES'][month] = parseFloat(salary);
-        data['PERMANENT_SALARIES']['total'] += parseFloat(salary);
+        // data['PERMANENT_SALARIES']['total'] += parseFloat(salary);
         data['PERMANENT_SUPER'][month] = parseFloat(permanent_superannuation);
-        data['PERMANENT_SUPER']['total'] += parseFloat(
-          permanent_superannuation
-        );
+        // data['PERMANENT_SUPER']['total'] += parseFloat(
+        //   permanent_superannuation
+        // );
 
-        data['TOTAL_COST'][month] = data['TOTAL_COST'][month]
-          ? data['TOTAL_COST'][month] +
-            (parseFloat(salary) + parseFloat(permanent_superannuation))
-          : parseFloat(salary) + parseFloat(permanent_superannuation);
-        data['TOTAL_COST']['total'] += data['TOTAL_COST'][month] ?? 0;
+        // data['TOTAL_COST'][month] = data['TOTAL_COST'][month]
+        //   ? data['TOTAL_COST'][month] +
+        //     (parseFloat(salary) + parseFloat(permanent_superannuation))
+        //   : parseFloat(salary) + parseFloat(permanent_superannuation);
+        // data['TOTAL_COST']['total'] += data['TOTAL_COST'][month] ?? 0;
       }
 
       if (doh_salaries[i]) {
@@ -2253,18 +2265,17 @@ export class ReportController {
           doh_superannuation = 0,
         } = doh_salaries[i];
         data['DOH_SALARIES'][month] = parseFloat(salary);
-        data['DOH_SALARIES']['total'] += parseFloat(salary);
+        // data['DOH_SALARIES']['total'] += parseFloat(salary);
         data['DOH_SUPER'][month] = parseFloat(doh_superannuation);
-        data['DOH_SUPER']['total'] += parseFloat(doh_superannuation);
+        // data['DOH_SUPER']['total'] += parseFloat(doh_superannuation);
 
-        data['TOTAL_DOH'][month] = data['TOTAL_DOH'][month]
-          ? data['TOTAL_DOH'][month] +
-            (parseFloat(salary) + parseFloat(doh_superannuation))
-          : parseFloat(salary) + parseFloat(doh_superannuation);
-        data['TOTAL_DOH']['total'] += data['TOTAL_DOH'][month];
+        // data['TOTAL_DOH'][month] = data['TOTAL_DOH'][month]
+        //   ? data['TOTAL_DOH'][month] +
+        //     (parseFloat(salary) + parseFloat(doh_superannuation))
+        //   : parseFloat(salary) + parseFloat(doh_superannuation);
+        // data['TOTAL_DOH']['total'] += data['TOTAL_DOH'][month];
       }
     }
-
     res.status(200).json({
       success: true,
       message: 'Work In Hand Forecasting',
