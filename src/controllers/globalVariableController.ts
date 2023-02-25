@@ -48,4 +48,23 @@ export class GlobalVariableController {
       next(e);
     }
   }
+
+  async getCostCalculatorVariable(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const repository = getCustomRepository(GlobalVariableValueRepository);
+      let type = parseInt(req.query.type as string)
+      let records = await repository.costCalculatorVariable(type);
+      res.status(200).json({
+        success: true,
+        message: 'ADD GLOBAL VARIABLE LABEL + VALUE',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

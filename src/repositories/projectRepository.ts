@@ -2563,8 +2563,8 @@ export class ProjectRepository extends Repository<Opportunity> {
 
     const forecast = await this.query(
       `Select o_r.start_date res_startDate, o_r.end_date res_endDate, ec.start_date con_startDate, ec.end_date con_endDate, 
-      (ora.buying_rate *( (ec.no_of_hours /5) * (ora.effort_rate /100) ) ) forecastBuyRateDaily, 
-      (ora.selling_rate *( (ec.no_of_hours /5) * (ora.effort_rate /100) ) ) forecastSellRateDaily
+      (ora.buying_rate *( (o.hours_per_day) * (ora.effort_rate /100) ) ) forecastBuyRateDaily, 
+      (ora.selling_rate *( (o.hours_per_day) * (ora.effort_rate /100) ) ) forecastSellRateDaily
       FROM opportunities o 
         JOIN opportunity_resources o_r ON 
           o_r.opportunity_id = o.id 
