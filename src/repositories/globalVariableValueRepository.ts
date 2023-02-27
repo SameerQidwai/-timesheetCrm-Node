@@ -211,7 +211,7 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
     let gst: number = 0
     stateTax = stateTax.filter((states: any)=>{
       if (states.label === 'GST'){
-        gst = states.value
+        gst = states.tax
         // return false
       }else{
         return true
