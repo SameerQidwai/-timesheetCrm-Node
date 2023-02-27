@@ -137,3 +137,18 @@ export enum TimesheetSummaryStatus {
   APPROVED = 3,
   REJECTED = 4,
 }
+
+export enum RecruitmentProspect {
+  NOT_CONSIDERED = 'NCO',
+  DO_NOT_HIRE = 'DNH',
+  PROSPECT = 'PRO',
+  ASSIGNED_TO_OPPORTUNITY = 'ATO',
+}
+
+export enum RecruitmentAvailability {
+  IMMEDIATE = 'IMM',
+  WITH_IN_A_MONTH = 'WMO',
+  OVER_A_MONTH = 'OMO',
+  LONG_TERM_PROSPECT = 'LTP',
+  NO_CLEARANCE = 'NCL',
+}

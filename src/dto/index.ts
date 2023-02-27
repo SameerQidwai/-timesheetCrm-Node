@@ -10,6 +10,8 @@ import {
   BusinessType,
   SuperannuationType,
   EntityType,
+  RecruitmentAvailability,
+  RecruitmentProspect,
 } from './../constants/constants';
 
 export interface Base {
@@ -156,6 +158,10 @@ export interface ContactPersonDTO extends Base {
   clearanceExpiryDate: Date | null;
   clearanceSponsorId: number | null;
   csidNumber: string;
+  recruitmentAvailability: RecruitmentAvailability | null;
+  recruitmentProspect: RecruitmentProspect | null;
+  recruitmentSalaryEstimate: number;
+  recruitmentNotes: string | null;
   standardSkillStandardLevelIds: number[];
   contactPersonOrganizations: ContactPersonOrganization[];
 }
