@@ -199,7 +199,7 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
       // });
 
     let stateTax: any = await this.manager.query(`
-      Select gvv.value, gvl.id valueId, gvl.name label from global_variable_labels gvl
+      Select gvv.value tax, gvl.id value, gvl.name label from global_variable_labels gvl
         JOIN global_variable_values gvv on gvv.global_variable_id = gvl.id
         WHERE gvl.name IN ('GST', ${states.map(({label})=> `'${label}'`)})
         AND gvv.start_date <= '${moment().startOf('day').format('YYYY-MM-DD HH:mm:ss')}'
