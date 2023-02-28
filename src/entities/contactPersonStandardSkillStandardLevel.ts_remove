@@ -537,9 +537,9 @@ GROUP BY month;
                   FROM
                       calendar_view
                   WHERE
-                      (
+                      (                                    //'${fiscalYearStart}'
                           calendar_view.calendar_date BETWEEN '2022-07-01'
-                          AND '2022-07-31'
+                          AND '2022-07-31' //'${fiscalYearEnd}'
                       ) -- checking for only one fiscal year 
                   GROUP BY
                       calendar_view.month -- group by to get only a date for month
@@ -567,4 +567,39 @@ GROUP BY month;
               resource_contract_end,
               resource_employee_id
       ) as costing
+GROUP BY month;
+
+-- SQL new on test casual_salaries
+  SELECT SUM(casual_salaries) casual_salaries, SUM(casual_superannuation) casual_superannuation, month
+  (SELECT 
+    salary * (resource_contract_hours/resource_contract_days_per_week)) casual_salaries,
+    salary * (resource_contract_hours / resource_contract_days_per_week) * (SELECT
+        SUM(global_variable_values.value/100) 
+        FROM global_variable_labels
+        JOIN global_variable_values ON global_variable_labels.id = global_variable_values.global_variable_id
+    WHERE
+        global_variable_labels.name = 'Superannuation'
+        AND calendar_view_filtered.calendar_date BETWEEN global_variable_values.start_date
+        AND global_variable_values.end_date) casual_superannuation,
+    DATE_FORMAT(STR_TO_DATE(calendar_view_filtered.calendar_date,'%Y-%m-%d'), '%b %y') month 
+    From (
+      SELECT * FROM calendar_view
+        WHERE (calendar_view.calendar_date BETWEEN '${fiscalYearStart}' AND '${fiscalYearEnd}') 
+      ) as calendar_view_filtered
+
+      LEFT JOIN (
+            SELECT * FROM revenue_cost_view 
+            WHERE employment_type = 1
+        ) as casual_employee
+      ON ((calendar_view_filtered.calendar_date BETWEEN  
+          DATE_FORMAT(resource_contract_start,'%Y-%m-%d') AND  
+          DATE_FORMAT(IFNULL(resource_contract_end, '2049-06-30'),'%Y-%m-%d')
+        )
+      )
+  WHERE is_holidays = 0 AND is_weekday = 1 
+  GROUP BY
+      resource_contract_start,
+      resource_contract_end,
+      resource_employee_id
+  ) as costing
 GROUP BY month;
