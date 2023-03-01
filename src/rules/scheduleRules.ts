@@ -10,6 +10,7 @@ let scheduleRules = {
   validateCreate: Joi.object({
     startDate: Joi.date().required(),
     endDate: Joi.date().required(),
+    paymentDate: Joi.date().allow(null).allow(''),
     notes: Joi.string().required().allow(null).allow(''),
     amount: Joi.number().required(),
     segments: Joi.array().items(segment),
@@ -18,6 +19,7 @@ let scheduleRules = {
   validateUpdate: Joi.object({
     startDate: Joi.date().required(),
     endDate: Joi.date().required(),
+    paymentDate: Joi.date().allow(null).allow(''),
     notes: Joi.string().required().allow(null).allow(''),
     amount: Joi.number().required(),
     segments: Joi.array().items(segment),

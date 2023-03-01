@@ -2082,6 +2082,8 @@ export class ProjectRepository extends Repository<Opportunity> {
 
         projectScheduleObj.notes = projectScheduleDTO.notes;
 
+        projectScheduleObj.paymentDate = projectScheduleDTO.paymentDate;
+
         let schedule = await transactionalEntityManager.save(
           projectScheduleObj
         );
