@@ -133,7 +133,7 @@ export class StandardSkillRepository extends Repository<StandardSkill> {
 
   async deleteCustom(id: number): Promise<any | undefined> {
     let standardSkill = await this.findOne(id, {
-      relations: ['standardSkillStandardLevels'],
+      relations: ['standardSkillStandardLevels', 'panelSkills'],
     });
 
     if (!standardSkill) {
