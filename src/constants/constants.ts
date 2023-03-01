@@ -152,3 +152,9 @@ export enum RecruitmentAvailability {
   LONG_TERM_PROSPECT = 'LTP',
   NO_CLEARANCE = 'NCL',
 }
+export enum RecruitmentContractType {
+  PART_TIME = 'PTI',
+  FULL_TIME = 'FTI',
+  CASUAL = 'CAS',
+  CONTRACTOR = 'CON',
+}

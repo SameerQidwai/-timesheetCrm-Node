@@ -12,6 +12,7 @@ import {
   EntityType,
   RecruitmentAvailability,
   RecruitmentProspect,
+  RecruitmentContractType,
 } from './../constants/constants';
 
 export interface Base {
@@ -159,6 +160,7 @@ export interface ContactPersonDTO extends Base {
   clearanceSponsorId: number | null;
   csidNumber: string;
   recruitmentAvailability: RecruitmentAvailability | null;
+  recruitmentContractType: RecruitmentContractType | null;
   recruitmentProspect: RecruitmentProspect | null;
   recruitmentSalaryEstimate: number;
   recruitmentNotes: string | null;

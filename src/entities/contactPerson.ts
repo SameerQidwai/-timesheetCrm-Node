@@ -2,6 +2,7 @@ import {
   ClearanceLevel,
   Gender,
   RecruitmentAvailability,
+  RecruitmentContractType,
   RecruitmentProspect,
 } from '../constants/constants';
 import {
@@ -93,6 +94,14 @@ export class ContactPerson extends Base {
     nullable: true,
   })
   recruitmentAvailability: RecruitmentAvailability | null;
+
+  @Column({
+    type: 'enum',
+    enum: RecruitmentContractType,
+    name: 'recruitment_availability',
+    nullable: true,
+  })
+  recruitmentContractType: RecruitmentContractType | null;
 
   @Column({ name: 'recruitment_salary_estimate', nullable: true })
   recruitmentSalaryEstimate: number;

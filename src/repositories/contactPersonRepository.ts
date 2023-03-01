@@ -66,6 +66,9 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
       contactPersonObj.recruitmentAvailability =
         contactPersonDTO.recruitmentAvailability;
 
+      contactPersonObj.recruitmentContractType =
+        contactPersonDTO.recruitmentContractType;
+
       contactPersonObj.recruitmentProspect =
         contactPersonDTO.recruitmentProspect;
 
@@ -218,6 +221,9 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
       //ADD TYPE CHECK FOR ENUM OR VALIDATE
       contactPersonObj.recruitmentAvailability =
         contactPersonDTO.recruitmentAvailability;
+
+      contactPersonObj.recruitmentContractType =
+        contactPersonDTO.recruitmentContractType;
 
       contactPersonObj.recruitmentProspect =
         contactPersonDTO.recruitmentProspect;
