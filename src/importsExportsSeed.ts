@@ -6,7 +6,7 @@ const connection = createConnection();
 import runSeeders from './utilities/seeders';
 
 connection
-  .then(() => {
+  .then(async () => {
     let manager = getManager();
 
     let entities = [
@@ -21,10 +21,10 @@ connection
     for (let entity of entities) {
       let dataImportObj = new DataImport();
       dataImportObj.type = entity;
-      manager.save(dataImportObj);
+      await manager.save(dataImportObj);
       let dataExportObj = new DataExport();
       dataExportObj.type = entity;
-      manager.save(dataExportObj);
+      await manager.save(dataExportObj);
     }
 
     console.log('Base Data Import Export Entries Seeded');

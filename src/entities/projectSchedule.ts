@@ -20,6 +20,9 @@ export class ProjectSchedule extends Base {
   @Column({ name: 'end_date' })
   endDate: Date;
 
+  @Column({ name: 'payment_date' })
+  paymentDate: Date;
+
   @Column({ name: 'notes', nullable: true })
   notes: string;
 

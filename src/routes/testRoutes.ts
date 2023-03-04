@@ -5,5 +5,5 @@ import { isLoggedIn } from '../middlewares/loggedIn';
 const router = Router();
 let contr = new TestController();
 
-// router.route('/').get(contr.test.bind(contr));
+// router.route('/testmail').get(contr.testMailFunction.bind(contr));
 export default router;

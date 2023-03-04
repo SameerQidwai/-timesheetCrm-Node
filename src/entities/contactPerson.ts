@@ -1,4 +1,10 @@
-import { ClearanceLevel, Gender } from '../constants/constants';
+import {
+  ClearanceLevel,
+  Gender,
+  RecruitmentAvailability,
+  RecruitmentContractType,
+  RecruitmentProspect,
+} from '../constants/constants';
 import {
   Entity,
   Column,
@@ -61,6 +67,9 @@ export class ContactPerson extends Base {
   })
   clearanceLevel: ClearanceLevel;
 
+  @Column({ name: 'csid_number', nullable: true })
+  csidNumber: string;
+
   @Column({ name: 'clearance_granted_date', nullable: true })
   clearanceGrantedDate: Date;
 
@@ -69,6 +78,36 @@ export class ContactPerson extends Base {
 
   @Column({ name: 'clearance_sponsor_id', nullable: true })
   clearanceSponsorId: number;
+
+  @Column({
+    type: 'enum',
+    enum: RecruitmentProspect,
+    name: 'recruitment_prospect',
+    nullable: true,
+  })
+  recruitmentProspect: RecruitmentProspect | null;
+
+  @Column({
+    type: 'enum',
+    enum: RecruitmentAvailability,
+    name: 'recruitment_availability',
+    nullable: true,
+  })
+  recruitmentAvailability: RecruitmentAvailability | null;
+
+  @Column({
+    type: 'enum',
+    enum: RecruitmentContractType,
+    name: 'recruitment_availability',
+    nullable: true,
+  })
+  recruitmentContractType: RecruitmentContractType | null;
+
+  @Column({ name: 'recruitment_salary_estimate', nullable: true })
+  recruitmentSalaryEstimate: number;
+
+  @Column({ name: 'recruitment_notes', nullable: true, type: 'text' })
+  recruitmentNotes: string | null;
 
   @ManyToOne(() => Organization)
   @JoinColumn({ name: 'clearance_sponsor_id' })

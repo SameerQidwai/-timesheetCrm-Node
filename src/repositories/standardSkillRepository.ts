@@ -132,7 +132,31 @@ export class StandardSkillRepository extends Repository<StandardSkill> {
   }
 
   async deleteCustom(id: number): Promise<any | undefined> {
-    return this.softDelete(id);
+    let standardSkill = await this.findOne(id, {
+      relations: ['standardSkillStandardLevels', 'panelSkills'],
+    });
+
+    if (!standardSkill) {
+      throw new Error('Standard Skill Not found ');
+    }
+
+    let standardSkillStandardLevelIds: Array<number> = [];
+
+    for (let standardSkillStandardLevel of standardSkill.standardSkillStandardLevels) {
+      standardSkillStandardLevelIds.push(standardSkillStandardLevel.id);
+    }
+
+    if (standardSkillStandardLevelIds.length) {
+      let assignedToContactPerson = await this.manager.query(
+        `SELECT * FROM contact_person_standard_skill_standard_level WHERE standardSkillStandardLevelsId IN (${standardSkillStandardLevelIds})`
+      );
+
+      if (assignedToContactPerson.length) {
+        throw new Error('Skill assigned to contact Person');
+      }
+    }
+
+    return this.softRemove(standardSkill);
   }
 
   async helplerGetLevelsBySkill(skillId: number): Promise<any[]> {

@@ -1,11 +1,12 @@
 import { PanelSkillDTO, StandardLevelDTO } from '../dto';
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, In, Repository } from 'typeorm';
 import { StandardSkill } from './../entities/standardSkill';
 import { StandardSkillStandardLevel } from './../entities/standardSkillStandardLevel';
 import { StandardLevel } from './../entities/standardLevel';
 import { PanelSkill } from '../entities/panelSkill';
 import { Panel } from '../entities/panel';
 import { PanelSkillStandardLevel } from '../entities/panelSkillStandardLevel';
+import { OpportunityResource } from '../entities/opportunityResource';
 
 @EntityRepository(PanelSkill)
 export class PanelSkillRepository extends Repository<PanelSkill> {
@@ -196,6 +197,31 @@ export class PanelSkillRepository extends Repository<PanelSkill> {
   }
 
   async deleteCustom(id: number): Promise<any | undefined> {
-    return this.softDelete(id);
+    let panelSkill = await this.findOne(id, {
+      relations: ['panelSkillStandardLevels'],
+    });
+
+    if (!panelSkill) {
+      throw new Error('Panel Skill Not found ');
+    }
+
+    let panelSkillStandardLevelIds: Array<number> = [];
+
+    for (let panelSkillStandardLevel of panelSkill.panelSkillStandardLevels) {
+      panelSkillStandardLevelIds.push(panelSkillStandardLevel.id);
+    }
+
+    if (panelSkillStandardLevelIds.length) {
+      let assignedToContactPerson = await this.manager.find(
+        OpportunityResource,
+        { where: { panelSkillStandardLevelId: In(panelSkillStandardLevelIds) } }
+      );
+
+      if (assignedToContactPerson.length) {
+        throw new Error('Skill assigned in allocation');
+      }
+    }
+
+    return this.softRemove(panelSkill);
   }
 }

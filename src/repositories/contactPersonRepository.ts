@@ -48,6 +48,8 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
         );
       }
 
+      contactPersonObj.csidNumber = contactPersonDTO.csidNumber;
+
       let clearanceSponsor: Organization | undefined;
       if (contactPersonDTO.clearanceSponsorId) {
         clearanceSponsor = await this.manager.findOne(
@@ -59,6 +61,21 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
         }
         contactPersonObj.clearanceSponsorId = clearanceSponsor.id;
       }
+
+      //ADD TYPE CHECK FOR ENUM OR VALIDATE
+      contactPersonObj.recruitmentAvailability =
+        contactPersonDTO.recruitmentAvailability;
+
+      contactPersonObj.recruitmentContractType =
+        contactPersonDTO.recruitmentContractType;
+
+      contactPersonObj.recruitmentProspect =
+        contactPersonDTO.recruitmentProspect;
+
+      contactPersonObj.recruitmentSalaryEstimate =
+        contactPersonDTO.recruitmentSalaryEstimate;
+
+      contactPersonObj.recruitmentNotes = contactPersonDTO.recruitmentNotes;
 
       let standardSkillStandardLevelList =
         await transactionalEntityManager.findByIds(
@@ -187,6 +204,8 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
         );
       }
 
+      contactPersonObj.csidNumber = contactPersonDTO.csidNumber;
+
       let clearanceSponsor: Organization | undefined;
       if (contactPersonDTO.clearanceSponsorId) {
         clearanceSponsor = await this.manager.findOne(
@@ -198,6 +217,20 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
         }
         contactPersonObj.clearanceSponsorId = clearanceSponsor.id;
       }
+
+      //ADD TYPE CHECK FOR ENUM OR VALIDATE
+      contactPersonObj.recruitmentAvailability =
+        contactPersonDTO.recruitmentAvailability;
+
+      contactPersonObj.recruitmentContractType =
+        contactPersonDTO.recruitmentContractType;
+
+      contactPersonObj.recruitmentProspect =
+        contactPersonDTO.recruitmentProspect;
+
+      contactPersonObj.recruitmentSalaryEstimate =
+        contactPersonDTO.recruitmentSalaryEstimate;
+      contactPersonObj.recruitmentNotes = contactPersonDTO.recruitmentNotes;
 
       let standardSkillStandardLevelList =
         await transactionalEntityManager.findByIds(

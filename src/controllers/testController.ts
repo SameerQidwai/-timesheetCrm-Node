@@ -18,6 +18,7 @@ import { Milestone } from '../entities/milestone';
 import { OpportunityResource } from '../entities/opportunityResource';
 import { OpportunityResourceAllocation } from '../entities/opportunityResourceAllocation';
 import { LeaveRequestEntry } from '../entities/leaveRequestEntry';
+import { sendMail } from '../utilities/mailer';
 
 export class TestController {
   async test(req: Request, res: Response, next: NextFunction) {
@@ -103,5 +104,34 @@ export class TestController {
     } catch (e) {
       next(e);
     }
+  }
+
+  async testMailFunction(req: Request, res: Response, next: NextFunction) {
+    let user = {
+      username: 'Shahzaib Ahmed',
+      email: 'shahzaibahmed.98@hotmail.com',
+    };
+
+    try {
+      sendMail(
+        process.env.MAILER_ADDRESS,
+        user,
+        `Invitation to ${process.env.ORGANIZATION}`,
+        `Hello,
+You have been invited to ${process.env.ORGANIZATION}. 
+Your registered account password is 123123123. Please visit ${process.env.ENV_URL} to login.
+        
+Regards,
+${process.env.ORGANIZATION} Support Team`
+      );
+    } catch (e) {
+      console.log(e);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Mail sent',
+      data: [],
+    });
   }
 }
