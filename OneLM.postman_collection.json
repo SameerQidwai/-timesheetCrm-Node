@@ -2222,6 +2222,127 @@
 			"name": "Projects",
 			"item": [
 				{
+					"name": "Project Schedules",
+					"item": [
+						{
+							"name": "Index",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{Endpoint}}/projects/29/schedules",
+									"host": [
+										"{{Endpoint}}"
+									],
+									"path": [
+										"projects",
+										"29",
+										"schedules"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"startDate\": \"2022-11-13\",\r\n    \"endDate\": \"2022-12-31\",\r\n    \"notes\": \"hello\",\r\n    \"amount\": 1000,\r\n    \"segments\": [\r\n        {\r\n            \"startDate\": \"2022-11-13\",\r\n            \"endDate\": \"2022-11-30\",\r\n            \"amount\": 500\r\n        },\r\n                {\r\n            \"startDate\": \"2022-12-01\",\r\n            \"endDate\": \"2022-12-31\",\r\n            \"amount\": 500\r\n        }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{Endpoint}}/projects/29/schedules",
+									"host": [
+										"{{Endpoint}}"
+									],
+									"path": [
+										"projects",
+										"29",
+										"schedules"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{Endpoint}}/projects/29/schedules/2",
+									"host": [
+										"{{Endpoint}}"
+									],
+									"path": [
+										"projects",
+										"29",
+										"schedules",
+										"2"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"startDate\": \"2022-11-13\",\r\n    \"endDate\": \"2022-12-31\",\r\n    \"notes\": \"hello\",\r\n    \"amount\": 1000,\r\n    \"segments\": [\r\n        {\r\n            \"startDate\": \"2022-11-13\",\r\n            \"endDate\": \"2022-11-30\",\r\n            \"amount\": 500\r\n        },\r\n                {\r\n            \"startDate\": \"2022-12-01\",\r\n            \"endDate\": \"2022-12-31\"\r\n        }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{Endpoint}}/projects/29/schedules/3",
+									"host": [
+										"{{Endpoint}}"
+									],
+									"path": [
+										"projects",
+										"29",
+										"schedules",
+										"3"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{Endpoint}}/projects/29/schedules/2",
+									"host": [
+										"{{Endpoint}}"
+									],
+									"path": [
+										"projects",
+										"29",
+										"schedules",
+										"2"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
 					"name": "Create",
 					"request": {
 						"method": "POST",
@@ -2607,6 +2728,31 @@
 					"response": []
 				},
 				{
+					"name": "get Approval list",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjMyNTkzOTkwLCJleHAiOjE2MzI1OTc1OTB9.WwYcU5bXCMsGtENkDZA06sh0p7jYrqf9vur26e4_xqA",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{Endpoint}}/timesheets/milestone/01-08-2022&31-08-2022&0",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"timesheets",
+								"milestone",
+								"01-08-2022&31-08-2022&0"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Add Entry",
 					"request": {
 						"method": "POST",
@@ -2932,7 +3078,7 @@
 								{
 									"key": "files",
 									"type": "file",
-									"src": "/C:/Users/Shahzaib/AppData/Local/DiscordPTB/Update.exe"
+									"src": "/C:/Users/shahz/Documents/Lightshot/Screenshot_1.png"
 								},
 								{
 									"key": "files",
@@ -2982,13 +3128,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Endpoint}}/attachments/PEN/7",
+							"raw": "{{Endpoint}}/attachments/EXP/7",
 							"host": [
 								"{{Endpoint}}"
 							],
 							"path": [
 								"attachments",
-								"PEN",
+								"EXP",
 								"7"
 							]
 						}
@@ -3152,7 +3298,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"email\": \"demo@timewize.com.au\",\r\n    \"password\": \"demo123\"\r\n}",
+							"raw": "{\r\n    \"email\": \"mustafa.syed@1lm.com.au\",\r\n    \"password\": \"Rauf20\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3575,6 +3721,42 @@
 								{
 									"key": "mode",
 									"value": "O"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Milestones",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/helpers/milestones?userId=1&phase=0&startDate=01-06-2021&endDate=25-07-2021",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"helpers",
+								"milestones"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								},
+								{
+									"key": "phase",
+									"value": "0"
+								},
+								{
+									"key": "startDate",
+									"value": "01-06-2021"
+								},
+								{
+									"key": "endDate",
+									"value": "25-07-2021"
 								}
 							]
 						}
@@ -4518,7 +4700,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"label\": \"Sheet 3\",\r\n    \"projectId\": null,\r\n    \"expenseSheetExpenses\": [3,4],\r\n    \"attachments\": []\r\n}",
+							"raw": "{\r\n    \"label\": \"Sheet 3\",\r\n    \"projectId\": null,\r\n    \"expenseSheetExpenses\": [5],\r\n    \"attachments\": []\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4571,7 +4753,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"sheets\": [2,3]\r\n}",
+							"raw": "{\r\n    \"sheets\": [5],\r\n    \"isBillable\": false,\r\n    \"notes\": null\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4598,7 +4780,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"sheets\": [2,3]\r\n}",
+							"raw": "{\r\n    \"sheets\": [5],\r\n    \"isBillable\": false,\r\n    \"notes\": null\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4625,7 +4807,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"sheets\": [2,3]\r\n}",
+							"raw": "{\r\n    \"sheets\": [5],\r\n    \"isBillable\": false,\r\n    \"notes\": null\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4674,6 +4856,229 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Reports",
+			"item": [
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/reports/bench-resources?startDate=2023-01-01&endDate=2023-01-31&excludeWorkId=15,3",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"reports",
+								"bench-resources"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2023-01-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2023-01-31"
+								},
+								{
+									"key": "excludeWorkId",
+									"value": "15,3"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Forecast Report Label",
+			"item": [
+				{
+					"name": "Get All",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/forecastReportLabel",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"forecastReportLabel"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Label",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"ABCDEF\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/forecastReportLabel",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"forecastReportLabel"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update forcast Report",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Hi\": {\r\n        \"Jul 22\": 5,\r\n        \"Sep 22\": 25\r\n    },\r\n    \"Hello\": {\r\n        \"Jul 23\": 0,\r\n        \"Sep 22\": 4\r\n    },\r\n    \"ABCD\": {\r\n        \"DEFG\": 5,\r\n        \"QWER\": 4\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/forecastReportLabel/updateReport",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"forecastReportLabel",
+								"updateReport"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Forcast Report",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/forecastReportLabel/getReport",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"forecastReportLabel",
+								"getReport"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Budget Report Label",
+			"item": [
+				{
+					"name": "Get All",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/budgetReportLabel",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"budgetReportLabel"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Label",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"Hello\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/budgetReportLabel",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"budgetReportLabel"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update forcast Report",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Hi\": {\r\n        \"Jul 22\": 5,\r\n        \"Sep 22\": 25\r\n    },\r\n    \"Hello\": {\r\n        \"Jul 23\": 0,\r\n        \"Sep 22\": 4\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Endpoint}}/budgetReportLabel/updateReport",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"budgetReportLabel",
+								"updateReport"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Forcast Report",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Endpoint}}/budgetReportLabel/getReport",
+							"host": [
+								"{{Endpoint}}"
+							],
+							"path": [
+								"budgetReportLabel",
+								"getReport"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"auth": {
@@ -4681,7 +5086,7 @@
 		"bearer": [
 			{
 				"key": "token",
-				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjY3MDM0MjgwLCJleHAiOjE2NjcwMzc4ODB9.WRsyikIEXZC2RC4AbUyCG_8QprOE9n6-FezzWB3y7OA",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjc3OTIyNjQ4LCJleHAiOjE2Nzc5MjYyNDh9.DebgvEghaxQJ0HjEjGjF39lGDDu8kRNSYzg2SPu39_g",
 				"type": "string"
 			}
 		]
