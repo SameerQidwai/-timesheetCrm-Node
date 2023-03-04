@@ -18,7 +18,8 @@ connection
 
     while (startDate <= endDate) {
       let weekDay = startDate.format('dddd');
-      let isWeekDay = weekDay === 'Saturday' || weekDay === 'Sunday' ? 0 : 1;
+      let isWeekDay =
+        weekDay === 'Saturday' || weekDay === 'Sunday' ? false : true;
 
       dates.push(
         manager.create(CalendarDay, {
