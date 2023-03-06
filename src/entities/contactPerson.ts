@@ -98,7 +98,7 @@ export class ContactPerson extends Base {
   @Column({
     type: 'enum',
     enum: RecruitmentContractType,
-    name: 'recruitment_availability',
+    name: 'recruitment_contract_type',
     nullable: true,
   })
   recruitmentContractType: RecruitmentContractType | null;

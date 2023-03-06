@@ -760,3 +760,22 @@ export interface ProjectShutdownPeriodDTO extends Base {
   endDate: Date;
   notes: string;
 }
+
+export interface ForecastReportLabelDTO extends Base {
+  title: String;
+}
+
+export interface ForecastReportUpdateDTO {
+  [key: string]: {
+    [key: string]: number;
+  };
+}
+export interface BudgetReportLabelDTO extends Base {
+  title: String;
+}
+
+export interface BudgetReportUpdateDTO {
+  [key: string]: {
+    [key: string]: number;
+  };
+}
