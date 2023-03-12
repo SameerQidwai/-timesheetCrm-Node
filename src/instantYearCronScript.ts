@@ -4,6 +4,7 @@ import { getManager } from 'typeorm';
 import { Employee } from './entities/employee';
 import { LeaveRequestBalance } from './entities/leaveRequestBalance';
 import { LeaveRequestTriggerFrequency } from './constants/constants';
+import moment from 'moment';
 
 connection
   .then(async () => {
@@ -65,6 +66,7 @@ let runYearly = async () => {
                     ) {
                       balance.balanceHours = policy.resetHours;
                       balance.carryForward = policy.resetHours;
+                      balance.lastCronAt = moment().toDate();
                       balance.used = 0;
                     }
                     promises.push(balance);
@@ -82,6 +84,7 @@ let runYearly = async () => {
                   leaveRequestBalanceObj.typeId = policy.leaveRequestTypeId;
                   leaveRequestBalanceObj.employeeId = employee.id;
                   leaveRequestBalanceObj.carryForward = 0;
+                  leaveRequestBalanceObj.lastCronAt = moment().toDate();
                   leaveRequestBalanceObj.used = 0;
 
                   promises.push(leaveRequestBalanceObj);

@@ -3,6 +3,7 @@ import { getManager } from 'typeorm';
 import { Employee } from '../entities/employee';
 import { LeaveRequestBalance } from '../entities/leaveRequestBalance';
 import { LeaveRequestTriggerFrequency } from '../constants/constants';
+import moment from 'moment';
 
 let monthCronString = '1 0 0 15 */1 *';
 let yearCronString = '1 10 0 15 7 *';
@@ -64,6 +65,7 @@ export const leaveRequestMonthlyCron = cron.schedule(
                       ) {
                         balance.balanceHours = policy.resetHours;
                         balance.carryForward = policy.resetHours;
+                        balance.lastCronAt = moment().toDate();
                         balance.used = 0;
                       }
                       promises.push(balance);
@@ -83,6 +85,7 @@ export const leaveRequestMonthlyCron = cron.schedule(
                     leaveRequestBalanceObj.typeId = policy.leaveRequestTypeId;
                     leaveRequestBalanceObj.employeeId = employee.id;
                     leaveRequestBalanceObj.carryForward = 0;
+                    leaveRequestBalanceObj.lastCronAt = moment().toDate();
                     leaveRequestBalanceObj.used = 0;
 
                     promises.push(leaveRequestBalanceObj);
@@ -161,6 +164,7 @@ export const leaveRequestYearlyCron = cron.schedule(
                       ) {
                         balance.balanceHours = policy.resetHours;
                         balance.carryForward = policy.resetHours;
+                        balance.lastCronAt = moment().toDate();
                         balance.used = 0;
                       }
                       promises.push(balance);
@@ -178,6 +182,7 @@ export const leaveRequestYearlyCron = cron.schedule(
                     leaveRequestBalanceObj.typeId = policy.leaveRequestTypeId;
                     leaveRequestBalanceObj.employeeId = employee.id;
                     leaveRequestBalanceObj.carryForward = 0;
+                    leaveRequestBalanceObj.lastCronAt = moment().toDate();
                     leaveRequestBalanceObj.used = 0;
 
                     promises.push(leaveRequestBalanceObj);
