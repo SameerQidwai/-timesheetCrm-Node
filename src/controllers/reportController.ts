@@ -2015,44 +2015,49 @@ export class ReportController {
     `);
 
     const forecast_revenue = await getManager().query(`
-    SELECT 
-    month_total_buy,
-    time_base.project_type,
-    month,
-    (CASE WHEN project_type = 2 
-      THEN 
-          time_base.month_total_sell
-      ELSE 
-        SUM(project_schedule_segments.amount)
-      END ) month_total_sell
-    FROM (SELECT 
+      SELECT 
+        month_total_buy,
+        time_base.project_type,
+        month,
+        (CASE WHEN project_type = 2 
+          THEN 
+              time_base.month_total_sell
+          ELSE 
+            SUM(project_schedule_segments.amount)
+          END ) month_total_sell
+      FROM (SELECT 
         SUM(cost_rate)  month_total_buy, 
         SUM(revenue_rate) month_total_sell, 
         project_type, 
         calendar_date,
         DATE_FORMAT(STR_TO_DATE(calendar_view_filtered.calendar_date,'%Y-%m-%d'), '%b %y') month
-  
-          From (
-              SELECT * FROM calendar_view
+    
+        From (
+            SELECT * FROM calendar_view
                 WHERE (calendar_view.calendar_date BETWEEN '${fiscalYearStart}' AND '${fiscalYearEnd}')
-              ) as calendar_view_filtered
-  
-              LEFT JOIN revenue_cost_view
-              ON (
+                AND is_holidays = 0 AND is_weekday = 1 
+            ) as calendar_view_filtered
+
+            LEFT JOIN revenue_cost_view
+            ON (
                 (calendar_view_filtered.calendar_date BETWEEN 
-                  DATE_FORMAT(resource_start,'%Y-%m-%d') AND 
-                  DATE_FORMAT(resource_end,'%Y-%m-%d')
+                DATE_FORMAT(resource_start,'%Y-%m-%d') AND 
+                DATE_FORMAT(resource_end,'%Y-%m-%d')
                 ) AND
                 (calendar_view_filtered.calendar_date BETWEEN 
-                  DATE_FORMAT(resource_contract_start,'%Y-%m-%d') AND 
-                  DATE_FORMAT(IFNULL(resource_contract_end, '2049-06-30'),'%Y-%m-%d')
+                DATE_FORMAT(resource_contract_start,'%Y-%m-%d') AND 
+                DATE_FORMAT(IFNULL(resource_contract_end, '2049-06-30'),'%Y-%m-%d')
                 )
-              )
-  
-          WHERE is_holidays = 0 AND is_weekday = 1
-  
-          GROUP BY project_type, month ) as time_base
-  
+            )
+            WHERE NOT EXISTS (
+                SELECT start_date, end_date
+                FROM project_shutdown_periods
+                WHERE CAST(start_date AS DATE) <= calendar_date
+                    AND (CAST(end_date AS DATE) >= calendar_date OR end_date IS NULL)
+                    AND project_id = revenue_cost_view.project_id
+            )
+        GROUP BY project_type, month ) as time_base
+    
       LEFT JOIN opportunities
         ON opportunities.type = project_type
       LEFT JOIN  project_schedules 
@@ -2187,7 +2192,7 @@ export class ReportController {
         AND gvv.start_date BETWEEN '${fiscalYearStart}' AND '${fiscalYearEnd}'
         AND gvv.start_date >= '${fiscalYearStart}' AND gvv.end_date <= '${fiscalYearEnd}'
         ORDER BY gvv.start_date
-        `)
+    `)
 
 
     let length_of_loop = Math.max(

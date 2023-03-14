@@ -2587,7 +2587,21 @@ export class ProjectRepository extends Repository<Opportunity> {
     let calendar = await this.manager.find(Calendar, {
       relations: ['calendarHolidays', 'calendarHolidays.holidayType'],
     });
+
     let holidays: any = {};
+
+    let shutdownPeriod = await this.manager.find(ProjectShutdownPeriod,{
+      where: {projectId: projectId}
+    })
+
+    if(shutdownPeriod.length){ //removing shutdown period from forecasting
+      for (const shutdown of shutdownPeriod) {
+        let {startDate, endDate} = shutdown
+        for (var iDate = moment(startDate); iDate.isSameOrBefore(endDate); iDate.add(1, 'days')){
+          holidays[moment(iDate).format('M/D/YYYY').toString()] = 'shutdown'
+        }
+      }
+    }
 
     if (calendar[0]) {
       calendar[0].calendarHolidays.forEach((holiday) => {
