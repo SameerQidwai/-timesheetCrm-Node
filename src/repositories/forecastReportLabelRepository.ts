@@ -71,7 +71,7 @@ export class ForecastReportLabelRepository extends Repository<ForecastReportLabe
         label.values = [];
 
         for (let span in forecastReportUpdateDTO[title]) {
-          let momentObj = moment(span, 'DDD YY', true);
+          let momentObj = moment(span, 'MMM YY', true);
           if (!momentObj.isValid()) continue;
 
           let valueObj = new ForecastReportLabelValue();

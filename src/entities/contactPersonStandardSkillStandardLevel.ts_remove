@@ -618,3 +618,115 @@ SELECT month, SUM(salary) doh_salaries, SUM(superannuation) doh_superannuation
       month
     ) as costing
 GROUP BY month;
+
+-- SQL casual_actual_salaries
+SELECT 
+    SUM(salary * actual_hours) casual_salaries,
+    SUM(casual_superannuation * actual_hours) casual_superannuation,
+    DATE_FORMAT(entry_date, '%b %y') month
+  ROM ( 
+    SELECT
+        actual_hours,
+        STR_TO_DATE(entry_date,'%e-%m-%Y') entry_date,
+        revenue_cost_view.resource_employee_id,
+        resource_contract_start,
+        resource_contract_end,
+        salary,
+        salary * (SELECT
+          SUM(global_variable_values.value/100) 
+          FROM global_variable_labels
+          JOIN global_variable_values ON global_variable_labels.id = global_variable_values.global_variable_id
+        WHERE
+          global_variable_labels.name = 'Superannuation'
+          AND STR_TO_DATE(profit_view.entry_date,'%e-%m-%Y') BETWEEN global_variable_values.start_date
+          AND global_variable_values.end_date) casual_superannuation
+    FROM
+        revenue_cost_view
+        LEFT JOIN profit_view ON (
+            revenue_cost_view.resource_employee_id = profit_view.resource_employee_id
+        AND STR_TO_DATE(profit_view.entry_date,'%e-%m-%Y') BETWEEN '2022-07-01' AND  '2023-06-30' -- need to remove from here
+            AND                                              -- '${fiscalYearStart}' AND  '${acutalMonthEnd}'
+            (STR_TO_DATE(profit_view.entry_date,'%e-%m-%Y') BETWEEN  
+            DATE_FORMAT(revenue_cost_view.resource_contract_start,'%Y-%m-%d') AND  
+            DATE_FORMAT(IFNULL(revenue_cost_view.resource_contract_end, '2049-06-30'),'%Y-%m-%d')
+            )
+        )
+    WHERE
+        revenue_cost_view.employment_type = 1
+        AND (
+            revenue_cost_view.project_status = 'P'
+            OR revenue_cost_view.project_status = 'C'
+            )
+
+  ) as casual_time_entries
+GROUP BY month;
+
+-- SQL INCOME income_tax
+SELECT 
+    income_tax.value/100 income_tax_rate,
+    DATE_FORMAT( STR_TO_DATE(calendar_view_filtered.calendar_date, '%Y-%m-%d'), '%b %y' ) month
+  FROM 
+  (SELECT *  
+  FROM calendar_view 
+  WHERE( calendar_view.calendar_date BETWEEN '2022-07-01' -- '2022-07-01' 
+              AND '2023-06-30'  -- '2023-06-30'  
+      ) -- checking for only one fiscal year )
+  ) as calendar_view_filtered
+  LEFT JOIN (
+      SELECT gvv.start_date, gvv.end_date, gvv.value from global_variable_labels gvl
+          JOIN global_variable_values gvv on gvv.global_variable_id = gvl.id
+      WHERE gvl.name = "income_tax"        
+  ) as income_tax
+  ON  (
+      calendar_view_filtered.calendar_date BETWEEN 
+          DATE_FORMAT(income_tax.start_date, '%Y-%m-%d')
+              AND 
+          DATE_FORMAT( IFNULL(income_tax.end_date, '2049-06-30'), '%Y-%m-%d' )
+  )
+
+GROUP BY month
+
+-- SQL INCOME income_tax 2
+SELECT 
+    SUM(salary * actual_hours) casual_salaries,
+    SUM(salary * (
+        SELECT
+            SUM(global_variable_values.value/100) 
+            FROM global_variable_labels
+            JOIN global_variable_values ON global_variable_labels.id = global_variable_values.global_variable_id
+        WHERE
+            global_variable_labels.name = 'Superannuation'
+            AND timers.entry_date BETWEEN global_variable_values.start_date
+            AND global_variable_values.end_date)  * actual_hours) casual_superannuation,
+    DATE_FORMAT(entry_date, '%b %y') month
+  FROM 
+    (SELECT
+        resource_employee_id,
+        resource_contract_start,
+        resource_contract_end,
+        salary
+    FROM
+        revenue_cost_view 
+    WHERE
+        employment_type = 1
+        AND (
+            project_status = 'P'
+            OR project_status = 'C'
+        )
+    )as revenue_cost_views
+    LEFT JOIN (
+        SELECT 
+            resource_employee_id,
+            actual_hours,
+            STR_TO_DATE(entry_date,'%e-%m-%Y') entry_date
+        FROM profit_view
+        WHERE STR_TO_DATE(entry_date,'%e-%m-%Y') BETWEEN '2022-07-01' AND  '2023-06-30' -- need to remove from here
+    ) as timers ON (
+        revenue_cost_views.resource_employee_id = timers.resource_employee_id AND
+        (timers.entry_date BETWEEN  
+            DATE_FORMAT(revenue_cost_views.resource_contract_start,'%Y-%m-%d') AND  
+            DATE_FORMAT(IFNULL(revenue_cost_views.resource_contract_end, '2049-06-30'),'%Y-%m-%d')
+        )
+    )
+GROUP BY month;
+

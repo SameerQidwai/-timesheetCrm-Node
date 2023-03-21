@@ -1977,7 +1977,10 @@ export class ReportController {
   async WorkInHandForecast(req: Request, res: Response, next: NextFunction) {
     let fiscalYearStart = req.query.fiscalYearStart as string;
     let fiscalYearEnd = req.query.fiscalYearEnd as string;
-    let actualMonth = moment().startOf('month').format('MMM YY');
+    let currentMonthStart = moment().date(1).format('YYYY-MM-DD');
+    let acutalMonthEnd = moment().subtract(1, 'months').endOf('month').format('YYYY-MM-DD');
+    console.log({currentMonthStart,acutalMonthEnd})
+
     const actual_revenue = await getManager().query(`
       SELECT 
         project_type,
@@ -2070,39 +2073,88 @@ export class ReportController {
     GROUP BY project_type, month  
     `);
 
-    const causal_salaries = await getManager().query(`
-      SELECT SUM(casual_salaries) casual_salaries, SUM(casual_superannuation) casual_superannuation, month
-        FROM (SELECT 
-          salary * (resource_contract_hours/resource_contract_days_per_week) casual_salaries,
-          salary * (resource_contract_hours / resource_contract_days_per_week) * (SELECT
-          SUM(global_variable_values.value/100) 
-          FROM global_variable_labels
-          JOIN global_variable_values ON global_variable_labels.id = global_variable_values.global_variable_id
+    const causal_salaries_actual = await getManager().query(`
+    SELECT 
+      SUM(salary * actual_hours) casual_salaries,
+      SUM(salary * (
+        SELECT
+            SUM(global_variable_values.value/100) 
+            FROM global_variable_labels
+            JOIN global_variable_values ON global_variable_labels.id = global_variable_values.global_variable_id
         WHERE
-          global_variable_labels.name = 'Superannuation'
-          AND calendar_view_filtered.calendar_date BETWEEN global_variable_values.start_date
-          AND global_variable_values.end_date) casual_superannuation,
-        DATE_FORMAT(STR_TO_DATE(calendar_view_filtered.calendar_date,'%Y-%m-%d'), '%b %y') month 
-        From (
-          SELECT * FROM calendar_view            -- '2022-07-01' '2023-06-30'
-          WHERE (calendar_view.calendar_date BETWEEN '${fiscalYearStart}' AND '${fiscalYearEnd}') 
-          ) as calendar_view_filtered
-          LEFT JOIN (
-              SELECT * FROM revenue_cost_view 
-              WHERE employment_type = 1
-          ) as casual_employee
-          ON ((calendar_view_filtered.calendar_date BETWEEN  
-              DATE_FORMAT(resource_contract_start,'%Y-%m-%d') AND  
-              DATE_FORMAT(IFNULL(resource_contract_end, '2049-06-30'),'%Y-%m-%d')
-          ))
-        WHERE is_holidays = 0 AND is_weekday = 1 
-        GROUP BY
+            global_variable_labels.name = 'Superannuation'
+            AND timers.entry_date BETWEEN global_variable_values.start_date
+            AND global_variable_values.end_date)  * actual_hours) casual_superannuation,
+      DATE_FORMAT(entry_date, '%b %y') month
+    FROM 
+      (SELECT
+          resource_employee_id,
+          resource_contract_start,
+          resource_contract_end,
+          salary
+      FROM
+          revenue_cost_view 
+      WHERE
+          employment_type = 1
+          AND (
+              project_status = 'P'
+              OR project_status = 'C'
+          )
+      )as revenue_cost_views
+    LEFT JOIN (
+      SELECT 
+          resource_employee_id,
+          actual_hours,
+          STR_TO_DATE(entry_date,'%e-%m-%Y') entry_date
+      FROM profit_view
+      WHERE STR_TO_DATE(entry_date,'%e-%m-%Y') BETWEEN '${fiscalYearStart}' AND  '${acutalMonthEnd}' -- need to remove from here
+    ) as timers ON (
+        revenue_cost_views.resource_employee_id = timers.resource_employee_id AND
+        (timers.entry_date BETWEEN  
+            DATE_FORMAT(revenue_cost_views.resource_contract_start,'%Y-%m-%d') AND  
+            DATE_FORMAT(IFNULL(revenue_cost_views.resource_contract_end, '2049-06-30'),'%Y-%m-%d')
+        )
+      )
+    GROUP BY month;
+    `);
+
+
+    const causal_salaries_forecast = await getManager().query(`
+    SELECT SUM(casual_salaries) casual_salaries, SUM(casual_superannuation) casual_superannuation, month
+        FROM (SELECT 
+          SUM (salary * (resource_contract_hours/resource_contract_days_per_week)) casual_salaries,
+          SUM (salary * (resource_contract_hours / resource_contract_days_per_week) * (
+            SELECT
+                SUM(global_variable_values.value/100) 
+            FROM global_variable_labels
+                JOIN global_variable_values ON global_variable_labels.id = global_variable_values.global_variable_id
+            WHERE
+              global_variable_labels.name = 'Superannuation'
+              AND calendar_view_filtered.calendar_date BETWEEN global_variable_values.start_date
+              AND global_variable_values.end_date
+            )
+          ) casual_superannuation,
+          DATE_FORMAT(STR_TO_DATE(calendar_view_filtered.calendar_date,'%Y-%m-%d'), '%b %y') month 
+      From (
+        SELECT * FROM calendar_view          -- 'start of this month' '2023-06-30'
+        WHERE (calendar_view.calendar_date BETWEEN '${currentMonthStart}' AND '${fiscalYearEnd}')  -- remove SUM from subQuery will qive you 4211.68
+        ) as calendar_view_filtered
+        LEFT JOIN (
+            SELECT * FROM revenue_cost_view 
+            WHERE employment_type = 1
+        ) as casual_employee
+        ON ((calendar_view_filtered.calendar_date BETWEEN  
+            DATE_FORMAT(resource_contract_start,'%Y-%m-%d') AND  
+            DATE_FORMAT(IFNULL(resource_contract_end, '2049-06-30'),'%Y-%m-%d')
+        ))
+      WHERE is_holidays = 0 AND is_weekday = 1 
+      GROUP BY
           resource_contract_start,
           resource_contract_end,
           resource_employee_id,
           month
-        ) as costing
-      GROUP BY month;
+      ) as costing
+    GROUP BY month;
     `);
 
     const permanent_salaries = await getManager().query(`
@@ -2186,12 +2238,28 @@ export class ReportController {
     `);
 
     const income_tax = await getManager().query(`
-      SELECT gvl.name, gvv.start_date, gvv.end_date, gvv.value from global_variable_labels gvl
-            JOIN global_variable_values gvv on gvv.global_variable_id = gvl.id
-        WHERE gvl.name = "income_tax" 
-        AND gvv.start_date BETWEEN '${fiscalYearStart}' AND '${fiscalYearEnd}'
-        AND gvv.start_date >= '${fiscalYearStart}' AND gvv.end_date <= '${fiscalYearEnd}'
-        ORDER BY gvv.start_date
+    SELECT 
+      income_tax.value/100 income_tax_rate,
+      DATE_FORMAT( STR_TO_DATE(calendar_view_filtered.calendar_date, '%Y-%m-%d'), '%b %y' ) month
+    FROM 
+      (SELECT *  
+      FROM calendar_view 
+      WHERE( calendar_view.calendar_date BETWEEN '${fiscalYearStart}' -- '2022-07-01' 
+                  AND '${fiscalYearEnd}'  -- '2023-06-30'  
+          ) -- checking for only one fiscal year )
+      ) as calendar_view_filtered
+      LEFT JOIN (
+          SELECT gvv.start_date, gvv.end_date, gvv.value from global_variable_labels gvl
+              JOIN global_variable_values gvv on gvv.global_variable_id = gvl.id
+          WHERE gvl.name = "income_tax"        
+      ) as income_tax
+      ON  (
+        calendar_view_filtered.calendar_date BETWEEN 
+            DATE_FORMAT(income_tax.start_date, '%Y-%m-%d')
+                AND 
+            DATE_FORMAT( IFNULL(income_tax.end_date, '2049-06-30'), '%Y-%m-%d' )
+      )
+    GROUP BY month
     `)
 
 
@@ -2211,10 +2279,11 @@ export class ReportController {
       TOTAL_REVENUE: { total: 0 },
       TOTAL_COST: { total: 0 },
       TOTAL_DOH: { total: 0 },
-      income_tax: income_tax[0]
+      INCOME_TAX_RATES: {}
     };
 
     for (let i = 0; i < length_of_loop; i++) {
+
       if (actual_revenue[i]) {
         let { project_type, month, month_total_sell = 0 } = actual_revenue[i];
         if (
@@ -2222,15 +2291,9 @@ export class ReportController {
           project_type
         ) {
           data[ProjectType[project_type]][month] = parseFloat(month_total_sell);
-          // data[ProjectType[project_type]]['total'] +=
-          //   parseFloat(month_total_sell);
-
-          // data['TOTAL_REVENUE'][month] = data['TOTAL_REVENUE'][month]
-          //   ? data['TOTAL_REVENUE'][month] + parseFloat(month_total_sell)
-          //   : parseFloat(month_total_sell);
-          // data['TOTAL_REVENUE']['total'] += data['TOTAL_REVENUE'][month];
         }
       }
+
       if (forecast_revenue[i]) {
         let { project_type, month, month_total_sell = 0 } = forecast_revenue[i];
         if (
@@ -2238,34 +2301,33 @@ export class ReportController {
           project_type
         ) {
           data[ProjectType[project_type]][month] = parseFloat(month_total_sell);
-          // data[ProjectType[project_type]]['total'] +=
-          //   parseFloat(month_total_sell);
-
-          // data['TOTAL_REVENUE'][month] = data['TOTAL_REVENUE'][month]
-          //   ? data['TOTAL_REVENUE'][month] + parseFloat(month_total_sell)
-          //   : parseFloat(month_total_sell);
-          // data['TOTAL_REVENUE']['total'] += data['TOTAL_REVENUE'][month] ?? 0;
         }
       }
-      if (causal_salaries[i]) {
+
+      if (causal_salaries_forecast[i]) {
         let {
           month,
           casual_salaries: salary = 0,
           casual_superannuation = 0,
-        } = causal_salaries[i];
+        } = causal_salaries_forecast[i];
         salary ||= 0;
         casual_superannuation ||= 0;
         data['CASUAL_SALARIES'][month] = parseFloat(salary);
-        // data['CASUAL_SALARIES']['total'] += parseFloat(salary);
         data['CASUAL_SUPER'][month] = parseFloat(casual_superannuation);
-        // data['CASUAL_SUPER']['total'] += parseFloat(casual_superannuation);
-
-        // data['TOTAL_COST'][month] = data['TOTAL_COST'][month]
-        //   ? data['TOTAL_COST'][month] +
-        //     (parseFloat(salary) + parseFloat(casual_superannuation))
-        //   : parseFloat(salary) + parseFloat(casual_superannuation);
-        // data['TOTAL_COST']['total'] += data['TOTAL_COST'][month] ?? 0;
       }
+
+      if (causal_salaries_actual[i]) {
+        let {
+          month,
+          casual_salaries: salary = 0,
+          casual_superannuation = 0,
+        } = causal_salaries_actual[i];
+        salary ||= 0;
+        casual_superannuation ||= 0;
+        data['CASUAL_SALARIES'][month] = parseFloat(salary);
+        data['CASUAL_SUPER'][month] = parseFloat(casual_superannuation);
+      }
+
       if (permanent_salaries[i]) {
         let {
           month,
@@ -2275,17 +2337,7 @@ export class ReportController {
         salary ||= 0;
         permanent_superannuation ||= 0;
         data['PERMANENT_SALARIES'][month] = parseFloat(salary);
-        // data['PERMANENT_SALARIES']['total'] += parseFloat(salary);
         data['PERMANENT_SUPER'][month] = parseFloat(permanent_superannuation);
-        // data['PERMANENT_SUPER']['total'] += parseFloat(
-        //   permanent_superannuation
-        // );
-
-        // data['TOTAL_COST'][month] = data['TOTAL_COST'][month]
-        //   ? data['TOTAL_COST'][month] +
-        //     (parseFloat(salary) + parseFloat(permanent_superannuation))
-        //   : parseFloat(salary) + parseFloat(permanent_superannuation);
-        // data['TOTAL_COST']['total'] += data['TOTAL_COST'][month] ?? 0;
       }
 
       if (doh_salaries[i]) {
@@ -2295,17 +2347,17 @@ export class ReportController {
           doh_superannuation = 0,
         } = doh_salaries[i];
         data['DOH_SALARIES'][month] = parseFloat(salary);
-        // data['DOH_SALARIES']['total'] += parseFloat(salary);
         data['DOH_SUPER'][month] = parseFloat(doh_superannuation);
-        // data['DOH_SUPER']['total'] += parseFloat(doh_superannuation);
-
-        // data['TOTAL_DOH'][month] = data['TOTAL_DOH'][month]
-        //   ? data['TOTAL_DOH'][month] +
-        //     (parseFloat(salary) + parseFloat(doh_superannuation))
-        //   : parseFloat(salary) + parseFloat(doh_superannuation);
-        // data['TOTAL_DOH']['total'] += data['TOTAL_DOH'][month];
+      }
+      if (income_tax[i]) {
+        let {
+          month,
+          income_tax_rate = 0,
+        } = income_tax[i];
+        data['INCOME_TAX_RATES'][month] = parseFloat(income_tax_rate);
       }
     }
+
     res.status(200).json({
       success: true,
       message: 'Work In Hand Forecasting',
