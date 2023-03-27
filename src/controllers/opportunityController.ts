@@ -95,7 +95,8 @@ export class OpportunityController extends BaseController<
       const repository = getCustomRepository(OpportunityRepository);
       // let id = req.params.opportunityId;
       let records: any = [];
-      records = await repository.getHolidays();
+      let id = +req.params.projectId; //+ convters a sting in to number and NaN to 0
+      records = await repository.getHolidays(id);
       console.log('records: ', records);
       res.status(200).json({
         success: true,

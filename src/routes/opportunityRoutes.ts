@@ -25,7 +25,7 @@ router
     contr.create.bind(contr)
   );
 
-router.route('/get-holidays').get([isLoggedIn], contr.holidays.bind(contr));
+router.route('/get-holidays/:projectId').get([isLoggedIn], contr.holidays.bind(contr));
 
 router
   .route('/:id')

@@ -28,6 +28,7 @@ import { Timesheet } from '../entities/timesheet';
 import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
 import { MilestoneExpense } from '../entities/milestoneExpense';
 import { ExpenseType } from '../entities/expenseType';
+import { ProjectShutdownPeriod } from '../entities/projectShutdownPeriod';
 
 @EntityRepository(Opportunity)
 export class OpportunityRepository extends Repository<Opportunity> {
@@ -2026,12 +2027,25 @@ export class OpportunityRepository extends Repository<Opportunity> {
   }
 
   // fiscalYear: { start: string; end: string; actual: string }
-  async getHolidays(): Promise<any | undefined> {
+  async getHolidays(projectId: number): Promise<any | undefined> {
     let calendar = await this.manager.find(Calendar, {
       relations: ['calendarHolidays', 'calendarHolidays.holidayType'],
     });
 
     let holidays: string[] = [];
+
+    let shutdownPeriod = await this.manager.find(ProjectShutdownPeriod,{
+      where: {projectId: projectId}
+    })
+
+    if(shutdownPeriod.length){ //removing shutdown period from forecasting
+      for (const shutdown of shutdownPeriod) {
+        let {startDate, endDate} = shutdown
+        for (var iDate = moment(startDate); iDate.isSameOrBefore(endDate); iDate.add(1, 'days')){
+          holidays.push(moment(iDate).format('M D YYYY').toString())
+        }
+      }
+    }
 
     if (calendar[0]) {
       calendar[0].calendarHolidays.forEach((holiday) => {

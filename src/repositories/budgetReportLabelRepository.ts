@@ -71,7 +71,7 @@ export class BudgetReportLabelRepository extends Repository<BudgetReportLabel> {
         label.values = [];
 
         for (let span in budgetReportUpdateDTO[title]) {
-          let momentObj = moment(span, 'DDD YY', true);
+          let momentObj = moment(span, 'MMM YY', true);
           if (!momentObj.isValid()) continue;
 
           let valueObj = new BudgetReportLabelValue();
