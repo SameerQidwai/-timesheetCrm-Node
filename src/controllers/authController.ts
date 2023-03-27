@@ -456,7 +456,9 @@ export class AuthController {
           `Your have requested a Password Reset on ${process.env.ORGANIZATION}
           If you did not request a request, please ignore this email.
           Your Password Reset Link is : 
-          ${FRONTEND_URL}reset-password/${encodeURIComponent(link.token)}
+          ${process.env.ENV_URL}/reset-password/${encodeURIComponent(
+            link.token
+          )}
           `
         );
       } catch (e) {
