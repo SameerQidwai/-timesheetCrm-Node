@@ -43,6 +43,7 @@ const connection = createConnection();
 
 //Moment Config
 moment.tz.setDefault('Etc/UTC');
+
 var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), {
   flags: 'a',
 });

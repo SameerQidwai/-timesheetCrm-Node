@@ -7,7 +7,7 @@ export class ForecastReportLabelValue extends Base {
   @Column({ name: 'span' })
   span: string;
 
-  @Column({ name: 'value' })
+  @Column({ name: 'value', nullable: true })
   value: number;
 
   @Column({ name: 'forecast_report_label_id', nullable: false })
