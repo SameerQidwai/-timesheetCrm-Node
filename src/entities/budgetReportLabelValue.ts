@@ -7,7 +7,7 @@ export class BudgetReportLabelValue extends Base {
   @Column({ name: 'span' })
   span: string;
 
-  @Column({ name: 'value' })
+  @Column({ name: 'value', nullable: true })
   value: number;
 
   @Column({ name: 'budget_report_label_id', nullable: false })
