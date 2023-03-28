@@ -46,6 +46,7 @@ export enum BusinessType {
   PARTNERSHIP = 2,
   COMPANY = 3,
   TRUST = 4,
+  GOVERNMENT = 5,
 }
 
 export enum SuperannuationType {
