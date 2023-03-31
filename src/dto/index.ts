@@ -198,11 +198,13 @@ export interface EmployeeDTO extends Base {
   superannuationAbnOrUsi: string;
   superannuationBankBsb: string;
   superannuationAddress: string;
+  superannuationFileId: number;
   training: string;
   latestEmploymentContract: EmploymentContractDTO;
   bankName: string;
   bankAccountNo: string;
   bankBsb: string;
+  bankAccountFileId: number;
   roleId: number;
   lineManagerId: number;
 }
