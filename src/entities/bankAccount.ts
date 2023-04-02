@@ -14,7 +14,7 @@ export class BankAccount extends Base {
   @Column({ name: 'bsb' })
   bsb: string;
 
-  @Column({ name: 'bsb', nullable: true })
+  @Column({ name: 'file_id', nullable: true })
   fileId: number;
 
   @Column({ name: 'organization_id', nullable: true })
