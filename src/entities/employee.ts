@@ -93,7 +93,11 @@ export class Employee extends Base {
 
   @Column({ name: 'superannuation_address', nullable: true })
   superannuationAddress: string; // ESA Address
-  // ---------------------------------------------------Superannuation info----------------------------------------
+
+  @Column({ name: 'superannuation_file_id', nullable: true })
+  superannuationFileId: number; // ESA Address
+
+  // ---------------------------------------------------Other info----------------------------------------
 
   @Column({ name: 'training', nullable: true })
   training: string;
