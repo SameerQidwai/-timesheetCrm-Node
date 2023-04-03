@@ -13,30 +13,49 @@ export class TestController {
   async test(req: Request, res: Response, next: NextFunction) {
     try {
       let manager = getManager();
+      let connection = manager.connection;
 
       let columns: any = {};
-      const ignoreColumns: any = [
+
+      const ignoreColumns: Array<string> = [
         'id',
         'created_at',
         'updated_at',
         'deleted_at',
       ];
 
+      const ignoreTables: Array<string> = [
+        '_view',
+        '_metadata',
+        'typeorm',
+        'db_',
+        'system_',
+      ];
+
+      const regex = new RegExp(ignoreTables.join('|'));
+
       let dbTableNames = await manager.query(`SHOW TABLES`);
 
-      let tableNames: any = [];
+      let tableNames: string[] = [];
 
       dbTableNames.forEach((table: any) => {
         tableNames.push(table.Tables_in_onelm);
       });
 
       for (let table of tableNames) {
-        let dbColumns = await manager.query(`DESCRIBE ${table}`);
-        columns[table] = [];
+        if (regex.test(table)) continue;
+        // let dbColumns = await manager.query(`DESCRIBE ${table}`);
+
+        let dbColumns = connection.getMetadata(table).ownColumns;
+
+        columns[table] = {};
 
         for (let column of dbColumns) {
-          if (ignoreColumns.includes(column.Field)) continue;
-          columns[table].push(column.Field);
+          if (ignoreColumns.includes(column.databaseName)) continue;
+          columns[table][column.databaseName] = {
+            databaseName: column.databaseName,
+            typeOrmName: column.propertyName,
+          };
         }
       }
 
