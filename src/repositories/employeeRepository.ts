@@ -195,6 +195,7 @@ export class EmployeeRepository extends Repository<Employee> {
       employeeObj.superannuationBankBsb = employeeDTO.superannuationBankBsb;
       employeeObj.superannuationBankAccountOrMembershipNumber =
         employeeDTO.superannuationBankAccountOrMembershipNumber;
+      employeeObj.superannuationFileId = employeeDTO.superannuationFileId;
       employeeObj.training = employeeDTO.training;
       employeeObj.roleId = employeeDTO.roleId;
 
@@ -272,11 +273,12 @@ export class EmployeeRepository extends Repository<Employee> {
 
       employmentContract.fileId = fileId;
       await transactionalEntityManager.save(employmentContract);
-      let { bankName, bankAccountNo, bankBsb } = employeeDTO;
+      let { bankName, bankAccountNo, bankBsb, bankAccountFileId } = employeeDTO;
       let bankAccount = new BankAccount();
       bankAccount.accountNo = bankAccountNo;
       bankAccount.bsb = bankBsb;
       bankAccount.name = bankName;
+      bankAccount.fileId = bankAccountFileId;
       bankAccount.employeeId = employeeObj.id;
       await transactionalEntityManager.save(bankAccount);
       return employeeObj.id;
@@ -448,6 +450,7 @@ ${process.env.ORGANIZATION} Support Team`
       employeeObj.superannuationBankBsb = employeeDTO.superannuationBankBsb;
       employeeObj.superannuationBankAccountOrMembershipNumber =
         employeeDTO.superannuationBankAccountOrMembershipNumber;
+      employeeObj.superannuationFileId = employeeDTO.superannuationFileId;
       employeeObj.training = employeeDTO.training;
       employeeObj.roleId = employeeDTO.roleId;
 
@@ -658,7 +661,7 @@ ${process.env.ORGANIZATION} Support Team`
         }
       }
 
-      let { bankName, bankAccountNo, bankBsb } = employeeDTO;
+      let { bankName, bankAccountNo, bankBsb, bankAccountFileId } = employeeDTO;
       let bankAccount = await transactionalEntityManager
         .getRepository(BankAccount)
         .findOne({
@@ -675,6 +678,7 @@ ${process.env.ORGANIZATION} Support Team`
       bankAccount.accountNo = bankAccountNo;
       bankAccount.bsb = bankBsb;
       bankAccount.name = bankName;
+      bankAccount.fileId = bankAccountFileId;
       bankAccount.employeeId = employeeObj.id;
       await transactionalEntityManager.save(bankAccount);
       return employeeObj.id;
@@ -1285,12 +1289,17 @@ ${process.env.ORGANIZATION} Support Team`
     employee.superannuationAbnOrUsi = settingsDTO.superannuationAbnOrUsi;
     employee.superannuationBankBsb = settingsDTO.superannuationBankBsb;
     employee.superannuationAddress = settingsDTO.superannuationAddress;
+    employee.superannuationFileId = settingsDTO.superannuationFileId;
     employee.training = settingsDTO.training;
 
     let bankAccount = employee.bankAccounts[0];
+
+    if (!bankAccount) bankAccount = new BankAccount();
+
     bankAccount.accountNo = settingsDTO.bankAccountNo;
     bankAccount.name = settingsDTO.bankName;
     bankAccount.bsb = settingsDTO.bankBsb;
+    bankAccount.fileId = settingsDTO.bankAccountFileId;
 
     employee.bankAccounts[0] = bankAccount;
 
