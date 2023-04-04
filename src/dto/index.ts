@@ -783,3 +783,13 @@ export interface BudgetReportUpdateDTO {
     [key: string]: number;
   };
 }
+
+export interface CashflowReportLabelDTO extends Base {
+  title: String;
+}
+
+export interface CashflowReportUpdateDTO {
+  [key: string]: {
+    [key: string]: number;
+  };
+}
