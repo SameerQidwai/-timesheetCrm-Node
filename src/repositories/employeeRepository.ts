@@ -1289,12 +1289,17 @@ ${process.env.ORGANIZATION} Support Team`
     employee.superannuationAbnOrUsi = settingsDTO.superannuationAbnOrUsi;
     employee.superannuationBankBsb = settingsDTO.superannuationBankBsb;
     employee.superannuationAddress = settingsDTO.superannuationAddress;
+    employee.superannuationFileId = settingsDTO.superannuationFileId;
     employee.training = settingsDTO.training;
 
     let bankAccount = employee.bankAccounts[0];
+
+    if (!bankAccount) bankAccount = new BankAccount();
+
     bankAccount.accountNo = settingsDTO.bankAccountNo;
     bankAccount.name = settingsDTO.bankName;
     bankAccount.bsb = settingsDTO.bankBsb;
+    bankAccount.fileId = settingsDTO.bankAccountFileId;
 
     employee.bankAccounts[0] = bankAccount;
 

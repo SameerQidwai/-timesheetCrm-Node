@@ -409,10 +409,12 @@ export interface SettingsDTO extends Base {
   superannuationAbnOrUsi: string;
   superannuationBankBsb: string;
   superannuationAddress: string;
+  superannuationFileId: number;
   training: string;
   bankName: string; //!  USING BUT RELATIONSHIP NEEDS TO BE CHANGED, BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
   bankAccountNo: string; //!  USING BUT RELATIONSHIP NEEDS TO BE CHANGED, BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
   bankBsb: string; //!  USING BUT RELATIONSHIP NEEDS TO BE CHANGED, BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
+  bankAccountFileId: number;
 }
 
 export interface PermissionDTO extends Base {
