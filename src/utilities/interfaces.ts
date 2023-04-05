@@ -17,3 +17,13 @@ export interface BudgetReportInterface {
     [key: string]: number;
   };
 }
+
+export interface CashflowReportLabelValuesInterface {
+  [key: string]: number;
+}
+
+export interface CashflowReportInterface {
+  [key: string]: {
+    [key: string]: number;
+  };
+}

@@ -132,7 +132,10 @@ export class AuthController {
           'contactPersonOrganization.contactPerson.standardSkillStandardLevels',
           'contactPersonOrganization.organization',
           'bankAccounts',
+          'bankAccounts.file',
           'employmentContracts',
+          'employmentContracts.file',
+          'superannuationFile',
         ],
       });
 

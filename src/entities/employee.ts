@@ -19,6 +19,7 @@ import { LeaveRequestBalance } from './leaveRequestBalance';
 import { Opportunity } from './opportunity';
 import { LeaveRequest } from './leaveRequest';
 import { Timesheet } from './timesheet';
+import { File } from './file';
 
 @Entity('employees')
 export class Employee extends Base {
@@ -96,6 +97,10 @@ export class Employee extends Base {
 
   @Column({ name: 'superannuation_file_id', nullable: true })
   superannuationFileId: number; // ESA Address
+
+  @OneToOne(() => File)
+  @JoinColumn({ name: 'superannuation_file_id' })
+  superannuationFile: File;
 
   // ---------------------------------------------------Other info----------------------------------------
 

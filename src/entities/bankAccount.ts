@@ -1,7 +1,8 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
 import { Base } from './common/base';
 import { Organization } from './organization';
 import { Employee } from './employee';
+import { File } from './file';
 
 @Entity('bank_accounts')
 export class BankAccount extends Base {
@@ -16,6 +17,10 @@ export class BankAccount extends Base {
 
   @Column({ name: 'file_id', nullable: true })
   fileId: number;
+
+  @OneToOne(() => File)
+  @JoinColumn({ name: 'file_id' })
+  file: File;
 
   @Column({ name: 'organization_id', nullable: true })
   organizationId: number;
