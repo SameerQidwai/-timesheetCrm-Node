@@ -8,6 +8,9 @@ export class ForecastReportLabel extends Base {
   @Column({ name: 'label', unique: true })
   title: String;
 
+  @Column({ name: 'description', type: 'text', nullable: true })
+  description: string;
+
   @Column({ name: 'is_active', default: true })
   isActive: Boolean; // password for login
 

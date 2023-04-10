@@ -10,4 +10,6 @@ router
   .post([isLoggedIn], contr.create.bind(contr))
   .get([isLoggedIn], contr.show.bind(contr));
 
+router.route('/bulk/:types/:id').get([], contr.bulkShow.bind(contr));
+
 export default router;

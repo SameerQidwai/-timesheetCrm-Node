@@ -136,6 +136,7 @@ export class AuthController {
           'employmentContracts',
           'employmentContracts.file',
           'superannuationFile',
+          'tfnFile',
         ],
       });
 

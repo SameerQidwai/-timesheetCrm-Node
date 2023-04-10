@@ -189,6 +189,7 @@ export interface EmployeeDTO extends Base {
   nextOfKinEmail: string;
   nextOfKinRelation: string;
   tfn: string;
+  tfnFileId: number;
   taxFreeThreshold: boolean | null;
   helpHECS: boolean | null;
   superannuationName: string;
