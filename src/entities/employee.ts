@@ -59,6 +59,13 @@ export class Employee extends Base {
   @Column({ name: 'tfn', nullable: true })
   tfn: string; // tax file number
 
+  @Column({ name: 'tfn_file_id', nullable: true })
+  tfnFileId: number; // tax file number
+
+  @OneToOne(() => File)
+  @JoinColumn({ name: 'tfn_file_id' })
+  tfnFile: File;
+
   @Column({ name: 'tax_free_threshold', nullable: true })
   taxFreeThreshold: boolean;
 

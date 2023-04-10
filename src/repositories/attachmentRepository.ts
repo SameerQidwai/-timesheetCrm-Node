@@ -1,4 +1,4 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, In, Repository } from 'typeorm';
 import { Attachment } from './../entities/attachment';
 import { AttachmentDTO } from '../dto/index';
 import { EntityType } from '../constants/constants';
@@ -30,6 +30,18 @@ export class AttachmentRepository extends Repository<Attachment> {
   async getTargetAttachments(targetType: EntityType, id: number): Promise<any> {
     let result = await this.find({
       where: { targetType: targetType, targetId: id },
+      relations: ['file'],
+    });
+
+    return result;
+  }
+
+  async getTargetMultipleAttachments(
+    targetType: EntityType[],
+    id: number
+  ): Promise<any> {
+    let result = await this.find({
+      where: { targetType: In(targetType), targetId: id },
       relations: ['file'],
     });
 

@@ -52,6 +52,31 @@ export class AttachmentController {
     }
   }
 
+  async bulkShow(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(AttachmentRepository);
+
+      let queryString: string = req.params.types as string;
+
+      let types = queryString.split(',');
+
+      let response: string = await repository.getTargetMultipleAttachments(
+        types as EntityType[],
+        parseInt(req.params.id)
+      );
+
+      // if no timesheet found
+      return res.status(200).json({
+        success: true,
+        // message: `Win Opportunity ${req.params.id}`,
+        message: 'Get Target Attachments',
+        data: response,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(AttachmentRepository);
