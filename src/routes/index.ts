@@ -39,6 +39,8 @@ import reportRoutes from './reportRoutes';
 import reportExportRoutes from './reportExportRoutes';
 import forecastReportLabelRoutes from './forcastReportLabelRoutes';
 import budgetReportLabelRoutes from './budgetReportLabelRoutes';
+import financialYearRoutes from './financialYearRoutes';
+import systemRoutes from './systemRoutes';
 import testRoutes from './testRoutes';
 
 const router: Router = Router();
@@ -81,7 +83,9 @@ router.use('/reports', reportRoutes);
 router.use('/reports/export', reportExportRoutes);
 router.use('/forecastReportLabel', forecastReportLabelRoutes);
 router.use('/budgetReportLabel', budgetReportLabelRoutes);
+router.use('/financial-years', financialYearRoutes);
 router.use('/test', testRoutes);
+router.use('/system', systemRoutes);
 // router.use("/opportunity-resources", opportunityResourceRoutes);
 
 // console.log("router: ", router);

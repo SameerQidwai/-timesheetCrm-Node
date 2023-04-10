@@ -7,14 +7,17 @@ export class DBColumn extends Base {
   dbName: string;
 
   @Column({ name: 'typeorm_name' })
-  typeorm_name: string;
+  typeormName: string;
 
-  @Column({ name: 'disabled' })
+  @Column({ name: 'table_name' })
+  tableName: string;
+
+  @Column({ name: 'entity_name' })
+  entityName: string;
+
+  @Column({ name: 'disabled', default: false })
   disabled: Boolean;
 
   @Column({ name: 'batch' })
   batch: Number;
-
-  @Column({ name: 'disable_conditions', type: 'json' })
-  disableConditions: JSON;
 }

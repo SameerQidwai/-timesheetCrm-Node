@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { DBColumn } from '../entities/dbColumn';
 import { getManager } from 'typeorm';
 
 export class SystemAdminController {
@@ -8,6 +9,8 @@ export class SystemAdminController {
       let connection = manager.connection;
 
       let columns: any = {};
+      let pushColumns: DBColumn[] = [];
+
       const ignoreColumns: Array<string> = [
         'id',
         'created_at',
@@ -26,15 +29,16 @@ export class SystemAdminController {
       });
 
       for (let table of tableNames) {
-        var value = /_view|_metadata|typeorm|db_|system_/.test(table);
-        console.log(value);
+        var checkFlag = /_view|_metadata|typeorm|db_|system_/.test(table);
+        console.log(checkFlag);
 
-        if (
-          table.includes('_view') ||
-          table.includes('_metadata') ||
-          table.includes('typeorm')
-        )
-          continue;
+        if (checkFlag) continue;
+        // if (
+        //   table.includes('_view') ||
+        //   table.includes('_metadata') ||
+        //   table.includes('typeorm')
+        // )
+        //   continue;
         // let dbColumns = await manager.query(`DESCRIBE ${table}`);
 
         let dbColumns = connection.getMetadata(table).ownColumns;
@@ -43,12 +47,19 @@ export class SystemAdminController {
 
         for (let column of dbColumns) {
           if (ignoreColumns.includes(column.databaseName)) continue;
-          columns[table][column.databaseName] = {
-            databaseName: column.databaseName,
-            typeOrmName: column.propertyName,
-          };
+          columns[table][column.databaseName] = manager.create(DBColumn, {
+            dbName: column.databaseName,
+            typeormName: column.propertyName,
+            entityName: column.entityMetadata.targetName,
+            tableName: column.entityMetadata.tableName,
+            batch: 0,
+          });
+
+          pushColumns.push(columns[table][column.databaseName]);
         }
       }
+
+      await manager.save(DBColumn, pushColumns);
 
       res.status(200).json({
         success: true,

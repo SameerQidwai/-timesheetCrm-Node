@@ -1,5 +1,6 @@
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, BeforeUpdate, getManager, AfterLoad } from 'typeorm';
 import { Base } from './common/base';
+import { Opportunity } from './opportunity';
 
 @Entity('financial_years')
 export class FinancialYear extends Base {
@@ -12,6 +13,6 @@ export class FinancialYear extends Base {
   @Column({ name: 'end_date' })
   endDate: Date;
 
-  @Column({ name: 'closed' })
+  @Column({ name: 'closed', default: false })
   closed: Boolean;
 }
