@@ -44,6 +44,13 @@ router
   );
 
 router
+  .route('/bulkEntry/:startDate&:endDate&:userId')
+  .post(
+    [isLoggedIn, can(Action.ADD, Resource.TIMESHEETS)],
+    contr.bulkAddTimesheetEntry.bind(contr)
+  );
+
+router
   .route('/:startDate&:endDate&:userId/milestoneEntriesSubmit/')
   .post(
     [isLoggedIn, can(Action.ADD, Resource.TIMESHEETS)],

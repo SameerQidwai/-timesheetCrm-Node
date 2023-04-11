@@ -4,7 +4,7 @@ export interface ForecastReportLabelValuesInterface {
 
 export interface ForecastReportInterface {
   [key: string]: {
-    [key: string]: number;
+    [key: string]: number | string;
   };
 }
 
@@ -14,7 +14,7 @@ export interface BudgetReportLabelValuesInterface {
 
 export interface BudgetReportInterface {
   [key: string]: {
-    [key: string]: number;
+    [key: string]: number | string;
   };
 }
 
@@ -24,6 +24,6 @@ export interface CashflowReportLabelValuesInterface {
 
 export interface CashflowReportInterface {
   [key: string]: {
-    [key: string]: number;
+    [key: string]: number | string;
   };
 }
