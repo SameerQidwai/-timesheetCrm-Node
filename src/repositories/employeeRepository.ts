@@ -1284,6 +1284,7 @@ ${process.env.ORGANIZATION} Support Team`
     employee.nextOfKinEmail = settingsDTO.nextOfKinEmail;
     employee.nextOfKinRelation = settingsDTO.nextOfKinRelation;
     employee.tfn = settingsDTO.tfn;
+    employee.tfnFileId = settingsDTO.tfnFileId;
     employee.taxFreeThreshold = settingsDTO.taxFreeThreshold ?? false;
     employee.helpHECS = settingsDTO.helpHECS ?? false;
     employee.superannuationName = settingsDTO.superannuationName;
