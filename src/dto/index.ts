@@ -371,6 +371,20 @@ export interface TimesheetDTO extends Base {
   breakHours: number;
 }
 
+export interface BulkTimesheetDTO extends Base {
+  startDate: Date;
+  endDate: Date;
+  holidays: Boolean;
+  weekends: Boolean;
+  milestoneId: number;
+  entries: {
+    date: string;
+    startTime: string;
+    endTime: string;
+    breakHours: number;
+  }[];
+}
+
 export interface TimesheetMilestoneNoteDTO extends Base {
   note: string;
   attachments: number[];
@@ -401,6 +415,7 @@ export interface SettingsDTO extends Base {
   nextOfKinEmail: string;
   nextOfKinRelation: string;
   tfn: string;
+  tfnFileId: number;
   taxFreeThreshold: boolean | null;
   helpHECS: boolean | null;
   superannuationName: string;
