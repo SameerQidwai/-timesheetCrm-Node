@@ -71,6 +71,10 @@ export class CashflowReportLabelRepository extends Repository<CashflowReportLabe
         label.values = [];
 
         for (let span in cashflowReportUpdateDTO[title]) {
+          if (span == 'description') {
+            label.description = cashflowReportUpdateDTO[title][span].toString();
+          }
+
           let momentObj = moment(span, 'MMM YY', true);
           if (!momentObj.isValid()) continue;
 

@@ -7,7 +7,13 @@ export class BudgetReportLabelValue extends Base {
   @Column({ name: 'span' })
   span: string;
 
-  @Column({ name: 'value', nullable: true })
+  @Column({
+    name: 'value',
+    nullable: true,
+    type: 'float',
+    precision: 11,
+    scale: 2,
+  })
   value: number;
 
   @Column({ name: 'budget_report_label_id', nullable: false })

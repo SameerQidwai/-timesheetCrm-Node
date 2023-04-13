@@ -174,6 +174,7 @@ export class EmployeeRepository extends Repository<Employee> {
       employeeObj.nextOfKinEmail = employeeDTO.nextOfKinEmail;
       employeeObj.nextOfKinRelation = employeeDTO.nextOfKinRelation;
       employeeObj.tfn = employeeDTO.tfn;
+      employeeObj.tfnFileId = employeeDTO.tfnFileId;
       employeeObj.taxFreeThreshold = employeeDTO.taxFreeThreshold
         ? true
         : false;
@@ -315,8 +316,11 @@ ${process.env.ORGANIZATION} Support Team`
         'contactPersonOrganization.contactPerson',
         'contactPersonOrganization.organization',
         'bankAccounts',
+        'bankAccounts.file',
         'employmentContracts',
         'employmentContracts.file',
+        'superannuationFile',
+        'tfnFile',
       ],
     });
 
@@ -429,6 +433,7 @@ ${process.env.ORGANIZATION} Support Team`
       employeeObj.nextOfKinEmail = employeeDTO.nextOfKinEmail;
       employeeObj.nextOfKinRelation = employeeDTO.nextOfKinRelation;
       employeeObj.tfn = employeeDTO.tfn;
+      employeeObj.tfnFileId = employeeDTO.tfnFileId;
       employeeObj.taxFreeThreshold = employeeDTO.taxFreeThreshold
         ? true
         : false;
@@ -693,8 +698,11 @@ ${process.env.ORGANIZATION} Support Team`
         'contactPersonOrganization.contactPerson',
         'contactPersonOrganization.organization',
         'bankAccounts',
+        'bankAccounts.file',
         'employmentContracts',
         'employmentContracts.file',
+        'superannuationFile',
+        'tfnFile',
       ],
     });
 
@@ -761,6 +769,8 @@ ${process.env.ORGANIZATION} Support Team`
         'contactPersonOrganization.contactPerson',
         'employmentContracts',
         'bankAccounts',
+        'bankAccounts.file',
+        'superannuationFile',
         'leases',
         'leaveRequests',
         'leaveRequestBalances',
@@ -1274,6 +1284,7 @@ ${process.env.ORGANIZATION} Support Team`
     employee.nextOfKinEmail = settingsDTO.nextOfKinEmail;
     employee.nextOfKinRelation = settingsDTO.nextOfKinRelation;
     employee.tfn = settingsDTO.tfn;
+    employee.tfnFileId = settingsDTO.tfnFileId;
     employee.taxFreeThreshold = settingsDTO.taxFreeThreshold ?? false;
     employee.helpHECS = settingsDTO.helpHECS ?? false;
     employee.superannuationName = settingsDTO.superannuationName;
