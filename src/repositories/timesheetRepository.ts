@@ -943,11 +943,6 @@ export class TimesheetRepository extends Repository<Timesheet> {
         // }
 
         for (let loopedEntry of bulkTimesheetDTO.entries) {
-          console.log(
-            '🚀 ~ file: timesheetRepository.ts:946 ~ TimesheetRepository ~ loopedEntry:',
-            loopedEntry
-          );
-
           let entry = new TimesheetEntry();
 
           entry.date = moment(loopedEntry.date, 'DD-MM-YYYY').format(
