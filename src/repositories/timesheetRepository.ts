@@ -892,9 +892,24 @@ export class TimesheetRepository extends Repository<Timesheet> {
           throw new Error('Employee not found');
         }
 
+        let milestone = await transactionalEntityManager.findOne(
+          Milestone,
+          bulkTimesheetDTO.milestoneId,
+          {
+            relations: [
+              'opportunityResources',
+              'opportunityResources.opportunityResourceAllocations',
+            ],
+          }
+        );
+
+        if (!milestone) {
+          throw new Error('Milestone not found');
+        }
+
         milestoneEntry = await this.manager.findOne(TimesheetMilestoneEntry, {
           where: {
-            milestoneId: bulkTimesheetDTO.milestoneId,
+            milestoneId: milestone.id,
             timesheetId: timesheet.id,
           },
         });
@@ -910,74 +925,88 @@ export class TimesheetRepository extends Repository<Timesheet> {
           );
         }
 
-        let milestone = await transactionalEntityManager.findOne(
-          Milestone,
-          milestoneEntry.milestoneId,
-          {
-            relations: [
-              'opportunityResources',
-              'opportunityResources.opportunityResourceAllocations',
-            ],
-          }
+        const bulkStartDate = moment(
+          bulkTimesheetDTO.startDate,
+          'YYYY-MM-DD',
+          true
+        );
+        const bulkEndDate = moment(
+          bulkTimesheetDTO.endDate,
+          'YYYY-MM-DD',
+          true
         );
 
-        if (!milestone) {
-          throw new Error('Milestone not found');
+        for (let resource of milestone.opportunityResources) {
+          for (let allocation of resource.opportunityResourceAllocations) {
+            if (
+              allocation.contactPersonId ==
+              employee.contactPersonOrganization.contactPersonId
+            ) {
+              this._validateBulkEntryDates(
+                bulkStartDate,
+                bulkEndDate,
+                resource,
+                timesheet
+              );
+            }
+          }
         }
 
-        //! YET TO DO VALIDATIONS
-        // for (let resource of milestone.opportunityResources) {
-        //   for (let allocation of resource.opportunityResourceAllocations) {
-        //     if (
-        //       allocation.contactPersonId ==
-        //       employee.contactPersonOrganization.contactPersonId
-        //     ) {
-        //       this._validateBulkEntryDates(
-        //         moment(bulkTimesheetDTO.startDate, 'YYYY-MM-DD', true),
-        //         moment(bulkTimesheetDTO.endDate, 'YYYY-MM-DD', true),
-        //         resource,
-        //         timesheet
-        //       );
-        //     }
-        //   }
-        // }
-
         for (let loopedEntry of bulkTimesheetDTO.entries) {
-          let entry = new TimesheetEntry();
+          const entryMomentDate = moment(loopedEntry.date, 'DD-MM-YYYY', true);
+          const entryMomentStartTime = moment(
+            loopedEntry.startTime,
+            'HH:mm',
+            true
+          );
+          const entryMomentEndTime = moment(loopedEntry.endTime, 'HH:mm', true);
 
-          entry.date = moment(loopedEntry.date, 'DD-MM-YYYY').format(
-            'DD-MM-YYYY'
-          );
-          entry.startTime = moment(loopedEntry.startTime, 'HH:mm').format(
-            'HH:mm'
-          );
+          let entry = (
+            await this.manager.find(TimesheetEntry, {
+              where: {
+                milestoneEntryId: milestoneEntry.id,
+                date: entryMomentDate.format('DD-MM-YYYY'),
+              },
+            })
+          )[0];
+
+          if (!entry) {
+            entry = new TimesheetEntry();
+
+            if (
+              !entryMomentDate.isBetween(
+                bulkStartDate,
+                bulkEndDate,
+                'date',
+                '[]'
+              )
+            ) {
+              throw new Error('Entry dates are out of range');
+            }
+
+            entry.date = entryMomentDate.format('DD-MM-YYYY');
+            entry.milestoneEntryId = milestoneEntry.id;
+          }
+
+          entry.startTime = entryMomentStartTime.format('HH:mm');
           entry.endTime = moment(loopedEntry.endTime, 'HH:mm').format('HH:mm');
           entry.breakHours = loopedEntry.breakHours;
           if (
-            moment(loopedEntry.endTime, 'HH:mm').diff(
-              moment(loopedEntry.startTime, 'HH:mm'),
-              'minutes'
-            ) /
-              60 <
+            entryMomentEndTime.diff(entryMomentStartTime, 'minutes') / 60 <
             0
           ) {
             entry.hours =
               Math.abs(
-                moment(loopedEntry.endTime, 'HH:mm')
+                entryMomentEndTime
                   .add(1, 'days')
-                  .diff(moment(loopedEntry.startTime, 'HH:mm'), 'minutes') / 60
+                  .diff(entryMomentStartTime, 'minutes') / 60
               ) - loopedEntry.breakHours;
           } else {
             entry.hours =
               Math.abs(
-                moment(loopedEntry.endTime, 'HH:mm').diff(
-                  moment(loopedEntry.startTime, 'HH:mm'),
-                  'minutes'
-                ) / 60
+                entryMomentEndTime.diff(entryMomentStartTime, 'minutes') / 60
               ) - loopedEntry.breakHours;
           }
-
-          entry.milestoneEntryId = milestoneEntry.id;
 
           entry = await transactionalEntityManager.save(entry);
 
@@ -2626,12 +2655,19 @@ export class TimesheetRepository extends Repository<Timesheet> {
     resource: OpportunityResource,
     timesheet: Timesheet
   ) {
-    // if (
-    //   moment(date).isBefore(timesheet.startDate) ||
-    //   moment(date).isAfter(timesheet.endDate)
-    // ) {
-    //   throw new Error('Entry date is out of timesheet range');
-    // }
+    const timesheetStart = moment(timesheet.startDate);
+    const timesheetEnd = moment(timesheet.endDate);
+
+    if (
+      !moment(date, 'YYYY-MM-DD', true).isBetween(
+        timesheetStart,
+        timesheetEnd,
+        'date',
+        '[]'
+      )
+    ) {
+      throw new Error('Bulk Start Date cannot be out of Timesheet dates');
+    }
 
     if (resource.startDate) {
       if (moment(date).isBefore(moment(resource.startDate), 'date')) {
@@ -2670,41 +2706,27 @@ export class TimesheetRepository extends Repository<Timesheet> {
     resource: OpportunityResource,
     timesheet: Timesheet
   ) {
-    // if (
-    //   moment(date).isBefore(timesheet.startDate) ||
-    //   moment(date).isAfter(timesheet.endDate)
-    // ) {
-    //   throw new Error('Entry date is out of timesheet range');
-    // }
+    console.log(timesheet.startDate, timesheet.endDate);
 
-    if (resource.startDate) {
-      if (moment(startDate).isBefore(moment(resource.startDate), 'date')) {
-        throw new Error('Timesheet Date cannot be Before Resource Start Date');
-      }
-      // if (moment(date).isBefore(moment(resource.startDate), 'date')) {
-      //   throw new Error(
-      //     'Milestone Start Date cannot be Before Project Start Date'
-      //   );
-      // }
-    }
-    if (resource.endDate) {
-      if (moment(startDate).isAfter(moment(resource.endDate), 'date')) {
-        throw new Error('Timesheet Date cannot be After Resource End Date');
-      }
+    const timesheetStart = moment(timesheet.startDate);
+    const timesheetEnd = moment(timesheet.endDate);
+    const resourceStart = moment(resource.startDate);
+    const resourceEnd = moment(resource.endDate);
 
-      // if (moment(date).isAfter(moment(resource.endDate), 'date')) {
-      //   throw new Error(
-      //     'Milestone Start Date cannot be After Project End Date'
-      //   );
-      // }
+    if (!startDate.isBetween(timesheetStart, timesheetEnd, 'date', '[]')) {
+      throw new Error('Bulk Start Date cannot be out of Timesheet dates');
     }
-    // if (
-    //   moment(date).isBefore(timesheet.startDate) ||
-    //   moment(date).isAfter(timesheet.endDate)
-    // ) {
-    //   throw new Error(
-    //     'Entry date should be in range of timesheet start and end date'
-    //   );
-    // }
+
+    if (!endDate.isBetween(timesheetStart, timesheetEnd, 'date', '[]')) {
+      throw new Error('Bulk End Date cannot be out of Timesheet dates');
+    }
+
+    if (!startDate.isBetween(resourceStart, resourceEnd, 'date', '[]')) {
+      throw new Error('Bulk Start Date cannot be out of Position dates');
+    }
+
+    if (!endDate.isBetween(resourceStart, resourceEnd, 'date', '[]')) {
+      throw new Error('Bulk Start Date cannot be out of Position dates');
+    }
   }
 }
