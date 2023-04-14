@@ -907,17 +907,13 @@ export class TimesheetRepository extends Repository<Timesheet> {
           throw new Error('Milestone not found');
         }
 
-        milestoneEntry = await this.manager.findOne(
-          TimesheetMilestoneEntry,
-          undefined,
-          {
-            where: {
-              milestoneId: milestone.id,
-              timesheetId: timesheet.id,
-            },
-            relations: ['entries'],
-          }
-        );
+        milestoneEntry = await this.manager.findOne(TimesheetMilestoneEntry, {
+          where: {
+            milestoneId: milestone.id,
+            timesheetId: timesheet.id,
+          },
+          relations: ['entries'],
+        });
 
         if (!milestoneEntry) {
           milestoneEntry = new TimesheetMilestoneEntry();
