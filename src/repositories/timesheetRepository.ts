@@ -907,12 +907,17 @@ export class TimesheetRepository extends Repository<Timesheet> {
           throw new Error('Milestone not found');
         }
 
-        milestoneEntry = await this.manager.findOne(TimesheetMilestoneEntry, {
-          where: {
-            milestoneId: milestone.id,
-            timesheetId: timesheet.id,
-          },
-        });
+        milestoneEntry = await this.manager.findOne(
+          TimesheetMilestoneEntry,
+          undefined,
+          {
+            where: {
+              milestoneId: milestone.id,
+              timesheetId: timesheet.id,
+            },
+            relations: ['entries'],
+          }
+        );
 
         if (!milestoneEntry) {
           milestoneEntry = new TimesheetMilestoneEntry();
@@ -923,6 +928,13 @@ export class TimesheetRepository extends Repository<Timesheet> {
           milestoneEntry = await transactionalEntityManager.save(
             milestoneEntry
           );
+        }
+
+        if (
+          milestoneEntry.entries[0].submittedAt ||
+          milestoneEntry.entries[0].approvedAt
+        ) {
+          throw new Error('Timesheet Submitted or Approved');
         }
 
         const bulkStartDate = moment(
@@ -961,14 +973,12 @@ export class TimesheetRepository extends Repository<Timesheet> {
           );
           const entryMomentEndTime = moment(loopedEntry.endTime, 'HH:mm', true);
 
-          let entry = (
-            await this.manager.find(TimesheetEntry, {
-              where: {
-                milestoneEntryId: milestoneEntry.id,
-                date: entryMomentDate.format('DD-MM-YYYY'),
-              },
-            })
-          )[0];
+          let entry = await this.manager.findOne(TimesheetEntry, {
+            where: {
+              milestoneEntryId: milestoneEntry.id,
+              date: entryMomentDate.format('DD-MM-YYYY'),
+            },
+          });
 
           if (!entry) {
             entry = new TimesheetEntry();
