@@ -781,3 +781,9 @@ export interface BudgetReportUpdateDTO {
     [key: string]: number;
   };
 }
+
+export interface FinancialYearDTO {
+  label: String;
+  startDate: Date;
+  endDate: Date;
+}

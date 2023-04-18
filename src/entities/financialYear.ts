@@ -5,7 +5,7 @@ import { Opportunity } from './opportunity';
 @Entity('financial_years')
 export class FinancialYear extends Base {
   @Column({ name: 'label' })
-  label: string;
+  label: String;
 
   @Column({ name: 'start_date' })
   startDate: Date;

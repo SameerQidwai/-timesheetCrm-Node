@@ -8,7 +8,8 @@ let contr = new FinancialYearController();
 router
   .route('/')
   .get(contr.getAll.bind(contr))
-  .post(contr.createAndSave.bind(contr))
-  .patch(contr.lockYear.bind(contr));
+  .post(contr.createAndSave.bind(contr));
+
+router.route('/:id/closeYear').patch(contr.closeYear.bind(contr));
 
 export default router;

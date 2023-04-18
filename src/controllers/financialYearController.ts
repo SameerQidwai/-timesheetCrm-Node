@@ -1,14 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
-import { getManager } from 'typeorm';
+import { getCustomRepository, getManager } from 'typeorm';
 import { FinancialYear } from '../entities/financialYear';
-import moment from 'moment';
+import { FinancialYearRepository } from '../repositories/financialYearRepository';
 
 export class FinancialYearController {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const manager = getManager();
+      const repository = getCustomRepository(FinancialYearRepository);
 
-      let years = await manager.find(FinancialYear, {});
+      let years = await repository.getAllActive();
 
       res.status(200).json({
         success: true,
@@ -22,14 +22,9 @@ export class FinancialYearController {
 
   async createAndSave(req: Request, res: Response, next: NextFunction) {
     try {
-      const manager = getManager();
+      const repository = getCustomRepository(FinancialYearRepository);
 
-      let year = new FinancialYear();
-
-      year.startDate = moment().startOf('year').toDate();
-      year.endDate = moment().endOf('year').toDate();
-
-      year = await manager.save(year);
+      let year = await repository.createAndSave(req.body);
 
       res.status(200).json({
         success: true,
@@ -41,19 +36,12 @@ export class FinancialYearController {
     }
   }
 
-  async lockYear(req: Request, res: Response, next: NextFunction) {
+  async closeYear(req: Request, res: Response, next: NextFunction) {
     try {
-      const manager = getManager();
+      const repository = getCustomRepository(FinancialYearRepository);
+      let id = req.params.id;
 
-      let year = await manager.findOne(FinancialYear);
-
-      if (!year) {
-        throw new Error('Year not found');
-      }
-
-      year.closed = true;
-
-      await manager.save(year);
+      const year = await repository.closeYear(parseInt(id));
 
       res.status(200).json({
         success: true,
