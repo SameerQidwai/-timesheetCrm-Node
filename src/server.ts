@@ -89,12 +89,12 @@ app.use((req: Request, res: Response) => {
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.log(err);
   if (err.name == 'Error') {
-    res.status(400).send({
+    return res.status(400).send({
       success: false,
       message: err.message,
     });
   }
-  res.status(500).send({
+  return res.status(500).send({
     success: false,
     message: err.message,
   });
