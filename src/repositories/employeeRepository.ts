@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { sendMail } from '../utilities/mailer';
+import { dispatchMail, sendMail } from '../utilities/mailer';
 import {
   AddressDTO,
   ContactPersonDTO,
@@ -43,6 +43,7 @@ import {
   SuperannuationType,
 } from '../constants/constants';
 import moment from 'moment';
+import { WelcomeMail } from '../mails/welcomeMail';
 
 @EntityRepository(Employee)
 export class EmployeeRepository extends Repository<Employee> {
@@ -290,21 +291,11 @@ export class EmployeeRepository extends Repository<Employee> {
         responseEmployee.contactPersonOrganization.contactPerson.firstName,
       email: responseEmployee.username,
     };
-    try {
-      sendMail(
-        process.env.MAILER_ADDRESS,
-        user,
-        `Invitation to ${process.env.ORGANIZATION}`,
-        `Hello,
-You have been invited to ${process.env.ORGANIZATION}. 
-Your registered account password is ${generatedPassword}. Please visit ${process.env.ENV_URL} to login.
-        
-Regards,
-${process.env.ORGANIZATION} Support Team`
-      );
-    } catch (e) {
-      console.log(e);
-    }
+
+    dispatchMail(
+      new WelcomeMail(user.username, user.email, generatedPassword),
+      user
+    );
 
     return responseEmployee;
   }

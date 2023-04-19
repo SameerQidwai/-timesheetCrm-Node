@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { sendMail } from '../utilities/mailer';
+import { dispatchMail, sendMail } from '../utilities/mailer';
 import { ContactPersonDTO, EmployeeDTO, SubContractorDTO } from '../dto';
 import { EntityRepository, getRepository, Not, Repository } from 'typeorm';
 import { ContactPerson } from './../entities/contactPerson';
@@ -19,6 +19,7 @@ import { GlobalVariableLabel } from '../entities/globalVariableLabel';
 import { CalendarHoliday } from '../entities/calendarHoliday';
 
 import moment from 'moment';
+import { WelcomeMail } from '../mails/welcomeMail';
 
 @EntityRepository(Employee)
 export class SubContractorRepository extends Repository<Employee> {
@@ -162,21 +163,11 @@ export class SubContractorRepository extends Repository<Employee> {
         responseSubContractor.contactPersonOrganization.contactPerson.firstName,
       email: responseSubContractor.username,
     };
-    try {
-      sendMail(
-        process.env.MAILER_ADDRESS,
-        user,
-        `Invitation to ${process.env.ORGANIZATION}`,
-        `Hello,
-You have been invited to ${process.env.ORGANIZATION}. 
-Your registered account password is ${generatedPassword}. Please visit ${process.env.ENV_URL} to login.
-        
-Regards,
-${process.env.ORGANIZATION} Support Team`
-      );
-    } catch (e) {
-      console.log(e);
-    }
+
+    dispatchMail(
+      new WelcomeMail(user.username, user.email, generatedPassword),
+      user
+    );
   }
 
   async getAllActive(): Promise<any[]> {

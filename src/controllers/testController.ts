@@ -5,9 +5,11 @@ import moment from 'moment';
 import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
 import { TimesheetEntry } from '../entities/timesheetEntry';
 import { Milestone } from '../entities/milestone';
-import { sendMail } from '../utilities/mailer';
+import { dispatchMail, sendMail } from '../utilities/mailer';
 import { Timesheet } from '../entities/timesheet';
 import { Employee } from '../entities/employee';
+import { WelcomeMail } from '../mails/welcomeMail';
+import { ResetPasswordMail } from '../mails/resetPasswordMail';
 
 export class TestController {
   async test(req: Request, res: Response, next: NextFunction) {
@@ -67,21 +69,8 @@ export class TestController {
       });
     }
 
-    try {
-      sendMail(
-        process.env.MAILER_ADDRESS,
-        user,
-        `Invitation to ${process.env.ORGANIZATION}`,
-        `Hello,
-You have been invited to ${process.env.ORGANIZATION}. 
-Your registered account password is 123123123. Please visit ${process.env.ENV_URL} to login.
-        
-Regards,
-${process.env.ORGANIZATION} Support Team`
-      );
-    } catch (e) {
-      console.log(e);
-    }
+    dispatchMail(new ResetPasswordMail(user.username, 'abcdefg'), user);
+    dispatchMail(new WelcomeMail(user.username, user.email, '123123'), user);
 
     return res.status(200).json({
       success: true,
