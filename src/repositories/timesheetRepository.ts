@@ -926,11 +926,13 @@ export class TimesheetRepository extends Repository<Timesheet> {
           );
         }
 
-        if (
-          milestoneEntry.entries[0].submittedAt ||
-          milestoneEntry.entries[0].approvedAt
-        ) {
-          throw new Error('Timesheet Submitted or Approved');
+        if (milestoneEntry.entries) {
+          if (
+            milestoneEntry.entries[0].submittedAt ||
+            milestoneEntry.entries[0].approvedAt
+          ) {
+            throw new Error('Timesheet Submitted or Approved');
+          }
         }
 
         const bulkStartDate = moment(

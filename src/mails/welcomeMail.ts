@@ -1,10 +1,22 @@
-export class WelcomeMail {
-  public get(password: string): string {
-    return `Hello,
-    You have been invited to ${process.env.ORGANIZATION}. 
-    Your registered account password is 123123123. Please visit ${process.env.ENV_URL} to login.
-            
-    Regards,
-    ${process.env.ORGANIZATION} Support Team`;
+import { StandardMailInterface } from '../utilities/interfaces';
+import { BaseMail } from './baseMail';
+
+export class WelcomeMail extends BaseMail implements StandardMailInterface {
+  fileName: string;
+
+  constructor(userName: string | String, email: string, password: string) {
+    super();
+    this.fileName = 'welcomeMailContent.html';
+    this.subject = `Invitation to ${process.env.ORGANIZATION}`;
+    this.getHtml();
+    this.getTemplate();
+    this.replacements = {
+      userName,
+      email,
+      password,
+      organization: process.env.ORGANIZATION,
+      envUrl: process.env.ENV_URL,
+    };
+    this.getMail();
   }
 }

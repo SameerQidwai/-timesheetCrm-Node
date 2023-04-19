@@ -1,21 +1,29 @@
 import { readFileSync } from 'fs';
 import { compile } from 'handlebars';
 import path from 'path';
+import { StandardMailInterface } from 'src/utilities/interfaces';
 
-export class BaseMail {
-  public getHtml(fileName: string): string {
-    const filePath = path.join(__dirname, '../emails/password-reset.html');
-    const html = readFileSync(filePath, 'utf-8').toString();
-    return html;
+export class BaseMail implements StandardMailInterface {
+  fileName: string;
+  html: string;
+  subject: string;
+  template: HandlebarsTemplateDelegate;
+  content: string;
+  replacements: {};
+
+  public getHtml(): string {
+    const filePath = path.join(__dirname, `../mails/${this.fileName}`);
+    this.html = readFileSync(filePath, 'utf-8').toString();
+    return this.html;
   }
 
-  public getTemplate(html: string) {
-    const template = compile(html);
-    return template;
+  public getTemplate() {
+    this.template = compile(this.html);
+    return this.template;
   }
 
-  public getMail(template: HandlebarsTemplateDelegate, replacements: {}) {
-    const htmlToSend = template(replacements);
-    return htmlToSend;
+  public getMail() {
+    this.content = this.template(this.replacements);
+    return this.content;
   }
 }

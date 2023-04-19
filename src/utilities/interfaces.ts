@@ -27,3 +27,16 @@ export interface CashflowReportInterface {
     [key: string]: number | string;
   };
 }
+
+export interface StandardMailInterface {
+  fileName: string;
+  html: string;
+  subject: string;
+  template: HandlebarsTemplateDelegate;
+  content: string;
+  replacements: {};
+}
+export interface StandardMailUserInterface {
+  username: string | String;
+  email: string | String;
+}
