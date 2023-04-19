@@ -99,6 +99,35 @@ export class TimesheetController {
     }
   }
 
+  async bulkAddTimesheetEntry(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(TimesheetRepository);
+      let startDate = req.params.startDate as string;
+      let endDate = req.params.endDate as string;
+      let userId = parseInt(req.params.userId) as number;
+
+      const { user } = res.locals;
+
+      if (user.id != userId) {
+        throw new Error('Not Allowed');
+      }
+      let record = await repository.addBulkTimesheetEntry(
+        startDate,
+        endDate,
+        userId,
+        req.body
+      );
+      console.log('record: ', record);
+      res.status(200).json({
+        success: true,
+        message: 'Bulk Timesheet Created Successfully',
+        data: record,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
   async editTimesheetEntry(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(TimesheetRepository);

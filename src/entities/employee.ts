@@ -19,6 +19,7 @@ import { LeaveRequestBalance } from './leaveRequestBalance';
 import { Opportunity } from './opportunity';
 import { LeaveRequest } from './leaveRequest';
 import { Timesheet } from './timesheet';
+import { File } from './file';
 
 @Entity('employees')
 export class Employee extends Base {
@@ -58,6 +59,13 @@ export class Employee extends Base {
   @Column({ name: 'tfn', nullable: true })
   tfn: string; // tax file number
 
+  @Column({ name: 'tfn_file_id', nullable: true })
+  tfnFileId: number; // tax file number
+
+  @OneToOne(() => File)
+  @JoinColumn({ name: 'tfn_file_id' })
+  tfnFile: File;
+
   @Column({ name: 'tax_free_threshold', nullable: true })
   taxFreeThreshold: boolean;
 
@@ -93,7 +101,15 @@ export class Employee extends Base {
 
   @Column({ name: 'superannuation_address', nullable: true })
   superannuationAddress: string; // ESA Address
-  // ---------------------------------------------------Superannuation info----------------------------------------
+
+  @Column({ name: 'superannuation_file_id', nullable: true })
+  superannuationFileId: number; // ESA Address
+
+  @OneToOne(() => File)
+  @JoinColumn({ name: 'superannuation_file_id' })
+  superannuationFile: File;
+
+  // ---------------------------------------------------Other info----------------------------------------
 
   @Column({ name: 'training', nullable: true })
   training: string;

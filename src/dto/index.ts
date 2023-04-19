@@ -189,6 +189,7 @@ export interface EmployeeDTO extends Base {
   nextOfKinEmail: string;
   nextOfKinRelation: string;
   tfn: string;
+  tfnFileId: number;
   taxFreeThreshold: boolean | null;
   helpHECS: boolean | null;
   superannuationName: string;
@@ -198,11 +199,13 @@ export interface EmployeeDTO extends Base {
   superannuationAbnOrUsi: string;
   superannuationBankBsb: string;
   superannuationAddress: string;
+  superannuationFileId: number;
   training: string;
   latestEmploymentContract: EmploymentContractDTO;
   bankName: string;
   bankAccountNo: string;
   bankBsb: string;
+  bankAccountFileId: number;
   roleId: number;
   lineManagerId: number;
 }
@@ -368,6 +371,20 @@ export interface TimesheetDTO extends Base {
   breakHours: number;
 }
 
+export interface BulkTimesheetDTO extends Base {
+  startDate: Date;
+  endDate: Date;
+  holidays: Boolean;
+  weekends: Boolean;
+  milestoneId: number;
+  entries: {
+    date: string;
+    startTime: string;
+    endTime: string;
+    breakHours: number;
+  }[];
+}
+
 export interface TimesheetMilestoneNoteDTO extends Base {
   note: string;
   attachments: number[];
@@ -398,6 +415,7 @@ export interface SettingsDTO extends Base {
   nextOfKinEmail: string;
   nextOfKinRelation: string;
   tfn: string;
+  tfnFileId: number;
   taxFreeThreshold: boolean | null;
   helpHECS: boolean | null;
   superannuationName: string;
@@ -407,10 +425,12 @@ export interface SettingsDTO extends Base {
   superannuationAbnOrUsi: string;
   superannuationBankBsb: string;
   superannuationAddress: string;
+  superannuationFileId: number;
   training: string;
   bankName: string; //!  USING BUT RELATIONSHIP NEEDS TO BE CHANGED, BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
   bankAccountNo: string; //!  USING BUT RELATIONSHIP NEEDS TO BE CHANGED, BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
   bankBsb: string; //!  USING BUT RELATIONSHIP NEEDS TO BE CHANGED, BECAUSE BANKS ARE ONE TO MANY RELATIONSHIP
+  bankAccountFileId: number;
 }
 
 export interface PermissionDTO extends Base {
@@ -775,6 +795,16 @@ export interface BudgetReportLabelDTO extends Base {
 }
 
 export interface BudgetReportUpdateDTO {
+  [key: string]: {
+    [key: string]: number;
+  };
+}
+
+export interface CashflowReportLabelDTO extends Base {
+  title: String;
+}
+
+export interface CashflowReportUpdateDTO {
   [key: string]: {
     [key: string]: number;
   };

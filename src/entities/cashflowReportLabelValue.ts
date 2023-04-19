@@ -1,9 +1,9 @@
 import { Entity, Column, JoinColumn, ManyToOne } from 'typeorm';
 import { Base } from './common/base';
-import { ForecastReportLabel } from './forecastReportLabel';
+import { CashflowReportLabel } from './cashflowReportLabel';
 
-@Entity('forecast_report_label_values')
-export class ForecastReportLabelValue extends Base {
+@Entity('cashflow_report_label_values')
+export class CashflowReportLabelValue extends Base {
   @Column({ name: 'span' })
   span: string;
 
@@ -16,12 +16,12 @@ export class ForecastReportLabelValue extends Base {
   })
   value: number;
 
-  @Column({ name: 'forecast_report_label_id', nullable: false })
-  forecastReportLabelId: number;
+  @Column({ name: 'cashflow_report_label_id', nullable: false })
+  cashflowReportLabelId: number;
 
-  @ManyToOne(() => ForecastReportLabel)
-  @JoinColumn({ name: 'forecast_report_label_id' })
-  label: ForecastReportLabel;
+  @ManyToOne(() => CashflowReportLabel)
+  @JoinColumn({ name: 'cashflow_report_label_id' })
+  label: CashflowReportLabel;
 
   // @ManyToOne(() => Employee)
   // @JoinColumn({ name: 'user_id' })

@@ -4,7 +4,7 @@ export interface ForecastReportLabelValuesInterface {
 
 export interface ForecastReportInterface {
   [key: string]: {
-    [key: string]: number;
+    [key: string]: number | string;
   };
 }
 
@@ -14,6 +14,29 @@ export interface BudgetReportLabelValuesInterface {
 
 export interface BudgetReportInterface {
   [key: string]: {
-    [key: string]: number;
+    [key: string]: number | string;
   };
+}
+
+export interface CashflowReportLabelValuesInterface {
+  [key: string]: number;
+}
+
+export interface CashflowReportInterface {
+  [key: string]: {
+    [key: string]: number | string;
+  };
+}
+
+export interface StandardMailInterface {
+  fileName: string;
+  html: string;
+  subject: string;
+  template: HandlebarsTemplateDelegate;
+  content: string;
+  replacements: {};
+}
+export interface StandardMailUserInterface {
+  username: string | String;
+  email: string | String;
 }

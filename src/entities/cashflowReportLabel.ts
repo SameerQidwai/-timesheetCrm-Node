@@ -1,10 +1,10 @@
 import { Entity, Column, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Base } from './common/base';
 import { Employee } from './employee';
-import { ForecastReportLabelValue } from './forecastReportLabelValue';
+import { CashflowReportLabelValue } from './cashflowReportLabelValue';
 
-@Entity('forecast_report_labels')
-export class ForecastReportLabel extends Base {
+@Entity('cashflow_report_labels')
+export class CashflowReportLabel extends Base {
   @Column({ name: 'label', unique: true })
   title: String;
 
@@ -29,11 +29,11 @@ export class ForecastReportLabel extends Base {
   updater: Employee;
 
   @OneToMany(
-    () => ForecastReportLabelValue,
-    (forcastReportLabelValue) => forcastReportLabelValue.label,
+    () => CashflowReportLabelValue,
+    (cashflowReportLabelValue) => cashflowReportLabelValue.label,
     {
       cascade: true,
     }
   )
-  values: ForecastReportLabelValue[];
+  values: CashflowReportLabelValue[];
 }

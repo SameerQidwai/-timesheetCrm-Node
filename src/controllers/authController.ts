@@ -8,10 +8,10 @@ import moment from 'moment';
 import { EmployeeRepository } from './../repositories/employeeRepository';
 import { ProjectRepository } from '../repositories/projectRepository';
 import { EmploymentContract } from '../entities/employmentContract';
-import { sendMail } from '../utilities/mailer';
+import { dispatchMail } from '../utilities/mailer';
 import { Employee } from '../entities/employee';
 import { PasswordReset } from '../entities/passwordReset';
-import { FRONTEND_URL } from '../server';
+import { ResetPasswordMail } from '../mails/resetPasswordMail';
 
 export class AuthController {
   async login(req: Request, res: Response, next: NextFunction) {
@@ -132,7 +132,11 @@ export class AuthController {
           'contactPersonOrganization.contactPerson.standardSkillStandardLevels',
           'contactPersonOrganization.organization',
           'bankAccounts',
+          'bankAccounts.file',
           'employmentContracts',
+          'employmentContracts.file',
+          'superannuationFile',
+          'tfnFile',
         ],
       });
 
@@ -445,25 +449,15 @@ export class AuthController {
       link.token = crypto.randomBytes(32).toString('hex');
       await manager.save(link);
 
-      try {
-        sendMail(
-          process.env.MAILER_ADDRESS,
-          {
-            username: user.contactPersonOrganization.contactPerson.firstName,
-            email: user.username,
-          },
-          'Forgot Password Request',
-          `Your have requested a Password Reset on ${process.env.ORGANIZATION}
-          If you did not request a request, please ignore this email.
-          Your Password Reset Link is : 
-          ${process.env.ENV_URL}/reset-password/${encodeURIComponent(
-            link.token
-          )}
-          `
-        );
-      } catch (e) {
-        console.log(e);
-      }
+      let userMailData = {
+        username: user.getFullName,
+        email: user.username,
+      };
+
+      dispatchMail(
+        new ResetPasswordMail(userMailData.username, link.token),
+        userMailData
+      );
 
       return res.status(200).json({
         success: true,
