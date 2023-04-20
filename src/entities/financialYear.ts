@@ -15,4 +15,10 @@ export class FinancialYear extends Base {
 
   @Column({ name: 'closed', default: false })
   closed: Boolean;
+
+  @Column({ name: 'closed_at', nullable: true })
+  closedAt: Date;
+
+  @Column({ name: 'closed_by', nullable: true })
+  closedBy: Number;
 }

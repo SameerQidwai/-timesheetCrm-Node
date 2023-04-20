@@ -11,19 +11,22 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
     return years;
   }
 
-  async createAndSave(financialYearDTO: FinancialYearDTO): Promise<any> {
+  async createAndSave(
+    financialYearDTO: FinancialYearDTO,
+    userId: number
+  ): Promise<any> {
     let years = await this.find({
       order: { endDate: 'DESC' },
     });
 
     let { label } = financialYearDTO;
 
-    const startDate = moment(financialYearDTO.startDate);
-    const endDate = moment(financialYearDTO.endDate);
+    const startDate = moment(financialYearDTO.startDate).startOf('day');
+    const endDate = moment(financialYearDTO.endDate).endOf('day');
 
     if (years.length) {
-      const firstYear = years[0];
-      const lastYear = years[years.length - 1];
+      const lastYear = years[0];
+      const firstYear = years[years.length - 1];
 
       const firstYearStartDate = moment(firstYear.startDate);
       const lastYearEndDate = moment(lastYear.endDate);
@@ -37,7 +40,10 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
 
       if (
         (endDate.isBefore(firstYearStartDate, 'date') &&
-          !endDate.isSame(firstYearStartDate.subtract(1, 'day'), 'date')) ||
+          !endDate.isSame(
+            firstYearStartDate.subtract(1, 'day').startOf('day'),
+            'date'
+          )) ||
         (startDate.isAfter(lastYearEndDate, 'date') &&
           !startDate.isSame(lastYearEndDate.add(1, 'day'), 'date'))
       ) {
@@ -59,7 +65,7 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
     return this.save(year);
   }
 
-  async closeYear(id: number): Promise<any> {
+  async closeYear(id: number, userId: number): Promise<any> {
     if (!id) throw new Error('Year not found');
 
     let year = await this.findOne(id);
@@ -71,6 +77,8 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
     //! CONDITIONS TO CHECK AND SHOW FOR LAST YEAR
 
     year.closed = true;
+    year.closedBy = userId;
+    year.closedAt = moment().toDate();
 
     return this.save(year);
   }

@@ -23,8 +23,9 @@ export class FinancialYearController {
   async createAndSave(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(FinancialYearRepository);
+      const { user } = res.locals;
 
-      let year = await repository.createAndSave(req.body);
+      let year = await repository.createAndSave(req.body, user.id);
 
       res.status(200).json({
         success: true,
@@ -40,8 +41,9 @@ export class FinancialYearController {
     try {
       const repository = getCustomRepository(FinancialYearRepository);
       let id = req.params.id;
+      const { user } = res.locals;
 
-      const year = await repository.closeYear(parseInt(id));
+      const year = await repository.closeYear(parseInt(id), user.id);
 
       res.status(200).json({
         success: true,
