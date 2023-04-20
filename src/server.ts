@@ -107,7 +107,7 @@ connection
 
     // 404
     app.use((req: Request, res: Response) => {
-      res.status(404).json('Resource not found!');
+      return res.status(404).json('Resource not found!');
     });
 
     http.createServer(app).listen(port, () => {

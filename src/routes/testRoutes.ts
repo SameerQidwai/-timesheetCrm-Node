@@ -7,6 +7,7 @@ const router = Router();
 let contr = new TestController();
 let upload = multer();
 
+router.route('/test').get(contr.test.bind(contr));
 router.route('/testmail').get(contr.testMailFunction.bind(contr));
 router
   .route('/upload')
