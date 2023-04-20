@@ -117,7 +117,7 @@ export class TimesheetController {
         userId,
         req.body
       );
-      console.log('record: ', record);
+      // console.log('record: ', record);
       res.status(200).json({
         success: true,
         message: 'Bulk Timesheet Created Successfully',

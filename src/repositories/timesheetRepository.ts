@@ -971,30 +971,16 @@ export class TimesheetRepository extends Repository<Timesheet> {
           );
           const entryMomentEndTime = moment(loopedEntry.endTime, 'HH:mm', true);
 
-          let entry = await this.manager.findOne(TimesheetEntry, {
-            where: {
-              milestoneEntryId: milestoneEntry.id,
-              date: entryMomentDate.format('DD-MM-YYYY'),
-            },
-          });
+          let entry = new TimesheetEntry();
 
-          if (!entry) {
-            entry = new TimesheetEntry();
-
-            if (
-              !entryMomentDate.isBetween(
-                bulkStartDate,
-                bulkEndDate,
-                'date',
-                '[]'
-              )
-            ) {
-              throw new Error('Entry dates are out of range');
-            }
-
-            entry.date = entryMomentDate.format('DD-MM-YYYY');
-            entry.milestoneEntryId = milestoneEntry.id;
+          if (
+            !entryMomentDate.isBetween(bulkStartDate, bulkEndDate, 'date', '[]')
+          ) {
+            throw new Error('Entry dates are out of range');
           }
+
+          entry.date = entryMomentDate.format('DD-MM-YYYY');
+          entry.milestoneEntryId = milestoneEntry.id;
 
           entry.startTime = entryMomentStartTime.format('HH:mm');
           entry.endTime = moment(loopedEntry.endTime, 'HH:mm').format('HH:mm');
@@ -1016,10 +1002,23 @@ export class TimesheetRepository extends Repository<Timesheet> {
               ) - loopedEntry.breakHours;
           }
 
-          entry = await transactionalEntityManager.save(entry);
-
           returnEntries.push(entry);
         }
+
+        await transactionalEntityManager
+          .getRepository(TimesheetEntry)
+          .createQueryBuilder('entry')
+          .delete()
+          .where("STR_TO_DATE(date, '%d-%m-%Y') >= :startDate", {
+            startDate: bulkStartDate.format('YYYY-MM-DD'),
+          })
+          .andWhere("STR_TO_DATE(date, '%d-%m-%Y') <= :endDate", {
+            endDate: bulkEndDate.format('YYYY-MM-DD'),
+          })
+          .execute();
+
+        await transactionalEntityManager.save(returnEntries);
+
         return returnEntries;
       }
     );
