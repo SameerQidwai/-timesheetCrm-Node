@@ -1015,6 +1015,9 @@ export class TimesheetRepository extends Repository<Timesheet> {
           .andWhere("STR_TO_DATE(date, '%d-%m-%Y') <= :endDate", {
             endDate: bulkEndDate.format('YYYY-MM-DD'),
           })
+          .andWhere('milestone_entry_id = :milestoneEntryId', {
+            milestoneEntryId: milestoneEntry.id,
+          })
           .execute();
 
         await transactionalEntityManager.save(returnEntries);
