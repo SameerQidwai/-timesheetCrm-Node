@@ -159,3 +159,15 @@ export enum RecruitmentContractType {
   CASUAL = 'CAS',
   CONTRACTOR = 'CON',
 }
+
+export enum DisableConditionTye {
+  FINANCIAL_YEAR = 'FIY',
+  STATIC = 'STA',
+  DYNAMIC = 'DYN',
+}
+
+export enum DisableCondtionDataType {
+  DATE = 'DATE',
+  NUMBER = 'NUMBER',
+  STRING = 'STRING',
+}
