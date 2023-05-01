@@ -2256,8 +2256,8 @@ export class ProjectRepository extends Repository<Opportunity> {
 
         let project = await transactionalEntityManager.findOne(
           Opportunity,
-          projectId,
-          { where: { status: In(['P', 'C']) } }
+          projectId
+          // { where: { status: In(['P', 'C']) } }
         );
         if (!project) {
           throw new Error('Project not found');
@@ -2307,8 +2307,8 @@ export class ProjectRepository extends Repository<Opportunity> {
 
       let project = await transactionalEntityManager.findOne(
         Opportunity,
-        projectId,
-        { where: { status: In(['P', 'C']) } }
+        projectId
+        // { where: { status: In(['P', 'C']) } }
       );
       if (!project) {
         throw new Error('Project not found');
@@ -2590,15 +2590,20 @@ export class ProjectRepository extends Repository<Opportunity> {
 
     let holidays: any = {};
 
-    let shutdownPeriod = await this.manager.find(ProjectShutdownPeriod,{
-      where: {projectId: projectId}
-    })
+    let shutdownPeriod = await this.manager.find(ProjectShutdownPeriod, {
+      where: { projectId: projectId },
+    });
 
-    if(shutdownPeriod.length){ //removing shutdown period from forecasting
+    if (shutdownPeriod.length) {
+      //removing shutdown period from forecasting
       for (const shutdown of shutdownPeriod) {
-        let {startDate, endDate} = shutdown
-        for (var iDate = moment(startDate); iDate.isSameOrBefore(endDate); iDate.add(1, 'days')){
-          holidays[moment(iDate).format('M/D/YYYY').toString()] = 'shutdown'
+        let { startDate, endDate } = shutdown;
+        for (
+          var iDate = moment(startDate);
+          iDate.isSameOrBefore(endDate);
+          iDate.add(1, 'days')
+        ) {
+          holidays[moment(iDate).format('M/D/YYYY').toString()] = 'shutdown';
         }
       }
     }
