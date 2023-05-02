@@ -93,19 +93,29 @@ export class EntitySubscriber implements EntitySubscriberInterface {
           condition.dataType === DisableCondtionDataType.DATE &&
           lastClosedFinancialYear
         ) {
+          console.log('YESSS');
           //IF SAME COLUMN
           if (conditionColumnId === columnId) {
-            console.log({
-              old: oldData[columnName],
-              new: newData[columnName],
-              comparision: oldData[columnName] == newData[columnName],
-            });
+            // console.log({
+            //   old: oldData[columnName],
+            //   new: newData[columnName],
+            //   comparision: oldData[columnName] == newData[columnName],
+            // });
             if (
               moment(oldData[columnName]).isSameOrBefore(
                 lastClosedFinancialYear.endDate,
                 'date'
               ) &&
               !moment(oldData[columnName]).isSame(newData[columnName])
+            ) {
+              throw new Error('Cannot make changes in closed financial years');
+            }
+
+            if (
+              moment(newData[columnName]).isBefore(
+                lastClosedFinancialYear.endDate,
+                'date'
+              )
             ) {
               throw new Error('Cannot make changes in closed financial years');
             }
