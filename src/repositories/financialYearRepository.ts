@@ -1,7 +1,8 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, In, LessThan, Repository } from 'typeorm';
 import { FinancialYear } from '../entities/financialYear';
 import { FinancialYearDTO } from '../dto';
 import moment from 'moment';
+import { Opportunity } from '../entities/opportunity';
 
 @EntityRepository(FinancialYear)
 export class FinancialYearRepository extends Repository<FinancialYear> {
@@ -23,6 +24,17 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
 
     const startDate = moment(financialYearDTO.startDate).startOf('day');
     const endDate = moment(financialYearDTO.endDate).endOf('day');
+
+    let lastClosedFinancialYear = await this.findOne({
+      order: { endDate: 'DESC' },
+      where: { closed: true },
+    });
+
+    if (lastClosedFinancialYear) {
+      if (moment(lastClosedFinancialYear.endDate).isAfter(startDate, 'date')) {
+        throw new Error('Cannot create year before last closed year');
+      }
+    }
 
     if (years.length) {
       const lastYear = years[0];
@@ -68,18 +80,61 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
   async closeYear(id: number, userId: number): Promise<any> {
     if (!id) throw new Error('Year not found');
 
-    let year = await this.findOne(id);
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      let year = await this.findOne(id);
 
-    if (!year) throw new Error('Year not found');
+      if (!year) throw new Error('Year not found');
 
-    if (year.closed) throw new Error('Year is already closed');
+      if (year.closed) throw new Error('Year is already closed');
 
-    //! CONDITIONS TO CHECK AND SHOW FOR LAST YEAR
+      let years = await this.find({
+        where: { endDate: LessThan(year.startDate) },
+      });
 
-    year.closed = true;
-    year.closedBy = userId;
-    year.closedAt = moment().toDate();
+      for (let loopYear of years) {
+        if (!loopYear.closed) {
+          throw new Error('All the previous years are required to be closed');
+        }
+      }
 
-    return this.save(year);
+      //Closing same year projects
+      let projects = await this.manager.find(Opportunity, {
+        where: { status: In(['P', 'C']) },
+      });
+
+      let savingProjects: Opportunity[] = [];
+
+      for (let project of projects) {
+        const projectStartDate = moment(project.startDate);
+        const projectEndDate = moment(project.endDate);
+
+        if (
+          projectStartDate.isBetween(
+            year.startDate,
+            year.endDate,
+            'date',
+            '[]'
+          ) &&
+          projectEndDate.isBetween(
+            year.startDate,
+            year.endDate,
+            'date',
+            '[]'
+          ) &&
+          project.phase
+        ) {
+          project.phase = false;
+          savingProjects.push(project);
+        }
+      }
+
+      await transactionalEntityManager.save(savingProjects);
+
+      year.closed = true;
+      year.closedBy = userId;
+      year.closedAt = moment().toDate();
+
+      return transactionalEntityManager.save(year);
+    });
   }
 }

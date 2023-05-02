@@ -45,7 +45,7 @@ export class SystemAdminController {
       }
 
       // await manager.query(`TRUNCATE TABLE db_columns`);
-      // await manager.save(DBColumn, pushColumns);
+      await manager.save(DBColumn, pushColumns);
 
       res.status(200).json({
         success: true,

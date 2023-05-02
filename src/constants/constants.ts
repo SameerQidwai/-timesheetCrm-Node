@@ -160,7 +160,7 @@ export enum RecruitmentContractType {
   CONTRACTOR = 'CON',
 }
 
-export enum DisableConditionTye {
+export enum DisableConditionType {
   FINANCIAL_YEAR = 'FIY',
   STATIC = 'STA',
   DYNAMIC = 'DYN',

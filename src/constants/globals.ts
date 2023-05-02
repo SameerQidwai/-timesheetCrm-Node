@@ -12,4 +12,5 @@ export const IGNORE_TABLES: Array<string> = [
   'db_',
   'system_',
   'migrations',
+  'financial_years',
 ];
