@@ -2158,45 +2158,45 @@ export class ReportController {
     `);
 
     const permanent_salaries = await getManager().query(`
-      SELECT month, SUM(salary) permanent_salaries, SUM(superannuation) permanent_superannuation
-      FROM (SELECT
-        SUM((salary / 12) * (ABS(boh_percent - 100) / 100)) salary,
-        -- to seperate boh percent for salaries
-        SUM((salary / 12) * (ABS(boh_percent - 100) / 100) * (
-            SELECT
-            SUM(global_variable_values.value / 100)
-            FROM
-            global_variable_labels
-            JOIN global_variable_values ON global_variable_labels.id = global_variable_values.global_variable_id
-            WHERE
-            global_variable_labels.name = 'Superannuation'
-            AND calendar_view_filtered.calendar_date BETWEEN global_variable_values.start_date
-            AND global_variable_values.end_date
-        )) superannuation,
-        DATE_FORMAT( STR_TO_DATE(calendar_view_filtered.calendar_date, '%Y-%m-%d'), '%b %y' ) month -- month wise salary checking contracts end 
-        From (SELECT calendar_date
-          FROM calendar_view
-          WHERE( calendar_view.calendar_date BETWEEN '${fiscalYearStart}' -- '2022-07-01' 
-            AND '${fiscalYearEnd}' -- '2023-06-30'  
-          ) -- checking for only one fiscal year 
-          GROUP BY calendar_view.month -- group by to get only a date for month
-          ) as calendar_view_filtered
-        LEFT JOIN ( SELECT *
-            FROM revenue_cost_view
-            WHERE employment_type != 1
-        ) as casual_employee -- group by to get only ONE date for month  to check contracts running dates on every month
-        ON ( (
-          calendar_view_filtered.calendar_date BETWEEN DATE_FORMAT(resource_contract_start, '%Y-%m-%d')
-          AND -- JOIN ONLY ON CONTRACT TO AVOID REPEATED ALLOCATIONs
-          DATE_FORMAT( IFNULL(resource_contract_end, '2049-06-30'), '%Y-%m-%d' ) 
-        ))
-      GROUP BY
-        resource_contract_start,
-        resource_contract_end,
-        resource_employee_id,
-        month
-    ) as costing
-    GROUP BY month;
+    SELECT month, SUM(salary) permanent_salaries, SUM(superannuation) permanent_superannuation
+    FROM (SELECT
+      (salary / 12) * (ABS(boh_percent - 100) / 100) salary,
+      -- to seperate boh percent for salaries
+      (salary / 12) * (ABS(boh_percent - 100) / 100) * (
+          SELECT
+          SUM(global_variable_values.value / 100)
+          FROM
+          global_variable_labels
+          JOIN global_variable_values ON global_variable_labels.id = global_variable_values.global_variable_id
+          WHERE
+          global_variable_labels.name = 'Superannuation'
+          AND calendar_view_filtered.calendar_date BETWEEN global_variable_values.start_date
+          AND global_variable_values.end_date
+      ) superannuation,
+      DATE_FORMAT( STR_TO_DATE(calendar_view_filtered.calendar_date, '%Y-%m-%d'), '%b %y' ) month -- month wise salary checking contracts end 
+      From (SELECT calendar_date
+        FROM calendar_view
+        WHERE( calendar_view.calendar_date BETWEEN '${fiscalYearStart}' -- '2022-07-01' 
+          AND '${fiscalYearEnd}' -- '2023-06-30'  
+        ) -- checking for only one fiscal year 
+        GROUP BY calendar_view.month -- group by to get only a date for month
+        ) as calendar_view_filtered
+      LEFT JOIN ( SELECT *
+          FROM revenue_cost_view
+          WHERE employment_type != 1
+      ) as casual_employee -- group by to get only ONE date for month  to check contracts running dates on every month
+      ON ( (
+        calendar_view_filtered.calendar_date BETWEEN DATE_FORMAT(resource_contract_start, '%Y-%m-%d')
+        AND -- JOIN ONLY ON CONTRACT TO AVOID REPEATED ALLOCATIONs
+        DATE_FORMAT( IFNULL(resource_contract_end, '2049-06-30'), '%Y-%m-%d' ) 
+      ))
+    GROUP BY
+      resource_contract_start,
+      resource_contract_end,
+      resource_employee_id,
+      month
+  ) as costing
+  GROUP BY month;
     `);
 
     const doh_salaries = await getManager().query(`

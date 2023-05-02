@@ -2256,24 +2256,25 @@ export class ProjectRepository extends Repository<Opportunity> {
 
         let project = await transactionalEntityManager.findOne(
           Opportunity,
-          projectId,
-          { where: { status: In(['P', 'C']) } }
+          projectId
+          // { where: { status: In(['P', 'C']) } }
         );
         if (!project) {
           throw new Error('Project not found');
         }
         projectShutdownObj.project = project;
 
+        let shutdownStartDate = moment(shutdownPeriodDTO.startDate);
+        let shutdownEndDate = moment(shutdownPeriodDTO.endDate);
+
         await this._validateShutdownPeriodDates(
-          moment(projectShutdownObj.startDate),
-          moment(projectShutdownObj.endDate),
+          shutdownStartDate,
+          shutdownEndDate,
           project
         );
 
-        projectShutdownObj.startDate = moment(
-          shutdownPeriodDTO.startDate
-        ).toDate();
-        projectShutdownObj.endDate = moment(shutdownPeriodDTO.endDate).toDate();
+        projectShutdownObj.startDate = shutdownStartDate.toDate();
+        projectShutdownObj.endDate = shutdownEndDate.toDate();
 
         projectShutdownObj.notes = shutdownPeriodDTO.notes;
 
@@ -2307,27 +2308,26 @@ export class ProjectRepository extends Repository<Opportunity> {
 
       let project = await transactionalEntityManager.findOne(
         Opportunity,
-        projectId,
-        { where: { status: In(['P', 'C']) } }
+        projectId
+        // { where: { status: In(['P', 'C']) } }
       );
       if (!project) {
         throw new Error('Project not found');
       }
       shutdownPeriodObj.project = project;
 
+      let shutdownStartDate = moment(projectShutdownPeriodDTO.startDate);
+      let shutdownEndDate = moment(projectShutdownPeriodDTO.endDate);
+
       await this._validateShutdownPeriodDates(
-        moment(projectShutdownPeriodDTO.startDate),
-        moment(projectShutdownPeriodDTO.endDate),
+        shutdownStartDate,
+        shutdownEndDate,
         project
       );
 
-      shutdownPeriodObj.startDate = moment(
-        projectShutdownPeriodDTO.startDate
-      ).toDate();
+      shutdownPeriodObj.startDate = shutdownStartDate.toDate();
 
-      shutdownPeriodObj.endDate = moment(
-        projectShutdownPeriodDTO.endDate
-      ).toDate();
+      shutdownPeriodObj.endDate = shutdownEndDate.toDate();
 
       shutdownPeriodObj.notes = projectShutdownPeriodDTO.notes;
 
@@ -2391,7 +2391,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       );
 
       if (!projectObj) {
-        throw new Error('Opportunity not found');
+        throw new Error('Project not found');
       }
 
       projectObj.phase = true;
@@ -2409,7 +2409,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       );
 
       if (!projectObj) {
-        throw new Error('Opportunity not found');
+        throw new Error('Project not found');
       }
 
       projectObj.phase = false;
@@ -2421,7 +2421,7 @@ export class ProjectRepository extends Repository<Opportunity> {
 
   async getHierarchy(projectId: number): Promise<any | undefined> {
     if (!projectId || isNaN(projectId)) {
-      throw new Error('Opportunity not found ');
+      throw new Error('Project not found ');
     }
 
     let opportunity = await this.findOne(projectId, {
@@ -2436,7 +2436,7 @@ export class ProjectRepository extends Repository<Opportunity> {
     });
 
     if (!opportunity) {
-      throw new Error('Opportunity not found');
+      throw new Error('Project not found');
     }
 
     for (let milestone of opportunity.milestones) {
@@ -2474,14 +2474,14 @@ export class ProjectRepository extends Repository<Opportunity> {
     fiscalYear: { start: string; end: string; actual: string }
   ): Promise<any | undefined> {
     if (!projectId || isNaN(projectId)) {
-      throw new Error('Opportunity not found ');
+      throw new Error('Project not found ');
     }
     console.log(projectId, 'PROJECT ID ===================');
 
     const project = await this.findOne(projectId);
 
     if (!project) {
-      throw new Error('Opportunity not found ');
+      throw new Error('Project not found ');
     }
     let segmentsRevenue: { [key: string]: number } = {};
     if (project?.type == 1) {
@@ -2590,15 +2590,20 @@ export class ProjectRepository extends Repository<Opportunity> {
 
     let holidays: any = {};
 
-    let shutdownPeriod = await this.manager.find(ProjectShutdownPeriod,{
-      where: {projectId: projectId}
-    })
+    let shutdownPeriod = await this.manager.find(ProjectShutdownPeriod, {
+      where: { projectId: projectId },
+    });
 
-    if(shutdownPeriod.length){ //removing shutdown period from forecasting
+    if (shutdownPeriod.length) {
+      //removing shutdown period from forecasting
       for (const shutdown of shutdownPeriod) {
-        let {startDate, endDate} = shutdown
-        for (var iDate = moment(startDate); iDate.isSameOrBefore(endDate); iDate.add(1, 'days')){
-          holidays[moment(iDate).format('M/D/YYYY').toString()] = 'shutdown'
+        let { startDate, endDate } = shutdown;
+        for (
+          var iDate = moment(startDate);
+          iDate.isSameOrBefore(endDate);
+          iDate.add(1, 'days')
+        ) {
+          holidays[moment(iDate).format('M/D/YYYY').toString()] = 'shutdown';
         }
       }
     }
@@ -3635,10 +3640,10 @@ export class ProjectRepository extends Repository<Opportunity> {
     leaveRequests: LeaveRequest[]
   ) {
     if (startDate && !project.startDate) {
-      throw new Error('Opportunity start date is not set');
+      throw new Error('Project start date is not set');
     }
     if (endDate && !project.endDate) {
-      throw new Error('Opportunity end date is not set');
+      throw new Error('Project end date is not set');
     }
 
     if (moment(startDate).isAfter(moment(endDate), 'date')) {
@@ -3874,6 +3879,12 @@ export class ProjectRepository extends Repository<Opportunity> {
       throw new Error('Start Date and End Date is Required');
     }
 
+    console.log({
+      startDate,
+      endDate,
+      projectStartDate: project.startDate,
+      projectEndDate: project.endDate,
+    });
     if (
       !startDate.isBetween(
         moment(project.startDate).startOf('month'),
