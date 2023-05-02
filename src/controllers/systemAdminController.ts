@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { DBColumn } from '../entities/dbColumn';
 import { getManager } from 'typeorm';
+import { IGNORE_COLUMNS, IGNORE_TABLES } from '../constants/globals';
 
 export class SystemAdminController {
-  async test(req: Request, res: Response, next: NextFunction) {
+  async addColumns(req: Request, res: Response, next: NextFunction) {
     try {
       let manager = getManager();
       let connection = manager.connection;
@@ -11,34 +12,18 @@ export class SystemAdminController {
       let columns: any = {};
       let pushColumns: DBColumn[] = [];
 
-      const ignoreColumns: Array<string> = [
-        'id',
-        'created_at',
-        'updated_at',
-        'deleted_at',
-      ];
-
-      const systemTables: Array<string> = ['_view', '_metadata', 'typeorm'];
+      const regex = new RegExp(IGNORE_TABLES.join('|'));
 
       let dbTableNames = await manager.query(`SHOW TABLES`);
 
       let tableNames: string[] = [];
 
       dbTableNames.forEach((table: any) => {
-        tableNames.push(table.Tables_in_onelm);
+        tableNames.push(table[Object.keys(table)[0]]);
       });
 
       for (let table of tableNames) {
-        var checkFlag = /_view|_metadata|typeorm|db_|system_/.test(table);
-        console.log(checkFlag);
-
-        if (checkFlag) continue;
-        // if (
-        //   table.includes('_view') ||
-        //   table.includes('_metadata') ||
-        //   table.includes('typeorm')
-        // )
-        //   continue;
+        if (regex.test(table)) continue;
         // let dbColumns = await manager.query(`DESCRIBE ${table}`);
 
         let dbColumns = connection.getMetadata(table).ownColumns;
@@ -46,7 +31,7 @@ export class SystemAdminController {
         columns[table] = {};
 
         for (let column of dbColumns) {
-          if (ignoreColumns.includes(column.databaseName)) continue;
+          if (IGNORE_COLUMNS.includes(column.databaseName)) continue;
           columns[table][column.databaseName] = manager.create(DBColumn, {
             dbName: column.databaseName,
             typeormName: column.propertyName,
@@ -59,6 +44,7 @@ export class SystemAdminController {
         }
       }
 
+      // await manager.query(`TRUNCATE TABLE db_columns`);
       await manager.save(DBColumn, pushColumns);
 
       res.status(200).json({
