@@ -12,6 +12,7 @@ import {
 import {
   DisableConditionType,
   DisableCondtionDataType,
+  OpportunityStatus,
 } from '../constants/constants';
 import moment from 'moment';
 
@@ -34,6 +35,12 @@ export class EntitySubscriber implements EntitySubscriberInterface {
     });
 
     const newData = event.entity;
+    const opportunityStatuses = [
+      OpportunityStatus.LOST,
+      OpportunityStatus.NOT_BID,
+      OpportunityStatus.OPPORTUNITY,
+      OpportunityStatus.DID_NOT_PROCEED,
+    ];
 
     for (let column of dbColumns) {
       let columnName = column.typeormName;
@@ -41,7 +48,9 @@ export class EntitySubscriber implements EntitySubscriberInterface {
         if (
           condition.conditionType === DisableConditionType.FINANCIAL_YEAR &&
           condition.dataType === DisableCondtionDataType.DATE &&
-          lastClosedFinancialYear
+          lastClosedFinancialYear &&
+          !opportunityStatuses.includes(newData?.status) &&
+          newData?.title !== 'Default Milestone'
         ) {
           let columnDate = moment(newData[columnName], true).isValid()
             ? moment(newData[columnName])
@@ -77,6 +86,12 @@ export class EntitySubscriber implements EntitySubscriberInterface {
 
     const oldData = event.databaseEntity;
     const newData = event.entity;
+    const opportunityStatuses = [
+      OpportunityStatus.LOST,
+      OpportunityStatus.NOT_BID,
+      OpportunityStatus.OPPORTUNITY,
+      OpportunityStatus.DID_NOT_PROCEED,
+    ];
 
     // console.log(event.databaseEntity);
     // console.log(event.entity);
@@ -91,18 +106,19 @@ export class EntitySubscriber implements EntitySubscriberInterface {
         if (
           condition.conditionType === DisableConditionType.FINANCIAL_YEAR &&
           condition.dataType === DisableCondtionDataType.DATE &&
-          lastClosedFinancialYear
+          lastClosedFinancialYear &&
+          !opportunityStatuses.includes(newData?.status) &&
+          newData?.title !== 'Default Milestone'
         ) {
           console.log('YESSS');
           //IF SAME COLUMN
           if (conditionColumnId === columnId) {
-            // console.log({
-            //   old: oldData[columnName],
-            //   new: newData[columnName],
-            //   comparision: oldData[columnName] == newData[columnName],
-            // });
             if (
               moment(oldData[columnName]).isSameOrBefore(
+                lastClosedFinancialYear.endDate,
+                'date'
+              ) &&
+              moment(newData[columnName]).isBefore(
                 lastClosedFinancialYear.endDate,
                 'date'
               ) &&
@@ -110,16 +126,25 @@ export class EntitySubscriber implements EntitySubscriberInterface {
             ) {
               throw new Error('Cannot make changes in closed financial years');
             }
-
+            // console.log({
+            //   old: oldData[columnName],
+            //   new: newData[columnName],
+            //   comparision: oldData[columnName] == newData[columnName],
+            // });
+          } else if (columnId !== conditionColumnId) {
             if (
-              moment(newData[columnName]).isBefore(
+              moment(oldData[conditionColumnName]).isSameOrBefore(
+                lastClosedFinancialYear.endDate,
+                'date'
+              ) &&
+              moment(oldData[columnName]).isSameOrBefore(
                 lastClosedFinancialYear.endDate,
                 'date'
               )
             ) {
               throw new Error('Cannot make changes in closed financial years');
             }
-          } else if (columnId !== conditionColumnId) {
+
             if (
               moment(oldData[conditionColumnName]).isSameOrBefore(
                 lastClosedFinancialYear.endDate,
@@ -128,7 +153,8 @@ export class EntitySubscriber implements EntitySubscriberInterface {
               moment(newData[columnName]).isBefore(
                 lastClosedFinancialYear.endDate,
                 'date'
-              )
+              ) &&
+              !moment(oldData[columnName]).isSame(newData[columnName])
             ) {
               throw new Error('Cannot make changes in closed financial years');
             }
