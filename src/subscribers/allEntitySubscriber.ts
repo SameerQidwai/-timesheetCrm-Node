@@ -2,10 +2,12 @@ import { FinancialYear } from '../entities/financialYear';
 import { IGNORE_TABLES } from '../constants/globals';
 import { DBColumn } from '../entities/dbColumn';
 import {
+  BeforeRemove,
   EntitySubscriberInterface,
   EventSubscriber,
   InsertEvent,
   LoadEvent,
+  RemoveEvent,
   UpdateEvent,
   getManager,
 } from 'typeorm';
@@ -15,6 +17,8 @@ import {
   OpportunityStatus,
 } from '../constants/constants';
 import moment from 'moment';
+import { TransactionCommitEvent } from 'typeorm/subscriber/event/TransactionCommitEvent';
+import { LeaveRequestEntry } from 'src/entities/leaveRequestEntry';
 
 @EventSubscriber()
 export class EntitySubscriber implements EntitySubscriberInterface {
@@ -65,8 +69,6 @@ export class EntitySubscriber implements EntitySubscriberInterface {
   }
 
   async beforeUpdate(event: UpdateEvent<any>) {
-    // console.log(event.metadata.targetName);
-
     const regex = new RegExp(IGNORE_TABLES.join('|'));
     if (regex.test(event.metadata.tableName)) return;
 
@@ -82,6 +84,7 @@ export class EntitySubscriber implements EntitySubscriberInterface {
     const lastClosedFinancialYear = await manager.findOne(FinancialYear, {
       order: { endDate: 'DESC' },
       where: { closed: true },
+      cache: 3000,
     });
 
     const oldData = event.databaseEntity;
@@ -106,13 +109,15 @@ export class EntitySubscriber implements EntitySubscriberInterface {
         if (
           condition.conditionType === DisableConditionType.FINANCIAL_YEAR &&
           condition.dataType === DisableCondtionDataType.DATE &&
+          newData &&
           lastClosedFinancialYear &&
           !opportunityStatuses.includes(newData?.status) &&
           newData?.title !== 'Default Milestone'
         ) {
-          console.log('YESSS');
+          // console.log('YESSS');
           //IF SAME COLUMN
           if (conditionColumnId === columnId) {
+            console.log(event.metadata.name, newData, oldData);
             if (
               moment(oldData[columnName]).isSameOrBefore(
                 lastClosedFinancialYear.endDate,

@@ -1467,28 +1467,34 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
   _validateRequestDates(
     starDate: Date | string,
     endDate: Date | string,
-    opportunity: OpportunityResource
+    opportunityResource: OpportunityResource
   ) {
-    if (opportunity.startDate) {
-      if (moment(starDate).isBefore(moment(opportunity.startDate), 'date')) {
+    if (opportunityResource.startDate) {
+      if (
+        moment(starDate).isBefore(moment(opportunityResource.startDate), 'date')
+      ) {
         throw new Error(
-          'Leave Request Date cannot be Before Project Start Date'
+          'Leave Request Date cannot be Before Position Start Date'
         );
       }
-      if (moment(endDate).isBefore(moment(opportunity.startDate), 'date')) {
+      if (
+        moment(endDate).isBefore(moment(opportunityResource.startDate), 'date')
+      ) {
         throw new Error(
-          'Milestone Start Date cannot be Before Project Start Date'
+          'Leave Request Start Date cannot be Before Position Start Date'
         );
       }
     }
-    if (opportunity.endDate) {
-      if (moment(starDate).isAfter(moment(opportunity.endDate), 'date')) {
-        throw new Error('Leave Request Date cannot be After Project End Date');
+    if (opportunityResource.endDate) {
+      if (
+        moment(starDate).isAfter(moment(opportunityResource.endDate), 'date')
+      ) {
+        throw new Error('Leave Request Date cannot be After Position End Date');
       }
-      if (moment(endDate).isAfter(moment(opportunity.endDate), 'date')) {
-        throw new Error(
-          'Milestone Start Date cannot be After Project End Date'
-        );
+      if (
+        moment(endDate).isAfter(moment(opportunityResource.endDate), 'date')
+      ) {
+        throw new Error('Leave Request Date cannot be After Position End Date');
       }
     }
   }

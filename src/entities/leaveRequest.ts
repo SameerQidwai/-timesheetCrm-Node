@@ -83,7 +83,11 @@ export class LeaveRequest extends Base {
   )
   entries: LeaveRequestEntry[];
 
-  public get getEntriesDetails(): any {
+  public get getEntriesDetails(): {
+    startDate: any;
+    endDate: any;
+    totalHours: Number;
+  } {
     let startDate,
       endDate,
       totalHours = 0;

@@ -11,6 +11,7 @@ import {
 import { Base } from './common/base';
 import { Employee } from './employee';
 import { TimesheetMilestoneEntry } from './timesheetMilestoneEntry';
+import { TimesheetEntryStatus, TimesheetStatus } from '../constants/constants';
 
 @Entity('timesheet_entries')
 export class TimesheetEntry extends Base {
@@ -68,6 +69,16 @@ export class TimesheetEntry extends Base {
   @ManyToOne(() => TimesheetMilestoneEntry)
   @JoinColumn({ name: 'milestone_entry_id' })
   milestoneEntry: TimesheetMilestoneEntry;
+
+  public get getStatus(): TimesheetEntryStatus {
+    let status = TimesheetEntryStatus.SAVED;
+
+    if (this.submittedAt) status = TimesheetEntryStatus.SUBMITTED;
+    if (this.approvedAt) status = TimesheetEntryStatus.APPROVED;
+    if (this.rejectedAt) status = TimesheetEntryStatus.REJECTED;
+
+    return status;
+  }
 
   // @BeforeInsert()
   // async insert() {

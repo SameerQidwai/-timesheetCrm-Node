@@ -15,6 +15,7 @@ module.exports = {
     migrationsDir: 'src/migrations',
   },
   timezone: 'Z',
+  cache: true,
 };
 
 // "port": 3306,

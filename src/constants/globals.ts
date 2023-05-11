@@ -13,4 +13,5 @@ export const IGNORE_TABLES: Array<string> = [
   'system_',
   'migrations',
   'financial_years',
+  'query-result-cache',
 ];

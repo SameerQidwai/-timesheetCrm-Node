@@ -62,6 +62,13 @@ export enum TimesheetStatus {
   APPROVED = 'AP',
 }
 
+export enum TimesheetEntryStatus {
+  SAVED = 'SV',
+  SUBMITTED = 'SB',
+  REJECTED = 'RJ',
+  APPROVED = 'AP',
+}
+
 export enum EntityType {
   EMPLOYEE = 'EMP',
   CONTACT_PERSON = 'CPE',
