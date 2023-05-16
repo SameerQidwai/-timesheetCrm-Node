@@ -9,8 +9,24 @@ export class GlobalVariableController {
       let records = await repository.getAllActive();
       res.status(200).json({
         success: true,
-        message: 'ADD GLOBAL VARIABLE VALUE',
+        message: 'GET GLOBAL VARIABLE VALUE',
         data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async getOne(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(GlobalVariableValueRepository);
+      let id = req.params.globalVariableId;
+      let record = await repository.findOneCustom(parseInt(id));
+      res.status(200).json({
+        success: true,
+        // message: `Win Opportunity ${req.params.id}`,
+        message: 'Single Global Variable',
+        data: record,
       });
     } catch (e) {
       next(e);
@@ -56,7 +72,7 @@ export class GlobalVariableController {
   ) {
     try {
       const repository = getCustomRepository(GlobalVariableValueRepository);
-      let type = parseInt(req.query.type as string)
+      let type = parseInt(req.query.type as string);
       let records = await repository.costCalculatorVariable(type);
       res.status(200).json({
         success: true,

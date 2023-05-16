@@ -178,3 +178,10 @@ export enum DisableCondtionDataType {
   NUMBER = 'NUMBER',
   STRING = 'STRING',
 }
+
+export enum SystemVariableValueType {
+  DATE = 'DATE',
+  NUMBER = 'NUMBER',
+  STRING = 'STRING',
+  BOOLEAN = 'BOOLEAN',
+}

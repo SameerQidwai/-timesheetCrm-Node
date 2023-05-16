@@ -13,14 +13,29 @@ import { State } from '../entities/state';
 @EntityRepository(GlobalVariableValue)
 export class GlobalVariableValueRepository extends Repository<GlobalVariableValue> {
   async getAllActive(): Promise<any[]> {
+    let result = await this.createQueryBuilder('values')
+      .innerJoinAndSelect('values.variable', 'variable')
+      .andWhere('start_Date <= :startDate', {
+        startDate: moment().startOf('day').toDate(),
+      })
+      .andWhere('end_date >= :endDate', {
+        endDate: moment().endOf('day').toDate(),
+      })
+      .getMany();
 
-    let result = await this.createQueryBuilder("values")
-    .innerJoinAndSelect("values.variable", "variable")
-    .andWhere('start_Date <= :startDate', {startDate: moment().startOf('day').toDate()})
-    .andWhere('end_date >= :endDate', {endDate: moment().endOf('day').toDate()})
-    .getMany()
-    
     return result;
+  }
+
+  async findOneCustom(id: number): Promise<any> {
+    let globalVariable = await this.manager.findOne(GlobalVariableLabel, id, {
+      relations: ['values'],
+    });
+
+    if (!globalVariable) {
+      throw new Error('Global Variable not found');
+    }
+
+    return globalVariable;
   }
 
   async addOrUpdate(
@@ -47,7 +62,6 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
             { relations: ['values'] }
           );
 
-
           if (!globalVariable) {
             globalVariable = new GlobalVariableLabel();
             globalVariable.name = globalVariableLabelValueDTO.name;
@@ -55,11 +69,12 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
 
             globalVariableValue = new GlobalVariableValue();
           } else {
-            globalVariableValue = globalVariable.values.filter(el=> 
-              moment(el.startDate).isSameOrBefore(moment(), 'date') &&
-              moment(el.endDate).isSameOrAfter(moment(), 'date')
-            )[0]
-            if (!globalVariableValue){
+            globalVariableValue = globalVariable.values.filter(
+              (el) =>
+                moment(el.startDate).isSameOrBefore(moment(), 'date') &&
+                moment(el.endDate).isSameOrAfter(moment(), 'date')
+            )[0];
+            if (!globalVariableValue) {
               globalVariableValue = new GlobalVariableValue();
             }
             // globalVariableValue = globalVariable.values[0];
@@ -82,12 +97,17 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
     );
 
     // return this.manager.find(GlobalVariableLabel, { relations: ['values'] });
-    return await this.manager.getRepository(GlobalVariableLabel)
-    .createQueryBuilder("variable")
-    .innerJoinAndSelect("variable.values", "values")
-    .andWhere('values.start_date <= :startDate', {startDate: moment().startOf('day').toDate()})
-    .andWhere('values.end_date >= :endDate', {endDate: moment().endOf('day').toDate()})
-    .getMany()
+    return await this.manager
+      .getRepository(GlobalVariableLabel)
+      .createQueryBuilder('variable')
+      .innerJoinAndSelect('variable.values', 'values')
+      .andWhere('values.start_date <= :startDate', {
+        startDate: moment().startOf('day').toDate(),
+      })
+      .andWhere('values.end_date >= :endDate', {
+        endDate: moment().endOf('day').toDate(),
+      })
+      .getMany();
   }
 
   async addValueRow(
@@ -103,46 +123,44 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
     return response;
   }
 
-  async costCalculatorVariable (reportType: number){
+  async costCalculatorVariable(reportType: number) {
     let variables: any = [];
 
     if (reportType === 1) {
-      variables= ['Superannuation', 'WorkCover', 'Public Holidays',]
+      variables = ['Superannuation', 'WorkCover', 'Public Holidays'];
 
-      let leaveTypes =  await this.manager.find(LeaveRequestType)
+      let leaveTypes = await this.manager.find(LeaveRequestType);
       leaveTypes.forEach((el) => {
         variables.push(el.label);
       });
-    }else if (reportType === 2){
-      variables= ['Superannuation', 'WorkCover']
-    }else if (reportType === 3){
-      variables = []
+    } else if (reportType === 2) {
+      variables = ['Superannuation', 'WorkCover'];
+    } else if (reportType === 3) {
+      variables = [];
     }
 
     let setGolobalVariables: any = [];
-    if (variables.length){
+    if (variables.length) {
       let golobalVariables: any = await this.manager
-      .getRepository(GlobalVariableLabel)
-      .createQueryBuilder('variable')
-      .innerJoinAndSelect('variable.values', 'values')
-      .where('name IN (:...name)', { name: variables })
-      .andWhere('values.start_date <= :startDate', {
-        startDate: moment().startOf('day').toDate(),
-      })
-      .andWhere('values.end_date >= :endDate', {
-        endDate: moment().endOf('day').toDate(),
-      })
-      .getMany();
+        .getRepository(GlobalVariableLabel)
+        .createQueryBuilder('variable')
+        .innerJoinAndSelect('variable.values', 'values')
+        .where('name IN (:...name)', { name: variables })
+        .andWhere('values.start_date <= :startDate', {
+          startDate: moment().startOf('day').toDate(),
+        })
+        .andWhere('values.end_date >= :endDate', {
+          endDate: moment().endOf('day').toDate(),
+        })
+        .getMany();
 
+      let sortIndex: any = {
+        Superannuation: 0,
+        WorkCover: 1,
+        'Public Holidays': golobalVariables.length - 1,
+      };
 
-    let sortIndex: any = {
-      Superannuation: 0,
-      WorkCover: 1,
-      'Public Holidays': golobalVariables.length - 1,
-    };
-
-    
-    /**Sorting Data As our Need */
+      /**Sorting Data As our Need */
       golobalVariables.forEach((variable: any, index: number) => {
         let value: any = variable.values?.[0];
         let manipulateVariable: any = {
@@ -150,7 +168,7 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
           variableId: variable.id,
           valueId: value.id,
           value: value.value,
-          apply: 'Yes'
+          apply: 'Yes',
         };
 
         /** Checking if element is from a sort variables */
@@ -187,36 +205,38 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
         } else {
           setGolobalVariables.push(manipulateVariable);
         }
-     });
+      });
     }
-
 
     // let stateVariables: any= ['GST']
 
-    let states =  await this.manager.find(State)
-      // states.forEach((el) => {
-      //   stateVariables.push(el.label);
-      // });
+    let states = await this.manager.find(State);
+    // states.forEach((el) => {
+    //   stateVariables.push(el.label);
+    // });
 
     let stateTax: any = await this.manager.query(`
       Select gvv.value tax, gvl.id value, gvl.name label from global_variable_labels gvl
         JOIN global_variable_values gvv on gvv.global_variable_id = gvl.id
-        WHERE gvl.name IN ('GST', ${states.map(({label})=> `'${label}'`)})
-        AND gvv.start_date <= '${moment().startOf('day').format('YYYY-MM-DD HH:mm:ss')}'
-        AND gvv.end_date >= '${moment().endOf('day').format('YYYY-MM-DD HH:mm:ss')}';`
-        )
-        //startDate and dateDate quert look into income_tax workInHand api
-        // AND gvv.start_date BETWEEN '${fiscalYearStart}' AND '${fiscalYearEnd}'
-        // AND gvv.start_date >= '${fiscalYearStart}' AND gvv.end_date <= '${fiscalYearEnd}'`
-    let gst: number = 0
-    stateTax = stateTax.filter((states: any)=>{
-      if (states.label === 'GST'){
-        gst = states.tax
+        WHERE gvl.name IN ('GST', ${states.map(({ label }) => `'${label}'`)})
+        AND gvv.start_date <= '${moment()
+          .startOf('day')
+          .format('YYYY-MM-DD HH:mm:ss')}'
+        AND gvv.end_date >= '${moment()
+          .endOf('day')
+          .format('YYYY-MM-DD HH:mm:ss')}';`);
+    //startDate and dateDate quert look into income_tax workInHand api
+    // AND gvv.start_date BETWEEN '${fiscalYearStart}' AND '${fiscalYearEnd}'
+    // AND gvv.start_date >= '${fiscalYearStart}' AND gvv.end_date <= '${fiscalYearEnd}'`
+    let gst: number = 0;
+    stateTax = stateTax.filter((states: any) => {
+      if (states.label === 'GST') {
+        gst = states.tax;
         // return false
-      }else{
-        return true
+      } else {
+        return true;
       }
-    })
+    });
 
     return {
       gst,
