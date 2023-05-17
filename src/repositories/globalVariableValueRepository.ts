@@ -131,7 +131,6 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
     id: number,
     globalVariableValue: GlobalVariableLabelValueDTO
   ): Promise<GlobalVariableValue | any> {
-    let obj = new GlobalVariableValue();
     let variableValue = await this.findOne(id);
 
     if (!variableValue) {
@@ -141,7 +140,7 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
     variableValue.startDate = globalVariableValue.startDate;
     variableValue.endDate = globalVariableValue.endDate;
 
-    let response = await this.save(obj);
+    let response = await this.save(variableValue);
 
     return response;
   }

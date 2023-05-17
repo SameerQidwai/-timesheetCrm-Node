@@ -17,6 +17,9 @@ export class ExpenseSheetResponse {
   notes: string;
   isBillable: Boolean;
   submittedAt: Date | null;
+  rejectedAt: Date | null;
+  approvedAt: Date | null;
+  updatedAt: Date | null;
   createdBy: string | null;
   submittedBy: string | null;
   attachments: AttachmentResponse[];
@@ -62,19 +65,18 @@ export class ExpenseSheetResponse {
       }
     }
 
-    this.submittedAt =
-      sheet.expenseSheetExpenses[0]?.expense.submittedAt ?? null;
+    this.submittedAt = lastExpense.submittedAt ?? null;
+    this.rejectedAt = lastExpense.rejectedAt ?? null;
+    this.approvedAt = lastExpense.approvedAt ?? null;
+    this.updatedAt = lastExpense.updatedAt ?? null;
 
-    this.submittedBy =
-      sheet.expenseSheetExpenses[0]?.expense.submitter?.getFullName ?? null;
+    this.submittedBy = lastExpense.submitter?.getFullName ?? null;
 
-    this.createdBy =
-      sheet.expenseSheetExpenses[0]?.expense.creator?.getFullName ?? null;
+    this.createdBy = lastExpense.creator?.getFullName ?? null;
 
     this.expenseSheetExpenses = new ExpenseSheetExpensesResponse(
       sheet.expenseSheetExpenses
     ).expenses;
-
   }
 }
 
