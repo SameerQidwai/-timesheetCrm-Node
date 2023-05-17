@@ -41,14 +41,29 @@ export class FinancialYearController {
     try {
       const repository = getCustomRepository(FinancialYearRepository);
       let id = req.params.id;
+      let queryConfirm = req.query.confirm;
+      let confirm = queryConfirm === 'true' ? true : false;
+      console.log(
+        '🚀 ~ file: financialYearController.ts:46 ~ FinancialYearController ~ closeYear ~ confirm:',
+        confirm
+      );
+
       const { user } = res.locals;
 
-      const year = await repository.closeYear(parseInt(id), user.id);
+      const response = await repository.closeYear(
+        parseInt(id),
+        user.id,
+        confirm
+      );
+      console.log(
+        '🚀 ~ file: financialYearController.ts:58 ~ FinancialYearController ~ closeYear ~ response:',
+        response
+      );
 
       res.status(200).json({
         success: true,
         message: 'All years',
-        data: year,
+        data: response,
       });
     } catch (e) {
       next(e);

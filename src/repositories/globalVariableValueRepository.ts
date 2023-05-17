@@ -26,10 +26,14 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
     return result;
   }
 
-  async findOneCustom(id: number): Promise<any> {
-    let globalVariable = await this.manager.findOne(GlobalVariableLabel, id, {
-      relations: ['values'],
-    });
+  async findOneCustom(name: string): Promise<any> {
+    let globalVariable = await this.manager.findOne(
+      GlobalVariableLabel,
+      { name },
+      {
+        relations: ['values'],
+      }
+    );
 
     if (!globalVariable) {
       throw new Error('Global Variable not found');
@@ -120,6 +124,25 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
     obj.endDate = globalVariableValue.endDate;
 
     let response = await this.save(obj);
+    return response;
+  }
+
+  async updateValueRow(
+    id: number,
+    globalVariableValue: GlobalVariableLabelValueDTO
+  ): Promise<GlobalVariableValue | any> {
+    let obj = new GlobalVariableValue();
+    let variableValue = await this.findOne(id);
+
+    if (!variableValue) {
+      throw new Error('Variable Value not found');
+    }
+    variableValue.value = globalVariableValue.value;
+    variableValue.startDate = globalVariableValue.startDate;
+    variableValue.endDate = globalVariableValue.endDate;
+
+    let response = await this.save(obj);
+
     return response;
   }
 

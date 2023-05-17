@@ -9,7 +9,7 @@ import * as bodyParser from 'body-parser';
 import { createConnection } from 'typeorm';
 import allRoutes from './routes';
 import moment from 'moment-timezone';
-import { crmLock } from './middlewares/crmLock';
+import { crmLock } from './middlewares/systemLock';
 
 const corsOptions = {
   exposedHeaders: 'Authorization',

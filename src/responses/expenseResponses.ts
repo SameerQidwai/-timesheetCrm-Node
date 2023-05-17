@@ -7,6 +7,10 @@ export class ExpenseResponse {
   expenseTypeId: number;
   expenseTypeName: String;
   date: Date;
+  submittedAt: Date | null;
+  rejectedAt: Date | null;
+  approvedAt: Date | null;
+  updatedAt: Date | null;
   projectId: number | null;
   projectName: String | null;
   amount: number;
@@ -15,7 +19,7 @@ export class ExpenseResponse {
   isReimbursed: Boolean;
   isInSheet: Boolean;
   notes: string | null;
-  attachments: AttachmentResponse[]
+  attachments: AttachmentResponse[];
 
   // constructor(expense: Expense) {
   constructor(expense: any) {
@@ -28,17 +32,20 @@ export class ExpenseResponse {
     this.amount = expense.amount;
     this.isBillable = expense.isBillable ? true : false;
     this.isReimbursed = expense.isReimbursed ? true : false;
+    this.submittedAt = expense.submittedAt;
+    this.rejectedAt = expense.rejectedAt;
+    this.approvedAt = expense.approvedAt;
+    this.updatedAt = expense.updatedAt;
     this.isInSheet =
       expense.entries.length > 0 && !expense.rejectedAt ? true : false;
     this.notes = expense.notes;
     this.status = ExpenseSheetStatus.SAVED;
-    if (expense.rejectedAt !== null)
-      this.status = ExpenseSheetStatus.REJECTED;
+    if (expense.rejectedAt !== null) this.status = ExpenseSheetStatus.REJECTED;
     else if (expense.approvedAt !== null)
       this.status = ExpenseSheetStatus.APPROVED;
     else if (expense.submittedAt !== null)
       this.status = ExpenseSheetStatus.SUBMITTED;
-    this.attachments = new AttachmentsResponse(expense.attachments).attachments
+    this.attachments = new AttachmentsResponse(expense.attachments).attachments;
   }
 }
 

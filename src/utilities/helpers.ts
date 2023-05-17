@@ -1,4 +1,5 @@
-import { SystemVariableValueType } from '../constants/constants';
+import { GlobalSetting } from '../entities/globalSetting';
+import { GlobalSettingValueType } from '../constants/constants';
 import { SystemVariable } from '../entities/systemVariable';
 
 export function getRandomInt(min: number, max: number) {
@@ -7,14 +8,14 @@ export function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min) + min); // The maximum is exclusive and the minimum is inclusive
 }
 
-export function parseSystemVariable(variable: SystemVariable) {
+export function parseGlobalSetting(variable: GlobalSetting) {
   let returnValue;
-  switch (variable.type) {
-    case SystemVariableValueType.BOOLEAN:
-      returnValue = parseInt(variable.value) === 1 ? true : false;
+  switch (variable.dataType) {
+    case GlobalSettingValueType.BOOLEAN:
+      returnValue = parseInt(variable.keyValue) === 1 ? true : false;
       break;
-    case SystemVariableValueType.NUMBER:
-      returnValue = parseInt(variable.value);
+    case GlobalSettingValueType.NUMBER:
+      returnValue = parseInt(variable.keyValue);
       break;
     default:
       returnValue = false;

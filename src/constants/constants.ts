@@ -185,3 +185,10 @@ export enum SystemVariableValueType {
   STRING = 'STRING',
   BOOLEAN = 'BOOLEAN',
 }
+
+export enum GlobalSettingValueType {
+  DATE = 'date',
+  NUMBER = 'number',
+  STRING = 'string',
+  BOOLEAN = 'boolean',
+}

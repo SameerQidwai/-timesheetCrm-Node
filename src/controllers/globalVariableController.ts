@@ -20,8 +20,8 @@ export class GlobalVariableController {
   async getOne(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(GlobalVariableValueRepository);
-      let id = req.params.globalVariableId;
-      let record = await repository.findOneCustom(parseInt(id));
+      let name = req.params.globalVariableName;
+      let record = await repository.findOneCustom(name);
       res.status(200).json({
         success: true,
         // message: `Win Opportunity ${req.params.id}`,
@@ -40,6 +40,23 @@ export class GlobalVariableController {
       res.status(200).json({
         success: true,
         message: 'ADD GLOBAL VARIABLE VALUE',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async updateGlobalValue(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(GlobalVariableValueRepository);
+      let id = parseInt(req.params.id);
+
+      let records = await repository.updateValueRow(id, req.body);
+
+      res.status(200).json({
+        success: true,
+        message: 'UPDATE GLOBAL VARIABLE VALUE',
         data: records,
       });
     } catch (e) {

@@ -6,9 +6,12 @@ const contr = new GlobalVariableController();
 
 router.route('/').get(contr.index.bind(contr));
 
-router.route('/:globalVariableId').get(contr.getOne.bind(contr));
+router.route('/:globalVariableName').get(contr.getOne.bind(contr));
 
 router.route('/create').post(contr.addGlobalValue.bind(contr));
+
+router.route('/updateValue/:id').put(contr.updateGlobalValue.bind(contr));
+
 router
   .route('/create-update')
   .post(contr.addOrUpdateGlobalVariable.bind(contr));

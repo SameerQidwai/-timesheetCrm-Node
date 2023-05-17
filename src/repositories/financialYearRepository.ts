@@ -93,37 +93,54 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
     return this.save(year);
   }
 
-  async closeYear(id: number, userId: number): Promise<any> {
+  async closeYear(id: number, userId: number, confirm = false): Promise<any> {
     if (!id) throw new Error('Year not found');
 
-    await this.manager.transaction(async (transactionalEntityManager) => {
-      let year = await this.findOne(id);
+    return await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let year = await this.findOne(id);
 
-      if (!year) throw new Error('Year not found');
+        if (!year) throw new Error('Year not found');
 
-      if (year.closed) throw new Error('Year is already closed');
+        if (year.closed) throw new Error('Year is already closed');
 
-      let years = await this.find({
-        where: { endDate: LessThan(year.startDate) },
-      });
+        let years = await this.find({
+          where: { endDate: LessThan(year.startDate) },
+        });
 
-      for (let loopYear of years) {
-        if (!loopYear.closed) {
-          throw new Error('All the previous years are required to be closed');
+        for (let loopYear of years) {
+          if (!loopYear.closed) {
+            throw new Error('All the previous years are required to be closed');
+          }
         }
+
+        if (!confirm) {
+          return {
+            projects: [],
+            leaveRequests: [],
+            leaveRequestBalances: [],
+            timesheets: [],
+            expenseSheets: [],
+            contracts: [],
+          };
+        }
+
+        await this._closeProjects(year, transactionalEntityManager);
+        await this._closeLeaveRequests(
+          year,
+          userId,
+          transactionalEntityManager
+        );
+        await this._closeLeaveRequestBalances(year, transactionalEntityManager);
+        await this._closeTimesheets(year, userId, transactionalEntityManager);
+
+        year.closed = true;
+        year.closedBy = userId;
+        year.closedAt = moment().toDate();
+
+        return transactionalEntityManager.save(year);
       }
-
-      await this._closeProjects(year, transactionalEntityManager);
-      await this._closeLeaveRequests(year, userId, transactionalEntityManager);
-      await this._closeLeaveRequestBalances(year, transactionalEntityManager);
-      await this._closeTimesheets(year, userId, transactionalEntityManager);
-
-      year.closed = true;
-      year.closedBy = userId;
-      year.closedAt = moment().toDate();
-
-      return transactionalEntityManager.save(year);
-    });
+    );
   }
 
   async _closeProjects(year: FinancialYear, trx: EntityManager) {
