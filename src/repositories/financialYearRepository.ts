@@ -321,6 +321,8 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
               title: milestone.title,
               startDate: milestoneStartDate.format('DD-MM-YYYY'),
               endDate: milestoneEndDate.format('DD-MM-YYYY'),
+              projectId: project.id,
+              projectName: project.title,
             });
 
             effectedMilestones.push(milestone);
