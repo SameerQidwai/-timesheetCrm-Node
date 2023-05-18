@@ -22,6 +22,9 @@ export class Milestone extends Base {
   @Column({ name: '%completed', default: 0 })
   progress: number;
 
+  @Column({ name: 'closed', default: 0 })
+  closed: Boolean;
+
   @Column({ name: 'is_approved', default: '' })
   isApproved: string;
 
