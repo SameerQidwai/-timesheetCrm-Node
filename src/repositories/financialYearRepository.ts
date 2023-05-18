@@ -14,14 +14,21 @@ import { Opportunity } from '../entities/opportunity';
 import { LeaveRequest } from '../entities/leaveRequest';
 import { LeaveRequestEntry } from '../entities/leaveRequestEntry';
 import {
+  ExpenseSheetStatus,
   LeaveRequestStatus,
   TimesheetEntryStatus,
+  TimesheetStatus,
 } from '../constants/constants';
 import { LeaveRequestBalance } from '../entities/leaveRequestBalance';
 import { Timesheet } from '../entities/timesheet';
 import { Milestone } from '../entities/milestone';
 import { GlobalSetting } from '../entities/globalSetting';
 import { ProjectType } from '../constants/constants';
+import { Expense } from '../entities/expense';
+import { ExpenseSheet } from '../entities/expenseSheet';
+import { EmploymentContract } from '../entities/employmentContract';
+import { Employee } from '../entities/employee';
+import { parseGlobalSetting } from '../utilities/helpers';
 
 @EntityRepository(FinancialYear)
 export class FinancialYearRepository extends Repository<FinancialYear> {
@@ -96,7 +103,11 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
     return this.save(year);
   }
 
-  async closeYear(id: number, userId: number, confirm = false): Promise<any> {
+  async closeYear(
+    id: number,
+    userId: number,
+    confirmFlag = false
+  ): Promise<any> {
     if (!id) throw new Error('Year not found');
 
     return await this.manager.transaction(async (trx) => {
@@ -116,8 +127,66 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
         }
       }
 
-      if (confirm) {
-        let systemLock = await this.manager.findOne(GlobalSetting, {
+      let forceStatusChangeFlag = false;
+
+      let GLOBAL_PROJECTS = await this.manager.find(Opportunity, {
+        where: { status: In(['P', 'C']) },
+        relations: ['milestones'],
+      });
+
+      let GLOBAL_EMPLOYEES = await this.manager.find(Employee, {
+        relations: [
+          'contactPersonOrganization',
+          'contactPersonOrganization.contactPerson',
+        ],
+      });
+
+      let PROJECT_PICKER: any = {};
+      let MILESTONE_PICKER: any = {};
+      let EMPLOYEE_PICKER: any = {};
+      let CONTACTPERSON_PICKER: any = {};
+
+      for (let project of GLOBAL_PROJECTS) {
+        for (let milestone of project.milestones) {
+          MILESTONE_PICKER[milestone.id] = {
+            id: milestone.id,
+            title: milestone.title,
+            projectId: milestone.projectId,
+            projectName: project.title,
+            projectType: project.type,
+          };
+        }
+
+        PROJECT_PICKER[project.id] = {
+          id: project.id,
+          title: project.title,
+          type: project.type,
+        };
+      }
+
+      for (let employee of GLOBAL_EMPLOYEES) {
+        const contactPerson = employee.contactPersonOrganization.contactPerson;
+
+        EMPLOYEE_PICKER[employee.id] = {
+          id: employee.id,
+          name: employee.getFullName,
+        };
+
+        CONTACTPERSON_PICKER[contactPerson.id] = {
+          id: contactPerson.id,
+          name: contactPerson.getFullName,
+        };
+      }
+
+      let PICKERS = {
+        PROJECT_PICKER,
+        MILESTONE_PICKER,
+        EMPLOYEE_PICKER,
+        CONTACTPERSON_PICKER,
+      };
+
+      if (confirmFlag) {
+        var systemLock = await this.manager.findOne(GlobalSetting, {
           where: { keyLabel: 'systemLock' },
         });
 
@@ -130,30 +199,65 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
         await trx.save(systemLock);
       }
 
+      var forceStatusChange = await this.manager.findOne(GlobalSetting, {
+        where: { keyLabel: 'forceStatusChange' },
+      });
+
+      if (forceStatusChange) {
+        parseGlobalSetting(forceStatusChange)
+          ? (forceStatusChangeFlag = true)
+          : (forceStatusChangeFlag = false);
+      }
+
       const { projects, milestones } = await this._closeProjectsAndMilestones(
         year,
         trx,
-        confirm
+        confirmFlag
       );
+
       const leaveRequests = await this._closeLeaveRequests(
         year,
         userId,
         trx,
-        confirm
+        confirmFlag,
+        PICKERS,
+        forceStatusChangeFlag
       );
 
-      await this._closeLeaveRequestBalances(trx, confirm);
+      await this._closeLeaveRequestBalances(trx, confirmFlag);
+
       const timesheets = await this._closeTimesheets(
         year,
         userId,
         trx,
-        confirm
+        confirmFlag,
+        PICKERS,
+        forceStatusChangeFlag
       );
 
-      if (confirm) {
+      const expenseSheets = await this._closeExpenseSheets(
+        year,
+        userId,
+        trx,
+        confirmFlag,
+        PICKERS,
+        forceStatusChangeFlag
+      );
+
+      const contracts = await this._closeEmploymentContracts(year, PICKERS);
+
+      if (confirmFlag) {
         year.closed = true;
         year.closedBy = userId;
         year.closedAt = moment().toDate();
+
+        if (!systemLock) {
+          throw new Error('Something went wrong');
+        }
+
+        systemLock.keyValue = '0';
+
+        await trx.save(systemLock);
 
         return trx.save(year);
       }
@@ -165,8 +269,8 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
         leaveRequestBalances:
           'All the balances will be shifted to carry forward',
         timesheets,
-        expenseSheets: [],
-        contracts: [],
+        expenseSheets,
+        contracts,
       };
     });
   }
@@ -174,7 +278,7 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
   async _closeProjectsAndMilestones(
     year: FinancialYear,
     trx: EntityManager,
-    confirm = false
+    confirmFlag = false
   ) {
     //Closing same year projects
     let projects = await this.manager.find(Opportunity, {
@@ -198,8 +302,6 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
           const milestoneStartDate = moment(milestone.startDate);
           const milestoneEndDate = moment(milestone.endDate);
 
-          if (milestone.closed) continue;
-
           if (
             milestoneStartDate.isBetween(
               year.startDate,
@@ -219,10 +321,8 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
               title: milestone.title,
               startDate: milestoneStartDate.format('DD-MM-YYYY'),
               endDate: milestoneEndDate.format('DD-MM-YYYY'),
-              content: '',
             });
 
-            milestone.closed = true;
             effectedMilestones.push(milestone);
           }
         }
@@ -241,7 +341,6 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
           title: project.title,
           startDate: projectStartDate.format('DD-MM-YYYY'),
           endDate: projectEndDate.format('DD-MM-YYYY'),
-          content: '',
         });
 
         project.phase = false;
@@ -249,7 +348,7 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
       }
     }
 
-    if (confirm) {
+    if (confirmFlag) {
       await trx.save(effectedProjects);
       await trx.save(effectedMilestones);
     }
@@ -264,7 +363,9 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
     year: FinancialYear,
     userId: number,
     trx: EntityManager,
-    confirm = false
+    confirmFlag = false,
+    { EMPLOYEE_PICKER, PROJECT_PICKER }: any,
+    forceStatusChangeFlag: Boolean
   ) {
     let loopedLeaveRequests: Array<Number> = [];
     let leaveRequestsIndex: any = {};
@@ -341,11 +442,17 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
         delete (newLeaveRequest as any).futureEntries;
         responseLeaveRequests.push({
           id: leaveRequest.id,
-          type: leaveRequest.type,
-          submittedBy: leaveRequest.submittedBy,
-          submittedAt: leaveRequest.submittedAt,
+          // startDate: leaveRequest.id,
+          // endDate: leaveRequest.id,
+          typeId: leaveRequest.typeId,
+          employeeId: leaveRequest.employeeId,
+          employeeName: EMPLOYEE_PICKER[leaveRequest.employeeId].name,
+          projectId: leaveRequest.workId ?? null,
+          projectName: leaveRequest.workId
+            ? PROJECT_PICKER[leaveRequest.workId].title
+            : '',
           split: true,
-          content: '',
+          status: leaveRequest.getStatus,
         });
         newLeaveRequests.push(newLeaveRequest);
       }
@@ -358,11 +465,17 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
         leaveRequest.rejectedBy = userId;
         responseLeaveRequests.push({
           id: leaveRequest.id,
-          type: leaveRequest.type,
-          submittedBy: leaveRequest.submittedBy,
-          submittedAt: leaveRequest.submittedAt,
+          // startDate: leaveRequest.id,
+          // endDate: leaveRequest.id,
+          typeId: leaveRequest.typeId,
+          employeeId: leaveRequest.employeeId,
+          employeeName: EMPLOYEE_PICKER[leaveRequest.employeeId].name,
+          projectId: leaveRequest.workId ?? null,
+          projectName: leaveRequest.workId
+            ? PROJECT_PICKER[leaveRequest.workId].title
+            : '-',
           split: false,
-          content: '',
+          status: leaveRequest.getStatus,
         });
       }
     }
@@ -372,18 +485,19 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
     // leaveRequests,
     // });
 
-    if (confirm) {
+    if (confirmFlag) {
+      if (forceStatusChangeFlag) {
+        await trx.save(LeaveRequest, leaveRequests);
+      }
+
       await trx.remove(LeaveRequestEntry, deleteableEntries);
-
       await trx.save(LeaveRequest, newLeaveRequests);
-
-      await trx.save(LeaveRequest, leaveRequests);
     }
 
     return responseLeaveRequests;
   }
 
-  async _closeLeaveRequestBalances(trx: EntityManager, confirm = false) {
+  async _closeLeaveRequestBalances(trx: EntityManager, confirmFlag = false) {
     const leaveRequestBalances = await this.manager.find(LeaveRequestBalance);
     let newLeaveRequestBalances: Array<LeaveRequestBalance> = [];
     for (let leaveRequestBalance of leaveRequestBalances) {
@@ -392,7 +506,7 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
       newLeaveRequestBalances.push(leaveRequestBalance);
     }
 
-    if (confirm) {
+    if (confirmFlag) {
       await trx.save(newLeaveRequestBalances);
     }
 
@@ -403,7 +517,9 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
     year: FinancialYear,
     userId: number,
     trx: EntityManager,
-    confirm = false
+    confirmFlag = false,
+    { MILESTONE_PICKER, EMPLOYEE_PICKER }: any,
+    forceStatusChangeFlag: Boolean
   ) {
     let timesheets = await this.manager.find(Timesheet, {
       where: {
@@ -416,33 +532,142 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
     let responseTimesheets: any[] = [];
 
     timesheets.forEach((timesheet) => {
-      timesheet.milestoneEntries.forEach((milestoneEntry) => {
-        milestoneEntry.actionNotes = 'Rejected because of Year closing';
-        milestoneEntry.entries.forEach((entry) => {
-          if (
-            entry.getStatus === TimesheetEntryStatus.SAVED ||
-            entry.getStatus === TimesheetEntryStatus.SUBMITTED
-          ) {
-            entry.rejectedAt = moment().toDate();
-            entry.rejectedBy = userId;
-            entry.notes = 'Rejected because of Year closing';
-          }
-        });
-      });
+      const timesheetStatus = timesheet.getStatus;
 
-      responseTimesheets.push({
-        id: timesheet.id,
-        startDate: timesheet.startDate,
-        endDate: timesheet.endDate,
-        employee: timesheet.employeeId,
-        content: '',
+      timesheet.milestoneEntries.forEach((milestoneEntry) => {
+        responseTimesheets.push({
+          id: milestoneEntry.id,
+          startDate: timesheet.startDate,
+          endDate: timesheet.endDate,
+          employeeId: timesheet.employeeId,
+          employeeName: EMPLOYEE_PICKER[timesheet.employeeId].name,
+          projectId: MILESTONE_PICKER[milestoneEntry.milestoneId].projectId,
+          projectName: MILESTONE_PICKER[milestoneEntry.milestoneId].projectName,
+          projectType: MILESTONE_PICKER[milestoneEntry.milestoneId].projectType,
+          milestoneId: milestoneEntry.milestoneId,
+          milestoneName: MILESTONE_PICKER[milestoneEntry.milestoneId].title,
+          status: timesheetStatus,
+        });
+
+        milestoneEntry.actionNotes =
+          'Systematically Rejected because of Year closing';
+        if (confirmFlag)
+          milestoneEntry.entries.forEach((entry) => {
+            if (
+              entry.getStatus === TimesheetEntryStatus.SAVED ||
+              entry.getStatus === TimesheetEntryStatus.SUBMITTED
+            ) {
+              entry.rejectedAt = moment().toDate();
+              entry.rejectedBy = userId;
+              entry.notes = 'Systematically Rejected because of Year closing';
+            }
+          });
       });
     });
 
-    if (confirm) {
+    if (confirmFlag && forceStatusChangeFlag) {
       await trx.save(timesheets);
     }
 
     return responseTimesheets;
+  }
+
+  async _closeExpenseSheets(
+    year: FinancialYear,
+    userId: number,
+    trx: EntityManager,
+    confirmFlag = false,
+    { EMPLOYEE_PICKER, PROJECT_PICKER }: any,
+    forceStatusChangeFlag: Boolean
+  ) {
+    let expenses = await this.manager.find(Expense, {
+      where: {
+        date: Between(year.startDate, year.endDate),
+      },
+      relations: ['entries'],
+    });
+
+    let expenseSheets = await this.manager.find(ExpenseSheet);
+    let savingExpenses: Expense[] = [];
+
+    let EXPENSESHEET_PICKER: { [key: number]: ExpenseSheet } = {};
+
+    for (let expenseSheet of expenseSheets) {
+      EXPENSESHEET_PICKER[expenseSheet.id] = expenseSheet;
+    }
+
+    let loopedExpenseSheets: number[] = [];
+
+    let responseExpenseSheets: any[] = [];
+
+    for (let expense of expenses) {
+      const expenseLastEntry = expense.entries[expense.entries.length - 1];
+      const currentExpenseSheet =
+        EXPENSESHEET_PICKER[
+          expense?.expenseSheetId ?? expenseLastEntry.sheetId
+        ];
+
+      if (loopedExpenseSheets.includes(currentExpenseSheet.id)) continue;
+
+      loopedExpenseSheets.push(currentExpenseSheet.id);
+
+      responseExpenseSheets.push({
+        id: currentExpenseSheet.id,
+        employeeId: currentExpenseSheet.createdBy,
+        employeeName: EMPLOYEE_PICKER[currentExpenseSheet.createdBy].name,
+        projectId: PROJECT_PICKER[currentExpenseSheet.projectId].id ?? null,
+        projectName:
+          PROJECT_PICKER[currentExpenseSheet.projectId].title ?? null,
+        submittedAt: expense.submittedAt,
+        status: 'Not Defined',
+      });
+
+      if (!expense.rejectedAt && !expense.approvedAt) {
+        expense.rejectedAt = moment().toDate();
+        expense.rejectedBy = userId;
+        expense.notes = 'Systematically Rejected because of Year closing';
+      }
+
+      savingExpenses.push(expense);
+    }
+
+    if (confirmFlag && forceStatusChangeFlag) {
+      await trx.save(savingExpenses);
+    }
+
+    return responseExpenseSheets;
+  }
+
+  async _closeEmploymentContracts(
+    year: FinancialYear,
+    { EMPLOYEE_PICKER }: any
+  ) {
+    let responseContracts: any = [];
+
+    let contracts = await this.manager.find(EmploymentContract, {
+      where: { startDate: Between(year.startDate, year.endDate) },
+    });
+
+    for (let contract of contracts) {
+      let contractStartDate = moment(contract.startDate);
+      let contractEndDate = moment(contract.endDate);
+
+      let across = false;
+
+      if (contractEndDate.isAfter(year.endDate)) {
+        across = true;
+      }
+
+      responseContracts.push({
+        id: contract.id,
+        startDate: contract.startDate,
+        endDate: contract.endDate,
+        employeeId: contract.employeeId,
+        employeeName: EMPLOYEE_PICKER[contract.employeeId].name,
+        across,
+      });
+    }
+
+    return responseContracts;
   }
 }

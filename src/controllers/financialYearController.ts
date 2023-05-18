@@ -43,10 +43,6 @@ export class FinancialYearController {
       let id = req.params.id;
       let queryConfirm = req.query.confirm;
       let confirm = queryConfirm === 'true' ? true : false;
-      console.log(
-        '🚀 ~ file: financialYearController.ts:46 ~ FinancialYearController ~ closeYear ~ confirm:',
-        confirm
-      );
 
       const { user } = res.locals;
 
@@ -54,10 +50,6 @@ export class FinancialYearController {
         parseInt(id),
         user.id,
         confirm
-      );
-      console.log(
-        '🚀 ~ file: financialYearController.ts:58 ~ FinancialYearController ~ closeYear ~ response:',
-        response
       );
 
       res.status(200).json({

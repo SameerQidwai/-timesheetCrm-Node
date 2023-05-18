@@ -31,11 +31,15 @@ export class Timesheet extends Base {
     let status: TimesheetStatus = TimesheetStatus.SAVED;
 
     for (let milestoneEntry of this.milestoneEntries) {
-      for (let entry of milestoneEntry.entries) {
-        if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
-        else if (entry.approvedAt !== null) status = TimesheetStatus.APPROVED;
-        else if (entry.submittedAt !== null) status = TimesheetStatus.SUBMITTED;
-      }
+      // for (let entry of milestoneEntry.entries) {
+      //   if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
+      //   else if (entry.approvedAt !== null) status = TimesheetStatus.APPROVED;
+      //   else if (entry.submittedAt !== null) status = TimesheetStatus.SUBMITTED;
+      // }
+      let entry = milestoneEntry.entries[0];
+      if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
+      else if (entry.approvedAt !== null) status = TimesheetStatus.APPROVED;
+      else if (entry.submittedAt !== null) status = TimesheetStatus.SUBMITTED;
     }
 
     return status;

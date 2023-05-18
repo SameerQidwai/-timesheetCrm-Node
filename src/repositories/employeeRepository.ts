@@ -701,8 +701,6 @@ export class EmployeeRepository extends Repository<Employee> {
       throw new Error('Employee not found');
     }
 
-    console.log('HAAAAAAAAAAAA', employee.getActiveContract);
-
     let pastContracts: EmploymentContract[] = [];
     let currentContract: EmploymentContract[] = [];
     let futureContracts: EmploymentContract[] = [];
