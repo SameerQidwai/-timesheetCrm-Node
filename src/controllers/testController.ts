@@ -11,22 +11,32 @@ import { Employee } from '../entities/employee';
 import { WelcomeMail } from '../mails/welcomeMail';
 import { ResetPasswordMail } from '../mails/resetPasswordMail';
 import { FinancialYear } from '../entities/financialYear';
+import { exec } from 'child_process';
 
 export class TestController {
   async test(req: Request, res: Response, next: NextFunction) {
     try {
       let manager = getManager();
 
-      let year = await manager.findOne(FinancialYear, {});
-      if (year) {
-        year.endDate = moment('2024-01-01').toDate();
+      // exec('node fakeWriter.ts');
+      // const { exec } = require("child_process");
 
-        await manager.save(year);
-      }
+      exec('node fakeWriter.ts', (error, stdout, stderr) => {
+        if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+        }
+        console.log(`stdout: ${stdout}`);
+      });
+
       res.status(200).json({
         success: true,
         message: 'Hello',
-        data: year,
+        data: [],
       });
     } catch (e) {
       next(e);
