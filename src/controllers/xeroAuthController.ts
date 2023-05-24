@@ -82,8 +82,9 @@ export class XeroAuthController {
         const activeTenant = xero.tenants[0]
         const invoicesRequest = await xero.accountingApi.createInvoices(activeTenant.tenantId, invoices)
         // const invoicesRequest = await xero.accountingApi.getInvoices(activeTenant.tenantId)
-        console.log(invoicesRequest); // Store the token set in the session
+        // console.log(invoicesRequest); // Store the token set in the session
         // res.send('<script>window.close();</script>');
+        res.send(`<script> window.opener.postMessage('close', 'http://localhost:3000/invoice')</script>`);
     } catch (e) {
         next(e);
     }
