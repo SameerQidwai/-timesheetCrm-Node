@@ -89,7 +89,7 @@ router.use('/cashflowReportLabel', cashflowReportLabelRoutes);
 router.use('/financial-years', financialYearRoutes);
 router.use('/test', testRoutes);
 router.use('/system', systemRoutes);
-router.use('/xero-auth', xeroAuthRoutes);
+router.use('/xero', xeroAuthRoutes);
 // router.use("/opportunity-resources", opportunityResourceRoutes);
 
 // console.log("router: ", router);
