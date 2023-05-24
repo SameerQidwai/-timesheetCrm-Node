@@ -37,6 +37,60 @@ export class FinancialYearController {
     }
   }
 
+  async findOne(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(FinancialYearRepository);
+      const { user } = res.locals;
+      let id = parseInt(req.params.id);
+
+      let year = await repository.findOneCustom(id);
+
+      res.status(200).json({
+        success: true,
+        message: 'Year Created',
+        data: year,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async updateOne(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(FinancialYearRepository);
+      const { user } = res.locals;
+      let id = parseInt(req.params.id);
+
+      let year = await repository.updateOne(req.body, user.id, id);
+
+      res.status(200).json({
+        success: true,
+        message: 'Year Created',
+        data: year,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async deleteCustom(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(FinancialYearRepository);
+      const { user } = res.locals;
+      let id = parseInt(req.params.id);
+
+      let year = await repository.deleteCustom(user.id, id);
+
+      res.status(200).json({
+        success: true,
+        message: 'Year Created',
+        data: year,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
   async closeYear(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(FinancialYearRepository);

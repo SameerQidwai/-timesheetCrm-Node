@@ -10,6 +10,12 @@ router
   .get([isLoggedIn], contr.getAll.bind(contr))
   .post([isLoggedIn], contr.createAndSave.bind(contr));
 
+router
+  .route('/:id')
+  .get([isLoggedIn], contr.findOne.bind(contr))
+  .put([isLoggedIn], contr.updateOne.bind(contr))
+  .delete([isLoggedIn], contr.deleteCustom.bind(contr));
+
 router.route('/:id/closeYear').patch([isLoggedIn], contr.closeYear.bind(contr));
 
 export default router;

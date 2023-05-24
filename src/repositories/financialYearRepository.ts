@@ -103,6 +103,44 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
     return this.save(year);
   }
 
+  async findOneCustom(id: number): Promise<FinancialYear> {
+    let year = await this.findOne(id);
+
+    if (!year) {
+      throw new Error('Financial year not found');
+    }
+
+    return year;
+  }
+
+  async updateOne(
+    financialYearDTO: FinancialYearDTO,
+    userId: number,
+    id: number
+  ): Promise<any> {
+    let year = await this.findOne(id);
+
+    if (!year) {
+      throw new Error('Financial year not found');
+    }
+
+    year.label = financialYearDTO.label;
+    year.startDate = financialYearDTO.startDate;
+    year.endDate = financialYearDTO.endDate;
+
+    return this.save(year);
+  }
+
+  async deleteCustom(userId: number, id: number): Promise<any> {
+    let year = await this.findOne(id);
+
+    if (!year) {
+      throw new Error('Financial year not found');
+    }
+
+    return this.delete(year);
+  }
+
   async closeYear(
     id: number,
     userId: number,
