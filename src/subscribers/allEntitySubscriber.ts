@@ -117,7 +117,7 @@ export class EntitySubscriber implements EntitySubscriberInterface {
           // console.log('YESSS');
           //IF SAME COLUMN
           if (conditionColumnId === columnId) {
-            console.log(event.metadata.name, newData, oldData);
+            // console.log(event.metadata.name, newData, oldData);
             if (
               moment(oldData[columnName]).isSameOrBefore(
                 lastClosedFinancialYear.endDate,

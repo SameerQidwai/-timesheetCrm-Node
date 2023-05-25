@@ -5,11 +5,12 @@ import {
   In,
   LessThan,
   MoreThanOrEqual,
+  Not,
   Repository,
 } from 'typeorm';
 import { FinancialYear } from '../entities/financialYear';
 import { FinancialYearDTO } from '../dto';
-import moment from 'moment';
+import moment, { Moment } from 'moment';
 import { Opportunity } from '../entities/opportunity';
 import { LeaveRequest } from '../entities/leaveRequest';
 import { LeaveRequestEntry } from '../entities/leaveRequestEntry';
@@ -29,6 +30,7 @@ import { ExpenseSheet } from '../entities/expenseSheet';
 import { EmploymentContract } from '../entities/employmentContract';
 import { Employee } from '../entities/employee';
 import { parseGlobalSetting } from '../utilities/helpers';
+import { exec, spawn } from 'child_process';
 
 @EntityRepository(FinancialYear)
 export class FinancialYearRepository extends Repository<FinancialYear> {
@@ -42,56 +44,12 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
     financialYearDTO: FinancialYearDTO,
     userId: number
   ): Promise<any> {
-    let years = await this.find({
-      order: { endDate: 'DESC' },
-    });
-
     let { label } = financialYearDTO;
 
     const startDate = moment(financialYearDTO.startDate).startOf('day');
     const endDate = moment(financialYearDTO.endDate).endOf('day');
 
-    let lastClosedFinancialYear = await this.findOne({
-      order: { endDate: 'DESC' },
-      where: { closed: true },
-    });
-
-    if (lastClosedFinancialYear) {
-      if (moment(lastClosedFinancialYear.endDate).isAfter(startDate, 'date')) {
-        throw new Error('Cannot create year before last closed year');
-      }
-    }
-
-    if (years.length) {
-      const lastYear = years[0];
-      const firstYear = years[years.length - 1];
-
-      const firstYearStartDate = moment(firstYear.startDate);
-      const lastYearEndDate = moment(lastYear.endDate);
-
-      if (
-        !startDate.isAfter(lastYearEndDate, 'date') &&
-        !endDate.isBefore(firstYearStartDate, 'date')
-      ) {
-        throw new Error('Years Cannot Overlap');
-      }
-
-      if (
-        (endDate.isBefore(firstYearStartDate, 'date') &&
-          !endDate.isSame(
-            firstYearStartDate.subtract(1, 'day').startOf('day'),
-            'date'
-          )) ||
-        (startDate.isAfter(lastYearEndDate, 'date') &&
-          !startDate.isSame(lastYearEndDate.add(1, 'day'), 'date'))
-      ) {
-        throw new Error('Gap is not allowed between Financial Years');
-      }
-    }
-
-    if (startDate.isSameOrAfter(endDate)) {
-      throw new Error('Incorrect date range');
-    }
+    await this._validateCreateFinancialYearDates(startDate, endDate);
 
     let year = new FinancialYear();
 
@@ -124,6 +82,15 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
       throw new Error('Financial year not found');
     }
 
+    if (year.closed) {
+      throw new Error('Closed year cannot be updated');
+    }
+
+    const startDate = moment(financialYearDTO.startDate).startOf('day');
+    const endDate = moment(financialYearDTO.endDate).endOf('day');
+
+    await this._validateUpdateFinancialYearDates(startDate, endDate, year);
+
     year.label = financialYearDTO.label;
     year.startDate = financialYearDTO.startDate;
     year.endDate = financialYearDTO.endDate;
@@ -136,6 +103,16 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
 
     if (!year) {
       throw new Error('Financial year not found');
+    }
+
+    if (year.closed) {
+      throw new Error('Cannot delete closed year');
+    }
+
+    let years = await this.find({ order: { endDate: 'DESC' } });
+
+    if (years[0].id != year.id) {
+      throw new Error('Cannot delete any year other than last year');
     }
 
     return this.delete(year);
@@ -235,6 +212,68 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
         systemLock.keyValue = '1';
 
         await trx.save(systemLock);
+
+        year.closing = true;
+        year.closedBy = userId;
+
+        await trx.save(year);
+
+        let child_process = spawn('ts-node src/financialYearLocker.ts', [], {
+          shell: true,
+        });
+
+        child_process.stdout.on('data', function (data) {
+          console.log('stdout: ' + data);
+        });
+
+        child_process.stderr.on('data', function (data) {
+          console.log('stderr: ' + data);
+
+          //     let year = await this.findOne({
+          //       where: { closing: true },
+          //     });
+
+          //     if (year) {
+          //       year.closing = false;
+          //       (year.closedBy as any) = null;
+
+          //       await this.save(year);
+
+          //       console.log('Rolled back in repository');
+        });
+
+        child_process.on('close', function (code) {
+          console.log('child process exited with code ' + code);
+        });
+        // exec(
+        //   'ts-node src/financialYearLocker.ts',
+        //   async (error, stdout, stderr) => {
+        //     if (error) {
+        //       console.log(`error: ${error.message}`);
+        //       return;
+        //     }
+        //     if (stderr) {
+        //       console.log(`stderr: ${stderr}`);
+        //       return;
+        //     }
+        //     console.log(`stdout: ${stdout}`);
+
+        //     let year = await this.findOne({
+        //       where: { closing: true },
+        //     });
+
+        //     if (year) {
+        //       year.closing = false;
+        //       (year.closedBy as any) = null;
+
+        //       await this.save(year);
+
+        //       console.log('Rolled back in repository');
+        //     }
+        //   }
+        // );
+
+        return true;
       }
 
       var forceStatusChange = await this.manager.findOne(GlobalSetting, {
@@ -311,6 +350,187 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
         contracts,
       };
     });
+  }
+
+  async _validateCreateFinancialYearDates(startDate: Moment, endDate: Moment) {
+    let years = await this.find({
+      order: { endDate: 'DESC' },
+    });
+    let lastClosedFinancialYear = await this.findOne({
+      order: { endDate: 'DESC' },
+      where: { closed: true },
+    });
+
+    if (lastClosedFinancialYear) {
+      if (moment(lastClosedFinancialYear.endDate).isAfter(startDate, 'date')) {
+        throw new Error('Cannot create year before last closed year');
+      }
+    }
+
+    if (startDate.isSameOrAfter(endDate)) {
+      throw new Error('Incorrect date range');
+    }
+
+    if (years.length) {
+      const lastYear = years[0];
+      const firstYear = years[years.length - 1];
+
+      const firstYearStartDate = moment(firstYear.startDate);
+      const lastYearEndDate = moment(lastYear.endDate);
+
+      if (
+        !startDate.isAfter(lastYearEndDate, 'date') &&
+        !endDate.isBefore(firstYearStartDate, 'date')
+      ) {
+        throw new Error('Years Cannot Overlap');
+      }
+
+      if (
+        (endDate.isBefore(firstYearStartDate, 'date') &&
+          !endDate.isSame(
+            firstYearStartDate.subtract(1, 'day').startOf('day'),
+            'date'
+          )) ||
+        (startDate.isAfter(lastYearEndDate, 'date') &&
+          !startDate.isSame(lastYearEndDate.add(1, 'day'), 'date'))
+      ) {
+        throw new Error('Gap is not allowed between Financial Years');
+      }
+    }
+
+    return true;
+  }
+
+  async _validateUpdateFinancialYearDates(
+    startDate: Moment,
+    endDate: Moment,
+    updateYear: FinancialYear
+  ) {
+    // let updateYearStart = moment(updateYear.startDate);
+    // let updateYearEnd = moment(updateYear.endDate);
+
+    let years = await this.find({
+      order: { endDate: 'DESC' },
+    });
+
+    let lastClosedFinancialYear = await this.findOne({
+      order: { endDate: 'DESC' },
+      where: { closed: true },
+    });
+
+    let previousYear: FinancialYear | null = null;
+    let nextYear: FinancialYear | null = null;
+    let index = 0;
+
+    if (startDate.isSameOrAfter(endDate)) {
+      throw new Error('Incorrect date range');
+    }
+
+    if (lastClosedFinancialYear) {
+      if (moment(lastClosedFinancialYear.endDate).isAfter(startDate, 'date')) {
+        throw new Error('Cannot create year before last closed year');
+      }
+    }
+
+    for (let loopYear of years) {
+      if (loopYear.id === updateYear.id) {
+        if (index != 0) nextYear = years[index - 1];
+
+        if (index != years.length - 1) previousYear = years[index + 1];
+      }
+
+      index++;
+    }
+
+    if (
+      previousYear &&
+      previousYear.closed &&
+      !startDate.isSame(updateYear.startDate)
+    ) {
+      throw new Error('Cannot change start date when previous year is locked');
+    }
+
+    for (let loopedYear of years) {
+      if (loopedYear.id == updateYear.id) continue;
+
+      if (previousYear && previousYear.id == loopedYear.id) continue;
+
+      if (nextYear && nextYear.id == loopedYear.id) continue;
+
+      // let loopedStartDate = moment(loopedYear.startDate);
+      // let loopedEndDate = moment(loopedYear.endDate);
+
+      if (
+        startDate.isBetween(
+          loopedYear.startDate,
+          loopedYear.endDate,
+          'date',
+          '[]'
+        ) ||
+        endDate.isBetween(
+          loopedYear.startDate,
+          loopedYear.endDate,
+          'date',
+          '[]'
+        )
+      ) {
+        throw new Error('Cannot over lap date');
+      }
+    }
+
+    if (previousYear) {
+      if (
+        startDate.isBetween(
+          previousYear.startDate,
+          previousYear.endDate,
+          'date',
+          '[]'
+        )
+      ) {
+        if (moment(previousYear.startDate).add(30, 'days').isAfter(startDate)) {
+          throw new Error('Span of financial year can be minimum of 30 days');
+        }
+        previousYear.endDate = startDate.subtract(1, 'day').toDate();
+      }
+    }
+
+    if (nextYear) {
+      if (
+        endDate.isBetween(nextYear.startDate, nextYear.endDate, 'date', '[]')
+      ) {
+        if (moment(nextYear.endDate).subtract(30, 'days').isBefore(endDate)) {
+          throw new Error('Span of financial year can be minimum of 30 days');
+        }
+        nextYear.startDate = endDate.add(1, 'day').toDate();
+      }
+    }
+
+    if (
+      startDate.isBetween(
+        updateYear.startDate,
+        updateYear.endDate,
+        'date',
+        '[]'
+      )
+    ) {
+      if (previousYear) {
+        previousYear.endDate = startDate.subtract(1, 'day').toDate();
+      }
+    }
+
+    if (
+      endDate.isBetween(updateYear.startDate, updateYear.endDate, 'date', '[]')
+    ) {
+      if (nextYear) {
+        nextYear.startDate = endDate.add(1, 'day').toDate();
+      }
+    }
+
+    if (previousYear) await this.save(previousYear);
+
+    if (nextYear) await this.save(nextYear);
+
+    return true;
   }
 
   async _closeProjectsAndMilestones(

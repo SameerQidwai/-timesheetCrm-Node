@@ -21,7 +21,7 @@ export class TestController {
       // exec('node fakeWriter.ts');
       // const { exec } = require("child_process");
 
-      exec('node fakeWriter.ts', (error, stdout, stderr) => {
+      exec('ts-node src/financialYearLocker.ts', (error, stdout, stderr) => {
         if (error) {
           console.log(`error: ${error.message}`);
           return;
