@@ -43,7 +43,7 @@ import cashflowReportLabelRoutes from './cashflowReportLabelRoutes';
 import financialYearRoutes from './financialYearRoutes';
 import systemRoutes from './systemRoutes';
 import testRoutes from './testRoutes';
-import xeroAuthRoutes from './xeroAuthRoutes'
+import integrationAuthRoutes from './integrationAuthRoutes'
 
 const router: Router = Router();
 router.use('', authRoutes);
@@ -89,7 +89,7 @@ router.use('/cashflowReportLabel', cashflowReportLabelRoutes);
 router.use('/financial-years', financialYearRoutes);
 router.use('/test', testRoutes);
 router.use('/system', systemRoutes);
-router.use('/xero', xeroAuthRoutes);
+router.use('/integration', integrationAuthRoutes);
 // router.use("/opportunity-resources", opportunityResourceRoutes);
 
 // console.log("router: ", router);
