@@ -12,7 +12,7 @@ import {
 import { ExpenseType } from '../entities/expenseType';
 import moment from 'moment';
 import { Attachment } from '../entities/attachment';
-import { EntityType } from '../constants/constants';
+import { EntityType, ExpenseStatus } from '../constants/constants';
 import { AttachmentsResponse } from '../responses/attachmentResponses';
 
 @EntityRepository(Expense)
@@ -185,10 +185,10 @@ export class ExpenseRepository extends Repository<Expense> {
     let availableExpenses: Expense[] = [];
 
     results.forEach((expense) => {
+      const expenseStatus = expense.getStatus;
       if (
-        expense.rejectedAt !== null ||
-        !expense.entries.length ||
-        expense.entries.filter((e) => e.sheetId == id).length
+        expenseStatus === ExpenseStatus.SUBMITTED ||
+        expenseStatus === ExpenseStatus.REJECTED
       ) {
         availableExpenses.push(expense);
       }
@@ -205,10 +205,10 @@ export class ExpenseRepository extends Repository<Expense> {
     let availableExpenses: Expense[] = [];
 
     results.forEach((expense) => {
+      const expenseStatus = expense.getStatus;
       if (
-        expense.rejectedAt !== null ||
-        !expense.entries.length ||
-        expense.entries.filter((e) => e.sheetId == id).length
+        expenseStatus === ExpenseStatus.SUBMITTED ||
+        expenseStatus === ExpenseStatus.REJECTED
       ) {
         availableExpenses.push(expense);
       }
@@ -472,8 +472,8 @@ export class ExpenseRepository extends Repository<Expense> {
       }
 
       if (
-        expense?.entries[expense.entries.length - 1]?.sheet?.expenseSheetExpenses
-          ?.length == 1
+        expense?.entries[expense.entries.length - 1]?.sheet
+          ?.expenseSheetExpenses?.length == 1
       ) {
         throw new Error('Sheet has only one expense');
       }
@@ -530,45 +530,43 @@ export class ExpenseRepository extends Repository<Expense> {
     }
   }
 
-  async _getOneAttachment(result: Expense ): Promise<Expense>{
-
-    let attachments = await this.manager.find(Attachment,{
+  async _getOneAttachment(result: Expense): Promise<Expense> {
+    let attachments = await this.manager.find(Attachment, {
       where: { targetType: EntityType.EXPENSE, targetId: result.id },
       relations: ['file'],
-    })
+    });
 
     let expense: Expense & { attachments: Attachment[] } = {
       ...result,
       attachments: attachments || [],
     };
-    
-    return expense
+
+    return expense;
   }
 
-  async _getAttachments(results: Expense[]): Promise<Expense[]>{
-    let resultIds = results.map((el: any)=> el.id)
+  async _getAttachments(results: Expense[]): Promise<Expense[]> {
+    let resultIds = results.map((el: any) => el.id);
 
-    let attachments = await this.manager.find(Attachment,{
+    let attachments = await this.manager.find(Attachment, {
       where: { targetType: EntityType.EXPENSE, targetId: In(resultIds) },
       relations: ['file'],
-    })
+    });
 
-    let attachmentObj : {[key: number]: Attachment[]} ={}
-    
-    attachments.forEach((el:any)=>{
-      if (attachmentObj?.[el.targetId]){
-        attachmentObj[el.targetId].push(el)
-      }else{
-        attachmentObj[el.targetId] = [el]
+    let attachmentObj: { [key: number]: Attachment[] } = {};
+
+    attachments.forEach((el: any) => {
+      if (attachmentObj?.[el.targetId]) {
+        attachmentObj[el.targetId].push(el);
+      } else {
+        attachmentObj[el.targetId] = [el];
       }
-    })
+    });
 
-    results.map((el:any)=>{
-      el.attachments = attachmentObj[el.id] || []
-      return el
-    })
+    results.map((el: any) => {
+      el.attachments = attachmentObj[el.id] || [];
+      return el;
+    });
 
-    return results
+    return results;
   }
-
 }

@@ -192,3 +192,10 @@ export enum GlobalSettingValueType {
   STRING = 'string',
   BOOLEAN = 'boolean',
 }
+
+export enum ExpenseStatus {
+  SAVED = 'saved',
+  SUBMITTED = 'submitted',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+}
