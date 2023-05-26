@@ -4,7 +4,7 @@ import { ViewEntity, PrimaryGeneratedColumn, ViewColumn } from "typeorm"
     name: 'Resource_View',
     expression: `Select o_r.opportunity_id project_id, o_r.milestone_id, o_r.start_date resource_start, 
     o_r.end_date resource_end, ora.buying_rate resource_buying_rate, ora.selling_rate resource_selling_rate, 
-    ora.contact_person_id resource_contact_person_id, cpv.employee_id resource_employee_id, cpv.name resource_name,
+    ora.contact_person_id resource_contact_person_id, ora.id resource_id, cpv.employee_id resource_employee_id, cpv.name resource_name,
     o.cm_percentage project_cm_percentage, o.organization_id project_organization_id, org.name project_organization_name, o.project_manager_id, 
     o.type project_type, o.value project_amount, o.status project_status, o.phase project_phase, o.title project_title, 
     o.start_date project_start, o.end_date project_end
@@ -40,6 +40,9 @@ export class ResourceView {
   
   @ViewColumn()
   resource_contact_person_id: number
+
+  @ViewColumn()
+  resource_id: number
   
   @ViewColumn()
   resource_employee_id: number

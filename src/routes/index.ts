@@ -44,6 +44,7 @@ import financialYearRoutes from './financialYearRoutes';
 import systemRoutes from './systemRoutes';
 import testRoutes from './testRoutes';
 import integrationAuthRoutes from './integrationAuthRoutes'
+import invoiceRoutes from './invoiceRoutes'
 
 const router: Router = Router();
 router.use('', authRoutes);
@@ -90,6 +91,7 @@ router.use('/financial-years', financialYearRoutes);
 router.use('/test', testRoutes);
 router.use('/system', systemRoutes);
 router.use('/integration', integrationAuthRoutes);
+router.use('/invoice', invoiceRoutes);
 // router.use("/opportunity-resources", opportunityResourceRoutes);
 
 // console.log("router: ", router);

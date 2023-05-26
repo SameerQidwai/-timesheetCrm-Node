@@ -4,7 +4,7 @@ import { ViewEntity, ViewColumn } from "typeorm"
     name: 'profit_view',
     expression: `SELECT project_id, Resource_View.milestone_id, resource_start, 
         resource_end, resource_buying_rate, resource_selling_rate, 
-        resource_contact_person_id, resource_employee_id, resource_name, 
+        resource_contact_person_id, resource_id, resource_employee_id, resource_name, 
             project_organization_id, project_organization_name, 
         project_type, project_amount, project_status, project_manager_id, 
         project_phase, project_title, time_entries_view.entry_date, time_entries_view.entry_id, 
@@ -25,10 +25,14 @@ export class ProfitView {
     project_id: number
 
     @ViewColumn()
-    project_title: string
+    milestone_id: number
     
     @ViewColumn()
-    milestone_id: number
+    resource_start: Date
+
+    @ViewColumn()
+    resource_end: Date
+
     
     @ViewColumn()
     resource_buying_rate: number
@@ -40,44 +44,38 @@ export class ProfitView {
     resource_contact_person_id: number
     
     @ViewColumn()
+    resource_id: number
+    
+    @ViewColumn()
     resource_employee_id: number
     
     @ViewColumn()
     resource_name: string
     
     @ViewColumn()
-    project_cm_percentage: number
-    
-    @ViewColumn()
     project_organization_id: number
     
     @ViewColumn()
-    project_manager_id: number
+    project_organization_name: string
+
+    @ViewColumn()
+    project_type: number
     
     @ViewColumn()
     project_amount: number
-
-    @ViewColumn()
-    resource_start: Date
-
-    @ViewColumn()
-    resource_end: Date
-
-    @ViewColumn()
-    project_start: Date
-
-    @ViewColumn()
-    project_end: Date
-    
-    @ViewColumn()
-    project_type: number
     
     @ViewColumn()
     project_status: Boolean
     
     @ViewColumn()
+    project_manager_id: number
+    
+    @ViewColumn()
     project_phase: Boolean
-
+    
+    @ViewColumn()
+    project_title: string
+    
     @ViewColumn()
     entry_date: String
 
@@ -87,4 +85,10 @@ export class ProfitView {
     @ViewColumn()
     actual_hours: number
 
+    @ViewColumn()
+    project_start: Date
+
+    @ViewColumn()
+    project_end: Date
+    
 }
