@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import moment from 'moment';
 import jwt from 'jsonwebtoken';
 import { IntegrationAuth } from '../entities/integrationAuth';
+import { Organization } from '../entities/organization';
 
 // const app: express.Application = express();
 
@@ -156,6 +157,37 @@ export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
       return true;
     } catch {
       return false;
+    }
+  }
+
+  async xeroOrganization(): Promise<any>{
+    try {
+      let integration = await this.findOne({
+        where: { toolName: 'xero' },
+      });
+
+      if (!integration){
+        throw new Error ('No Integration Found')
+      }
+      
+
+      let tokenSet = JSON.parse(integration.tokenSet ?? '');
+      await xero.setTokenSet(tokenSet)
+      await xero.refreshToken()
+      await xero.updateTenants()
+      const activeTenant = xero.tenants[0]
+      const xeroContacts = await xero.accountingApi.getContacts(activeTenant.tenantId)
+
+      let organizarions= await this.manager.find(Organization)
+
+      for(let org in organizarions){
+
+        // if (org.)
+
+      }
+
+    }catch {
+      return false
     }
   }
 }

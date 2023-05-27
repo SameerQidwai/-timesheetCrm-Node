@@ -6,28 +6,42 @@ import moment, { Moment } from 'moment';
 export class invoiceController {
   async invoiceData(req: Request, res: Response, next: NextFunction) {
     try {
-      let mileId = parseInt(req.params.mileId)
+      let proId = parseInt(req.params.proId)
       let startDate: Moment|string = req.params.startDate
       let endDate: Moment|string = req.params.endDate
       let repository = getCustomRepository(InvoiceRepsitory)
-      if (!mileId){
+      if (!proId){
         throw new Error ('Milestone Is Not Defined')
       }
       if (!startDate|| !endDate){
         throw new Error ('Date Range Not Defined')
       }
-      console.log(mileId, startDate, endDate, 'hit it')
       // startDate = moment(startDate)
       // endDate = moment(endDate)
-      let records = await repository.getInvoiceData(mileId, startDate, endDate)
+      let records = await repository.getInvoiceData(proId, startDate, endDate)
+
       return res.status(200).json({
         success: true,
-        message: 'redirecting to auth',
+        message: records.length? 'Entries Found': 'No Entry Found Against This Project',
         data: records,
       });
     } catch (e) {
       next(e);
     }
   }
+
+  // async invoiceOrganization(req: Request, res: Response, next: NextFunction) {
+  //   try {
+  //     let repository = getCustomRepository(InvoiceRepsitory)
+  //     let records = await repository.getOrganization()
+  //     return res.status(200).json({
+  //       success: true,
+  //       message: records.length? 'Entries Found': 'No Entry Found Against This Project',
+  //       data: records,
+  //     });
+  //   }catch (e){
+  //     next(e)
+  //   }
+  // }
 
 }

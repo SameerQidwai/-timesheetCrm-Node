@@ -30,4 +30,8 @@ router
   .route('/:toolName/callback')
   .get(contr.integrationAuthCallback.bind(contr));
 
+router
+  .route('/:toolName/organizations')
+  .get(contr.toolOrganizations.bind(contr));
+
 export default router;

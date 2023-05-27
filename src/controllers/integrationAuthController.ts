@@ -82,4 +82,19 @@ export class integrationAuthController {
       next(e);
     }
   }
+
+  async toolOrganizations(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+
+    const repository = getCustomRepository(IntegrationAuthRepsitory);
+    const tool = req.params.toolName;
+    if (tool === 'xero'){
+      let records = repository.xeroOrganization()
+    }
+
+  }
+
 }

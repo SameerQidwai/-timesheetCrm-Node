@@ -1,11 +1,10 @@
-import { Between, EntityRepository, Repository, getManager } from 'typeorm';
+import { Between, EntityRepository, Repository } from 'typeorm';
 // import xero  from '../../xero-config'
 import { Invoice } from 'xero-node';
 import moment, { Moment } from 'moment';
 import jwt from 'jsonwebtoken';
 import { IntegrationAuth } from '../entities/integrationAuth';
-import { Milestone } from '../entities/milestone';
-import { ProfitView } from '../entities/views';
+import { Opportunity } from '../entities/opportunity';
 
 const invoices = {
   invoices: [
@@ -42,23 +41,22 @@ export class InvoiceRepsitory extends Repository<IntegrationAuth> {
   // }
 
   async getInvoiceData(
-    milestoneId: number,
+    projectId: number,
     startDate: string,
     endDate: string
   ): Promise<any> {
-    console.log(milestoneId,startDate, endDate, 'hit it');
+    console.log(projectId,startDate, endDate, 'hit it');
     try {
-      let milestone = await this.manager.findOne(Milestone, milestoneId, {
+      let project = await this.manager.findOne(Opportunity, projectId, {
         relations: ['project'],
       });
 
-      console.log(milestone?.project.id, 'hit it');
-      if (!milestone) {
-        throw new Error('Milestone Not Found');
+      if (!project) {
+        throw new Error('Project Not Found');
       }
 
-      if (milestone.project.type === 2) {
-        console.log(milestone?.project.type, 'hit it');
+      if (project.type === 2) {
+        console.log(project.type, 'hit it');
 
         try {
           const resources = await this.query(`
@@ -68,7 +66,7 @@ export class InvoiceRepsitory extends Repository<IntegrationAuth> {
               resource_name description
               FROM 
                 profit_view 
-              WHERE milestone_id=${milestoneId}  AND 
+              WHERE project_id=${projectId}  AND 
               STR_TO_DATE(entry_date,'%e-%m-%Y') BETWEEN '${startDate}' AND  '${endDate}'
             GROUP BY resource_id
           `);
@@ -78,26 +76,24 @@ export class InvoiceRepsitory extends Repository<IntegrationAuth> {
         }
       } else {
         try {
-          const resources = await this.query(`
+          const schedule = await this.query(`
             SELECT  
-              project_schedule_segments.amount unitAmount,
-              DATE_FORMAT(project_schedule_segments.start_date, '%b %y') description,
+            project_schedules.amount unitAmount,
               1 AS quantity
               FROM 
                 project 
                   LEFT JOIN project_schedules ON
                   profit_view.project_id = project_schedules.project_id
-                  LEFT JOIN project_schedule_segments  ON 
-                  project_schedules.id = project_schedule_segments.schedule_id 
+                  -- LEFT JOIN project_schedule_segments  ON 
+                  -- project_schedules.id = project_schedule_segments.schedule_id 
 
-              WHERE id=${milestone?.project.id}
+              WHERE id=${projectId}
               AND MONTH(STR_TO_DATE(entry_date, '%e-%m-%Y')) >= MONTH('${startDate}')
               AND MONTH(STR_TO_DATE(entry_date, '%e-%m-%Y')) <= MONTH('${endDate}')
               AND project_schedules.deleted_at IS NULL 
               AND project_schedule_segments.deleted_at IS NULL 
-            GROUP BY description
           `);
-          return resources
+          return schedule
         } catch (e) {
           console.error(e);
         }
@@ -108,6 +104,10 @@ export class InvoiceRepsitory extends Repository<IntegrationAuth> {
       return '';
     }
   }
+
+  // async getOrganization():Promise<any>{
+  //   let token = this.manager.
+  // }
 
   // async createInvoice(req: Request, res: Response, next: NextFunction) {
   //   try {

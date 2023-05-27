@@ -20,10 +20,17 @@ let contr = new invoiceController();
 //     contr.integrationTools.bind(contr)
 //   );
 router
-  .route('/data/:mileId&:startDate&:endDate')
+  .route('/data/:proId&:startDate&:endDate')
   .get(
     // [isLoggedIn],
     contr.invoiceData.bind(contr)
   );
+
+// router
+//   .route('/invoice-organization')
+//   .get(
+//     // [isLoggedIn],
+//     contr.invoiceOrganization.bind(contr)
+//   );
 
 export default router;
