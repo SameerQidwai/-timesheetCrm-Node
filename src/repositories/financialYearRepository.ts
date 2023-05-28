@@ -31,6 +31,7 @@ import { EmploymentContract } from '../entities/employmentContract';
 import { Employee } from '../entities/employee';
 import { parseGlobalSetting } from '../utilities/helpers';
 import { exec, spawn } from 'child_process';
+import { ExpenseSheetExpense } from '../entities/expenseSheetExpense';
 
 @EntityRepository(FinancialYear)
 export class FinancialYearRepository extends Repository<FinancialYear> {
@@ -840,15 +841,17 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
     { EMPLOYEE_PICKER, PROJECT_PICKER }: any,
     forceStatusChangeFlag: Boolean
   ) {
-    let expenses = await this.manager.find(Expense, {
+    let expenses = await this.manager.find(ExpenseSheetExpense, {
       where: {
-        date: Between(year.startDate, year.endDate),
+        submittedAt: Between(year.startDate, year.endDate),
       },
-      relations: ['entries'],
+      relations: ['sheet', 'expense'],
     });
 
-    let expenseSheets = await this.manager.find(ExpenseSheet);
-    let savingExpenses: Expense[] = [];
+    let expenseSheets = await this.manager.find(ExpenseSheet, {
+      relations: ['expenseSheetExpenses', 'expenseSheetExpenses.expense'],
+    });
+    let savingExpenses: ExpenseSheetExpense[] = [];
 
     let EXPENSESHEET_PICKER: { [key: number]: ExpenseSheet } = {};
 
@@ -861,11 +864,7 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
     let responseExpenseSheets: any[] = [];
 
     for (let expense of expenses) {
-      const expenseLastEntry = expense.entries[expense.entries.length - 1];
-      const currentExpenseSheet =
-        EXPENSESHEET_PICKER[
-          expense?.expenseSheetId ?? expenseLastEntry.sheetId
-        ];
+      const currentExpenseSheet = expense.sheet;
 
       if (loopedExpenseSheets.includes(currentExpenseSheet.id)) continue;
 
@@ -885,7 +884,8 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
       if (!expense.rejectedAt && !expense.approvedAt) {
         expense.rejectedAt = moment().toDate();
         expense.rejectedBy = userId;
-        expense.notes = 'Systematically Rejected because of Year closing';
+        expense.expense.notes = `${expense.expense.notes} -
+          Systematically Rejected because of Year closing`;
       }
 
       savingExpenses.push(expense);

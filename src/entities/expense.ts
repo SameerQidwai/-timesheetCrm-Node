@@ -5,7 +5,7 @@ import { ExpenseSheet } from './expenseSheet';
 import { ExpenseSheetExpense } from './expenseSheetExpense';
 import { ExpenseType } from './expenseType';
 import { Opportunity } from './opportunity';
-import { ExpenseStatus } from 'src/constants/constants';
+import { ExpenseStatus } from '../constants/constants';
 
 @Entity('expenses')
 export class Expense extends Base {
@@ -51,6 +51,13 @@ export class Expense extends Base {
   @JoinColumn({ name: 'created_by' })
   creator: Employee;
 
+  @Column({ name: 'active_expense_sheet_id', nullable: true })
+  activeExpenseSheetId: number | null;
+
+  @ManyToOne(() => ExpenseSheet)
+  @JoinColumn({ name: 'active_expense_sheet_id' })
+  activeExpenseSheet: ExpenseSheet;
+
   @OneToMany(
     () => ExpenseSheetExpense,
     (expenseSheetExpenses) => expenseSheetExpenses.expense,
@@ -64,9 +71,26 @@ export class Expense extends Base {
     let status: ExpenseStatus = ExpenseStatus.SAVED;
 
     for (let entry of this.entries) {
-      if (entry.rejectedAt !== null) status = ExpenseStatus.REJECTED;
-      else if (entry.approvedAt !== null) status = ExpenseStatus.APPROVED;
-      else if (entry.submittedAt !== null) status = ExpenseStatus.SUBMITTED;
+      console.log(
+        '🚀 ~ file: expense.ts:75 ~ Expense ~ getgetStatus ~ entry:',
+        entry
+      );
+      if (entry.submittedAt && entry.rejectedAt === null) {
+        status = ExpenseStatus.SUBMITTED;
+      }
+      if (entry.rejectedAt !== null) {
+        status = ExpenseStatus.REJECTED;
+      }
+      if (entry.approvedAt !== null) {
+        status = ExpenseStatus.APPROVED;
+      }
+
+      if (
+        status === ExpenseStatus.APPROVED ||
+        status === ExpenseStatus.SUBMITTED
+      ) {
+        break;
+      }
     }
 
     return status;

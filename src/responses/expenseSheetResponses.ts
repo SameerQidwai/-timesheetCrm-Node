@@ -40,30 +40,19 @@ export class ExpenseSheetResponse {
       this.amount += expenseAmount;
       this.billableAmount += expense.expense.isBillable ? expenseAmount : 0;
       this.reimbursedAmount += expense.expense.isReimbursed ? expenseAmount : 0;
-      this.rejectedAmount += expense.expense.rejectedAt ? expenseAmount : 0;
+      this.rejectedAmount += expense.rejectedAt ? expenseAmount : 0;
       this.expenseSheetExpensesIds.push(expense.expense.id);
     });
     let lastExpense =
-      sheet.expenseSheetExpenses[sheet.expenseSheetExpenses.length - 1]
-        ?.expense;
+      sheet.expenseSheetExpenses[sheet.expenseSheetExpenses.length - 1];
     this.status = ExpenseSheetStatus.SAVED;
 
-    if (lastExpense.expenseSheetId) {
-      if (sheet.id === lastExpense.expenseSheetId) {
-        if (lastExpense.rejectedAt !== null)
-          this.status = ExpenseSheetStatus.REJECTED;
-        else if (lastExpense.approvedAt !== null)
-          this.status = ExpenseSheetStatus.APPROVED;
-        else if (lastExpense.submittedAt !== null)
-          this.status = ExpenseSheetStatus.SUBMITTED;
-      } else {
-        this.status = ExpenseSheetStatus.REJECTED;
-      }
-    } else {
-      if (lastExpense.entries.length > 0) {
-        this.status = ExpenseSheetStatus.REJECTED;
-      }
-    }
+    if (lastExpense.submittedAt !== null)
+      this.status = ExpenseSheetStatus.SUBMITTED;
+    if (lastExpense.rejectedAt !== null)
+      this.status = ExpenseSheetStatus.REJECTED;
+    if (lastExpense.approvedAt !== null)
+      this.status = ExpenseSheetStatus.APPROVED;
 
     this.submittedAt = lastExpense.submittedAt ?? null;
     this.rejectedAt = lastExpense.rejectedAt ?? null;
@@ -72,7 +61,7 @@ export class ExpenseSheetResponse {
 
     this.submittedBy = lastExpense.submitter?.getFullName ?? null;
 
-    this.createdBy = lastExpense.creator?.getFullName ?? null;
+    this.createdBy = lastExpense.expense.creator?.getFullName ?? null;
 
     this.expenseSheetExpenses = new ExpenseSheetExpensesResponse(
       sheet.expenseSheetExpenses

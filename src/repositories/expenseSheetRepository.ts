@@ -27,7 +27,11 @@ import {
   ExpenseSheetsResponse,
 } from '../responses/expenseSheetResponses';
 import { Attachment } from '../entities/attachment';
-import { EntityType } from '../constants/constants';
+import {
+  EntityType,
+  ExpenseStatus,
+  OpportunityStatus,
+} from '../constants/constants';
 import moment from 'moment';
 
 @EntityRepository(ExpenseSheet)
@@ -74,8 +78,12 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           ) {
             throw new Error('Sheet Project is different');
           }
+          console.log('AAAAAAAAAAAAA', expense.getStatus);
 
-          if (expense.rejectedAt == null && expense.entries.length > 0) {
+          if (
+            expense.getStatus != ExpenseStatus.REJECTED &&
+            expense.entries.length
+          ) {
             throw new Error('Expense already in sheet');
           }
 
@@ -90,9 +98,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
 
           expenseSheetExpenses.push(expenseSheetExpenseObj);
 
-          expense.expenseSheetId = sheet.id;
-          expense.rejectedAt = null;
-          expense.rejectedBy = null;
+          expense.activeExpenseSheetId = sheet.id;
 
           await transactionalEntityManager.save(Expense, expense);
         }
@@ -353,7 +359,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       }
 
       for (let expense of expenseSheetObj.expenseSheetExpenses) {
-        if (expense.expense.submittedAt || expense.expense.approvedAt) {
+        if (expense.submittedAt || expense.approvedAt) {
           throw new Error('Cannot update Sheet');
         }
       }
@@ -363,7 +369,12 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       if (expenseSheetDTO.projectId) {
         let project = await transactionalEntityManager.findOne(
           Opportunity,
-          expenseSheetDTO.projectId
+          expenseSheetDTO.projectId,
+          {
+            where: {
+              status: In([OpportunityStatus.WON, OpportunityStatus.COMPLETED]),
+            },
+          }
         );
         if (!project) {
           throw new Error('Project not found');
@@ -371,12 +382,12 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       }
       expenseSheetObj.projectId = expenseSheetDTO.projectId;
 
-      for (let oldExpense of expenseSheetObj.expenseSheetExpenses) {
-        oldExpense.expense.rejectedAt = null;
-        oldExpense.expense.rejectedBy = null;
-        oldExpense.expense.expenseSheetId = null;
-        await transactionalEntityManager.save(Expense, oldExpense.expense);
-      }
+      // for (let oldExpense of expenseSheetObj.expenseSheetExpenses) {
+      //   oldExpense.expense.rejectedAt = null;
+      //   oldExpense.expense.rejectedBy = null;
+      //   oldExpense.expense.expenseSheetId = null;
+      //   await transactionalEntityManager.save(Expense, oldExpense.expense);
+      // }
 
       if (expenseSheetObj.expenseSheetExpenses.length)
         await transactionalEntityManager.delete(
@@ -402,7 +413,10 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           throw new Error('Sheet Project is different');
         }
 
-        if (expense.rejectedAt == null && expense.entries.length > 0) {
+        if (
+          expense.getStatus != ExpenseStatus.REJECTED &&
+          expense.entries.length > 0
+        ) {
           throw new Error('Expense already in sheet');
         }
 
@@ -417,9 +431,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
 
         expenseSheetExpenses.push(expenseSheetExpenseObj);
 
-        expense.rejectedAt = null;
-        expense.rejectedBy = null;
-        expense.expenseSheetId = expenseSheetObj.id;
+        expense.activeExpenseSheetId = expenseSheetObj.id;
 
         await transactionalEntityManager.save(Expense, expense);
       }
@@ -489,7 +501,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
     id: number,
     expenseSheetBillableDTO: ExpenseSheetBillableDTO
   ): Promise<any | undefined> {
-    let result = await this.findOne(id, {
+    let expenseSheet = await this.findOne(id, {
       relations: [
         'expenseSheetExpenses',
         'expenseSheetExpenses.expense',
@@ -503,18 +515,18 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       ],
     });
 
-    if (!result) {
+    if (!expenseSheet) {
       throw new Error('Expense not found');
     }
 
-    if (result.expenseSheetExpenses[0].expense.rejectedAt) {
+    if (expenseSheet.getStatus === ExpenseStatus.REJECTED) {
       throw new Error('Cannot update rejected sheet');
     }
 
-    result.isBillable = expenseSheetBillableDTO.isBillable ? true : false;
-    await this.save(result);
+    expenseSheet.isBillable = expenseSheetBillableDTO.isBillable ? true : false;
+    await this.save(expenseSheet);
 
-    return new ExpenseSheetResponse(result);
+    return new ExpenseSheetResponse(expenseSheet);
   }
 
   async updateOwnBillableAndReturn(
@@ -530,7 +542,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       throw new Error('Expense not found');
     }
 
-    if (result.expenseSheetExpenses[0].expense.rejectedAt) {
+    if (result.getStatus === ExpenseStatus.REJECTED) {
       throw new Error('Cannot update rejected sheet');
     }
 
@@ -588,7 +600,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       throw new Error('Expense not found');
     }
 
-    if (result.expenseSheetExpenses[0].expense.rejectedAt) {
+    if (result.getStatus === ExpenseStatus.REJECTED) {
       throw new Error('Cannot update rejected sheet');
     }
 
@@ -646,7 +658,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       throw new Error('Expense not found');
     }
 
-    if (result.expenseSheetExpenses[0].expense.rejectedAt) {
+    if (result.getStatus === ExpenseStatus.REJECTED) {
       throw new Error('Cannot update rejected sheet');
     }
 
@@ -674,13 +686,14 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         throw new Error('Expense sheet not found');
       }
 
-      sheet.expenseSheetExpenses.forEach((expense) => {
-        if (expense.expense.submittedAt || expense.expense.approvedAt) {
-          throw new Error(
-            'Cannt delete sheet with approved or submitted expenses'
-          );
-        }
-      });
+      if (
+        sheet.getStatus === ExpenseStatus.SUBMITTED ||
+        sheet.getStatus === ExpenseStatus.APPROVED
+      ) {
+        throw new Error(
+          'Cannt delete sheet with approved or submitted expenses'
+        );
+      }
 
       if (sheet.expenseSheetExpenses.length)
         await transactionalEntityManager.softDelete(
@@ -731,32 +744,23 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         }
       );
 
+      if (expenseSheetObj.getStatus === ExpenseStatus.APPROVED) {
+        throw new Error('Sheet Already Approved');
+      }
+
+      if (expenseSheetObj.getStatus !== ExpenseStatus.SUBMITTED) {
+        throw new Error('Sheet Not Submitted');
+      }
+
       for (let expense of expenseSheetExpensesToApprove) {
-        if (!expense.expense.submittedAt) {
-          throw new Error('Sheet Not Submitted');
-        }
-
-        if (expense.expense.approvedAt) {
-          throw new Error('Sheet already approved');
-        }
-
-        expense.expense.approvedAt = moment().toDate();
-        expense.expense.expenseSheetId = expenseSheetObj.id;
-        expense.expense.approvedBy = authId;
+        expense.approvedAt = moment().toDate();
+        expense.approvedBy = authId;
         transactionalEntityManager.save(Expense, expense.expense);
       }
 
       for (let expense of expenseSheetExpensesToReject) {
-        if (!expense.expense.submittedAt) {
-          throw new Error('Sheet Not Submitted');
-        }
-
-        if (expense.expense.approvedAt) {
-          throw new Error('Sheet already approved');
-        }
-
-        expense.expense.rejectedAt = moment().toDate();
-        expense.expense.rejectedBy = authId;
+        expense.rejectedAt = moment().toDate();
+        expense.rejectedBy = authId;
         transactionalEntityManager.save(Expense, expense.expense);
       }
 
@@ -812,32 +816,23 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         }
       );
 
+      if (expenseSheetObj.getStatus === ExpenseStatus.APPROVED) {
+        throw new Error('Sheet Already Approved');
+      }
+
+      if (expenseSheetObj.getStatus !== ExpenseStatus.SUBMITTED) {
+        throw new Error('Sheet Not Submitted');
+      }
+
       for (let expense of expenseSheetExpensesToApprove) {
-        if (!expense.expense.submittedAt) {
-          throw new Error('Sheet Not Submitted');
-        }
-
-        if (expense.expense.approvedAt) {
-          throw new Error('Sheet already approved');
-        }
-
-        expense.expense.approvedAt = moment().toDate();
-        expense.expense.expenseSheetId = expenseSheetObj.id;
-        expense.expense.approvedBy = authId;
+        expense.approvedAt = moment().toDate();
+        expense.approvedBy = authId;
         transactionalEntityManager.save(Expense, expense.expense);
       }
 
       for (let expense of expenseSheetExpensesToReject) {
-        if (!expense.expense.submittedAt) {
-          throw new Error('Sheet Not Submitted');
-        }
-
-        if (expense.expense.approvedAt) {
-          throw new Error('Sheet already approved');
-        }
-
-        expense.expense.rejectedAt = moment().toDate();
-        expense.expense.rejectedBy = authId;
+        expense.rejectedAt = moment().toDate();
+        expense.rejectedBy = authId;
         transactionalEntityManager.save(Expense, expense.expense);
       }
 
@@ -876,15 +871,15 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       }
 
       for (let sheet of expenseSheets) {
-        for (let expense of sheet.expenseSheetExpenses) {
-          if (expense.expense.submittedAt || expense.expense.approvedAt) {
-            throw new Error('Already Submitted');
-          }
-          expense.expense.rejectedAt = null;
-          expense.expense.submittedAt = moment().toDate();
-          expense.expense.expenseSheetId = sheet.id;
+        if (sheet.getStatus === ExpenseStatus.SUBMITTED) {
+          throw new Error('Sheet already submitted');
+        }
 
-          expense.expense.submitter = emplyoee;
+        for (let expense of sheet.expenseSheetExpenses) {
+          expense.rejectedAt = null;
+          expense.submittedAt = moment().toDate();
+
+          expense.submitter = emplyoee;
 
           transactionalEntityManager.save(Expense, expense.expense);
         }
@@ -922,19 +917,18 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       }
 
       for (let sheet of expenseSheets) {
+        if (sheet.getStatus === ExpenseStatus.APPROVED) {
+          throw new Error('Sheet Already Approved');
+        }
+
+        if (sheet.getStatus !== ExpenseStatus.SUBMITTED) {
+          throw new Error('Sheet Not Submitted');
+        }
+
         for (let expense of sheet.expenseSheetExpenses) {
-          if (!expense.expense.submittedAt) {
-            throw new Error('Sheet Not Submitted');
-          }
+          expense.approvedAt = moment().toDate();
 
-          if (expense.expense.approvedAt) {
-            throw new Error('Sheet already approved');
-          }
-
-          expense.expense.approvedAt = moment().toDate();
-          expense.expense.expenseSheetId = sheet.id;
-
-          expense.expense.approver = emplyoee;
+          expense.approver = emplyoee;
 
           transactionalEntityManager.save(Expense, expense.expense);
         }
@@ -972,22 +966,18 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       }
 
       for (let sheet of expenseSheets) {
+        if (sheet.getStatus === ExpenseStatus.APPROVED) {
+          throw new Error('Sheet Already Approved');
+        }
+
+        if (sheet.getStatus !== ExpenseStatus.SUBMITTED) {
+          throw new Error('Sheet Not Submitted');
+        }
+
         for (let expense of sheet.expenseSheetExpenses) {
-          if (!expense.expense.submittedAt) {
-            throw new Error('Sheet Not Submitted');
-          }
+          expense.rejectedAt = moment().toDate();
 
-          if (expense.expense.approvedAt) {
-            throw new Error('Sheet already approved');
-          }
-
-          expense.expense.submittedAt = null;
-          expense.expense.rejectedAt = moment().toDate();
-          expense.expense.expenseSheetId = sheet.id;
-
-          expense.expense.rejecter = emplyoee;
-
-          expense.expense.submitter = null;
+          expense.rejecter = emplyoee;
 
           transactionalEntityManager.save(Expense, expense.expense);
         }
@@ -1025,19 +1015,18 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       }
 
       for (let sheet of expenseSheets) {
+        if (sheet.getStatus !== ExpenseStatus.APPROVED) {
+          throw new Error('Sheet Already Approved');
+        }
+
         for (let expense of sheet.expenseSheetExpenses) {
-          if (!expense.expense.approvedAt) {
-            throw new Error('Sheet Not Approved');
-          }
+          expense.approvedAt = null;
+          expense.submittedAt = null;
+          expense.rejectedAt = moment().toDate();
 
-          expense.expense.approvedAt = null;
-          expense.expense.submittedAt = null;
-          expense.expense.rejectedAt = moment().toDate();
-          expense.expense.expenseSheetId = sheet.id;
-
-          expense.expense.submitter = null;
-          expense.expense.approver = null;
-          expense.expense.rejecter = emplyoee;
+          expense.submitter = null;
+          expense.approver = null;
+          expense.rejecter = emplyoee;
 
           transactionalEntityManager.save(Expense, expense.expense);
         }
@@ -1070,9 +1059,9 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         'expenseSheetExpenses.expense.creator',
         'expenseSheetExpenses.expense.creator.contactPersonOrganization',
         'expenseSheetExpenses.expense.creator.contactPersonOrganization.contactPerson',
-        'expenseSheetExpenses.expense.submitter',
-        'expenseSheetExpenses.expense.submitter.contactPersonOrganization',
-        'expenseSheetExpenses.expense.submitter.contactPersonOrganization.contactPerson',
+        'expenseSheetExpenses.submitter',
+        'expenseSheetExpenses.submitter.contactPersonOrganization',
+        'expenseSheetExpenses.submitter.contactPersonOrganization.contactPerson',
         'expenseSheetExpenses.expense.expenseType',
         'expenseSheetExpenses.expense.project',
         'project',
@@ -1099,9 +1088,9 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         'expenseSheetExpenses.expense.creator',
         'expenseSheetExpenses.expense.creator.contactPersonOrganization',
         'expenseSheetExpenses.expense.creator.contactPersonOrganization.contactPerson',
-        'expenseSheetExpenses.expense.submitter',
-        'expenseSheetExpenses.expense.submitter.contactPersonOrganization',
-        'expenseSheetExpenses.expense.submitter.contactPersonOrganization.contactPerson',
+        'expenseSheetExpenses.submitter',
+        'expenseSheetExpenses.submitter.contactPersonOrganization',
+        'expenseSheetExpenses.submitter.contactPersonOrganization.contactPerson',
         'expenseSheetExpenses.expense.expenseType',
         'expenseSheetExpenses.expense.project',
         'project',

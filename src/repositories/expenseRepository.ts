@@ -187,7 +187,7 @@ export class ExpenseRepository extends Repository<Expense> {
     results.forEach((expense) => {
       const expenseStatus = expense.getStatus;
       if (
-        expenseStatus === ExpenseStatus.SUBMITTED ||
+        expenseStatus === ExpenseStatus.SAVED ||
         expenseStatus === ExpenseStatus.REJECTED
       ) {
         availableExpenses.push(expense);
@@ -207,7 +207,7 @@ export class ExpenseRepository extends Repository<Expense> {
     results.forEach((expense) => {
       const expenseStatus = expense.getStatus;
       if (
-        expenseStatus === ExpenseStatus.SUBMITTED ||
+        expenseStatus === ExpenseStatus.SAVED ||
         expenseStatus === ExpenseStatus.REJECTED
       ) {
         availableExpenses.push(expense);
@@ -261,10 +261,10 @@ export class ExpenseRepository extends Repository<Expense> {
     let availableExpenses: Expense[] = [];
 
     results.forEach((expense) => {
+      const expenseStatus = expense.getStatus;
       if (
-        expense.rejectedAt !== null ||
-        !expense.entries.length ||
-        expense.entries.filter((e) => e.sheetId == id).length
+        expenseStatus === ExpenseStatus.SAVED ||
+        expenseStatus === ExpenseStatus.REJECTED
       ) {
         availableExpenses.push(expense);
       }
@@ -318,10 +318,10 @@ export class ExpenseRepository extends Repository<Expense> {
     let availableExpenses: Expense[] = [];
 
     results.forEach((expense) => {
+      const expenseStatus = expense.getStatus;
       if (
-        expense.rejectedAt !== null ||
-        !expense.entries.length ||
-        expense.entries.filter((e) => e.sheetId == id).length
+        expenseStatus === ExpenseStatus.SAVED ||
+        expenseStatus === ExpenseStatus.REJECTED
       ) {
         availableExpenses.push(expense);
       }
@@ -344,14 +344,19 @@ export class ExpenseRepository extends Repository<Expense> {
     await this.manager.transaction(async (transactionalEntityManager) => {
       let expenseObj = await this.findOne(id, {
         where: { createdBy: authId },
-        relations: ['entries', 'entries.sheet'],
+        relations: ['entries', 'entries.sheet', 'activeExpenseSheet'],
       });
 
       if (!expenseObj) {
         throw new Error('Expense not found');
       }
 
-      if (expenseObj.submittedAt || expenseObj.approvedAt) {
+      const expenseStatus = expenseObj.getStatus;
+
+      if (
+        expenseStatus === ExpenseStatus.SUBMITTED ||
+        expenseStatus === ExpenseStatus.APPROVED
+      ) {
         throw new Error('Cannot edit expense');
       }
 
@@ -385,11 +390,11 @@ export class ExpenseRepository extends Repository<Expense> {
         this._validateExpenseDates(expenseDTO.date, project);
       }
 
-      if (!expenseObj.rejectedAt && expenseObj.entries.length > 0) {
-        if (
-          expenseObj.entries[expenseObj.entries.length - 1].sheet.projectId !==
-          expenseDTO.projectId
-        ) {
+      if (
+        expenseStatus !== ExpenseStatus.REJECTED &&
+        expenseObj.entries.length > 0
+      ) {
+        if (expenseObj.activeExpenseSheet.projectId !== expenseDTO.projectId) {
           throw new Error('Assigned in sheet with different project');
         }
       }
@@ -458,7 +463,8 @@ export class ExpenseRepository extends Repository<Expense> {
         relations: [
           'entries',
           'entries.sheet',
-          'entries.sheet.expenseSheetExpenses',
+          'activeExpenseSheet',
+          'activeExpenseSheet.expenseSheetExpenses',
         ],
         where: { createdBy: authId },
       });
@@ -467,14 +473,14 @@ export class ExpenseRepository extends Repository<Expense> {
         throw new Error('Expense not found');
       }
 
-      if (!expense.rejectedAt && expense.entries.length > 0) {
+      if (
+        expense.getStatus !== ExpenseStatus.REJECTED &&
+        expense.entries.length > 0
+      ) {
         throw new Error('Expense is in sheet');
       }
 
-      if (
-        expense?.entries[expense.entries.length - 1]?.sheet
-          ?.expenseSheetExpenses?.length == 1
-      ) {
+      if (expense.activeExpenseSheet.expenseSheetExpenses.length == 1) {
         throw new Error('Sheet has only one expense');
       }
 
@@ -536,7 +542,7 @@ export class ExpenseRepository extends Repository<Expense> {
       relations: ['file'],
     });
 
-    let expense: Expense & { attachments: Attachment[] } = {
+    let expense: any & { attachments: Attachment[] } = {
       ...result,
       attachments: attachments || [],
     };
