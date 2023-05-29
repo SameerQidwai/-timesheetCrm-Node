@@ -83,18 +83,22 @@ export class integrationAuthController {
     }
   }
 
-  async toolOrganizations(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
-
-    const repository = getCustomRepository(IntegrationAuthRepsitory);
-    const tool = req.params.toolName;
-    if (tool === 'xero'){
-      let records = repository.xeroOrganization()
+  async toolOrganizations(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(IntegrationAuthRepsitory);
+      const tool = req.params.toolName;
+      let records = []
+      if (tool === 'xero') {
+        console.log("I got here")
+         records = await repository.xeroOrganization();
+      }
+      return res.status(200).json({
+        success: true,
+        message: `${tool} true`,
+        data: records
+      });
+    } catch (e) {
+      next(e);
     }
-
   }
-
 }

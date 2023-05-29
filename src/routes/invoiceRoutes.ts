@@ -7,12 +7,12 @@ import { isLoggedIn } from '../middlewares/loggedIn';
 const router = Router();
 let contr = new invoiceController();
 
-// router
-//   .route('/')
-//   .get(
-//     [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
-//     contr.integrationAuthLogin.bind(contr)
-//   );
+router
+  .route('/')
+  .get(
+    // [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.invoices.bind(contr)
+  );
 // router
 //   .route('/:id')
 //   .get(
@@ -20,10 +20,17 @@ let contr = new invoiceController();
 //     contr.integrationTools.bind(contr)
 //   );
 router
-  .route('/data/:proId&:startDate&:endDate')
+  .route('/data/:projectId&:startDate&:endDate')
   .get(
     // [isLoggedIn],
     contr.invoiceData.bind(contr)
+  );
+
+router
+  .route('/client-project/:orgId')
+  .get(
+    // [isLoggedIn],
+    contr.clientProjects.bind(contr)
   );
 
 // router

@@ -1,7 +1,9 @@
-import { Entity, Column, JoinColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, JoinColumn, ManyToOne, getRepository, Repository } from 'typeorm';
 import { Base } from './common/base';
 import { Employee } from './employee';
-
+import { TokenSet, XeroClient } from 'xero-node';
+import dotenv from 'dotenv';
+dotenv.config();
 @Entity('integration_auth')
 export class IntegrationAuth extends Base {
   @Column({ name: 'userId' })
@@ -11,8 +13,8 @@ export class IntegrationAuth extends Base {
   @JoinColumn({ name: 'id' })
   employee: Employee;
 
-  @Column({ name: 'token_set', unique: true, nullable: true, type: 'text' })
-  tokenSet: string | null; // unique refresh_token tool
+  @Column({ name: 'token_set', nullable: true, type: 'json' })
+  tokenSet: object | null; // unique refresh_token tool
 
   @Column({ name: 'tool_name', nullable: true })
   toolName: String; // token_type barrer
@@ -37,4 +39,34 @@ export class IntegrationAuth extends Base {
 
   // @Column({ name: 'expiresIn', default: 0, type: 'numeric' })
   // expiresIn: number; // number
+  public async getXeroToken(): Promise<{xero: any, tenantId:string|null}> {
+    const xero = new XeroClient();
+    await xero.initialize();
+
+    // Retrieve tokenSet from the database (assuming you have a repository for IntegrationAuthToken)
+    // const integration: IntegrationAuth | undefined = await integrationRepository.findOne({toolName: 'xero'});
+    if (this.toolName !== 'xero'){
+      return {xero: null, tenantId: null}
+    }
+    
+    if ( !this.tokenSet) {
+      return {xero: null, tenantId: null};
+    }
+    
+    let tokenSet = this.tokenSet as TokenSet;
+    await xero.setTokenSet(tokenSet);
+    let readTokenSet = await xero.readTokenSet();
+    
+    if (readTokenSet.expired()) {
+      tokenSet = await xero.refreshWithRefreshToken(process.env.CLIENT_ID, process.env.CLIENT_SECRET, tokenSet.refresh_token)
+      const integrationRepository: Repository<IntegrationAuth> = getRepository(IntegrationAuth);
+      await integrationRepository.update({toolName: 'xero'}, {tokenSet: tokenSet});
+    }
+    await xero.setTokenSet(tokenSet);
+    await xero.updateTenants();
+    const tenantId = xero.tenants[0].tenantId;    
+
+    return {xero, tenantId};
+  }
 }
+

@@ -1,6 +1,6 @@
 import { EntityRepository, Repository } from 'typeorm';
 // import xero  from '../../xero-config'
-import { XeroClient, Invoice } from 'xero-node';
+import { XeroClient, TokenSet } from 'xero-node';
 import dotenv from 'dotenv';
 import moment from 'moment';
 import jwt from 'jsonwebtoken';
@@ -29,30 +29,30 @@ const xero = new XeroClient({
   /* other configuration options */
 });
 
-const invoices = {
-  invoices: [
-    {
-      type: Invoice.TypeEnum.ACCREC,
-      contact: {
-        contactID: '3e776c4b-ea9e-4bb1-96be-6b0c7a71a37f',
-      },
-      lineItems: [
-        {
-          description: 'Xero integration from here',
-          quantity: 2.0,
-          unitAmount: 20.0,
-          accountCode: '200',
-          taxType: 'NONE',
-          lineAmount: 40.0,
-        },
-      ],
-      date: moment().format('YYYY-MM-DD'),
-      dueDate: moment().add(7, 'days').format('YYYY-MM-DD'),
-      reference: 'XERO-Nodes',
-      status: Invoice.StatusEnum.AUTHORISED,
-    },
-  ],
-};
+// const invoices = {
+//   invoices: [
+//     {
+//       type: Invoice.TypeEnum.ACCREC,
+//       contact: {
+//         contactID: '3e776c4b-ea9e-4bb1-96be-6b0c7a71a37f',
+//       },
+//       lineItems: [
+//         {
+//           description: 'Xero integration from here',
+//           quantity: 2.0,
+//           unitAmount: 20.0,
+//           accountCode: '200',
+//           taxType: 'NONE',
+//           lineAmount: 40.0,
+//         },
+//       ],
+//       date: moment().format('YYYY-MM-DD'),
+//       dueDate: moment().add(7, 'days').format('YYYY-MM-DD'),
+//       reference: 'XERO-Nodes',
+//       status: Invoice.StatusEnum.AUTHORISED,
+//     },
+//   ],
+// };
 @EntityRepository(IntegrationAuth)
 export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
   async xeroAuthLogin(): Promise<string> {
@@ -88,14 +88,15 @@ export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
           toolName: 'xero',
         },
       });
-      delete tokenSet['scope'];
+      // delete tokenSet['scope'];
+      console.log(tokenSet);
       let dbToken = {
         userId: authId,
         // refreshToken: tokenSet.refresh_token,
         // expiresIn: tokenSet.expires_in,
         // accessToken: tokenSet.access_token,
         // idToken: tokenSet.id_token,
-        tokenSet: JSON.stringify(tokenSet),
+        tokenSet: tokenSet,
         toolName: 'xero',
       };
 
@@ -106,6 +107,7 @@ export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
       }
       return true;
     } catch (e) {
+      console.log(e);
       return false;
     }
   }
@@ -134,7 +136,10 @@ export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
       });
       if (result.length) {
         let toolLogin: IntegrationAuth = result[0];
-        let tokenSet = JSON.parse(toolLogin.tokenSet ?? '');
+        let tokenSet = toolLogin.tokenSet as TokenSet;
+        if (!tokenSet?.id_token) {
+          throw new Error('not interated with xero');
+        }
         let decodedToken = jwt.decode(tokenSet.id_token);
         if (typeof decodedToken === 'object' && decodedToken !== null) {
           respsonse = {
@@ -160,34 +165,45 @@ export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
     }
   }
 
-  async xeroOrganization(): Promise<any>{
+  async xeroOrganization(): Promise<any> {
     try {
-      let integration = await this.findOne({
-        where: { toolName: 'xero' },
-      });
-
-      if (!integration){
-        throw new Error ('No Integration Found')
+      let integration = await this.findOne({ where: { toolName: 'xero' } });
+      if (!integration) {
+        throw new Error('No Integration Found');
       }
-      
-
-      let tokenSet = JSON.parse(integration.tokenSet ?? '');
-      await xero.setTokenSet(tokenSet)
-      await xero.refreshToken()
-      await xero.updateTenants()
-      const activeTenant = xero.tenants[0]
-      const xeroContacts = await xero.accountingApi.getContacts(activeTenant.tenantId)
-
-      let organizarions= await this.manager.find(Organization)
-
-      for(let org in organizarions){
-
-        // if (org.)
-
+      let {xero , tenantId} = await integration.getXeroToken();
+      if (!xero) {
+        throw new Error('No Integration Found');
       }
+      // const xeroContacts = await
+      let [xeroRes, organizarions] = await Promise.all([
+        xero.accountingApi.getContacts(tenantId),
+        this.manager.find(Organization),
+      ]);
+      let xeroOrganizarions = xeroRes.body.contacts ?? [];
 
-    }catch {
-      return false
+      const filteredOrgs = [];
+      for (const org of organizarions) {
+        if (org.abn) {
+          for (const xOrg of xeroOrganizarions) {
+            if (
+              xOrg.taxNumber &&
+              org.abn === xOrg.taxNumber.replace(/ /g, '')
+            ) {
+              filteredOrgs.push({
+                label: org.name,
+                value: org.id,
+                xeroid: xOrg.contactID,
+              });
+              break;
+            }
+          }
+        }
+      }
+      return filteredOrgs;
+    } catch (e) {
+      console.log(e);
+      return false;
     }
   }
 }

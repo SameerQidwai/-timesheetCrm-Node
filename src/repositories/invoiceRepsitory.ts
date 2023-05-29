@@ -1,10 +1,10 @@
 import { Between, EntityRepository, Repository } from 'typeorm';
 // import xero  from '../../xero-config'
-import { Invoice } from 'xero-node';
+import { Invoice, TokenSet, XeroClient } from 'xero-node';
 import moment, { Moment } from 'moment';
-import jwt from 'jsonwebtoken';
 import { IntegrationAuth } from '../entities/integrationAuth';
 import { Opportunity } from '../entities/opportunity';
+
 
 const invoices = {
   invoices: [
@@ -32,44 +32,61 @@ const invoices = {
 };
 @EntityRepository(IntegrationAuth)
 export class InvoiceRepsitory extends Repository<IntegrationAuth> {
-  // async create(): Promise<string> {
-  //   try {
-  //     return '';
-  //   } catch (e) {
-  //     return '';
-  //   }
-  // }
+  async getInvoices(): Promise<any> {
+    try {
+      // let xero = new XeroClient()
+      let integration = await this.findOne({ where: { toolName: 'xero' } });
+      if (!integration) {
+        throw new Error('No Integration Found');
+      }
+      let {xero, tenantId} = await integration.getXeroToken();
+      if (!xero) {
+        throw new Error('No Integration Found');
+      }
+      let invoiceRes = await xero.accountingApi.getInvoices(tenantId)
+
+      let xeroInvoices = invoiceRes.body.invoices??[]
+      
+      return xeroInvoices;
+    } catch (e) {
+      console.log(e)
+      return [];
+    }
+  }
 
   async getInvoiceData(
     projectId: number,
     startDate: string,
     endDate: string
   ): Promise<any> {
-    console.log(projectId,startDate, endDate, 'hit it');
+    console.log(projectId,startDate, endDate, 'hitting  it');
     try {
-      let project = await this.manager.findOne(Opportunity, projectId, {
-        relations: ['project'],
-      });
+      let project = await this.manager.findOne(Opportunity, projectId);
 
       if (!project) {
         throw new Error('Project Not Found');
       }
-
+      console.log(project)
       if (project.type === 2) {
         console.log(project.type, 'hit it');
+        if (startDate === 'undefined' || endDate === 'undefined'){
+          throw new Error('Dates are not Defined')
+        }
 
         try {
           const resources = await this.query(`
             SELECT  
               SUM(actual_hours) quantity,
-              resource_selling_rate unitAmount,
-              resource_name description
+              resource_selling_rate unit_amount,
+              resource_name description,
+              resource_id value
               FROM 
                 profit_view 
               WHERE project_id=${projectId}  AND 
               STR_TO_DATE(entry_date,'%e-%m-%Y') BETWEEN '${startDate}' AND  '${endDate}'
             GROUP BY resource_id
           `);
+          console.log(resources, 'I came till here')
           return resources
         } catch (e) {
           console.error(e);
@@ -78,21 +95,20 @@ export class InvoiceRepsitory extends Repository<IntegrationAuth> {
         try {
           const schedule = await this.query(`
             SELECT  
-            project_schedules.amount unitAmount,
+            CONCAT(DATE_FORMAT(project_schedules.start_date, '%b'), '-', DATE_FORMAT(project_schedules.end_date, '%b'))  label,
+            CONCAT(DATE_FORMAT(project_schedules.start_date, '%b'), '-', DATE_FORMAT(project_schedules.end_date, '%b'))  description,
+            project_schedules.amount unit_amount,
+            project_schedules.id value,
               1 AS quantity
               FROM 
-                project 
+                opportunities 
                   LEFT JOIN project_schedules ON
-                  profit_view.project_id = project_schedules.project_id
-                  -- LEFT JOIN project_schedule_segments  ON 
-                  -- project_schedules.id = project_schedule_segments.schedule_id 
+                  opportunities.id = project_schedules.project_id
 
-              WHERE id=${projectId}
-              AND MONTH(STR_TO_DATE(entry_date, '%e-%m-%Y')) >= MONTH('${startDate}')
-              AND MONTH(STR_TO_DATE(entry_date, '%e-%m-%Y')) <= MONTH('${endDate}')
+              WHERE opportunities.id=${projectId}
               AND project_schedules.deleted_at IS NULL 
-              AND project_schedule_segments.deleted_at IS NULL 
           `);
+          
           return schedule
         } catch (e) {
           console.error(e);
@@ -102,6 +118,24 @@ export class InvoiceRepsitory extends Repository<IntegrationAuth> {
       return [];
     } catch (e) {
       return '';
+    }
+  }
+
+  async getClientProjects(orgId: number): Promise<any> {
+    try {
+      // let xero = new XeroClient()
+     let projects = await this.manager.find(Opportunity, {organizationId: orgId })
+     let response =  projects.map(pro => {
+      return {
+        value: pro.id,
+        type: pro.type,
+        label: pro.title 
+      }
+     });
+     return response
+    } catch (e) {
+      console.log(e)
+      return [];
     }
   }
 
