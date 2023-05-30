@@ -6,6 +6,7 @@ import moment from 'moment';
 import jwt from 'jsonwebtoken';
 import { IntegrationAuth } from '../entities/integrationAuth';
 import { Organization } from '../entities/organization';
+import { log } from 'console';
 
 // const app: express.Application = express();
 
@@ -206,4 +207,52 @@ export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
       return false;
     }
   }
+  async xeroToolAssets(queries:{[key: string]: string}): Promise<any> {
+    try {
+      let integration = await this.findOne({ where: { toolName: 'xero' } });
+      if (!integration) {
+        throw new Error('No Integration Found');
+      }
+      let {xero , tenantId} = await integration.getXeroToken();
+      if (!xero || !tenantId) {
+        throw new Error('No Integration Found');
+      }
+
+      let promises: any = []
+
+      if (queries.account){
+        console.log(queries.account)
+        promises.push(()=>xero.accountingApi.getAccounts(tenantId, undefined, queries.account))
+      }
+
+      if (queries.taxType){
+        promises.push(()=>xero.accountingApi.getTaxRates(tenantId, queries.taxType))
+      }
+
+       console.log('I got passed with this things')
+      // const xeroContacts = await
+      let promiseRes: any = await Promise.all(promises.map((apiCall: any) => apiCall()));
+
+      let response:{[key: string]:object}= {}
+      for (let item of promiseRes) {
+        for (let key in item['body']) {
+          response[key] = item['body'][key];
+        }
+      }
+      return response
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
+  }
 }
+
+// //Helper function 
+// async function xeroAccounts (xero: any, tenantId?: string|null, where?: string){
+//   let promise = xero.accountingApi.getAccounts(tenantId, undefined)
+//   return promise
+// }
+// async function xeroTaxRates (xero: any, tenantId?: string|null, where?: string){
+//   let promise = xero.accountingApi.getTaxRates(tenantId)
+//   return promise
+// }

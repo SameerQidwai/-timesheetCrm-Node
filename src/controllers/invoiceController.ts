@@ -26,15 +26,11 @@ export class invoiceController {
       let startDate: Moment | string = req.params.startDate;
       let endDate: Moment | string = req.params.endDate;
       let repository = getCustomRepository(InvoiceRepsitory);
-      console.log({projectId: req.params.projectId, startDate, endDate})
+
       if (!projectId) {
         throw new Error('Project Is Not Defined');
       }
-      // if (!startDate || !endDate) {
-      //   throw new Error('Date Range Not Defined');
-      // }
-      // startDate = moment(startDate)
-      // endDate = moment(endDate)
+
       let records = await repository.getInvoiceData(
         projectId,
         startDate,
@@ -53,6 +49,19 @@ export class invoiceController {
     }
   }
 
+  async saveInvoices(req: Request, res: Response, next: NextFunction) {
+    try {
+      let repository = getCustomRepository(InvoiceRepsitory);
+      let records = await repository.createInvoice(req.body);
+      return res.status(200).json({
+        success: true,
+        message:  'No Entry Found Against This Project',
+        // data: records,
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  }
   async clientProjects(req: Request, res: Response, next: NextFunction) {
     try {
       let orgId = parseInt(req.params.orgId);

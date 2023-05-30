@@ -34,4 +34,8 @@ router
   .route('/:toolName/organizations')
   .get(contr.toolOrganizations.bind(contr));
 
+router
+  .route('/:toolName/tool-assets')
+  .post(contr.toolAssets.bind(contr));
+
 export default router;

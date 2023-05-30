@@ -101,4 +101,22 @@ export class integrationAuthController {
       next(e);
     }
   }
+  async toolAssets(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(IntegrationAuthRepsitory);
+      const tool = req.params.toolName;
+
+      let records = {}
+      if (tool === 'xero') {
+         records = await repository.xeroToolAssets(req.body);
+      }
+      return res.status(200).json({
+        success: true,
+        message: `${tool} true`,
+        data: records
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

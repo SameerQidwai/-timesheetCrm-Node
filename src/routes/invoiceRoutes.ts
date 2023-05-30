@@ -13,12 +13,12 @@ router
     // [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
     contr.invoices.bind(contr)
   );
-// router
-//   .route('/:id')
-//   .get(
-//     [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
-//     contr.integrationTools.bind(contr)
-//   );
+router
+  .route('/')
+  .post(
+    // [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.saveInvoices.bind(contr)
+  );
 router
   .route('/data/:projectId&:startDate&:endDate')
   .get(

@@ -1,15 +1,16 @@
 import { Between, EntityRepository, Repository } from 'typeorm';
 // import xero  from '../../xero-config'
-import { Invoice, TokenSet, XeroClient } from 'xero-node';
+import { Invoice as XeroInvoice, TokenSet, XeroClient } from 'xero-node';
 import moment, { Moment } from 'moment';
 import { IntegrationAuth } from '../entities/integrationAuth';
 import { Opportunity } from '../entities/opportunity';
+import { Invoice } from '../entities/invoice';
 
 
 const invoices = {
   invoices: [
     {
-      type: Invoice.TypeEnum.ACCREC,
+      type: XeroInvoice.TypeEnum.ACCREC,
       contact: {
         contactID: '3e776c4b-ea9e-4bb1-96be-6b0c7a71a37f',
       },
@@ -26,16 +27,16 @@ const invoices = {
       date: moment().format('YYYY-MM-DD'),
       dueDate: moment().add(7, 'days').format('YYYY-MM-DD'),
       reference: 'XERO-Nodes',
-      status: Invoice.StatusEnum.AUTHORISED,
+      status: XeroInvoice.StatusEnum.AUTHORISED,
     },
   ],
 };
-@EntityRepository(IntegrationAuth)
-export class InvoiceRepsitory extends Repository<IntegrationAuth> {
+@EntityRepository(Invoice)
+export class InvoiceRepsitory extends Repository<Invoice> {
   async getInvoices(): Promise<any> {
     try {
       // let xero = new XeroClient()
-      let integration = await this.findOne({ where: { toolName: 'xero' } });
+      let integration = await this.manager.findOne(IntegrationAuth ,{ where: { toolName: 'xero' } });
       if (!integration) {
         throw new Error('No Integration Found');
       }
@@ -54,21 +55,75 @@ export class InvoiceRepsitory extends Repository<IntegrationAuth> {
     }
   }
 
+  async createInvoice(data: any): Promise<any> {
+    try {
+      if (!data.lineItems?.length){
+        throw new Error ('XeroInvoice is empty')
+      }
+      const xeroInvoices = {
+        invoices: [
+          {
+            type: XeroInvoice.TypeEnum.ACCREC,
+            contact: {
+              contactID: data.organization.xeroid,
+            },
+            date: moment(data.issue_date).format('YYYY-MM-DD'),
+            dueDate: moment(data.due_date).format('YYYY-MM-DD'),
+            reference: data.reference,
+            lineAmountTypes: data.amountAre,
+            lineItems: data?.lineItems.map((record: any) => ({
+              accountCode: record.account_code,
+              description: record.description,
+              quantity: record.quantity,
+              taxType: record.tax_type,
+              taxAmount: record.tax_amount,
+              unitAmount: record.unit_amount,
+            }))
+          }
+        ]
+      }
+
+      let integration = await this.manager.findOne(IntegrationAuth, { where: { toolName: 'xero' } });
+      if (!integration) {
+        throw new Error('No Integration Found');
+      }
+      console.log(integration)
+      let {xero , tenantId} = await integration.getXeroToken();
+      if (!xero) {
+        throw new Error('xero is not fonud');
+      }
+      
+      let createdInvoicesResponse  = await xero.accountingApi.createInvoices(tenantId, xeroInvoices)
+      const invoiceId = createdInvoicesResponse.body?.invoices?.[0]?.invoiceID
+      console.log(createdInvoicesResponse)
+      const crmInvoice = {
+        organizationId: data.organization.value,
+        projectId: data.projectId,
+        invoiceId: invoiceId, 
+        invoice_ref: data.reference
+      }
+      this.save(crmInvoice);
+      // console.log(crmInvoice)
+    //  console.log(data)
+    return crmInvoice
+    } catch (e) {
+      console.log(e)
+      return [];
+    }
+  }
+
   async getInvoiceData(
     projectId: number,
     startDate: string,
     endDate: string
   ): Promise<any> {
-    console.log(projectId,startDate, endDate, 'hitting  it');
     try {
       let project = await this.manager.findOne(Opportunity, projectId);
 
       if (!project) {
         throw new Error('Project Not Found');
       }
-      console.log(project)
       if (project.type === 2) {
-        console.log(project.type, 'hit it');
         if (startDate === 'undefined' || endDate === 'undefined'){
           throw new Error('Dates are not Defined')
         }
@@ -86,7 +141,6 @@ export class InvoiceRepsitory extends Repository<IntegrationAuth> {
               STR_TO_DATE(entry_date,'%e-%m-%Y') BETWEEN '${startDate}' AND  '${endDate}'
             GROUP BY resource_id
           `);
-          console.log(resources, 'I came till here')
           return resources
         } catch (e) {
           console.error(e);
