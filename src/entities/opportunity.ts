@@ -20,6 +20,7 @@ import { PurchaseOrder } from './purchaseOrder';
 import { Employee } from './employee';
 import { Milestone } from './milestone';
 import { LeaveRequest } from './leaveRequest';
+import { Invoice } from './invoice';
 
 @Entity('opportunities')
 export class Opportunity extends Base {
@@ -216,4 +217,9 @@ export class Opportunity extends Base {
     cascade: true,
   })
   leaveRequests: LeaveRequest[];
+
+  @OneToMany(() => Invoice, (invoice) => invoice.project, {
+    cascade: true,
+  })
+  invoices: Invoice[];
 }

@@ -11,13 +11,13 @@ router
   .route('/')
   .get(
     // [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
-    contr.invoices.bind(contr)
+    contr.index.bind(contr)
   );
 router
   .route('/')
   .post(
     // [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
-    contr.saveInvoices.bind(contr)
+    contr.create.bind(contr)
   );
 router
   .route('/data/:projectId&:startDate&:endDate')
@@ -33,6 +33,19 @@ router
     contr.clientProjects.bind(contr)
   );
 
+router
+  .route('/:invoiceId/')
+  .get(
+    // [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.get.bind(contr)
+  );
+
+router
+  .route('/:invoiceId/')
+  .put(
+    // [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.update.bind(contr)
+  );
 // router
 //   .route('/invoice-organization')
 //   .get(

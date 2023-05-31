@@ -4,15 +4,15 @@ import { InvoiceRepsitory } from '../repositories/invoiceRepsitory';
 import moment, { Moment } from 'moment';
 
 export class invoiceController {
-  async invoices(req: Request, res: Response, next: NextFunction) {
+  async index(req: Request, res: Response, next: NextFunction) {
     try {
       let repository = getCustomRepository(InvoiceRepsitory);
-      let records = await repository.getInvoices();
+      let records = await repository.getAllActive();
       return res.status(200).json({
-        success: true,
+        success: !!records.length,
         message: records.length
-          ? 'Entries Found'
-          : 'No Entry Found Against This Project',
+          ? 'Invoices Found'
+          : 'No Inovice Found',
         data: records,
       });
     } catch (e) {
@@ -49,10 +49,10 @@ export class invoiceController {
     }
   }
 
-  async saveInvoices(req: Request, res: Response, next: NextFunction) {
+  async create(req: Request, res: Response, next: NextFunction) {
     try {
       let repository = getCustomRepository(InvoiceRepsitory);
-      let records = await repository.createInvoice(req.body);
+      let records = await repository.createAndSave(req.body);
       return res.status(200).json({
         success: true,
         message:  'No Entry Found Against This Project',
@@ -62,6 +62,38 @@ export class invoiceController {
       console.log(e);
     }
   }
+
+  async get(req: Request, res: Response, next: NextFunction) {
+    try {
+      let repository = getCustomRepository(InvoiceRepsitory);
+      let invoiceId = req.params.invoiceId;
+      let record = await repository.findOneCustom(invoiceId);
+      if (!record) throw new Error('not found');
+      res.status(200).json({
+        success: true,
+        message: `Get`,
+        data: record,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async update(req: Request, res: Response, next: NextFunction) {
+    try {
+      let repository = getCustomRepository(InvoiceRepsitory);
+      let invoiceId = req.params.invoiceId;
+      let record = await repository.updateAndReturn(invoiceId, req.body);
+      res.status(200).json({
+        success: true,
+        message: `Updated Successfully`,
+        data: record,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
   async clientProjects(req: Request, res: Response, next: NextFunction) {
     try {
       let orgId = parseInt(req.params.orgId);

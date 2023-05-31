@@ -2,11 +2,9 @@ import { EntityRepository, Repository } from 'typeorm';
 // import xero  from '../../xero-config'
 import { XeroClient, TokenSet } from 'xero-node';
 import dotenv from 'dotenv';
-import moment from 'moment';
 import jwt from 'jsonwebtoken';
 import { IntegrationAuth } from '../entities/integrationAuth';
 import { Organization } from '../entities/organization';
-import { log } from 'console';
 
 // const app: express.Application = express();
 
@@ -90,7 +88,6 @@ export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
         },
       });
       // delete tokenSet['scope'];
-      console.log(tokenSet);
       let dbToken = {
         userId: authId,
         // refreshToken: tokenSet.refresh_token,
@@ -192,9 +189,9 @@ export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
               org.abn === xOrg.taxNumber.replace(/ /g, '')
             ) {
               filteredOrgs.push({
-                label: org.name,
-                value: org.id,
-                xeroid: xOrg.contactID,
+                name: org.name,
+                id: org.id,
+                xeroId: xOrg.contactID,
               });
               break;
             }
@@ -221,7 +218,6 @@ export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
       let promises: any = []
 
       if (queries.account){
-        console.log(queries.account)
         promises.push(()=>xero.accountingApi.getAccounts(tenantId, undefined, queries.account))
       }
 
@@ -229,7 +225,6 @@ export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
         promises.push(()=>xero.accountingApi.getTaxRates(tenantId, queries.taxType))
       }
 
-       console.log('I got passed with this things')
       // const xeroContacts = await
       let promiseRes: any = await Promise.all(promises.map((apiCall: any) => apiCall()));
 

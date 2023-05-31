@@ -59,8 +59,14 @@ export class IntegrationAuth extends Base {
     
     if (readTokenSet.expired()) {
       tokenSet = await xero.refreshWithRefreshToken(process.env.CLIENT_ID, process.env.CLIENT_SECRET, tokenSet.refresh_token)
-      const integrationRepository: Repository<IntegrationAuth> = getRepository(IntegrationAuth);
-      await integrationRepository.update({toolName: 'xero'}, {tokenSet: tokenSet});
+      try {
+        const integrationRepository = getRepository(IntegrationAuth);
+        let insert = await integrationRepository.update({toolName: 'xero'}, {tokenSet: tokenSet});
+        
+      }catch (e){
+        console.log(e)
+        return {xero, tenantId: ''}
+      }
     }
     await xero.setTokenSet(tokenSet);
     await xero.updateTenants();
