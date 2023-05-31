@@ -96,7 +96,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
             contact: {
               contactID: data.organization.xeroId, 
             },
-            status: XeroInvoice.StatusEnum.DRAFT,
+            // status: XeroInvoice.StatusEnum.DRAFT,
             date: moment(data.issueDate).format('YYYY-MM-DD'),
             dueDate: moment(data.dueDate).format('YYYY-MM-DD'),
             reference: data.reference,
@@ -188,7 +188,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         invoices: [
           {
             type: XeroInvoice.TypeEnum.ACCREC,
-            status: XeroInvoice.StatusEnum.DELETED,
+            // status: XeroInvoice.StatusEnum.DELETED,
             contact: {
               contactID: data.organization.xeroId,
             },
