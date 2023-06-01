@@ -25,6 +25,7 @@ import { Timesheet } from './entities/timesheet';
 import { Expense } from './entities/expense';
 import { ExpenseSheet } from './entities/expenseSheet';
 import { EmploymentContract } from './entities/employmentContract';
+import { ExpenseSheetExpense } from './entities/expenseSheetExpense';
 
 const connection = createConnection();
 
@@ -409,15 +410,17 @@ let _closeExpenseSheets = async (
   { EMPLOYEE_PICKER, PROJECT_PICKER }: any,
   forceStatusChangeFlag: Boolean
 ) => {
-  let expenses = await trx.find(Expense, {
+  let expenses = await trx.find(ExpenseSheetExpense, {
     where: {
-      date: Between(year.startDate, year.endDate),
+      submittedAt: Between(year.startDate, year.endDate),
     },
-    relations: ['entries'],
+    relations: ['sheet', 'expense'],
   });
 
-  let expenseSheets = await trx.find(ExpenseSheet);
-  let savingExpenses: Expense[] = [];
+  let expenseSheets = await trx.find(ExpenseSheet, {
+    relations: ['expenseSheetExpenses', 'expenseSheetExpenses.expense'],
+  });
+  let savingExpenses: ExpenseSheetExpense[] = [];
 
   let EXPENSESHEET_PICKER: { [key: number]: ExpenseSheet } = {};
 
@@ -427,19 +430,30 @@ let _closeExpenseSheets = async (
 
   let loopedExpenseSheets: number[] = [];
 
+  let responseExpenseSheets: any[] = [];
+
   for (let expense of expenses) {
-    const expenseLastEntry = expense.entries[expense.entries.length - 1];
-    const currentExpenseSheet =
-      EXPENSESHEET_PICKER[expense?.expenseSheetId ?? expenseLastEntry.sheetId];
+    const currentExpenseSheet = expense.sheet;
 
     if (loopedExpenseSheets.includes(currentExpenseSheet.id)) continue;
 
     loopedExpenseSheets.push(currentExpenseSheet.id);
 
+    responseExpenseSheets.push({
+      id: currentExpenseSheet.id,
+      employeeId: currentExpenseSheet.createdBy,
+      employeeName: EMPLOYEE_PICKER[currentExpenseSheet.createdBy].name,
+      projectId: PROJECT_PICKER[currentExpenseSheet.projectId].id ?? null,
+      projectName: PROJECT_PICKER[currentExpenseSheet.projectId].title ?? null,
+      submittedAt: expense.submittedAt,
+      status: 'Not Defined',
+    });
+
     if (!expense.rejectedAt && !expense.approvedAt) {
       expense.rejectedAt = moment().toDate();
       expense.rejectedBy = userId;
-      expense.notes = 'Systematically Rejected because of Year closing';
+      expense.expense.notes = `${expense.expense.notes} -
+        Systematically Rejected because of Year closing`;
     }
 
     savingExpenses.push(expense);
