@@ -40,3 +40,23 @@ export interface StandardMailUserInterface {
   username: string | String;
   email: string | String;
 }
+
+export interface InvoicesInterface {
+  id: number;
+  invoiceId: string;
+  type: string;
+  status: string;
+  organization: {
+    xeroId: string;
+    name: string;
+    id: number;
+  };
+  issueDate: Date | null;
+  dueDate: Date | null;
+  invoiceNumber: string;
+  reference: string;
+  project: {
+    id: number;
+    name: String,
+  },
+}
