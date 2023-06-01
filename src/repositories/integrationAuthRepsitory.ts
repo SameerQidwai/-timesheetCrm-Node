@@ -19,7 +19,7 @@ if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
 const xero = new XeroClient({
   clientId: process.env.CLIENT_ID,
   clientSecret: process.env.CLIENT_SECRET,
-  redirectUris: [`http://localhost:3301/api/v1/integration/zero/callback`],
+  redirectUris: [`${process.env.ENV_URL}/api/v1/integration/zero/callback`],
   scopes: 'openid profile email accounting.transactions offline_access'.split(
     ' '
   ),
@@ -169,7 +169,7 @@ export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
       if (!integration) {
         throw new Error('No Integration Found');
       }
-      let {xero , tenantId} = await integration.getXeroToken();
+      let { xero, tenantId } = await integration.getXeroToken();
       if (!xero) {
         throw new Error('No Integration Found');
       }
@@ -204,37 +204,43 @@ export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
       return false;
     }
   }
-  async xeroToolAssets(queries:{[key: string]: string}): Promise<any> {
+  async xeroToolAssets(queries: { [key: string]: string }): Promise<any> {
     try {
       let integration = await this.findOne({ where: { toolName: 'xero' } });
       if (!integration) {
         throw new Error('No Integration Found');
       }
-      let {xero , tenantId} = await integration.getXeroToken();
+      let { xero, tenantId } = await integration.getXeroToken();
       if (!xero || !tenantId) {
         throw new Error('No Integration Found');
       }
 
-      let promises: any = []
+      let promises: any = [];
 
-      if (queries.account){
-        promises.push(()=>xero.accountingApi.getAccounts(tenantId, undefined, queries.account))
+      if (queries.account) {
+        promises.push(() =>
+          xero.accountingApi.getAccounts(tenantId, undefined, queries.account)
+        );
       }
 
-      if (queries.taxType){
-        promises.push(()=>xero.accountingApi.getTaxRates(tenantId, queries.taxType))
+      if (queries.taxType) {
+        promises.push(() =>
+          xero.accountingApi.getTaxRates(tenantId, queries.taxType)
+        );
       }
 
       // const xeroContacts = await
-      let promiseRes: any = await Promise.all(promises.map((apiCall: any) => apiCall()));
+      let promiseRes: any = await Promise.all(
+        promises.map((apiCall: any) => apiCall())
+      );
 
-      let response:{[key: string]:object}= {}
+      let response: { [key: string]: object } = {};
       for (let item of promiseRes) {
         for (let key in item['body']) {
           response[key] = item['body'][key];
         }
       }
-      return response
+      return response;
     } catch (e) {
       console.log(e);
       return false;
@@ -242,7 +248,7 @@ export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
   }
 }
 
-// //Helper function 
+// //Helper function
 // async function xeroAccounts (xero: any, tenantId?: string|null, where?: string){
 //   let promise = xero.accountingApi.getAccounts(tenantId, undefined)
 //   return promise
