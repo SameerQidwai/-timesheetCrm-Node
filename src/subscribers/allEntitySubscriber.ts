@@ -181,14 +181,6 @@ export class EntitySubscriber implements EntitySubscriberInterface {
           // let conditionColumnId = condition.conditionColumnId;
           let conditionColumnName = condition.conditionColumn.typeormName;
 
-          console.log(
-            columnName,
-            oldData[columnName],
-            newData[columnName],
-            conditionColumnName,
-            lastClosedFinancialYear.endDate
-          );
-
           let oldDataCheckValue: null | string = null;
           let newDataCheckValue: null | string = null;
           if (oldData[columnName] != null) {
