@@ -177,6 +177,7 @@ export enum DisableCondtionDataType {
   DATE = 'DATE',
   NUMBER = 'NUMBER',
   STRING = 'STRING',
+  ANY = 'ANY',
 }
 
 export enum SystemVariableValueType {
