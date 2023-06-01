@@ -8,11 +8,15 @@ import {
 
 @Entity('db_column_disable_conditions')
 export class DBColumnDisableCondition extends Base {
-  @Column({ name: 'condition_type' })
-  conditionType: DisableConditionType;
+  @Column({ name: 'column_id' })
+  columnId: Number;
 
-  @Column({ name: 'data_type' })
-  dataType: DisableCondtionDataType;
+  @ManyToOne(() => DBColumn)
+  @JoinColumn({ name: 'column_id' })
+  column: DBColumn;
+
+  @Column({ name: 'column_data_type' })
+  columnDataType: DisableCondtionDataType;
 
   @Column({ name: 'condition_column_id', nullable: true })
   conditionColumnId: Number;
@@ -20,6 +24,12 @@ export class DBColumnDisableCondition extends Base {
   @ManyToOne(() => DBColumn)
   @JoinColumn({ name: 'condition_column_id' })
   conditionColumn: DBColumn;
+
+  @Column({ name: 'condition_column_data_type' })
+  conditionColumnDataType: DisableCondtionDataType;
+
+  @Column({ name: 'condition_type' })
+  conditionType: DisableConditionType;
 
   @Column({ name: 'condition', nullable: true })
   condition: string;
@@ -29,11 +39,4 @@ export class DBColumnDisableCondition extends Base {
 
   @Column({ name: 'metaData', type: 'json', nullable: true })
   metaData: JSON;
-
-  @Column({ name: 'column_id' })
-  columnId: Number;
-
-  @ManyToOne(() => DBColumn)
-  @JoinColumn({ name: 'column_id' })
-  column: DBColumn;
 }

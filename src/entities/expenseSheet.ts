@@ -11,6 +11,7 @@ import { Base } from './common/base';
 import { Employee } from './employee';
 import { ExpenseSheetExpense } from './expenseSheetExpense';
 import { Opportunity } from './opportunity';
+import { ExpenseStatus } from '../constants/constants';
 
 @Entity('expense_sheets')
 export class ExpenseSheet extends Base {
@@ -45,4 +46,22 @@ export class ExpenseSheet extends Base {
     }
   )
   expenseSheetExpenses: ExpenseSheetExpense[];
+
+  public get getStatus(): ExpenseStatus {
+    let status: ExpenseStatus = ExpenseStatus.SAVED;
+
+    let entry = this.expenseSheetExpenses[0];
+
+    if (entry.submittedAt !== null) {
+      status = ExpenseStatus.SUBMITTED;
+    }
+    if (entry.rejectedAt !== null) {
+      status = ExpenseStatus.REJECTED;
+    }
+    if (entry.approvedAt !== null) {
+      status = ExpenseStatus.APPROVED;
+    }
+
+    return status;
+  }
 }

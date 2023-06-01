@@ -177,6 +177,7 @@ export enum DisableCondtionDataType {
   DATE = 'DATE',
   NUMBER = 'NUMBER',
   STRING = 'STRING',
+  ANY = 'ANY',
 }
 
 export enum SystemVariableValueType {
@@ -191,4 +192,11 @@ export enum GlobalSettingValueType {
   NUMBER = 'number',
   STRING = 'string',
   BOOLEAN = 'boolean',
+}
+
+export enum ExpenseStatus {
+  SAVED = 'saved',
+  SUBMITTED = 'submitted',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
 }
