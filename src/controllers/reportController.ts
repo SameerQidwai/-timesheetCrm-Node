@@ -1979,7 +1979,8 @@ export class ReportController {
     let fiscalYearEnd = req.query.fiscalYearEnd as string;
     let currentMonthStart = moment().date(1).format('YYYY-MM-DD');
     let acutalMonthEnd = moment().subtract(1, 'months').endOf('month').format('YYYY-MM-DD');
-    console.log({currentMonthStart,acutalMonthEnd})
+    acutalMonthEnd = moment(fiscalYearEnd).isBefore(moment(acutalMonthEnd), 'month') ? fiscalYearEnd : acutalMonthEnd
+    // console.log({currentMonthStart,acutalMonthEnd})
 
     const actual_revenue = await getManager().query(`
       SELECT 
