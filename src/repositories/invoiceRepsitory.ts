@@ -89,12 +89,45 @@ export class InvoiceRepsitory extends Repository<Invoice> {
       if (!data.lineItems?.length) {
         throw new Error('XeroInvoice is empty');
       }
+
+      let [project, integration] = await Promise.all([
+        this.manager.findOne(Opportunity,data.projectId  ,{
+          relations: ['organization'],
+        }),
+        this.manager.findOne(IntegrationAuth, {
+          where: { toolName: 'xero' },
+        })
+      ]);
+
+      console.log(project?.organization.abn)
+
+      if (!integration) {
+        throw new Error('No Integration Found');
+      }
+      let { xero, tenantId } = await integration.getXeroToken();
+      if (!xero) {
+        throw new Error('xero is not fonud');
+      }
+
+      if (!project?.organization?.abn){
+        throw new Error('Organization Do not have ABN in Timewize');
+      }
+
+      const custRes = await xero.accountingApi.getContacts(tenantId, undefined, `taxNumber == "${project.organization.abn}"`);
+
+      const contact = custRes?.body?.contacts?.[0];
+
+      if (!contact){
+        throw new Error("Xero Does Not Have Any Customer With Provided ABN");
+      }
+
+
       const xeroInvoices = {
         invoices: [
           {
             type: XeroInvoice.TypeEnum.ACCREC,
             contact: {
-              contactID: data.organization.xeroId, 
+              contactID: contact.contactID, 
             },
             // status: XeroInvoice.StatusEnum.DRAFT,
             date: moment(data.issueDate).format('YYYY-MM-DD'),
@@ -113,17 +146,6 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         ],
       };
 
-      let integration = await this.manager.findOne(IntegrationAuth, {
-        where: { toolName: 'xero' },
-      });
-      if (!integration) {
-        throw new Error('No Integration Found');
-      }
-      let { xero, tenantId } = await integration.getXeroToken();
-      if (!xero) {
-        throw new Error('xero is not fonud');
-      }
-
       let createdInvoicesResponse = await xero.accountingApi.createInvoices(
         tenantId,
         xeroInvoices
@@ -131,11 +153,11 @@ export class InvoiceRepsitory extends Repository<Invoice> {
       const invoiceId = createdInvoicesResponse.body?.invoices?.[0]?.invoiceID;
 
       const crmInvoice = {
-        organizationId: data.organization.id,
+        organizationId: project.organization.id,
         projectId: data.projectId,
         invoiceId: invoiceId,
         reference: data.reference,
-        scheduleId: data.schedule,
+        scheduleId: data.scheduleId,
         startDate: data.startDate,
         endDate: data.endDate
       };
