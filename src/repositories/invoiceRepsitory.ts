@@ -7,6 +7,8 @@ import { Opportunity } from '../entities/opportunity';
 import { Invoice } from '../entities/invoice';
 import { InvoiceResponse, InvoiceResponses } from '../responses/invoiceResponses';
 import { InvoicesInterface } from '../utilities/interfaces';
+import fs from 'fs';
+import path from 'path';
 
 // const invoices = {
 //   invoices: [
@@ -76,6 +78,8 @@ export class InvoiceRepsitory extends Repository<Invoice> {
 
       let xeroInvoices = invoiceRes.body.invoices ?? [];
 
+      // console.log(xeroInvoices)
+
       return new InvoiceResponses(xeroInvoices, invoiceObj).invoices;
       // return xeroInvoices;
     } catch (e) {
@@ -99,7 +103,6 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         })
       ]);
 
-      console.log(project?.organization.abn)
 
       if (!integration) {
         throw new Error('No Integration Found');
@@ -145,23 +148,87 @@ export class InvoiceRepsitory extends Repository<Invoice> {
           },
         ],
       };
+      // console.log('I came here')
 
-      let createdInvoicesResponse = await xero.accountingApi.createInvoices(
+      // const fileassociation = await xero.filesApi.createFileAssociation(tenantId, '9f4cb7df-7b88-4a89-9b39-139963bdbf64', {
+      //   objectId: "4a888f9c-d8b9-4621-aa3b-dc2b88855f56",
+      //   objectGroup: 'Invoice',
+      //   objectType:'ACCREC'
+      // });
+
+      // console.log(fileassociation)
+
+      // for (let i = 0; i<10; i++){
+      //   let 
+      // }
+
+      // console.log(xeroInvoices.invoices[0].attachments)
+
+      // let createdInvoicesResponse = await xero.accountingApi.createInvoices(
+      //   tenantId,
+      //   xeroInvoices
+      // );
+      // const invoiceId = createdInvoicesResponse.body?.invoices?.[0]?.invoiceID;
+
+      // console.log(fs.createReadStream(path.join(__dirname, `../../public/uploads/1680609422809217459.pdf`)))
+
+      // let invoice_Online1 = await xero.accountingApi.createInvoiceAttachmentByFileName(
+      //   tenantId,
+      //   '4a888f9c-d8b9-4621-aa3b-dc2b88855f56',
+      //   'online88.pdf',
+      //   fs.createReadStream(path.join(__dirname, `../../public/uploads/1680609422809217459.pdf`)),
+      //   true
+      // );
+
+      // let invoice_off2 = await xero.accountingApi.createInvoiceAttachmentByFileName(
+      //   tenantId,
+      //   '4a888f9c-d8b9-4621-aa3b-dc2b88855f56',
+      //   'offline3.pdf',
+      //   fs.createReadStream(path.join(__dirname, `../../public/uploads/1680609422809217459.pdf`)),
+      //   false
+      // );
+      // let invoice_Online2 = await xero.accountingApi.createInvoiceAttachmentByFileName(
+      //   tenantId,
+      //   '4a888f9c-d8b9-4621-aa3b-dc2b88855f56',
+      //   'online4.pdf',
+      //   fs.createReadStream(path.join(__dirname, `../../public/uploads/1680609422809217459.pdf`)),
+      //   true
+      // );
+
+      // let invoice_off3 = await xero.accountingApi.createInvoiceAttachmentByFileName(
+      //   tenantId,
+      //   '4a888f9c-d8b9-4621-aa3b-dc2b88855f56',
+      //   'offline4.pdf',
+      //   fs.createReadStream(path.join(__dirname, `../../public/uploads/1680609422809217459.pdf`)),
+      //   false
+      // );
+      let invoice_Online4 = await xero.accountingApi.createInvoiceAttachmentByFileName(
         tenantId,
-        xeroInvoices
+        '4a888f9c-d8b9-4621-aa3b-dc2b88855f56',
+        'TimesheetFileAssossication.pdf',
+        fs.createReadStream(path.join(__dirname, `../../public/uploads/1680609422809217459.pdf`)),
+        true
       );
-      const invoiceId = createdInvoicesResponse.body?.invoices?.[0]?.invoiceID;
 
-      const crmInvoice = {
-        organizationId: project.organization.id,
-        projectId: data.projectId,
-        invoiceId: invoiceId,
-        reference: data.reference,
-        scheduleId: data.scheduleId,
-        startDate: data.startDate,
-        endDate: data.endDate
-      };
-      this.save(crmInvoice);
+      // let invoice_off4 = await xero.accountingApi.createInvoiceAttachmentByFileName(
+      //   tenantId,
+      //   '4a888f9c-d8b9-4621-aa3b-dc2b88855f56',
+      //   'offline6.pdf',
+      //   fs.createReadStream(path.join(__dirname, `../../public/uploads/1680609422809217459.pdf`)),
+      //   false
+      // );
+      console.log(invoice_Online4)
+
+      // const crmInvoice = {
+      //   organizationId: project.organization.id,
+      //   projectId: data.projectId,
+      //   invoiceId: invoiceId,
+      //   reference: data.reference,
+      //   scheduleId: data.scheduleId,
+      //   startDate: data.startDate,
+      //   endDate: data.endDate
+      // };
+      // this.save(crmInvoice);
       return true;
     } catch (e) {
       console.log(e);
@@ -193,7 +260,9 @@ export class InvoiceRepsitory extends Repository<Invoice> {
       if (!crmInvoice || !xeroInvoice){
         throw new Error ('Invoice Not Found')
       }
-      
+
+      let email_send = await xero.accountingApi.emailInvoice( tenantId, id, );
+      console.log(email_send)
       return new InvoiceResponse(xeroInvoice, crmInvoice)
     }catch (e){
       console.log(e)
@@ -206,6 +275,9 @@ export class InvoiceRepsitory extends Repository<Invoice> {
       if (!data.lineItems?.length) {
         throw new Error('XeroInvoice is empty');
       }
+
+      
+
       const xeroInvoices = {
         invoices: [
           {
@@ -218,6 +290,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
             dueDate: moment(data.dueDate).format('YYYY-MM-DD'),
             reference: data.reference,
             lineAmountTypes: data.lineAmountTypes,
+            HasAttachments: true, 
             lineItems: data?.lineItems.map((record: any) => ({
               accountCode: record.accountCode,
               description: record.description,
@@ -226,6 +299,13 @@ export class InvoiceRepsitory extends Repository<Invoice> {
               taxAmount: record.taxAmount,
               unitAmount: record.unitAmount,
             })),
+            attachments: [
+              {
+                fileName: '1680609422809217459.pdf',
+                mimeType: 'application/pdf',
+                content: fs.readFileSync(path.join(__dirname, `../../public/uploads/1680609422809217459.pdf`)),
+              }
+            ]
           },
         ],
       };
@@ -287,13 +367,44 @@ export class InvoiceRepsitory extends Repository<Invoice> {
               SUM(actual_hours) quantity,
               resource_selling_rate unitAmount,
               resource_name description,
+              CONCAT( -- 1 Concatenates the string square brackets open
+                '[',
+                GROUP_CONCAT( -- Aggregates the concatenated JSON objects
+                  DISTINCT CONCAT( -- Only allow Unique Concatenates the JSON object
+                    '{
+                      "type": "', files.type, '",
+                      "originalName": "', files.original_name, '",
+                      "uniqueName": "', files.unique_name, '",
+                      "fileId": ', files.id, 
+                    '}' 
+                  )
+                  SEPARATOR ','  -- Separator for each JSON object
+                ),
+                ']' --  1 Concatenates the string square brackets close
+              ) timesheet,
               resource_id id
               FROM 
-                profit_view 
+                profit_view
+                    LEFT JOIN attachments -- join on attachment and files by milestone_entry_id
+                    ON (
+                      attachments.target_id = profit_view.milestone_entry_id
+                      AND attachments.target_type = "PEN"
+                    )
+                    LEFT JOIN files
+                      ON (attachments.file_id = files.id)
               WHERE project_id=${projectId}  AND 
               STR_TO_DATE(entry_date,'%e-%m-%Y') BETWEEN '${startDate}' AND  '${endDate}'
             GROUP BY resource_id
           `);
+          
+          let entries = JSON.parse(resources[0].timesheet)
+          let amount = 0
+          // for (const entry of entries) {
+          //   // for (const key of entry) {
+          //     amount += parseFloat(entry['actual_hours'])
+          //   // }
+          // }
+          console.log(entries)
           return resources;
         } catch (e) {
           console.error(e);
