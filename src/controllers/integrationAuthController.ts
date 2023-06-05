@@ -76,7 +76,7 @@ export class integrationAuthController {
 
       return res.status(200).json({
         success: true,
-        message: `${tool} LogOur`,
+        message: `${tool} LogOut`,
       });
     } catch (e) {
       next(e);
