@@ -88,7 +88,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
     }
   }
 
-  async createAndSave(data: any): Promise<boolean> {
+  async createAndSave(data: any): Promise<any> {
     try {
       if (!data.lineItems?.length) {
         throw new Error('XeroInvoice is empty');
@@ -148,91 +148,101 @@ export class InvoiceRepsitory extends Repository<Invoice> {
           },
         ],
       };
-      // console.log('I came here')
 
-      // const fileassociation = await xero.filesApi.createFileAssociation(tenantId, '9f4cb7df-7b88-4a89-9b39-139963bdbf64', {
-      //   objectId: "4a888f9c-d8b9-4621-aa3b-dc2b88855f56",
-      //   objectGroup: 'Invoice',
-      //   objectType:'ACCREC'
-      // });
-
-      // console.log(fileassociation)
-
-      // for (let i = 0; i<10; i++){
-      //   let 
-      // }
-
-      // console.log(xeroInvoices.invoices[0].attachments)
-
-      // let createdInvoicesResponse = await xero.accountingApi.createInvoices(
-      //   tenantId,
-      //   xeroInvoices
-      // );
-      // const invoiceId = createdInvoicesResponse.body?.invoices?.[0]?.invoiceID;
-
-      // console.log(fs.createReadStream(path.join(__dirname, `../../public/uploads/1680609422809217459.pdf`)))
-
-      // let invoice_Online1 = await xero.accountingApi.createInvoiceAttachmentByFileName(
-      //   tenantId,
-      //   '4a888f9c-d8b9-4621-aa3b-dc2b88855f56',
-      //   'online88.pdf',
-      //   fs.createReadStream(path.join(__dirname, `../../public/uploads/1680609422809217459.pdf`)),
-      //   true
-      // );
-
-      // let invoice_off2 = await xero.accountingApi.createInvoiceAttachmentByFileName(
-      //   tenantId,
-      //   '4a888f9c-d8b9-4621-aa3b-dc2b88855f56',
-      //   'offline3.pdf',
-      //   fs.createReadStream(path.join(__dirname, `../../public/uploads/1680609422809217459.pdf`)),
-      //   false
-      // );
-      // let invoice_Online2 = await xero.accountingApi.createInvoiceAttachmentByFileName(
-      //   tenantId,
-      //   '4a888f9c-d8b9-4621-aa3b-dc2b88855f56',
-      //   'online4.pdf',
-      //   fs.createReadStream(path.join(__dirname, `../../public/uploads/1680609422809217459.pdf`)),
-      //   true
-      // );
-
-      // let invoice_off3 = await xero.accountingApi.createInvoiceAttachmentByFileName(
-      //   tenantId,
-      //   '4a888f9c-d8b9-4621-aa3b-dc2b88855f56',
-      //   'offline4.pdf',
-      //   fs.createReadStream(path.join(__dirname, `../../public/uploads/1680609422809217459.pdf`)),
-      //   false
-      // );
-      let invoice_Online4 = await xero.accountingApi.createInvoiceAttachmentByFileName(
+      let createdInvoicesResponse = await xero.accountingApi.createInvoices(
         tenantId,
-        '4a888f9c-d8b9-4621-aa3b-dc2b88855f56',
-        'TimesheetFileAssossication.pdf',
-        fs.createReadStream(path.join(__dirname, `../../public/uploads/1680609422809217459.pdf`)),
-        true
+        xeroInvoices
       );
 
-      // let invoice_off4 = await xero.accountingApi.createInvoiceAttachmentByFileName(
-      //   tenantId,
-      //   '4a888f9c-d8b9-4621-aa3b-dc2b88855f56',
-      //   'offline6.pdf',
-      //   fs.createReadStream(path.join(__dirname, `../../public/uploads/1680609422809217459.pdf`)),
-      //   false
-      // );
-      console.log(invoice_Online4)
+       const invoiceId = createdInvoicesResponse.body?.invoices?.[0]?.invoiceID; //getting Invoice Id
 
-      // const crmInvoice = {
-      //   organizationId: project.organization.id,
-      //   projectId: data.projectId,
-      //   invoiceId: invoiceId,
-      //   reference: data.reference,
-      //   scheduleId: data.scheduleId,
-      //   startDate: data.startDate,
-      //   endDate: data.endDate
-      // };
-      // this.save(crmInvoice);
-      return true;
+       let attachemts_9 = (data.attachments??[]).slice(0,9) // below Api only allows only 10 Attachments
+
+       let attachPromise = [] //creating promise loop
+       for (let index in attachemts_9){
+         attachPromise.push(()=>xero.accountingApi.createInvoiceAttachmentByFileName(
+          tenantId, //Xero identifier for Tenant
+          invoiceId, //Invoice Id to attach files
+          `attachment_${index}`, //fileName which is showing in xero
+          fs.createReadStream(path.join(__dirname, `../../public/uploads/${attachemts_9[index].uniqueName}`)), //file
+          attachemts_9[index].includeOnline //Allows an attachment to be seen by the end customer within their online invoice
+        )) // this api only create only 10 attachments 
+       }
+
+       let attachments_rest =(data.attachments??[]).slice(9); //rest of the attachment will be uploaded from this api with in xero
+       for (let index in attachments_rest) {  // 
+         attachPromise.push(() =>(
+           xero.filesApi.uploadFile(
+             tenantId, //Xero identifier for Tenant
+             fs.createReadStream( path.join( __dirname, `../../public/uploads/${attachments_rest[index].uniqueName}` )), //file
+             attachments_rest[index].uniqueName, //exact file name which is being uploaded 
+             `attachment_${9+index}`, // file name which will showing in xero
+             attachments_rest[index].type //mimetype
+           ))
+         );
+       }
+
+
+       let attachPromiseRes: any = await Promise.all(attachPromise.map((apiCall: any) => apiCall())); //resolve all api's
+
+       let associationPromise = []
+
+       let attachMessage = 'All files are Attached Successfully'
+      for (let index in  attachPromiseRes){
+        let res = attachPromiseRes[index]
+        if (!res?.boady?.FileObject){
+          attachMessage = 'Some of files are not Uploaded and need to upload manually'
+        }else if (parseInt(index) >9){ // need to associate rest of the attachments uploaded as file with invoices
+          associationPromise.push(() => (
+          xero.filesApi.createFileAssociation(
+            tenantId, //Xero identifier for Tenant
+            res.id, // file Id 
+            {
+              fileId: res.id, // file Id 
+              objectId: invoiceId, //invoice Id
+              objectType: XeroInvoice.TypeEnum.ACCREC,
+              objectGroup: 'Invoice'
+            }
+          ))
+          )
+        }
+      }
+
+      let associationPromiseRes: any = await Promise.all(associationPromise.map((apiCall: any) => apiCall())); //resolve all api's
+
+      for (let index in associationPromiseRes){ //Allows an attachment to be seen by the end customer within their online invoice
+        let res = associationPromiseRes[index] //calling this api again to change the ^^^^^^
+        if (res?.body?.Association){ 
+          xero.accountingApi.createInvoiceAttachmentByFileName(  
+            tenantId, //Xero identifier for Tenant
+            invoiceId, //Invoice Id to attach files
+            `attachment_${9+index}`, //fileName which is showing in xero
+            fs.createReadStream(path.join(__dirname, `../../public/uploads/${attachments_rest[index].uniqueName}`)), //file
+            attachemts_9[index].includeOnline //Allows an attachment to be seen by the end customer within their online invoice
+          ) // this api only create only 10 attachments
+        }
+      }
+
+      const crmInvoice = {
+        organizationId: project.organization.id,
+        projectId: data.projectId,
+        invoiceId: invoiceId,
+        reference: data.reference,
+        scheduleId: data.scheduleId,
+        startDate: data.startDate,
+        endDate: data.endDate
+      };
+      this.save(crmInvoice);
+      return {
+        success: true,
+        attachMessage,
+        message: 'Invoice Created Successfully'
+      };
     } catch (e) {
-      console.log(e);
-      return false;
+      return {
+        success: true,
+        message: 'Invoice Not Created'
+      };
     }
   }
 
@@ -360,9 +370,9 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         if (startDate === 'undefined' || endDate === 'undefined') {
           throw new Error('Dates are not Defined');
         }
-
+        // -- are the comments inside the sql query 
         try {
-          const resources = await this.query(`
+          let resources = await this.query(`
             SELECT  
               SUM(actual_hours) quantity,
               resource_selling_rate unitAmount,
@@ -381,7 +391,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
                   SEPARATOR ','  -- Separator for each JSON object
                 ),
                 ']' --  1 Concatenates the string square brackets close
-              ) timesheet,
+              ) attachments,
               resource_id id
               FROM 
                 profit_view
@@ -397,15 +407,19 @@ export class InvoiceRepsitory extends Repository<Invoice> {
             GROUP BY resource_id
           `);
           
-          let entries = JSON.parse(resources[0].timesheet)
-          let amount = 0
-          // for (const entry of entries) {
-          //   // for (const key of entry) {
-          //     amount += parseFloat(entry['actual_hours'])
-          //   // }
-          // }
-          console.log(entries)
-          return resources;
+          let attachments: any[] =[]
+          let fileNames: string[] = []
+          resources = resources.map((resource:any)=>{ //checking the file should be unique for all resouces
+            for (let attach of (resource?.attachments??[])) {
+              if (!fileNames.includes(attach.uniqueName)){ //check if fileName is created unique
+                attachments.push(attach) 
+                fileNames.push(attach.uniqueName) //adding to this array to check later 
+              }
+            }
+            // delete resource.attachments // delete attachment from all resouce to added array seperatly 
+            return resource // return updated element to map 
+          }) 
+          return {resources, attachments};
         } catch (e) {
           console.error(e);
         }
@@ -426,7 +440,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
               AND project_schedules.deleted_at IS NULL 
           `);
 
-          return schedule;
+          return {schedule};
         } catch (e) {
           console.error(e);
         }

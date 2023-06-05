@@ -16,7 +16,7 @@ export class invoiceController {
         data: records,
       });
     } catch (e) {
-      console.log(e);
+      next(e);
     }
   }
 
@@ -53,13 +53,9 @@ export class invoiceController {
     try {
       let repository = getCustomRepository(InvoiceRepsitory);
       let records = await repository.createAndSave(req.body);
-      return res.status(200).json({
-        success: true,
-        message:  'No Entry Found Against This Project',
-        // data: records,
-      });
+      return res.status(200).json(records);
     } catch (e) {
-      console.log(e);
+      next(e);
     }
   }
 
