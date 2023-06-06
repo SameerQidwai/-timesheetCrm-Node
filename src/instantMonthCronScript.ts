@@ -4,7 +4,7 @@ import { getManager } from 'typeorm';
 import { Employee } from './entities/employee';
 import { LeaveRequestBalance } from './entities/leaveRequestBalance';
 import { LeaveRequestTriggerFrequency } from './constants/constants';
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 connection
   .then(async () => {

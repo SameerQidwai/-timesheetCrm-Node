@@ -22,7 +22,7 @@ import { Attachment } from '../entities/attachment';
 import { EntityType, ProjectType } from '../constants/constants';
 import { Comment } from '../entities/comment';
 import { Calendar } from '../entities/calendar';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { LeaveRequest } from '../entities/leaveRequest';
 import { Timesheet } from '../entities/timesheet';
 import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
@@ -2034,15 +2034,20 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
     let holidays: string[] = [];
 
-    let shutdownPeriod = await this.manager.find(ProjectShutdownPeriod,{
-      where: {projectId: projectId}
-    })
+    let shutdownPeriod = await this.manager.find(ProjectShutdownPeriod, {
+      where: { projectId: projectId },
+    });
 
-    if(shutdownPeriod.length){ //removing shutdown period from forecasting
+    if (shutdownPeriod.length) {
+      //removing shutdown period from forecasting
       for (const shutdown of shutdownPeriod) {
-        let {startDate, endDate} = shutdown
-        for (var iDate = moment(startDate); iDate.isSameOrBefore(endDate); iDate.add(1, 'days')){
-          holidays.push(moment(iDate).format('M D YYYY').toString())
+        let { startDate, endDate } = shutdown;
+        for (
+          var iDate = moment(startDate);
+          iDate.isSameOrBefore(endDate);
+          iDate.add(1, 'days')
+        ) {
+          holidays.push(moment(iDate).format('M D YYYY').toString());
         }
       }
     }

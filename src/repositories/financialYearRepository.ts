@@ -10,7 +10,8 @@ import {
 } from 'typeorm';
 import { FinancialYear } from '../entities/financialYear';
 import { FinancialYearDTO } from '../dto';
-import moment, { Moment } from 'moment';
+import moment from 'moment-timezone';
+import { Moment } from 'moment';
 import { Opportunity } from '../entities/opportunity';
 import { LeaveRequest } from '../entities/leaveRequest';
 import { LeaveRequestEntry } from '../entities/leaveRequestEntry';
@@ -628,56 +629,69 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
     { EMPLOYEE_PICKER, PROJECT_PICKER }: any,
     forceStatusChangeFlag: Boolean
   ) {
-    let loopedLeaveRequests: Array<Number> = [];
+    let loopedLeaveRequests: Array<number> = [];
     let leaveRequestsIndex: any = {};
     let leaveRequests: Array<LeaveRequest> = [];
     let newLeaveRequests: Array<LeaveRequest> = [];
     let deleteableEntries: Array<LeaveRequestEntry> = [];
+    let yearStartDate = moment(year.startDate);
+    let yearEndDate = moment(year.endDate);
 
     let responseLeaveRequests: any[] = [];
 
-    let leaveRequestEntries = await this.manager.find(LeaveRequestEntry, {
+    let leaveRequestEntries = await trx.find(LeaveRequestEntry, {
       where: { date: MoreThanOrEqual(year.startDate) },
+      order: { date: 'ASC' },
       relations: ['leaveRequest'],
     });
 
     for (let entry of leaveRequestEntries) {
       let momentEntryDate = moment(entry.date);
+
       let leaveRequestId = entry.leaveRequestId;
-      let leaveRequest: LeaveRequest = entry.leaveRequest;
-      delete (entry as any).leaveRequest;
-      delete (entry as any).leaveRequestId;
-      (leaveRequest as any).inClosedYear = false;
-      (leaveRequest as any).inNextYear = false;
-
+      let leaveRequest: LeaveRequest;
+      //FOUND
       if (loopedLeaveRequests.includes(leaveRequestId)) {
-        if (momentEntryDate.isAfter(year.endDate, 'date')) {
-          (
-            leaveRequests[leaveRequestsIndex[leaveRequestId]] as any
-          ).futureEntries.push(entry);
-          deleteableEntries.push(entry);
-        }
+        leaveRequest = leaveRequests[leaveRequestsIndex[leaveRequestId]];
+        delete (entry as any).leaveRequest;
+        delete (entry as any).leaveRequestId;
 
+        (leaveRequest as any).endDate = momentEntryDate.format('YYYY-MM-DD');
+
+        if (momentEntryDate.isAfter(yearEndDate, 'date')) {
+          (leaveRequest as any).inNextYear = true;
+          if ((leaveRequest as any).inClosedYear) {
+            (leaveRequest as any).futureEntries.push(entry);
+            deleteableEntries.push(entry);
+          }
+        } else if (
+          momentEntryDate.isBetween(yearStartDate, yearEndDate, 'date', '[]')
+        ) {
+          (leaveRequest as any).inClosedYear = true;
+        }
+        leaveRequests[leaveRequestsIndex[leaveRequestId]] = leaveRequest;
         continue;
       }
 
+      //NOT FOUND
+      leaveRequest = entry.leaveRequest;
+      delete (entry as any).leaveRequest;
+      delete (entry as any).leaveRequestId;
       loopedLeaveRequests.push(leaveRequestId);
       leaveRequestsIndex[leaveRequestId] = leaveRequests.length;
+      (leaveRequest as any).inClosedYear = false;
+      (leaveRequest as any).inNextYear = false;
+      (leaveRequest as any).startDate = momentEntryDate.format('YYYY-MM-DD');
       (leaveRequest as any).futureEntries = [];
 
-      if (
-        momentEntryDate.isBetween(year.startDate, year.endDate, 'date', '[]')
+      if (momentEntryDate.isAfter(yearEndDate, 'year')) {
+        (leaveRequest as any).inNextYear = true;
+        // (leaveRequest as any).futureEntries.push(entry);
+        // deleteableEntries.push(entry);
+      } else if (
+        momentEntryDate.isBetween(yearStartDate, yearEndDate, 'date', '[]')
       ) {
         (leaveRequest as any).inClosedYear = true;
-      }
-
-      if (
-        momentEntryDate.isAfter(year.endDate, 'date') &&
-        (leaveRequest as any).inClosedYear
-      ) {
-        (leaveRequest as any).inNextYear = true;
-        (leaveRequest as any).futureEntries.push(entry);
-        deleteableEntries.push(entry);
       }
       leaveRequests.push(leaveRequest);
     }
@@ -714,6 +728,8 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
             : '',
           split: true,
           status: leaveRequest.getStatus,
+          startDate: (leaveRequest as any).startDate,
+          endDate: (leaveRequest as any).endDate,
         });
         newLeaveRequests.push(newLeaveRequest);
       }
@@ -737,6 +753,8 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
             : '-',
           split: false,
           status: leaveRequest.getStatus,
+          startDate: (leaveRequest as any).startDate,
+          endDate: (leaveRequest as any).endDate,
         });
       }
     }
@@ -792,10 +810,16 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
 
     let responseTimesheets: any[] = [];
 
-    timesheets.forEach((timesheet) => {
-      const timesheetStatus = timesheet.getStatus;
+    for (let timesheet of timesheets) {
+      for (let milestoneEntry of timesheet.milestoneEntries) {
+        const timesheetStatus = timesheet.getStatus;
 
-      timesheet.milestoneEntries.forEach((milestoneEntry) => {
+        if (
+          timesheetStatus !== TimesheetStatus.SUBMITTED &&
+          timesheetStatus !== TimesheetStatus.SAVED
+        )
+          continue;
+
         responseTimesheets.push({
           id: milestoneEntry.id,
           startDate: timesheet.startDate,
@@ -823,8 +847,8 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
               entry.notes = 'Systematically Rejected because of Year closing';
             }
           });
-      });
-    });
+      }
+    }
 
     if (confirmFlag && forceStatusChangeFlag) {
       await trx.save(timesheets);
@@ -865,6 +889,8 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
 
     for (let expense of expenses) {
       const currentExpenseSheet = expense.sheet;
+      currentExpenseSheet.expenseSheetExpenses =
+        EXPENSESHEET_PICKER[currentExpenseSheet.id].expenseSheetExpenses;
 
       if (loopedExpenseSheets.includes(currentExpenseSheet.id)) continue;
 
@@ -878,7 +904,7 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
         projectName:
           PROJECT_PICKER[currentExpenseSheet.projectId].title ?? null,
         submittedAt: expense.submittedAt,
-        status: 'Not Defined',
+        status: currentExpenseSheet.getStatus,
       });
 
       if (!expense.rejectedAt && !expense.approvedAt) {
@@ -910,7 +936,9 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
 
     for (let contract of contracts) {
       let contractStartDate = moment(contract.startDate);
-      let contractEndDate = moment(contract.endDate);
+      let contractEndDate;
+      if (contract.endDate) contractEndDate = moment(contract.endDate);
+      else contractEndDate = moment().add(10, 'year');
 
       let across = false;
 

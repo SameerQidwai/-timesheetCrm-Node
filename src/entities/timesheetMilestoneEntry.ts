@@ -14,6 +14,7 @@ import { Opportunity } from './opportunity';
 import { Milestone } from './milestone';
 import { Timesheet } from './timesheet';
 import { TimesheetEntry } from './timesheetEntry';
+import { TimesheetStatus } from '../constants/constants';
 
 @Entity('timesheet_project_entries')
 export class TimesheetMilestoneEntry extends Base {
@@ -60,6 +61,19 @@ export class TimesheetMilestoneEntry extends Base {
       startDate: startDate,
       endDate: endDate,
     };
+  }
+
+  public get getStatus(): TimesheetStatus {
+    let status: TimesheetStatus = TimesheetStatus.SAVED;
+
+    let entry = this.entries[0];
+    if (entry) {
+      if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
+      else if (entry.approvedAt !== null) status = TimesheetStatus.APPROVED;
+      else if (entry.submittedAt !== null) status = TimesheetStatus.SUBMITTED;
+    }
+
+    return status;
   }
 
   // @BeforeInsert()

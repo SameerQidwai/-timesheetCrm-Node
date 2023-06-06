@@ -1,4 +1,4 @@
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { createConnection, getManager } from 'typeorm';
 import { CalendarDay } from './entities/calendarDays';
 import { Opportunity } from './entities/opportunity';

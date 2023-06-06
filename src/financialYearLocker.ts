@@ -11,7 +11,7 @@ import { Employee } from './entities/employee';
 import { GlobalSetting } from './entities/globalSetting';
 import { FinancialYear } from './entities/financialYear';
 import { parseGlobalSetting } from './utilities/helpers';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { Milestone } from './entities/milestone';
 import {
   LeaveRequestStatus,
@@ -30,6 +30,7 @@ import { ExpenseSheetExpense } from './entities/expenseSheetExpense';
 const connection = createConnection();
 
 let execution = async () => {
+  moment.tz.setDefault('Etc/UTC');
   const manager = getManager();
   const confirmFlag = true;
 
@@ -246,47 +247,62 @@ let _closeLeaveRequests = async (
   let leaveRequests: Array<LeaveRequest> = [];
   let newLeaveRequests: Array<LeaveRequest> = [];
   let deleteableEntries: Array<LeaveRequestEntry> = [];
+  let yearStartDate = moment(year.startDate);
+  let yearEndDate = moment(year.endDate);
 
   let leaveRequestEntries = await trx.find(LeaveRequestEntry, {
     where: { date: MoreThanOrEqual(year.startDate) },
+    order: { date: 'ASC' },
     relations: ['leaveRequest'],
   });
 
   for (let entry of leaveRequestEntries) {
     let momentEntryDate = moment(entry.date);
+
     let leaveRequestId = entry.leaveRequestId;
-    let leaveRequest: LeaveRequest = entry.leaveRequest;
-    delete (entry as any).leaveRequest;
-    delete (entry as any).leaveRequestId;
-    (leaveRequest as any).inClosedYear = false;
-    (leaveRequest as any).inNextYear = false;
-
+    let leaveRequest: LeaveRequest;
+    //FOUND
     if (loopedLeaveRequests.includes(leaveRequestId)) {
-      if (momentEntryDate.isAfter(year.endDate, 'date')) {
-        (
-          leaveRequests[leaveRequestsIndex[leaveRequestId]] as any
-        ).futureEntries.push(entry);
-        deleteableEntries.push(entry);
-      }
+      leaveRequest = leaveRequests[leaveRequestsIndex[leaveRequestId]];
+      delete (entry as any).leaveRequest;
+      delete (entry as any).leaveRequestId;
 
+      (leaveRequest as any).endDate = momentEntryDate.format('YYYY-MM-DD');
+
+      if (momentEntryDate.isAfter(yearEndDate, 'date')) {
+        (leaveRequest as any).inNextYear = true;
+        if ((leaveRequest as any).inClosedYear) {
+          (leaveRequest as any).futureEntries.push(entry);
+          deleteableEntries.push(entry);
+        }
+      } else if (
+        momentEntryDate.isBetween(yearStartDate, yearEndDate, 'date', '[]')
+      ) {
+        (leaveRequest as any).inClosedYear = true;
+      }
+      leaveRequests[leaveRequestsIndex[leaveRequestId]] = leaveRequest;
       continue;
     }
 
+    //NOT FOUND
+    leaveRequest = entry.leaveRequest;
+    delete (entry as any).leaveRequest;
+    delete (entry as any).leaveRequestId;
     loopedLeaveRequests.push(leaveRequestId);
     leaveRequestsIndex[leaveRequestId] = leaveRequests.length;
+    (leaveRequest as any).inClosedYear = false;
+    (leaveRequest as any).inNextYear = false;
+    (leaveRequest as any).startDate = momentEntryDate.format('YYYY-MM-DD');
     (leaveRequest as any).futureEntries = [];
 
-    if (momentEntryDate.isBetween(year.startDate, year.endDate, 'date', '[]')) {
-      (leaveRequest as any).inClosedYear = true;
-    }
-
-    if (
-      momentEntryDate.isAfter(year.endDate, 'date') &&
-      (leaveRequest as any).inClosedYear
-    ) {
+    if (momentEntryDate.isAfter(yearEndDate, 'year')) {
       (leaveRequest as any).inNextYear = true;
-      (leaveRequest as any).futureEntries.push(entry);
-      deleteableEntries.push(entry);
+      // (leaveRequest as any).futureEntries.push(entry);
+      // deleteableEntries.push(entry);
+    } else if (
+      momentEntryDate.isBetween(yearStartDate, yearEndDate, 'date', '[]')
+    ) {
+      (leaveRequest as any).inClosedYear = true;
     }
     leaveRequests.push(leaveRequest);
   }

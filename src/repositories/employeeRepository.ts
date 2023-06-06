@@ -42,7 +42,7 @@ import {
   LeaveRequestTriggerFrequency,
   SuperannuationType,
 } from '../constants/constants';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { WelcomeMail } from '../mails/welcomeMail';
 
 @EntityRepository(Employee)

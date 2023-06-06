@@ -3,7 +3,7 @@ import { LeaveRequestType } from '../entities/leaveRequestType';
 import { Employee } from '../entities/employee';
 import { Frequency } from '../constants/constants';
 import { Calendar } from '../entities/calendar';
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 @EntityRepository(LeaveRequestType)
 export class LeaveRequestTypeRepository extends Repository<LeaveRequestType> {

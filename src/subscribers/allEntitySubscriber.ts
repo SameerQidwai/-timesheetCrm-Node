@@ -16,7 +16,7 @@ import {
   DisableCondtionDataType,
   OpportunityStatus,
 } from '../constants/constants';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { TransactionCommitEvent } from 'typeorm/subscriber/event/TransactionCommitEvent';
 import { LeaveRequestEntry } from 'src/entities/leaveRequestEntry';
 

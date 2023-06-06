@@ -2,7 +2,7 @@ import { ContractDTO } from '../dto';
 import { EntityRepository, Repository } from 'typeorm';
 import { EmploymentContract } from './../entities/employmentContract';
 import { Employee } from './../entities/employee';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { format } from 'path';
 
 @EntityRepository(EmploymentContract)

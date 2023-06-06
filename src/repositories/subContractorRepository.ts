@@ -18,7 +18,7 @@ import { Opportunity } from '../entities/opportunity';
 import { GlobalVariableLabel } from '../entities/globalVariableLabel';
 import { CalendarHoliday } from '../entities/calendarHoliday';
 
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { WelcomeMail } from '../mails/welcomeMail';
 
 @EntityRepository(Employee)

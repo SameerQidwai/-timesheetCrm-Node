@@ -6,7 +6,7 @@ import {
 import { EntityRepository, Repository } from 'typeorm';
 import { GlobalVariableValue } from '../entities/globalVariableValue';
 import { GlobalVariableLabel } from '../entities/globalVariableLabel';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { LeaveRequestType } from '../entities/leaveRequestType';
 import { State } from '../entities/state';
 

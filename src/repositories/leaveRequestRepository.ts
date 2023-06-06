@@ -23,7 +23,7 @@ import { Employee } from '../entities/employee';
 import { LeaveRequestPolicyLeaveRequestType } from '../entities/leaveRequestPolicyLeaveRequestType';
 import { LeaveRequestStatus, OpportunityStatus } from '../constants/constants';
 import { EntityType } from '../constants/constants';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { Calendar } from '../entities/calendar';
 import { OpportunityResourceAllocation } from '../entities/opportunityResourceAllocation';
 import { OpportunityResource } from '../entities/opportunityResource';

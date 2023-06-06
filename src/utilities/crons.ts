@@ -3,7 +3,7 @@ import { getManager } from 'typeorm';
 import { Employee } from '../entities/employee';
 import { LeaveRequestBalance } from '../entities/leaveRequestBalance';
 import { LeaveRequestTriggerFrequency } from '../constants/constants';
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 let monthCronString = '1 0 0 15 */1 *';
 let yearCronString = '1 10 0 15 7 *';
