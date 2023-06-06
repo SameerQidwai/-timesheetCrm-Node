@@ -374,7 +374,8 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         try {
           let resources = await this.query(`
             SELECT  
-              SUM(actual_hours) quantity,
+              SUM(actual_hours) quantity, -- need to multiply this 
+              SUM(actual_hours) hours, -- but show this in table
               resource_selling_rate unitAmount,
               resource_name description,
               CONCAT( -- 1 Concatenates the string square brackets open
@@ -430,7 +431,8 @@ export class InvoiceRepsitory extends Repository<Invoice> {
             CONCAT(DATE_FORMAT(project_schedules.start_date, '%b'), '-', DATE_FORMAT(project_schedules.end_date, '%b'))  description,
             project_schedules.amount unitAmount,
             project_schedules.id id,
-              1 AS quantity
+              1 AS quantity, -- need to multiply this 
+              '-' AS hours -- but show this in table
               FROM 
                 opportunities 
                   LEFT JOIN project_schedules ON
