@@ -384,7 +384,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
                   DISTINCT CONCAT( -- Only allow Unique Concatenates the JSON object
                     '{
                       "type": "', files.type, '",
-                      "originalName": "', files.original_name, '",
+                      "name": "', files.original_name, '",
                       "uniqueName": "', files.unique_name, '",
                       "fileId": ', files.id, 
                     '}' 
@@ -396,7 +396,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
               resource_id id
               FROM 
                 profit_view
-                    LEFT JOIN attachments -- join on attachment and files by milestone_entry_id
+                  LEFT JOIN attachments -- join on attachment and files by milestone_entry_id
                     ON (
                       attachments.target_id = profit_view.milestone_entry_id
                       AND attachments.target_type = "PEN"
@@ -407,26 +407,29 @@ export class InvoiceRepsitory extends Repository<Invoice> {
               STR_TO_DATE(entry_date,'%e-%m-%Y') BETWEEN '${startDate}' AND  '${endDate}'
             GROUP BY resource_id
           `);
-          
+          // console.log(resources)
           let attachments: any[] =[]
-          let fileNames: string[] = []
+          let fileIds: number[] = []
           resources = resources.map((resource:any)=>{ //checking the file should be unique for all resouces
-            for (let attach of (resource?.attachments??[])) {
-              if (!fileNames.includes(attach.uniqueName)){ //check if fileName is created unique
+            for (let attach of (JSON.parse(resource?.attachments)??[])) {
+              if (!fileIds.includes(attach.fileId)){ //check if fileName is created unique
+                attach.thumbUrl = `http://localhost:3000${thumbUrlGenerator(attach.type)}`
+                attach.url = `http://localhost:3301/api/v1/files/${attach.uniqueName}`
                 attachments.push(attach) 
-                fileNames.push(attach.uniqueName) //adding to this array to check later 
+                fileIds.push(attach.fileId) //adding to this array to check later 
               }
             }
-            // delete resource.attachments // delete attachment from all resouce to added array seperatly 
+            delete resource.attachments // delete attachment from all resouce to added array seperatly 
             return resource // return updated element to map 
           }) 
           return {resources, attachments};
+          // return resources
         } catch (e) {
           console.error(e);
         }
       } else {
         try {
-          const schedule = await this.query(`
+          const resources = await this.query(`
             SELECT  
             CONCAT(DATE_FORMAT(project_schedules.start_date, '%b'), '-', DATE_FORMAT(project_schedules.end_date, '%b'))  description,
             project_schedules.amount unitAmount,
@@ -442,7 +445,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
               AND project_schedules.deleted_at IS NULL 
           `);
 
-          return {schedule};
+          return {resources};
         } catch (e) {
           console.error(e);
         }
@@ -491,4 +494,23 @@ export class InvoiceRepsitory extends Repository<Invoice> {
   //     next(e);
   //   }
   // }
+}
+
+//Helper FUNCTION 
+function thumbUrlGenerator(type: string) {
+  if (type === 'pdf') {
+    return '/icons/pdf.png';
+  } else if (type === 'doc' || type === 'docx') {
+    return '/icons/doc.png';
+  } else if (type === 'xls' || type === 'xlsx') {
+    return '/icons/xls.png';
+  } else if (type === 'ppt' || type === 'pptx') {
+    return '/icons/ppt.png';
+  } else if (type === 'csv') {
+    return '/icons/csv.png';
+  } else if (/(webp|svg|png|gif|jpg|jpeg|jfif|bmp|dpg|ico)$/i.test(type)) {
+    return '/icons/img.png';
+  } else {
+    return '/icons/default.png';
+  }
 }
