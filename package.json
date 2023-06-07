@@ -26,7 +26,8 @@
     "imexBaseSeed": "ts-node src/importsExportsSeed.ts",
     "leaveBalanceFix": "ts-node src/leaveBalanceFixScript.ts",
     "calendarDaysGenerate": "ts-node src/calendarDaysFillScript.ts",
-    "seedDisableConditions": "ts-node src/disableConditionsScript.ts"
+    "seedDisableConditions": "ts-node src/disableConditionsScript.ts",
+    "deleteInvalidTimesheets": "ts-node src/deleteInvalidTimesheets.ts"
   },
   "author": "",
   "license": "ISC",

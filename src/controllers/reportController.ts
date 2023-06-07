@@ -1270,7 +1270,7 @@ export class ReportController {
 
           if (!project) continue;
 
-          if (!projectData['project.id'])
+          if (!projectData[project.id])
             projectData[project.id] = {
               id: project.id,
               title: project.title,

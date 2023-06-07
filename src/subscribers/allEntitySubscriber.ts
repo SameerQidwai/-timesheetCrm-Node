@@ -23,6 +23,7 @@ import { LeaveRequestEntry } from 'src/entities/leaveRequestEntry';
 @EventSubscriber()
 export class EntitySubscriber implements EntitySubscriberInterface {
   async beforeInsert(event: InsertEvent<any>) {
+    moment.tz.setDefault('Etc/UTC');
     const regex = new RegExp(IGNORE_TABLES.join('|'));
     if (regex.test(event.metadata.tableName)) return;
 
@@ -36,6 +37,7 @@ export class EntitySubscriber implements EntitySubscriberInterface {
     const lastClosedFinancialYear = await manager.findOne(FinancialYear, {
       order: { endDate: 'DESC' },
       where: { closed: true },
+      cache: 3000,
     });
 
     const newData = event.entity;
@@ -46,22 +48,53 @@ export class EntitySubscriber implements EntitySubscriberInterface {
       OpportunityStatus.DID_NOT_PROCEED,
     ];
 
-    for (let column of dbColumns) {
-      let columnName = column.typeormName;
-      for (let condition of column.disableConditions) {
-        if (
-          condition.conditionType === DisableConditionType.FINANCIAL_YEAR &&
-          condition.columnDataType === DisableCondtionDataType.DATE &&
-          lastClosedFinancialYear &&
-          !opportunityStatuses.includes(newData?.status) &&
-          newData?.title !== 'Default Milestone'
-        ) {
-          let columnDate = moment(newData[columnName], true).isValid()
-            ? moment(newData[columnName])
-            : moment(newData[columnName], 'DD-MM-YYYY');
+    if (
+      newData &&
+      lastClosedFinancialYear &&
+      !opportunityStatuses.includes(newData?.status) &&
+      newData?.title !== 'Default Milestone'
+    ) {
+      for (let column of dbColumns) {
+        // let columnId = column.id;
+        let columnName = column.typeormName;
+        for (let condition of column.disableConditions) {
+          // let conditionColumnId = condition.conditionColumnId;
+          let conditionColumnName = condition.conditionColumn.typeormName;
 
-          if (columnDate.isBefore(lastClosedFinancialYear.endDate, 'date')) {
-            throw new Error('Cannot make changes in closed financial years');
+          if (condition.conditionType === DisableConditionType.FINANCIAL_YEAR) {
+            // if (newData[conditionColumnName] === null) continue;
+
+            let dateToValidate = moment(
+              newData[conditionColumnName],
+              'YYYY-MM-DD',
+              true
+            );
+            if (!dateToValidate.isValid()) {
+              dateToValidate = moment(
+                newData[conditionColumnName],
+                'DD-MM-YYYY',
+                true
+              );
+            }
+
+            if (
+              conditionColumnName === columnName &&
+              moment(newData[columnName]).isValid() &&
+              moment(newData[columnName]).isBefore(
+                lastClosedFinancialYear.endDate,
+                'date'
+              )
+            ) {
+              throw new Error('Cannot set date to previous financial year');
+            } else if (
+              moment(newData[conditionColumnName]).isSameOrBefore(
+                lastClosedFinancialYear.endDate,
+                'date'
+              ) &&
+              conditionColumnName != columnName
+            ) {
+              throw new Error('Cannot make changes in closed financial years');
+            }
           }
         }
       }
@@ -69,6 +102,7 @@ export class EntitySubscriber implements EntitySubscriberInterface {
   }
 
   async beforeUpdate(event: UpdateEvent<any>) {
+    moment.tz.setDefault('Etc/UTC');
     const regex = new RegExp(IGNORE_TABLES.join('|'));
     if (regex.test(event.metadata.tableName)) return;
 
@@ -95,78 +129,6 @@ export class EntitySubscriber implements EntitySubscriberInterface {
       OpportunityStatus.OPPORTUNITY,
       OpportunityStatus.DID_NOT_PROCEED,
     ];
-
-    // console.log(event.databaseEntity);
-    // console.log(event.entity);
-
-    // for (let column of dbColumns) {
-    //   let columnId = column.id;
-    //   let columnName = column.typeormName;
-    //   for (let condition of column.disableConditions) {
-    //     let conditionColumnId = condition.conditionColumnId;
-    //     let conditionColumnName = condition.conditionColumn.typeormName;
-
-    //     if (
-    //       condition.conditionType === DisableConditionType.FINANCIAL_YEAR &&
-    //       condition.columnDataType === DisableCondtionDataType.DATE &&
-    //       newData &&
-    //       lastClosedFinancialYear &&
-    //       !opportunityStatuses.includes(newData?.status) &&
-    //       newData?.title !== 'Default Milestone'
-    //     ) {
-    //       // console.log('YESSS');
-    //       //IF SAME COLUMN
-    //       if (conditionColumnId === columnId) {
-    //         // console.log(event.metadata.name, newData, oldData);
-    //         if (
-    //           moment(oldData[columnName]).isSameOrBefore(
-    //             lastClosedFinancialYear.endDate,
-    //             'date'
-    //           ) &&
-    //           moment(newData[columnName]).isBefore(
-    //             lastClosedFinancialYear.endDate,
-    //             'date'
-    //           ) &&
-    //           !moment(oldData[columnName]).isSame(newData[columnName])
-    //         ) {
-    //           throw new Error('Cannot make changes in closed financial years');
-    //         }
-    //         // console.log({
-    //         //   old: oldData[columnName],
-    //         //   new: newData[columnName],
-    //         //   comparision: oldData[columnName] == newData[columnName],
-    //         // });
-    //       } else if (columnId !== conditionColumnId) {
-    //         if (
-    //           moment(oldData[conditionColumnName]).isSameOrBefore(
-    //             lastClosedFinancialYear.endDate,
-    //             'date'
-    //           ) &&
-    //           moment(oldData[columnName]).isSameOrBefore(
-    //             lastClosedFinancialYear.endDate,
-    //             'date'
-    //           )
-    //         ) {
-    //           throw new Error('Cannot make changes in closed financial years');
-    //         }
-
-    //         if (
-    //           moment(oldData[conditionColumnName]).isSameOrBefore(
-    //             lastClosedFinancialYear.endDate,
-    //             'date'
-    //           ) &&
-    //           moment(newData[columnName]).isBefore(
-    //             lastClosedFinancialYear.endDate,
-    //             'date'
-    //           ) &&
-    //           !moment(oldData[columnName]).isSame(newData[columnName])
-    //         ) {
-    //           throw new Error('Cannot make changes in closed financial years');
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
 
     if (
       newData &&

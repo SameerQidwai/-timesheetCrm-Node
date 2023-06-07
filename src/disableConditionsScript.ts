@@ -1,4 +1,3 @@
-import moment from 'moment-timezone';
 import { createConnection, getManager } from 'typeorm';
 import { DBColumn } from './entities/dbColumn';
 import { IGNORE_COLUMNS, IGNORE_TABLES } from './constants/globals';
@@ -37,7 +36,7 @@ connection
       budget_report_label_values: {},
       budget_report_labels: {},
       calendar_days: {},
-      calendar_holidays: {},
+      calendar_holidays: { date: 'date', '...rest': 'date' },
       calendars: {},
       cashflow_report_label_values: {},
       cashflow_report_labels: {},
@@ -53,7 +52,10 @@ connection
         end_date: 'end_date',
         '...rest': 'start_date',
       },
-      expense_sheet_expenses: {},
+      expense_sheet_expenses: {
+        submitted_at: 'submitted_at',
+        '...rest': 'submitted_at',
+      },
       expense_sheets: {},
       expense_types: {},
       expenses: {},
@@ -160,7 +162,7 @@ connection
           // conditionObj.conditionType = DisableConditionType.FINANCIAL_YEAR;
           let conditionObj = conditionObject(
             ALL_COLUMNS[column].id,
-            DisableCondtionDataType.ANY,
+            DisableCondtionDataType.DATE,
             ALL_COLUMNS[conditionColumn].id,
             DisableCondtionDataType.DATE,
             DisableConditionType.FINANCIAL_YEAR
