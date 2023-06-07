@@ -39,6 +39,24 @@ export class ForecastReportLabelRepository extends Repository<ForecastReportLabe
     return new ForecastReportLabelsResponse(labels).labels;
   }
 
+  async getFYActive(startDate:string, endDate:string): Promise<any> {
+    // let labels = await this.find({
+    //   where: { isActive: true },
+    //   relations: ['values'],
+    // });
+
+    const labels = await this.createQueryBuilder('label')
+    .leftJoinAndSelect('label.values', 'values')
+    .where('label.isActive = :isActive', { isActive: true })
+    .andWhere(`STR_TO_DATE(CONCAT('01 ', values.span), '%d %b %y') BETWEEN :startDate AND :endDate`, {
+      startDate: `${startDate}`, // Extract month and year from startDate
+      endDate: `${endDate}`, // Extract month and year from endDate
+    })
+    .getMany();
+
+    return new ForecastReportLabelsResponse(labels).labels;
+  }
+
   async customDelete(title: String): Promise<any | undefined> {
     let label = (
       await this.find({
@@ -86,11 +104,19 @@ export class ForecastReportLabelRepository extends Repository<ForecastReportLabe
     });
   }
 
-  async getReport(): Promise<any | undefined> {
-    let labels = await this.find({
-      where: { isActive: true },
-      relations: ['values'],
-    });
-    return new ForecastReportResponse(labels).labels;
+  async getReport(startDate:string, endDate:string): Promise<any | undefined> {
+    
+    const labels = await this.createQueryBuilder('label')
+    .leftJoinAndSelect('label.values', 'values')
+    .where('label.isActive = :isActive', { isActive: true })
+    .andWhere(`STR_TO_DATE(CONCAT('01 ', values.span), '%d %b %y') BETWEEN :startDate AND :endDate`, {
+      startDate: `${startDate}`, // Extract month and year from startDate
+      endDate: `${endDate}`, // Extract month and year from endDate
+    })
+    .getMany();
+
+    console.log(labels)
+
+    return new ForecastReportLabelsResponse(labels).labels;
   }
 }

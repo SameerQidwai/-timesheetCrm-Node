@@ -60,9 +60,13 @@ export class BudgetReportLabelController {
 
   async getReport(req: Request, res: Response, next: NextFunction) {
     try {
+
+      let startDate = req.query.fiscalYearStart as string
+      let endDate = req.query.fiscalYearEnd as string
+
       let repository = getCustomRepository(BudgetReportLabelRepository);
 
-      let response: string = await repository.getReport();
+      let response: string = await repository.getReport(startDate, endDate);
 
       // if no timesheet found
       return res.status(200).json({
