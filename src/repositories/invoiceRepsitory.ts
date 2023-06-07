@@ -1,11 +1,15 @@
 import { Between, EntityRepository, Repository } from 'typeorm';
 // import xero  from '../../xero-config'
 import { Invoice as XeroInvoice, TokenSet, XeroClient } from 'xero-node';
-import moment, { Moment } from 'moment';
+import moment from 'moment-timezone';
+import { Moment } from 'moment';
 import { IntegrationAuth } from '../entities/integrationAuth';
 import { Opportunity } from '../entities/opportunity';
 import { Invoice } from '../entities/invoice';
-import { InvoiceResponse, InvoiceResponses } from '../responses/invoiceResponses';
+import {
+  InvoiceResponse,
+  InvoiceResponses,
+} from '../responses/invoiceResponses';
 import { InvoicesInterface } from '../utilities/interfaces';
 
 // const invoices = {
@@ -72,8 +76,6 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         return [];
       }
 
-
-
       let xeroInvoices = invoiceRes.body.invoices ?? [];
 
       return new InvoiceResponses(xeroInvoices, invoiceObj).invoices;
@@ -89,12 +91,45 @@ export class InvoiceRepsitory extends Repository<Invoice> {
       if (!data.lineItems?.length) {
         throw new Error('XeroInvoice is empty');
       }
+
+      let [project, integration] = await Promise.all([
+        this.manager.findOne(Opportunity,data.projectId  ,{
+          relations: ['organization'],
+        }),
+        this.manager.findOne(IntegrationAuth, {
+          where: { toolName: 'xero' },
+        })
+      ]);
+
+      console.log(project?.organization.abn)
+
+      if (!integration) {
+        throw new Error('No Integration Found');
+      }
+      let { xero, tenantId } = await integration.getXeroToken();
+      if (!xero) {
+        throw new Error('xero is not fonud');
+      }
+
+      if (!project?.organization?.abn){
+        throw new Error('Organization Do not have ABN in Timewize');
+      }
+
+      const custRes = await xero.accountingApi.getContacts(tenantId, undefined, `taxNumber == "${project.organization.abn}"`);
+
+      const contact = custRes?.body?.contacts?.[0];
+
+      if (!contact){
+        throw new Error("Xero Does Not Have Any Customer With Provided ABN");
+      }
+
+
       const xeroInvoices = {
         invoices: [
           {
             type: XeroInvoice.TypeEnum.ACCREC,
             contact: {
-              contactID: data.organization.xeroId, 
+              contactID: contact.contactID, 
             },
             // status: XeroInvoice.StatusEnum.DRAFT,
             date: moment(data.issueDate).format('YYYY-MM-DD'),
@@ -113,17 +148,6 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         ],
       };
 
-      let integration = await this.manager.findOne(IntegrationAuth, {
-        where: { toolName: 'xero' },
-      });
-      if (!integration) {
-        throw new Error('No Integration Found');
-      }
-      let { xero, tenantId } = await integration.getXeroToken();
-      if (!xero) {
-        throw new Error('xero is not fonud');
-      }
-
       let createdInvoicesResponse = await xero.accountingApi.createInvoices(
         tenantId,
         xeroInvoices
@@ -131,13 +155,13 @@ export class InvoiceRepsitory extends Repository<Invoice> {
       const invoiceId = createdInvoicesResponse.body?.invoices?.[0]?.invoiceID;
 
       const crmInvoice = {
-        organizationId: data.organization.id,
+        organizationId: project.organization.id,
         projectId: data.projectId,
         invoiceId: invoiceId,
         reference: data.reference,
-        scheduleId: data.schedule,
+        scheduleId: data.scheduleId,
         startDate: data.startDate,
-        endDate: data.endDate
+        endDate: data.endDate,
       };
       this.save(crmInvoice);
       return true;
@@ -147,9 +171,11 @@ export class InvoiceRepsitory extends Repository<Invoice> {
     }
   }
 
-  async findOneCustom(id: string): Promise<any>{
-    try{
-      let integration = await this.manager.findOne(IntegrationAuth, { where: { toolName: 'xero' } })
+  async findOneCustom(id: string): Promise<any> {
+    try {
+      let integration = await this.manager.findOne(IntegrationAuth, {
+        where: { toolName: 'xero' },
+      });
       if (!integration) {
         throw new Error('No Integration Found');
       }
@@ -160,22 +186,22 @@ export class InvoiceRepsitory extends Repository<Invoice> {
 
       let [crmInvoice, xeroRes] = await Promise.all([
         this.findOne({
-          where: {invoiceId: id},
+          where: { invoiceId: id },
           relations: ['project', 'organization'],
         }),
-        xero.accountingApi.getInvoice( tenantId, id )
+        xero.accountingApi.getInvoice(tenantId, id),
       ]);
 
-      let xeroInvoice = xeroRes.body.invoices?.[0]
+      let xeroInvoice = xeroRes.body.invoices?.[0];
 
-      if (!crmInvoice || !xeroInvoice){
-        throw new Error ('Invoice Not Found')
+      if (!crmInvoice || !xeroInvoice) {
+        throw new Error('Invoice Not Found');
       }
-      
-      return new InvoiceResponse(xeroInvoice, crmInvoice)
-    }catch (e){
-      console.log(e)
-      return {}
+
+      return new InvoiceResponse(xeroInvoice, crmInvoice);
+    } catch (e) {
+      console.log(e);
+      return {};
     }
   }
 
@@ -233,9 +259,9 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         reference: data.reference,
         scheduleId: data.schedule,
         startDate: data.startDate,
-        endDate: data.endDate
+        endDate: data.endDate,
       };
-      this.update({invoiceId},crmInvoice);
+      this.update({ invoiceId }, crmInvoice);
       return true;
     } catch (e) {
       console.log(e);
@@ -262,7 +288,8 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         try {
           const resources = await this.query(`
             SELECT  
-              SUM(actual_hours) quantity,
+              SUM(actual_hours) quantity, -- need to multiply this 
+              SUM(actual_hours) hours, -- but show this in table
               resource_selling_rate unitAmount,
               resource_name description,
               resource_id id
@@ -283,7 +310,8 @@ export class InvoiceRepsitory extends Repository<Invoice> {
             CONCAT(DATE_FORMAT(project_schedules.start_date, '%b'), '-', DATE_FORMAT(project_schedules.end_date, '%b'))  description,
             project_schedules.amount unitAmount,
             project_schedules.id id,
-              1 AS quantity
+              1 AS quantity, -- need to multiply this 
+              '-' AS hours -- but show this in table
               FROM 
                 opportunities 
                   LEFT JOIN project_schedules ON

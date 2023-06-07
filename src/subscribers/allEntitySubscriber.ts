@@ -16,7 +16,7 @@ import {
   DisableCondtionDataType,
   OpportunityStatus,
 } from '../constants/constants';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { TransactionCommitEvent } from 'typeorm/subscriber/event/TransactionCommitEvent';
 import { LeaveRequestEntry } from 'src/entities/leaveRequestEntry';
 
@@ -180,14 +180,6 @@ export class EntitySubscriber implements EntitySubscriberInterface {
         for (let condition of column.disableConditions) {
           // let conditionColumnId = condition.conditionColumnId;
           let conditionColumnName = condition.conditionColumn.typeormName;
-
-          console.log(
-            columnName,
-            oldData[columnName],
-            newData[columnName],
-            conditionColumnName,
-            lastClosedFinancialYear.endDate
-          );
 
           let oldDataCheckValue: null | string = null;
           let newDataCheckValue: null | string = null;

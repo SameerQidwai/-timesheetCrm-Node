@@ -4,7 +4,7 @@ import { Base } from './common/base';
 import { Employee } from './employee';
 import { File } from './file';
 import { LeaveRequestPolicy } from './leaveRequestPolicy';
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 @Entity('employment_contracts')
 export class EmploymentContract extends Base {

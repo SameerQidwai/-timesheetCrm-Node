@@ -11,6 +11,9 @@ import allRoutes from './routes';
 import moment from 'moment-timezone';
 import { crmLock } from './middlewares/systemLock';
 
+//Moment Config
+moment.tz.setDefault('Etc/UTC');
+
 const corsOptions = {
   exposedHeaders: 'Authorization',
 };
@@ -41,9 +44,6 @@ const originalSend = (app as any).response.send;
 };
 
 const connection = createConnection();
-
-//Moment Config
-moment.tz.setDefault('Etc/UTC');
 
 var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), {
   flags: 'a',

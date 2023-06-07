@@ -10,7 +10,7 @@ import {
   ExpensesResponse,
 } from '../responses/expenseResponses';
 import { ExpenseType } from '../entities/expenseType';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { Attachment } from '../entities/attachment';
 import { EntityType, ExpenseStatus } from '../constants/constants';
 import { AttachmentsResponse } from '../responses/attachmentResponses';

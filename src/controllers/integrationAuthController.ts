@@ -110,6 +110,7 @@ export class integrationAuthController {
       if (tool === 'xero') {
          records = await repository.xeroToolAssets(req.body);
       }
+      console.log(records)
       return res.status(200).json({
         success: true,
         message: `${tool} true`,

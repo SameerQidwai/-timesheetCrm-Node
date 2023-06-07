@@ -1,4 +1,5 @@
-import moment, { Moment } from 'moment';
+import moment from 'moment-timezone';
+import { Moment } from 'moment';
 import { EmploymentContract } from '../entities/employmentContract';
 import { Employee } from '../entities/employee';
 import { Opportunity } from '../entities/opportunity';

@@ -27,7 +27,8 @@ import {
 import { Employee } from '../entities/employee';
 import { Opportunity } from '../entities/opportunity';
 import { OpportunityResourceAllocation } from '../entities/opportunityResourceAllocation';
-import moment, { Moment } from 'moment';
+import moment from 'moment-timezone';
+import { Moment } from 'moment';
 import { Milestone } from '../entities/milestone';
 import { LeaveRequest } from '../entities/leaveRequest';
 import { OpportunityResource } from 'src/entities/opportunityResource';

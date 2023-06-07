@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { BudgetReportLabelDTO, BudgetReportUpdateDTO } from '../dto';
 import {
   BudgetReportLabelResponse,
@@ -86,11 +86,16 @@ export class BudgetReportLabelRepository extends Repository<BudgetReportLabel> {
     });
   }
 
-  async getReport(): Promise<any | undefined> {
-    let labels = await this.find({
-      where: { isActive: true },
-      relations: ['values'],
-    });
+  async getReport(startDate:string, endDate:string): Promise<any | undefined> {
+   
+    const labels = await this.createQueryBuilder('label')
+    .leftJoinAndSelect('label.values', 'values')
+    .where('label.isActive = :isActive', { isActive: true })
+    .andWhere(`STR_TO_DATE(CONCAT('01 ', values.span), '%d %b %y') BETWEEN :startDate AND :endDate`, {
+      startDate: `${startDate}`, // Extract month and year from startDate
+      endDate: `${endDate}`, // Extract month and year from endDate
+    })
+    .getMany();
     return new BudgetReportResponse(labels).labels;
   }
 }
