@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction, query } from 'express';
 import { Employee } from '../entities/employee';
 import { Between, getManager, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
-import moment, { Moment } from 'moment';
+import moment from 'moment-timezone';
+import { Moment } from 'moment';
 import {
   buyRateByEmployee,
   getFiscalYear,

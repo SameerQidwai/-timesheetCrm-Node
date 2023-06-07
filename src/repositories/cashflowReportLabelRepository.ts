@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { CashflowReportLabelDTO, CashflowReportUpdateDTO } from '../dto';
 import {
   CashflowReportLabelResponse,

@@ -1,4 +1,4 @@
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { createConnection, getManager } from 'typeorm';
 import { DBColumn } from './entities/dbColumn';
 import { IGNORE_COLUMNS, IGNORE_TABLES } from './constants/globals';

@@ -32,7 +32,7 @@ import {
   ExpenseStatus,
   OpportunityStatus,
 } from '../constants/constants';
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 @EntityRepository(ExpenseSheet)
 export class ExpenseSheetRepository extends Repository<ExpenseSheet> {

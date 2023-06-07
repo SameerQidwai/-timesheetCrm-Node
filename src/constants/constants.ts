@@ -195,8 +195,8 @@ export enum GlobalSettingValueType {
 }
 
 export enum ExpenseStatus {
-  SAVED = 'saved',
-  SUBMITTED = 'submitted',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
+  SAVED = 'SV',
+  SUBMITTED = 'SB',
+  REJECTED = 'RJ',
+  APPROVED = 'AP',
 }

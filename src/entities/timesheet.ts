@@ -37,9 +37,11 @@ export class Timesheet extends Base {
       //   else if (entry.submittedAt !== null) status = TimesheetStatus.SUBMITTED;
       // }
       let entry = milestoneEntry.entries[0];
-      if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
-      else if (entry.approvedAt !== null) status = TimesheetStatus.APPROVED;
-      else if (entry.submittedAt !== null) status = TimesheetStatus.SUBMITTED;
+      if (entry) {
+        if (entry.rejectedAt !== null) status = TimesheetStatus.REJECTED;
+        else if (entry.approvedAt !== null) status = TimesheetStatus.APPROVED;
+        else if (entry.submittedAt !== null) status = TimesheetStatus.SUBMITTED;
+      }
     }
 
     return status;

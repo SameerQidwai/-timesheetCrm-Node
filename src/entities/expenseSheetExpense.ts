@@ -3,6 +3,7 @@ import { Base } from './common/base';
 import { Expense } from './expense';
 import { ExpenseSheet } from './expenseSheet';
 import { Employee } from './employee';
+import { ExpenseStatus } from '../constants/constants';
 
 @Entity('expense_sheet_expenses')
 export class ExpenseSheetExpense extends Base {
@@ -49,4 +50,22 @@ export class ExpenseSheetExpense extends Base {
   @ManyToOne(() => ExpenseSheet)
   @JoinColumn({ name: 'sheet_id' })
   sheet: ExpenseSheet;
+
+  public get getStatus(): ExpenseStatus {
+    let status: ExpenseStatus = ExpenseStatus.SAVED;
+
+    if (this.submittedAt) {
+      status = ExpenseStatus.SUBMITTED;
+    }
+
+    if (this.rejectedAt) {
+      status = ExpenseStatus.REJECTED;
+    }
+
+    if (this.approvedAt) {
+      status = ExpenseStatus.APPROVED;
+    }
+
+    return status;
+  }
 }

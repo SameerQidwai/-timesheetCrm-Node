@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { getCustomRepository, getRepository } from 'typeorm';
 import { InvoiceRepsitory } from '../repositories/invoiceRepsitory';
-import moment, { Moment } from 'moment';
+import moment from 'moment-timezone';
+import { Moment } from 'moment';
 
 export class invoiceController {
   async index(req: Request, res: Response, next: NextFunction) {
@@ -10,9 +11,7 @@ export class invoiceController {
       let records = await repository.getAllActive();
       return res.status(200).json({
         success: !!records.length,
-        message: records.length
-          ? 'Invoices Found'
-          : 'No Inovice Found',
+        message: records.length ? 'Invoices Found' : 'No Inovice Found',
         data: records,
       });
     } catch (e) {
@@ -55,7 +54,7 @@ export class invoiceController {
       let records = await repository.createAndSave(req.body);
       return res.status(200).json({
         success: true,
-        message:  'No Entry Found Against This Project',
+        message: 'No Entry Found Against This Project',
         // data: records,
       });
     } catch (e) {

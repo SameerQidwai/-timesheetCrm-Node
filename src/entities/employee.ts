@@ -14,7 +14,7 @@ import { BankAccount } from './bankAccount';
 import { Lease } from './lease';
 import { SuperannuationType } from '../constants/constants';
 import { Role } from './role';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { LeaveRequestBalance } from './leaveRequestBalance';
 import { Opportunity } from './opportunity';
 import { LeaveRequest } from './leaveRequest';

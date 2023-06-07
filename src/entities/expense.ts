@@ -71,10 +71,6 @@ export class Expense extends Base {
     let status: ExpenseStatus = ExpenseStatus.SAVED;
 
     for (let entry of this.entries) {
-      console.log(
-        '🚀 ~ file: expense.ts:75 ~ Expense ~ getgetStatus ~ entry:',
-        entry
-      );
       if (entry.submittedAt && entry.rejectedAt === null) {
         status = ExpenseStatus.SUBMITTED;
       }

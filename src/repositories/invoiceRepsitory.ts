@@ -1,11 +1,15 @@
 import { Between, EntityRepository, Repository } from 'typeorm';
 // import xero  from '../../xero-config'
 import { Invoice as XeroInvoice, TokenSet, XeroClient } from 'xero-node';
-import moment, { Moment } from 'moment';
+import moment from 'moment-timezone';
+import { Moment } from 'moment';
 import { IntegrationAuth } from '../entities/integrationAuth';
 import { Opportunity } from '../entities/opportunity';
 import { Invoice } from '../entities/invoice';
-import { InvoiceResponse, InvoiceResponses } from '../responses/invoiceResponses';
+import {
+  InvoiceResponse,
+  InvoiceResponses,
+} from '../responses/invoiceResponses';
 import { InvoicesInterface } from '../utilities/interfaces';
 
 // const invoices = {
@@ -72,8 +76,6 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         return [];
       }
 
-
-
       let xeroInvoices = invoiceRes.body.invoices ?? [];
 
       return new InvoiceResponses(xeroInvoices, invoiceObj).invoices;
@@ -94,7 +96,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
           {
             type: XeroInvoice.TypeEnum.ACCREC,
             contact: {
-              contactID: data.organization.xeroId, 
+              contactID: data.organization.xeroId,
             },
             // status: XeroInvoice.StatusEnum.DRAFT,
             date: moment(data.issueDate).format('YYYY-MM-DD'),
@@ -137,7 +139,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         reference: data.reference,
         scheduleId: data.schedule,
         startDate: data.startDate,
-        endDate: data.endDate
+        endDate: data.endDate,
       };
       this.save(crmInvoice);
       return true;
@@ -147,9 +149,11 @@ export class InvoiceRepsitory extends Repository<Invoice> {
     }
   }
 
-  async findOneCustom(id: string): Promise<any>{
-    try{
-      let integration = await this.manager.findOne(IntegrationAuth, { where: { toolName: 'xero' } })
+  async findOneCustom(id: string): Promise<any> {
+    try {
+      let integration = await this.manager.findOne(IntegrationAuth, {
+        where: { toolName: 'xero' },
+      });
       if (!integration) {
         throw new Error('No Integration Found');
       }
@@ -160,22 +164,22 @@ export class InvoiceRepsitory extends Repository<Invoice> {
 
       let [crmInvoice, xeroRes] = await Promise.all([
         this.findOne({
-          where: {invoiceId: id},
+          where: { invoiceId: id },
           relations: ['project', 'organization'],
         }),
-        xero.accountingApi.getInvoice( tenantId, id )
+        xero.accountingApi.getInvoice(tenantId, id),
       ]);
 
-      let xeroInvoice = xeroRes.body.invoices?.[0]
+      let xeroInvoice = xeroRes.body.invoices?.[0];
 
-      if (!crmInvoice || !xeroInvoice){
-        throw new Error ('Invoice Not Found')
+      if (!crmInvoice || !xeroInvoice) {
+        throw new Error('Invoice Not Found');
       }
-      
-      return new InvoiceResponse(xeroInvoice, crmInvoice)
-    }catch (e){
-      console.log(e)
-      return {}
+
+      return new InvoiceResponse(xeroInvoice, crmInvoice);
+    } catch (e) {
+      console.log(e);
+      return {};
     }
   }
 
@@ -233,9 +237,9 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         reference: data.reference,
         scheduleId: data.schedule,
         startDate: data.startDate,
-        endDate: data.endDate
+        endDate: data.endDate,
       };
-      this.update({invoiceId},crmInvoice);
+      this.update({ invoiceId }, crmInvoice);
       return true;
     } catch (e) {
       console.log(e);

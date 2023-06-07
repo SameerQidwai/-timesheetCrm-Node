@@ -3,7 +3,7 @@ import { BaseController } from './baseController';
 import { Request, Response, NextFunction } from 'express';
 import { TimesheetRepository } from './../repositories/timesheetRepository';
 import { getCustomRepository } from 'typeorm';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
 import { TimesheetEntry } from '../entities/timesheetEntry';
 import { Timesheet } from '../entities/timesheet';

@@ -10,7 +10,7 @@ import { Employee } from '../entities/employee';
 import { Opportunity } from '../entities/opportunity';
 import { ContactPerson } from '../entities/contactPerson';
 import { DataImport } from '../entities/dataImport';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { ContactPersonOrganization } from '../entities/contactPersonOrganization';
 import {
   ContactPersonEntity,
