@@ -234,9 +234,6 @@ export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
         promises.map((apiCall: any) => apiCall())
       );
 
-      console.log('xxxx273xxxx')
-      console.log('273xxxx', ' ', promiseRes)
-      console.log('xxxx273xxxx')
 
       let response: { [key: string]: object } = {};
       for (let item of promiseRes) {

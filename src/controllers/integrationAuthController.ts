@@ -40,7 +40,7 @@ export class integrationAuthController {
       const repository = getCustomRepository(IntegrationAuthRepsitory);
       let connected = await repository.xeroAuthCallback(userId, callbackUrl);
       res.send(
-        `<script> window.opener.postMessage('close', 'http://localhost:3000/invoice')</script>`
+        `<script> window.opener.postMessage('close', '${process.env.ENV_URL}/invoice')</script>`
       );
     } catch (e) {
       next(e);
