@@ -20,7 +20,7 @@ const xero = new XeroClient({
   clientId: process.env.CLIENT_ID,
   clientSecret: process.env.CLIENT_SECRET,
   redirectUris: [`${process.env.SERVER_API}/api/v1/integration/xero/callback`],
-  scopes: 'openid profile email accounting.transactions offline_access'.split(
+  scopes: 'openid profile email accounting.transactions offline_access accounting.settings'.split(
     ' '
   ),
   httpTimeout: 3000, // ms (optional)
