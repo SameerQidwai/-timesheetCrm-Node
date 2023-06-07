@@ -10,7 +10,7 @@ export class IntegrationAuth extends Base {
   userId: number;
 
   @ManyToOne(() => Employee, (employee) => employee.id)
-  @JoinColumn({ name: 'id' })
+  @JoinColumn({ name: 'userId' })
   employee: Employee;
 
   @Column({ name: 'token_set', nullable: true, type: 'json' })
