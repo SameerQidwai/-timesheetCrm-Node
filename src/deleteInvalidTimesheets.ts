@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import { createConnection, getManager } from 'typeorm';
+import { createConnection, getManager, In } from 'typeorm';
 import { Timesheet } from './entities/timesheet';
 import { TimesheetEntry } from './entities/timesheetEntry';
 import { TimesheetMilestoneEntry } from './entities/timesheetMilestoneEntry';
@@ -18,10 +18,15 @@ connection
       relations: [
         'milestoneEntry',
         'milestoneEntry.timesheet',
+        'milestoneEntry.timesheet.employee',
+        'milestoneEntry.timesheet.employee.contactPersonOrganization',
+        'milestoneEntry.timesheet.employee.contactPersonOrganization.contactPerson',
         'milestoneEntry.milestone',
         'milestoneEntry.milestone.opportunityResources',
+        'milestoneEntry.milestone.opportunityResources.opportunityResourceAllocations',
       ],
       withDeleted: true,
+      // where: { id: In([3185, 3186, 3187, 3188, 3189, 3190, 3191]) },
     });
 
     for (let entry of entries) {
@@ -40,11 +45,18 @@ connection
             '[]'
           )
         ) {
-          _exists = true;
+          for (let allocation of resource.opportunityResourceAllocations) {
+            if (
+              allocation.contactPersonId ===
+              entry.milestoneEntry.timesheet.employee.contactPersonOrganization
+                .contactPerson.id
+            )
+              _exists = true;
+          }
         }
       }
 
-      if (_exists) {
+      if (!_exists) {
         if (!deleteableEntries.includes(entry.id))
           deleteableEntries.push(entry.id);
         if (!deleteablePEntries.includes(entry.milestoneEntryId))
