@@ -1,6 +1,7 @@
 import { InvoicesInterface } from '../utilities/interfaces';
 import { Invoice } from '../entities/invoice';
 import { LineAmountTypes, LineItem, LineItemItem, Invoice as XeroInvoce } from 'xero-node';
+import { AttachmentsResponse } from './attachmentResponses';
 
 export class InvoiceResponses {
   invoices: InvoicesInterface[] = [];
@@ -67,8 +68,9 @@ export class InvoiceResponse {
         xeroId?: string;
     };
     lineItems?: LineItem[];
+    attachments: any;
     
-    constructor(xeroInvoice: XeroInvoce, crmInvoice: Invoice) {
+    constructor(xeroInvoice: XeroInvoce, crmInvoice: Invoice, attachments: any = []) {
         this.id = crmInvoice.id;
         this.invoiceId =  crmInvoice.invoiceId;
         this.reference = crmInvoice.reference;
@@ -104,5 +106,12 @@ export class InvoiceResponse {
           ...invoice,
           id: crmInvoice.scheduleId,
         }));
+        this.attachments = (attachments).map((file: any) => ({
+          type: file.mimeType,
+          name: file.fileName,
+          uniqueName: file.fileName,
+          fileId: file.attachmentID,
+          url: file.url
+        }))
     }
 }

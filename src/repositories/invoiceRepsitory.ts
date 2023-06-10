@@ -1,6 +1,5 @@
-import { Between, EntityRepository, Repository } from 'typeorm';
-// import xero  from '../../xero-config'
-import { Invoice as XeroInvoice, TokenSet, XeroClient } from 'xero-node';
+import { EntityRepository, Repository } from 'typeorm';
+import { Invoice as XeroInvoice} from 'xero-node';
 import moment, { Moment } from 'moment';
 import { IntegrationAuth } from '../entities/integrationAuth';
 import { Opportunity } from '../entities/opportunity';
@@ -163,7 +162,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
          attachPromise.push(()=>xero.accountingApi.createInvoiceAttachmentByFileName(
           tenantId, //Xero identifier for Tenant
           invoiceId, //Invoice Id to attach files
-          `attachment_${index}`, //fileName which is showing in xero
+          `attachment_${index}.${attachemts_9[index].type}`, //fileName which is showing in xero
           fs.createReadStream(path.join(__dirname, `../../public/uploads/${attachemts_9[index].uniqueName}`)), //file
           attachemts_9[index].includeOnline //Allows an attachment to be seen by the end customer within their online invoice
         )) // this api only create only 10 attachments 
@@ -184,24 +183,24 @@ export class InvoiceRepsitory extends Repository<Invoice> {
 
 
        let attachPromiseRes: any = await Promise.all(attachPromise.map((apiCall: any) => apiCall())); //resolve all api's
-
        let associationPromise = []
 
        let attachMessage = 'All files are Attached Successfully'
       for (let index in  attachPromiseRes){
         let res = attachPromiseRes[index]
-        if (!res?.boady?.FileObject){
+        if (!res?.body){
           attachMessage = 'Some of files are not Uploaded and need to upload manually'
         }else if (parseInt(index) >9){ // need to associate rest of the attachments uploaded as file with invoices
           associationPromise.push(() => (
           xero.filesApi.createFileAssociation(
             tenantId, //Xero identifier for Tenant
-            res.id, // file Id 
+            res.body.id, // file Id 
             {
-              fileId: res.id, // file Id 
+              fileId: res.body.id, // file Id 
               objectId: invoiceId, //invoice Id
               objectType: XeroInvoice.TypeEnum.ACCREC,
-              objectGroup: 'Invoice'
+              objectGroup: 'Invoice',
+              includeOnline: true
             }
           ))
           )
@@ -209,19 +208,6 @@ export class InvoiceRepsitory extends Repository<Invoice> {
       }
 
       let associationPromiseRes: any = await Promise.all(associationPromise.map((apiCall: any) => apiCall())); //resolve all api's
-
-      for (let index in associationPromiseRes){ //Allows an attachment to be seen by the end customer within their online invoice
-        let res = associationPromiseRes[index] //calling this api again to change the ^^^^^^
-        if (res?.body?.Association){ 
-          xero.accountingApi.createInvoiceAttachmentByFileName(  
-            tenantId, //Xero identifier for Tenant
-            invoiceId, //Invoice Id to attach files
-            `attachment_${9+index}`, //fileName which is showing in xero
-            fs.createReadStream(path.join(__dirname, `../../public/uploads/${attachments_rest[index].uniqueName}`)), //file
-            attachemts_9[index].includeOnline //Allows an attachment to be seen by the end customer within their online invoice
-          ) // this api only create only 10 attachments
-        }
-      }
 
       const crmInvoice = {
         organizationId: project.organization.id,
@@ -239,6 +225,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         message: 'Invoice Created Successfully'
       };
     } catch (e) {
+      console.log(e)
       return {
         success: true,
         message: 'Invoice Not Created'
@@ -271,9 +258,11 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         throw new Error ('Invoice Not Found')
       }
 
-      let email_send = await xero.accountingApi.emailInvoice( tenantId, id, );
-      console.log(email_send)
-      return new InvoiceResponse(xeroInvoice, crmInvoice)
+      let attachmentsRes = await xero.accountingApi.getInvoiceAttachments(tenantId, id)
+      
+      // let email_send = await xero.accountingApi.emailInvoice( tenantId, id, );
+      // console.log(email_send)
+      return new InvoiceResponse(xeroInvoice, crmInvoice, attachmentsRes?.body?.attachments)
     }catch (e){
       console.log(e)
       return {}
