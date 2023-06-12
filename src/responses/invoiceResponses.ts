@@ -2,7 +2,8 @@ import { InvoicesInterface } from '../utilities/interfaces';
 import { Invoice } from '../entities/invoice';
 import { LineAmountTypes, LineItem, LineItemItem, Invoice as XeroInvoce } from 'xero-node';
 import { AttachmentsResponse } from './attachmentResponses';
-
+import dotenv from 'dotenv';
+dotenv.config();
 export class InvoiceResponses {
   invoices: InvoicesInterface[] = [];
 
@@ -114,8 +115,8 @@ export class InvoiceResponse {
           xeroFileId: file.attachmentID,
           attachXero: !!file.attachXero,
           includeOnline: !!file.includeOnline,
-          url: file.url|| file.uniqueName? `http://localhost:3301/api/v1/files/${file.uniqueName}` : null,
-          thumbUrl: `http://localhost:3000${thumbUrlGenerator(file.mimeType)}`
+          url: file.url|| file.uniqueName? `${process.env.SERVER_API}/api/v1/files/${file.uniqueName}` : null,
+          thumbUrl: `${process.env.ENV_URL}${thumbUrlGenerator(file.mimeType)}`
         }))
     }
 }

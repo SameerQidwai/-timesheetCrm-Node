@@ -8,6 +8,8 @@ import { InvoiceResponse, InvoiceResponses } from '../responses/invoiceResponses
 import { InvoicesInterface } from '../utilities/interfaces';
 import fs from 'fs';
 import path from 'path';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // const invoices = {
 //   invoices: [
@@ -524,8 +526,8 @@ export class InvoiceRepsitory extends Repository<Invoice> {
           resources = resources.map((resource:any)=>{ //checking the file should be unique for all resouces
             for (let attach of (JSON.parse(resource?.attachments)??[])) {
               if (!fileIds.includes(attach.fileId)){ //check if fileName is created unique
-                attach.thumbUrl = `http://localhost:3000${thumbUrlGenerator(attach.type)}`
-                attach.url = `http://localhost:3301/api/v1/files/${attach.uniqueName}`
+                attach.thumbUrl = `${process.env.ENV_URL}${thumbUrlGenerator(attach.type)}`
+                attach.url = `${process.env.SERVER_API}/api/v1/files/${attach.uniqueName}`
                 attach.attachXero = true
                 attach.includeOnline = true
                 attachments.push(attach) 
