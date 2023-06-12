@@ -596,6 +596,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
           id,
           {}
         );
+        console.log(createdInvoicesResponse)
         return 'Email Sent'
       }else{
         const xeroInvoices = {
