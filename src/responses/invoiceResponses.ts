@@ -70,7 +70,7 @@ export class InvoiceResponse {
     lineItems?: LineItem[];
     attachments: any;
     
-    constructor(xeroInvoice: XeroInvoce, crmInvoice: Invoice, attachments: any = []) {
+    constructor(xeroInvoice: XeroInvoce, crmInvoice: any=[], attachments: any = []) {
         this.id = crmInvoice.id;
         this.invoiceId =  crmInvoice.invoiceId;
         this.reference = crmInvoice.reference;
@@ -93,25 +93,49 @@ export class InvoiceResponse {
         this.accountCode = xeroInvoice?.lineItems?.[0]?.accountCode
         this.taxType = xeroInvoice?.lineItems?.[0]?.taxType
         this.project= {
-            id: crmInvoice.project.id,
-            name: crmInvoice.project.title,
-            type: crmInvoice.project.type,
+            id: crmInvoice.projectId,
+            name: crmInvoice.projectTitle,
+            type: crmInvoice.projectType,
         };
         this.organization = {
-            id: crmInvoice.organization.id,
-            name: crmInvoice.organization.name,
+            id: crmInvoice.organizationId,
+            name: crmInvoice.organizationName,
             xeroId: xeroInvoice.contact?.contactID,
         };
-        this.lineItems = (xeroInvoice.lineItems ?? []).map((invoice: any) => ({
+        this.lineItems = (xeroInvoice.lineItems ?? []).map((invoice: any, index:number) => ({
           ...invoice,
-          id: crmInvoice.scheduleId,
+          id: crmInvoice.scheduleId||index,
         }));
         this.attachments = (attachments).map((file: any) => ({
           type: file.mimeType,
           name: file.fileName,
-          uniqueName: file.fileName,
-          fileId: file.attachmentID,
-          url: file.url
+          uniqueName: file.uniqueName ?? file.fileName,
+          fileId: file.fileId,
+          xeroFileId: file.attachmentID,
+          attachXero: !!file.attachXero,
+          includeOnline: !!file.includeOnline,
+          url: file.url|| file.uniqueName? `http://localhost:3301/api/v1/files/${file.uniqueName}` : null,
+          thumbUrl: `http://localhost:3000${thumbUrlGenerator(file.mimeType)}`
         }))
     }
 }
+
+//Helper function
+function thumbUrlGenerator(type: string) {
+  if (type === 'pdf') {
+    return '/icons/pdf.png';
+  } else if (type === 'doc' || type === 'docx') {
+    return '/icons/doc.png';
+  } else if (type === 'xls' || type === 'xlsx') {
+    return '/icons/xls.png';
+  } else if (type === 'ppt' || type === 'pptx') {
+    return '/icons/ppt.png';
+  } else if (type === 'csv') {
+    return '/icons/csv.png';
+  } else if (/(webp|svg|png|gif|jpg|jpeg|jfif|bmp|dpg|ico)$/i.test(type)) {
+    return '/icons/img.png';
+  } else {
+    return '/icons/default.png';
+  }
+}
+

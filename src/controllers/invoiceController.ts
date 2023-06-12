@@ -80,10 +80,21 @@ export class invoiceController {
       let repository = getCustomRepository(InvoiceRepsitory);
       let invoiceId = req.params.invoiceId;
       let record = await repository.updateAndReturn(invoiceId, req.body);
+      res.status(200).json(record);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async actions(req: Request, res: Response, next: NextFunction) {
+    try {
+      let repository = getCustomRepository(InvoiceRepsitory);
+      let invoiceId = req.params.invoiceId;
+      let action = req.params.action
+      let message = await repository.actionInvoice(invoiceId, action);
       res.status(200).json({
         success: true,
-        message: `Updated Successfully`,
-        data: record,
+        message,
       });
     } catch (e) {
       next(e);

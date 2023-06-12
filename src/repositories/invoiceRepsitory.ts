@@ -123,7 +123,6 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         throw new Error("Xero Does Not Have Any Customer With Provided ABN");
       }
 
-
       const xeroInvoices = {
         invoices: [
           {
@@ -131,22 +130,23 @@ export class InvoiceRepsitory extends Repository<Invoice> {
             contact: {
               contactID: contact.contactID, 
             },
-            // status: XeroInvoice.StatusEnum.DRAFT,
+            status: XeroInvoice.StatusEnum.DRAFT,
             date: moment(data.issueDate).format('YYYY-MM-DD'),
             dueDate: moment(data.dueDate).format('YYYY-MM-DD'),
             reference: data.reference,
             lineAmountTypes: data.lineAmountTypes,
             lineItems: data?.lineItems.map((record: any) => ({
               accountCode: record.accountCode,
+              taxType: record.taxType,
               description: record.description,
               quantity: record.quantity,
-              taxType: record.taxType,
               taxAmount: record.taxAmount,
               unitAmount: record.unitAmount,
             })),
           },
         ],
       };
+
 
       let createdInvoicesResponse = await xero.accountingApi.createInvoices(
         tenantId,
@@ -159,26 +159,30 @@ export class InvoiceRepsitory extends Repository<Invoice> {
 
        let attachPromise = [] //creating promise loop
        for (let index in attachemts_9){
-         attachPromise.push(()=>xero.accountingApi.createInvoiceAttachmentByFileName(
-          tenantId, //Xero identifier for Tenant
-          invoiceId, //Invoice Id to attach files
-          `attachment_${index}.${attachemts_9[index].type}`, //fileName which is showing in xero
-          fs.createReadStream(path.join(__dirname, `../../public/uploads/${attachemts_9[index].uniqueName}`)), //file
-          attachemts_9[index].includeOnline //Allows an attachment to be seen by the end customer within their online invoice
-        )) // this api only create only 10 attachments 
+        if (attachemts_9[index].attachXero){
+          attachPromise.push(()=>xero.accountingApi.createInvoiceAttachmentByFileName(
+            tenantId, //Xero identifier for Tenant
+            invoiceId, //Invoice Id to attach files
+            `${attachemts_9[index].name}`, //fileName which is showing in xero
+            fs.createReadStream(path.join(__dirname, `../../public/uploads/${attachemts_9[index].uniqueName}`)), //file
+            attachemts_9[index].includeOnline //Allows an attachment to be seen by the end customer within their online invoice
+          )) // this api only create only 10 attachments 
+        }
        }
 
        let attachments_rest =(data.attachments??[]).slice(9); //rest of the attachment will be uploaded from this api with in xero
        for (let index in attachments_rest) {  // 
-         attachPromise.push(() =>(
-           xero.filesApi.uploadFile(
-             tenantId, //Xero identifier for Tenant
-             fs.createReadStream( path.join( __dirname, `../../public/uploads/${attachments_rest[index].uniqueName}` )), //file
-             attachments_rest[index].uniqueName, //exact file name which is being uploaded 
-             `attachment_${9+index}`, // file name which will showing in xero
-             attachments_rest[index].type //mimetype
-           ))
-         );
+        if (attachments_rest[index].attachXero){
+          attachPromise.push(() =>(
+             xero.filesApi.uploadFile(
+               tenantId, //Xero identifier for Tenant
+               fs.createReadStream( path.join( __dirname, `../../public/uploads/${attachments_rest[index].uniqueName}` )), //file
+               attachments_rest[index].uniqueName, //exact file name which is being uploaded 
+               `attachment_${9+index}`, // file name which will showing in xero
+               attachments_rest[index].type //mimetype
+             ))
+           );
+        } 
        }
 
 
@@ -200,7 +204,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
               objectId: invoiceId, //invoice Id
               objectType: XeroInvoice.TypeEnum.ACCREC,
               objectGroup: 'Invoice',
-              includeOnline: true
+              includeOnline: attachments_rest[index].includeOnline
             }
           ))
           )
@@ -244,38 +248,126 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         throw new Error('No Xero Token Found');
       }
 
-      let [crmInvoice, xeroRes] = await Promise.all([
-        this.findOne({
-          where: {invoiceId: id},
-          relations: ['project', 'organization'],
-        }),
-        xero.accountingApi.getInvoice( tenantId, id )
+      let query = ` 
+        SELECT 
+          invoices.id,
+          invoiceId,
+          invoices.reference,
+          invoices.project_id projectId,
+          invoices.schedule_id scheduleId,
+          invoices.start_date startDate,
+          invoices.end_date endDate,
+          invoices.organization_id organizationId, 
+          project_title projectTitle,
+          project_type projectType,
+          project_organization_name organizationName,
+          CONCAT( -- 1 Concatenates the string square brackets open
+              '[',
+              GROUP_CONCAT( -- Aggregates the concatenated JSON objects
+              DISTINCT CONCAT( -- Only allow Unique Concatenates the JSON object
+                '{
+                  "mimeType": "', files.type, '",
+                  "fileName": "', files.original_name, '",
+                  "uniqueName": "', files.unique_name, '",
+                  "fileId": ', files.id, ',
+                  "attachXero": ${0},
+                  "includeOnline": ${0}
+                }'
+              )
+              SEPARATOR ','  -- Separator for each JSON object
+              ),
+              ']' --  1 Concatenates the string square brackets close
+          ) attachments
+        FROM invoices 
+          LEFT JOIN profit_view
+              ON (
+                  profit_view.project_id = invoices.project_id AND
+                  STR_TO_DATE(profit_view.entry_date,'%e-%m-%Y') BETWEEN invoices.start_date AND  invoices.end_date
+              )
+          LEFT JOIN attachments
+              ON (
+                  attachments.target_id = profit_view.milestone_entry_id
+                  AND attachments.target_type = "PEN"
+              )
+          LEFT JOIN files
+              ON (attachments.file_id = files.id)                  
+        WHERE 
+          invoices.invoiceId = '${id}'
+      `
+
+      let [crmInvoice, xeroRes, attachmentsRes] = await Promise.all([
+        this.query(query),
+        xero.accountingApi.getInvoice( tenantId, id ),
+        xero.accountingApi.getInvoiceAttachments(tenantId, id)
       ]);
 
       let xeroInvoice = xeroRes.body.invoices?.[0]
-
-      if (!crmInvoice || !xeroInvoice){
+      if (!crmInvoice?.[0] || !xeroInvoice){
         throw new Error ('Invoice Not Found')
       }
 
-      let attachmentsRes = await xero.accountingApi.getInvoiceAttachments(tenantId, id)
-      
-      // let email_send = await xero.accountingApi.emailInvoice( tenantId, id, );
-      // console.log(email_send)
-      return new InvoiceResponse(xeroInvoice, crmInvoice, attachmentsRes?.body?.attachments)
+      let attachments = []
+      let crmAttachments = JSON.parse(crmInvoice[0].attachments)
+      let xeroAttachments = attachmentsRes?.body?.attachments
+
+      if (crmAttachments.length && xeroAttachments?.length){
+        attachments = crmAttachments.map((attach: any)=>{
+          xeroAttachments.forEach((xeroAttachment:any)=>{
+            if (attach.fileName === xeroAttachment.fileName){
+              attach.attachmentID = xeroAttachment.attachmentID
+              attach.attachXero = true;
+              attach.includeOnline = xeroAttachment.includeOnline
+            }
+          })
+          return attach
+        })
+      }else {
+        attachments = crmAttachments||[]
+      }
+
+      return new InvoiceResponse(xeroInvoice, crmInvoice[0], attachments)
     }catch (e){
       console.log(e)
       return {}
     }
   }
 
-  async updateAndReturn(id: string, data: any): Promise<boolean> {
+  async updateAndReturn(id: string, data: any): Promise<any> {
     try {
       if (!data.lineItems?.length) {
         throw new Error('XeroInvoice is empty');
       }
 
+      let [project, integration] = await Promise.all([
+        this.manager.findOne(Opportunity,data.projectId  ,{
+          relations: ['organization'],
+        }),
+        this.manager.findOne(IntegrationAuth, {
+          where: { toolName: 'xero' },
+        })
+      ]);
+
+
+      if (!integration) {
+        throw new Error('No Integration Found');
+      }
+      let { xero, tenantId } = await integration.getXeroToken();
+      if (!xero) {
+        throw new Error('xero is not fonud');
+      }
+
+      if (!project?.organization?.abn){
+        throw new Error('Organization Do not have ABN in Timewize');
+      }
       
+
+      const custRes = await xero.accountingApi.getContacts(tenantId, undefined, `taxNumber == "${project.organization.abn}"`);
+
+      const contact = custRes?.body?.contacts?.[0];
+
+      if (!contact){
+        throw new Error("Xero Does Not Have Any Customer With Provided ABN");
+      }
 
       const xeroInvoices = {
         invoices: [
@@ -283,7 +375,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
             type: XeroInvoice.TypeEnum.ACCREC,
             // status: XeroInvoice.StatusEnum.DELETED,
             contact: {
-              contactID: data.organization.xeroId,
+              contactID: contact.contactID,
             },
             date: moment(data.issueDate).format('YYYY-MM-DD'),
             dueDate: moment(data.dueDate).format('YYYY-MM-DD'),
@@ -309,16 +401,6 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         ],
       };
 
-      let integration = await this.manager.findOne(IntegrationAuth, {
-        where: { toolName: 'xero' },
-      });
-      if (!integration) {
-        throw new Error('No Integration Found');
-      }
-      let { xero, tenantId } = await integration.getXeroToken();
-      if (!xero) {
-        throw new Error('xero is not fonud');
-      }
 
       let createdInvoicesResponse = await xero.accountingApi.updateInvoice(
         tenantId,
@@ -327,8 +409,41 @@ export class InvoiceRepsitory extends Repository<Invoice> {
       );
       const invoiceId = createdInvoicesResponse.body?.invoices?.[0]?.invoiceID;
 
+      let attachemts_9 = (data.attachments??[]).slice(0,9) // below Api only allows only 10 Attachments
+
+       let attachPromise = [] //creating promise loop
+       for (let attach of attachemts_9){
+        if (attach.attachXero){
+          attachPromise.push(()=>xero.accountingApi.createInvoiceAttachmentByFileName(
+            tenantId, //Xero identifier for Tenant
+            invoiceId, //Invoice Id to attach files
+            `${attach.name}`, //fileName which is showing in xero
+            fs.createReadStream(path.join(__dirname, `../../public/uploads/${attach.uniqueName}`)), //file
+            attach.includeOnline //Allows an attachment to be seen by the end customer within their online invoice
+          )) // this api only create only 10 attachments 
+        }else{
+          if(attach.xeroFileId){
+            attachPromise.push(()=>xero.filesApi.deleteFileAssociation(tenantId, attach.xeroFileId, invoiceId))
+          }
+        }
+      }
+
+      let attachPromiseRes: any = await Promise.all(attachPromise.map((apiCall: any) => apiCall())); //resolve all api's
+
+      let attachMessage = 'All files are Upadted Successfully'
+      if (data.attachments>9){
+        for (let index in  attachPromiseRes){
+          let res = attachPromiseRes[index]
+          if (!res?.body){
+            attachMessage = 'Some of files are not Updated and need to update manually'
+          }
+        }
+      }else{
+        attachMessage = 'Some of files are not Uploaded and need to update manually'
+      }
+
       const crmInvoice = {
-        organizationId: data.organization.id,
+        organizationId: project.organization.id,
         projectId: data.projectId,
         invoiceId: invoiceId,
         reference: data.reference,
@@ -337,10 +452,17 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         endDate: data.endDate
       };
       this.update({invoiceId},crmInvoice);
-      return true;
+      return {
+        success: true,
+        attachMessage,
+        message: 'Invoice Updated Successfully'
+      };
     } catch (e) {
       console.log(e);
-      return false;
+      return {
+        success: true,
+        message: 'Invoice Update UnSuccessfull'
+      };
     }
   }
 
@@ -397,20 +519,22 @@ export class InvoiceRepsitory extends Repository<Invoice> {
             GROUP BY resource_id
           `);
           // console.log(resources)
-          let attachments: any[] =[]
-          let fileIds: number[] = []
+          let attachments: any[] =[];
+          let fileIds: number[] = [];
           resources = resources.map((resource:any)=>{ //checking the file should be unique for all resouces
             for (let attach of (JSON.parse(resource?.attachments)??[])) {
               if (!fileIds.includes(attach.fileId)){ //check if fileName is created unique
                 attach.thumbUrl = `http://localhost:3000${thumbUrlGenerator(attach.type)}`
                 attach.url = `http://localhost:3301/api/v1/files/${attach.uniqueName}`
+                attach.attachXero = true
+                attach.includeOnline = true
                 attachments.push(attach) 
                 fileIds.push(attach.fileId) //adding to this array to check later 
               }
             }
             delete resource.attachments // delete attachment from all resouce to added array seperatly 
             return resource // return updated element to map 
-          }) 
+          });
           return {resources, attachments};
           // return resources
         } catch (e) {
@@ -444,6 +568,51 @@ export class InvoiceRepsitory extends Repository<Invoice> {
     } catch (e) {
       return '';
     }
+  }
+
+  async actionInvoice(id:string, action: string): Promise<any>{
+    try{
+      console.log(id, action)
+      let integration = await this.manager.findOne(IntegrationAuth, {
+        where: { toolName: 'xero' },
+      })
+  
+      if (!integration) {
+        throw new Error('No Integration Found');
+      }
+      let { xero, tenantId } = await integration.getXeroToken();
+      if (!xero) {
+        throw new Error('xero is not fonud');
+      }
+
+      if (action === 'Send_Email'){
+        let createdInvoicesResponse = await xero.accountingApi.emailInvoice(
+          tenantId,
+          id,
+          {}
+        );
+        return 'Email Sent'
+      }else{
+        const xeroInvoices = {
+          invoices: [
+            {
+              status: action,
+            },
+          ],
+        };
+  
+        let createdInvoicesResponse = await xero.accountingApi.updateInvoice(
+          tenantId,
+          id,
+          xeroInvoices
+        );
+          return 'Invoice' + action
+      }
+      
+    }catch (e){
+      return 'Action Not Performed'
+    }
+    
   }
 
   async getClientProjects(orgId: number): Promise<any> {
