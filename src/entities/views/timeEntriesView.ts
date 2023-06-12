@@ -2,7 +2,8 @@ import { ViewEntity, ViewColumn } from "typeorm"
 
 @ViewEntity({
     name: 'time_entries_view',
-    expression: `Select t.employee_id, tpe.milestone_id , te.date entry_date, te.id entry_id, te.actual_hours 
+    expression: `Select t.id timesheet_id, te.milestone_entry_id, t.employee_id, tpe.milestone_id , 
+    te.date entry_date, te.id entry_id, te.actual_hours 
     From timesheets t 
       JOIN timesheet_project_entries tpe ON 
       tpe.timesheet_id = t.id 
@@ -14,18 +15,24 @@ import { ViewEntity, ViewColumn } from "typeorm"
 export class TimeEntriesView {    
     
     @ViewColumn()
-    employee_id: number
+    timesheetId: number
 
     @ViewColumn()
-    milestone_id: number
-    
-    @ViewColumn()
-    entry_date: String
-    
-    @ViewColumn()
-    entry_id: number
+    milestoneEntryId: number
 
     @ViewColumn()
-    actual_hours: number
+    employeeId: number
+
+    @ViewColumn()
+    milestoneId: number
+    
+    @ViewColumn()
+    entryDate: String
+    
+    @ViewColumn()
+    entryId: number
+
+    @ViewColumn()
+    actualHours: number
 
 }

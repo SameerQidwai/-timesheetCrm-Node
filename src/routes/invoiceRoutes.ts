@@ -46,6 +46,13 @@ router
     // [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
     contr.update.bind(contr)
   );
+
+router
+  .route('/:invoiceId/:action')
+  .delete(
+    // [isLoggedIn, can(Action.READ, Resource.ADMIN_OPTIONS)],
+    contr.actions.bind(contr)
+  );
 // router
 //   .route('/invoice-organization')
 //   .get(

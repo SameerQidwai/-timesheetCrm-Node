@@ -1,7 +1,9 @@
 import { InvoicesInterface } from '../utilities/interfaces';
 import { Invoice } from '../entities/invoice';
 import { LineAmountTypes, LineItem, LineItemItem, Invoice as XeroInvoce } from 'xero-node';
-
+import { AttachmentsResponse } from './attachmentResponses';
+import dotenv from 'dotenv';
+dotenv.config();
 export class InvoiceResponses {
   invoices: InvoicesInterface[] = [];
 
@@ -67,8 +69,9 @@ export class InvoiceResponse {
         xeroId?: string;
     };
     lineItems?: LineItem[];
+    attachments: any;
     
-    constructor(xeroInvoice: XeroInvoce, crmInvoice: Invoice) {
+    constructor(xeroInvoice: XeroInvoce, crmInvoice: any=[], attachments: any = []) {
         this.id = crmInvoice.id;
         this.invoiceId =  crmInvoice.invoiceId;
         this.reference = crmInvoice.reference;
@@ -91,18 +94,49 @@ export class InvoiceResponse {
         this.accountCode = xeroInvoice?.lineItems?.[0]?.accountCode
         this.taxType = xeroInvoice?.lineItems?.[0]?.taxType
         this.project= {
-            id: crmInvoice.project.id,
-            name: crmInvoice.project.title,
-            type: crmInvoice.project.type,
+            id: crmInvoice.projectId,
+            name: crmInvoice.projectTitle,
+            type: crmInvoice.projectType,
         };
         this.organization = {
-            id: crmInvoice.organization.id,
-            name: crmInvoice.organization.name,
+            id: crmInvoice.organizationId,
+            name: crmInvoice.organizationName,
             xeroId: xeroInvoice.contact?.contactID,
         };
-        this.lineItems = (xeroInvoice.lineItems ?? []).map((invoice: any) => ({
+        this.lineItems = (xeroInvoice.lineItems ?? []).map((invoice: any, index:number) => ({
           ...invoice,
-          id: crmInvoice.scheduleId,
+          id: crmInvoice.scheduleId||index,
         }));
+        this.attachments = (attachments).map((file: any) => ({
+          type: file.mimeType,
+          name: file.fileName,
+          uniqueName: file.uniqueName ?? file.fileName,
+          fileId: file.fileId,
+          xeroFileId: file.attachmentID,
+          attachXero: !!file.attachXero,
+          includeOnline: !!file.includeOnline,
+          url: file.url|| file.uniqueName? `${process.env.SERVER_API}/api/v1/files/${file.uniqueName}` : null,
+          thumbUrl: `${process.env.ENV_URL}${thumbUrlGenerator(file.mimeType)}`
+        }))
     }
 }
+
+//Helper function
+function thumbUrlGenerator(type: string) {
+  if (type === 'pdf') {
+    return '/icons/pdf.png';
+  } else if (type === 'doc' || type === 'docx') {
+    return '/icons/doc.png';
+  } else if (type === 'xls' || type === 'xlsx') {
+    return '/icons/xls.png';
+  } else if (type === 'ppt' || type === 'pptx') {
+    return '/icons/ppt.png';
+  } else if (type === 'csv') {
+    return '/icons/csv.png';
+  } else if (/(webp|svg|png|gif|jpg|jpeg|jfif|bmp|dpg|ico)$/i.test(type)) {
+    return '/icons/img.png';
+  } else {
+    return '/icons/default.png';
+  }
+}
+
