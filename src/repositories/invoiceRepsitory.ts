@@ -315,7 +315,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
       let crmAttachments = JSON.parse(crmInvoice[0].attachments)
       let xeroAttachments = attachmentsRes?.body?.attachments
 
-      if (crmAttachments.length && xeroAttachments?.length){
+      if (crmAttachments?.length && xeroAttachments?.length){
         attachments = crmAttachments.map((attach: any)=>{
           xeroAttachments.forEach((xeroAttachment:any)=>{
             if (attach.fileName === xeroAttachment.fileName){
