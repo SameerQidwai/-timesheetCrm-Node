@@ -25,6 +25,10 @@ export class AuthController {
         relations: ['contactPersonOrganization', 'role', 'role.permissions'],
       });
 
+      let expiry = '1h';
+
+      if (req.get('User-Agent')?.includes('okhttp')) expiry = '30d';
+
       let token: string;
       if (user && user.active) {
         let same = bcrypt.compareSync(password, user.password); // true
@@ -35,7 +39,7 @@ export class AuthController {
           });
         }
         token = jwt.sign({ id: user.id }, secret, {
-          expiresIn: '1h', // 24 * 30 hours
+          expiresIn: expiry,
         });
         let role = {
           roleId: user.role.id,
