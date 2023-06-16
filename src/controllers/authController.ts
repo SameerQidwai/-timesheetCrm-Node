@@ -27,7 +27,11 @@ export class AuthController {
 
       let expiry = '1h';
 
-      if (req.get('User-Agent')?.includes('okhttp')) expiry = '30d';
+      if (
+        req.get('User-Agent')?.includes('okhttp') ||
+        req.get('User-Agent')?.includes('Darwin')
+      )
+        expiry = '30d';
 
       let token: string;
       if (user && user.active) {
