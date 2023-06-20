@@ -904,8 +904,8 @@ export class ReportController {
         GROUP BY project_id, month 
       ) as revenue_calculator
             
-        LEFT JOIN contact_person_View ON
-          contact_person_View.employee_id = project_manager_id
+        LEFT JOIN contact_person_view ON
+          contact_person_view.employee_id = project_manager_id
     `);
     /*********
            * I don't know how this fiscal year project getting me correct data ... need to fix
@@ -1979,8 +1979,16 @@ export class ReportController {
     let fiscalYearStart = req.query.fiscalYearStart as string;
     let fiscalYearEnd = req.query.fiscalYearEnd as string;
     let currentMonthStart = moment().date(1).format('YYYY-MM-DD');
-    let acutalMonthEnd = moment().subtract(1, 'months').endOf('month').format('YYYY-MM-DD');
-    acutalMonthEnd = moment(fiscalYearEnd).isBefore(moment(acutalMonthEnd), 'month') ? fiscalYearEnd : acutalMonthEnd
+    let acutalMonthEnd = moment()
+      .subtract(1, 'months')
+      .endOf('month')
+      .format('YYYY-MM-DD');
+    acutalMonthEnd = moment(fiscalYearEnd).isBefore(
+      moment(acutalMonthEnd),
+      'month'
+    )
+      ? fiscalYearEnd
+      : acutalMonthEnd;
     // console.log({currentMonthStart,acutalMonthEnd})
 
     const actual_revenue = await getManager().query(`

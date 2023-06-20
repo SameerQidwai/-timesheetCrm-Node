@@ -14,7 +14,7 @@ import { ViewEntity, PrimaryGeneratedColumn, ViewColumn } from 'typeorm';
       o_r.opportunity_id = o.id 
         JOIN opportunity_resource_allocations ora ON 
         ora.opportunity_resource_id = o_r.id 
-          JOIN contact_person_View cpv ON
+          JOIN contact_person_view cpv ON
           ora.contact_person_id = cpv.contact_person_id
             JOIN organizations org ON
             org.id = o.organization_id

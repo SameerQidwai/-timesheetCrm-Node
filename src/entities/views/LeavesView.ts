@@ -1,8 +1,8 @@
-import { ViewEntity, ViewColumn } from "typeorm"
+import { ViewEntity, ViewColumn } from 'typeorm';
 
 @ViewEntity({
-    name: 'leaves_view',
-    expression: `SELECT
+  name: 'leaves_view',
+  expression: `SELECT
         lr.id leave_request_id,
 
         (CASE WHEN approved_by IS NOT NULL 
@@ -56,7 +56,7 @@ import { ViewEntity, ViewColumn } from "typeorm"
         FROM leave_requests lr
             JOIN leave_request_entries lre ON 
                 lr.id = lre.leave_request_id
-            JOIN contact_person_View cpv ON
+            JOIN contact_person_view cpv ON
                 lr.employee_id = cpv.employee_id
             LEFT JOIN leave_request_policy_leave_request_types policy_type ON 
                 lr.type_id = policy_type.id
@@ -66,21 +66,18 @@ import { ViewEntity, ViewColumn } from "typeorm"
                 lr.work_id = o.id
 
     WHERE lr.deleted_at IS NULL AND lre.deleted_at IS NULL AND lrt.deleted_at IS NULL
-    `        
-    })
+    `,
+})
+export class LeavesView {
+  @ViewColumn()
+  project_id: number;
 
-    export class LeavesView {
+  @ViewColumn()
+  project_title: string;
 
-    @ViewColumn()
-    project_id: number
+  @ViewColumn()
+  resource_start: Date;
 
-    @ViewColumn()
-    project_title: string    
-
-    @ViewColumn()
-    resource_start: Date
-
-    @ViewColumn()
-    project_status: Boolean
-
+  @ViewColumn()
+  project_status: Boolean;
 }
