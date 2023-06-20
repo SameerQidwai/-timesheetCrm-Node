@@ -1,8 +1,8 @@
-import { ViewEntity, ViewColumn } from "typeorm"
+import { ViewEntity, ViewColumn } from 'typeorm';
 
 @ViewEntity({
-    name: 'profit_view',
-    expression: `SELECT project_id, Resource_View.milestone_id, resource_start, 
+  name: 'profit_view',
+  expression: `SELECT project_id, resource_view.milestone_id, resource_start, 
         resource_end, resource_buying_rate, resource_selling_rate, 
         resource_contact_person_id, resource_id, resource_employee_id, resource_name, 
             project_organization_id, project_organization_name, 
@@ -12,91 +12,88 @@ import { ViewEntity, ViewColumn } from "typeorm"
         time_entries_view.entry_date, time_entries_view.entry_id, 
         time_entries_view.actual_hours, project_start, project_end
 
-        FROM Resource_View
+        FROM resource_view
             LEFT JOIN time_entries_view
                 ON resource_employee_id = time_entries_view.employee_id
-                AND Resource_View.milestone_id = time_entries_view.milestone_id
+                AND resource_view.milestone_id = time_entries_view.milestone_id
                 AND STR_TO_DATE(time_entries_view.entry_date,'%e-%m-%Y') BETWEEN STR_TO_DATE(DATE_FORMAT(resource_start,'%e-%m-%Y'),'%e-%m-%Y')  
-                AND resource_end`
-    })
-        // AND STR_TO_DATE(time_entries_view.entry_date,'%e-%m-%Y') 
-        //     BETWEEN STR_TO_DATE(DATE_FORMAT(res_start,'%e-%m-%Y'),'%e-%m-%Y') AND Resource_View.res_end;
+                AND resource_end`,
+})
+// AND STR_TO_DATE(time_entries_view.entry_date,'%e-%m-%Y')
+//     BETWEEN STR_TO_DATE(DATE_FORMAT(res_start,'%e-%m-%Y'),'%e-%m-%Y') AND resource_view.res_end;
 export class ProfitView {
+  @ViewColumn()
+  projectId: number;
 
-    @ViewColumn()
-    projectId: number
+  @ViewColumn()
+  milestoneId: number;
 
-    @ViewColumn()
-    milestoneId: number
-    
-    @ViewColumn()
-    resourceStart: Date
+  @ViewColumn()
+  resourceStart: Date;
 
-    @ViewColumn()
-    resourceEnd: Date
+  @ViewColumn()
+  resourceEnd: Date;
 
-    
-    @ViewColumn()
-    resourceBuyingRate: number
-    
-    @ViewColumn()
-    resourceSellingRate: number
-    
-    @ViewColumn()
-    resourceContactPersonId: number
-    
-    @ViewColumn()
-    resourceId: number
-    
-    @ViewColumn()
-    resourceEmployeeId: number
-    
-    @ViewColumn()
-    resourceName: string
-    
-    @ViewColumn()
-    projectOrganizationId: number
-    
-    @ViewColumn()
-    projectOrganizationName: string
+  @ViewColumn()
+  resourceBuyingRate: number;
 
-    @ViewColumn()
-    projectType: number
-    
-    @ViewColumn()
-    projectAmount: number
-    
-    @ViewColumn()
-    projectStatus: Boolean
-    
-    @ViewColumn()
-    projectManagerId: number
-    
-    @ViewColumn()
-    projectPhase: Boolean
-    
-    @ViewColumn()
-    projectTitle: string
-    
-    @ViewColumn()
-    timesheetId: String
+  @ViewColumn()
+  resourceSellingRate: number;
 
-    @ViewColumn()
-    milestoneEntryId: String
+  @ViewColumn()
+  resourceContactPersonId: number;
 
-    @ViewColumn()
-    entryDate: String
+  @ViewColumn()
+  resourceId: number;
 
-    @ViewColumn()
-    entryId: number
+  @ViewColumn()
+  resourceEmployeeId: number;
 
-    @ViewColumn()
-    actualHours: number
+  @ViewColumn()
+  resourceName: string;
 
-    @ViewColumn()
-    projectStart: Date
+  @ViewColumn()
+  projectOrganizationId: number;
 
-    @ViewColumn()
-    projectEnd: Date
-    
+  @ViewColumn()
+  projectOrganizationName: string;
+
+  @ViewColumn()
+  projectType: number;
+
+  @ViewColumn()
+  projectAmount: number;
+
+  @ViewColumn()
+  projectStatus: Boolean;
+
+  @ViewColumn()
+  projectManagerId: number;
+
+  @ViewColumn()
+  projectPhase: Boolean;
+
+  @ViewColumn()
+  projectTitle: string;
+
+  @ViewColumn()
+  timesheetId: String;
+
+  @ViewColumn()
+  milestoneEntryId: String;
+
+  @ViewColumn()
+  entryDate: String;
+
+  @ViewColumn()
+  entryId: number;
+
+  @ViewColumn()
+  actualHours: number;
+
+  @ViewColumn()
+  projectStart: Date;
+
+  @ViewColumn()
+  projectEnd: Date;
 }
