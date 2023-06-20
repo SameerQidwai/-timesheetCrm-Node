@@ -117,7 +117,7 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
       throw new Error('Cannot delete any year other than last year');
     }
 
-    return this.delete(year);
+    return this.remove(year);
   }
 
   async closeYear(
