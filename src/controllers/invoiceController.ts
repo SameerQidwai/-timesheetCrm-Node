@@ -15,7 +15,7 @@ export class invoiceController {
         data: records,
       });
     } catch (e) {
-      console.log(e);
+      next(e);
     }
   }
 
@@ -52,13 +52,9 @@ export class invoiceController {
     try {
       let repository = getCustomRepository(InvoiceRepsitory);
       let records = await repository.createAndSave(req.body);
-      return res.status(200).json({
-        success: true,
-        message: 'No Entry Found Against This Project',
-        // data: records,
-      });
+      return res.status(200).json(records);
     } catch (e) {
-      console.log(e);
+      next(e);
     }
   }
 
@@ -83,10 +79,21 @@ export class invoiceController {
       let repository = getCustomRepository(InvoiceRepsitory);
       let invoiceId = req.params.invoiceId;
       let record = await repository.updateAndReturn(invoiceId, req.body);
+      res.status(200).json(record);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async actions(req: Request, res: Response, next: NextFunction) {
+    try {
+      let repository = getCustomRepository(InvoiceRepsitory);
+      let invoiceId = req.params.invoiceId;
+      let action = req.params.action
+      let message = await repository.actionInvoice(invoiceId, action);
       res.status(200).json({
         success: true,
-        message: `Updated Successfully`,
-        data: record,
+        message,
       });
     } catch (e) {
       next(e);

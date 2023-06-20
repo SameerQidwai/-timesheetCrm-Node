@@ -7,7 +7,9 @@ import { ViewEntity, ViewColumn } from "typeorm"
         resource_contact_person_id, resource_id, resource_employee_id, resource_name, 
             project_organization_id, project_organization_name, 
         project_type, project_amount, project_status, project_manager_id, 
-        project_phase, project_title, time_entries_view.entry_date, time_entries_view.entry_id, 
+        project_phase, project_title, 
+        time_entries_view.timesheet_id, time_entries_view.milestone_entry_id, 
+        time_entries_view.entry_date, time_entries_view.entry_id, 
         time_entries_view.actual_hours, project_start, project_end
 
         FROM Resource_View
@@ -22,73 +24,79 @@ import { ViewEntity, ViewColumn } from "typeorm"
 export class ProfitView {
 
     @ViewColumn()
-    project_id: number
+    projectId: number
 
     @ViewColumn()
-    milestone_id: number
+    milestoneId: number
     
     @ViewColumn()
-    resource_start: Date
+    resourceStart: Date
 
     @ViewColumn()
-    resource_end: Date
+    resourceEnd: Date
 
     
     @ViewColumn()
-    resource_buying_rate: number
+    resourceBuyingRate: number
     
     @ViewColumn()
-    resource_selling_rate: number
+    resourceSellingRate: number
     
     @ViewColumn()
-    resource_contact_person_id: number
+    resourceContactPersonId: number
     
     @ViewColumn()
-    resource_id: number
+    resourceId: number
     
     @ViewColumn()
-    resource_employee_id: number
+    resourceEmployeeId: number
     
     @ViewColumn()
-    resource_name: string
+    resourceName: string
     
     @ViewColumn()
-    project_organization_id: number
+    projectOrganizationId: number
     
     @ViewColumn()
-    project_organization_name: string
+    projectOrganizationName: string
 
     @ViewColumn()
-    project_type: number
+    projectType: number
     
     @ViewColumn()
-    project_amount: number
+    projectAmount: number
     
     @ViewColumn()
-    project_status: Boolean
+    projectStatus: Boolean
     
     @ViewColumn()
-    project_manager_id: number
+    projectManagerId: number
     
     @ViewColumn()
-    project_phase: Boolean
+    projectPhase: Boolean
     
     @ViewColumn()
-    project_title: string
+    projectTitle: string
     
     @ViewColumn()
-    entry_date: String
+    timesheetId: String
 
     @ViewColumn()
-    entry_id: number
+    milestoneEntryId: String
 
     @ViewColumn()
-    actual_hours: number
+    entryDate: String
 
     @ViewColumn()
-    project_start: Date
+    entryId: number
 
     @ViewColumn()
-    project_end: Date
+    actualHours: number
+
+    @ViewColumn()
+    projectStart: Date
+
+    @ViewColumn()
+    projectEnd: Date
     
 }
