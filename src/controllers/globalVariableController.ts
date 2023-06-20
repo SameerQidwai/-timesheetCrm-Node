@@ -100,4 +100,48 @@ export class GlobalVariableController {
       next(e);
     }
   }
+
+  async create(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(GlobalVariableValueRepository);
+      let records = await repository.createAndSave(req.body);
+      res.status(200).json({
+        success: true,
+        message: 'Create Global Variable',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async update(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(GlobalVariableValueRepository);
+      let id = parseInt(req.params.id);
+      let records = await repository.updateAndReturn(id, req.body);
+      res.status(200).json({
+        success: true,
+        message: 'Update Global Variable',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async delete(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(GlobalVariableValueRepository);
+      let id = parseInt(req.params.id);
+      let records = await repository.deleteCustom(id);
+      res.status(200).json({
+        success: true,
+        message: 'Delete Global Variablwe',
+        data: records,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }

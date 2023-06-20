@@ -266,4 +266,128 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
       golobalVariables: setGolobalVariables,
     };
   }
+
+  async createAndSave(
+    globalVariableLabelValueDTO: GlobalVariableLabelValueDTO
+  ): Promise<any> {
+    return await this.manager.transaction(
+      async (transactionalEntityManager) => {
+        let globalVariable = await this.manager.findOne(
+          GlobalVariableLabel,
+          {
+            name: globalVariableLabelValueDTO.name,
+          },
+          { relations: ['values'] }
+        );
+
+        if (!globalVariable) {
+          throw new Error('Global Variable not found');
+        }
+
+        let valueStart = moment(globalVariableLabelValueDTO.startDate);
+        let valueEnd = moment(globalVariableLabelValueDTO.endDate);
+
+        for (let value of globalVariable.values) {
+          if (
+            valueStart.isBetween(value.startDate, value.endDate, 'date', '[]')
+          ) {
+            throw new Error('Values date cannot overlap');
+          }
+
+          if (
+            valueEnd.isBetween(value.startDate, value.endDate, 'date', '[]')
+          ) {
+            throw new Error('Values date cannot overlap');
+          }
+
+          if (
+            valueStart.isBefore(value.startDate) &&
+            valueEnd.isAfter(valueEnd)
+          ) {
+            throw new Error('Values date cannot overlap');
+          }
+        }
+
+        let globalVariableValue = new GlobalVariableValue();
+        globalVariableValue.startDate = valueStart.toDate();
+        globalVariableValue.endDate = valueEnd.toDate();
+        globalVariableValue.value = globalVariableLabelValueDTO.value;
+        globalVariableValue.globalVariableId = globalVariable.id;
+
+        return transactionalEntityManager.save(globalVariableValue);
+      }
+    );
+  }
+
+  async updateAndReturn(
+    id: number,
+    globalVariableLabelValueDTO: GlobalVariableLabelValueDTO
+  ): Promise<any> {
+    return this.manager.transaction(async (transactionalEntityManager) => {
+      let globalVariable = await this.manager.findOne(
+        GlobalVariableLabel,
+        {
+          name: globalVariableLabelValueDTO.name,
+        },
+        { relations: ['values'] }
+      );
+
+      if (!globalVariable) {
+        throw new Error('Global Variable not found');
+      }
+
+      let globalVariableValue = await this.findOne(id);
+
+      if (!globalVariableValue) {
+        throw new Error('Global value not found');
+      }
+
+      if (globalVariableValue.globalVariableId != globalVariable.id) {
+        throw new Error('Global Variable Value not found');
+      }
+
+      let valueStart = moment(globalVariableLabelValueDTO.startDate);
+      let valueEnd = moment(globalVariableLabelValueDTO.endDate);
+
+      for (let value of globalVariable.values) {
+        if (value.id === globalVariableValue.id) continue;
+
+        if (
+          valueStart.isBetween(value.startDate, value.endDate, 'date', '[]')
+        ) {
+          throw new Error('Values date cannot overlap');
+        }
+
+        if (valueEnd.isBetween(value.startDate, value.endDate, 'date', '[]')) {
+          throw new Error('Values date cannot overlap');
+        }
+
+        if (
+          valueStart.isBefore(value.startDate) &&
+          valueEnd.isAfter(valueEnd)
+        ) {
+          throw new Error('Values date cannot overlap');
+        }
+      }
+
+      globalVariableValue.startDate = valueStart.toDate();
+      globalVariableValue.endDate = valueEnd.toDate();
+      globalVariableValue.value = globalVariableLabelValueDTO.value;
+
+      return transactionalEntityManager.save(
+        GlobalVariableValue,
+        globalVariableValue
+      );
+    });
+  }
+
+  async deleteCustom(id: number): Promise<any> {
+    let globalVariableValue = await this.findOne(id);
+
+    if (!globalVariableValue) {
+      throw new Error('Global value not found');
+    }
+
+    return this.remove(globalVariableValue);
+  }
 }
