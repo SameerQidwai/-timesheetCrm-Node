@@ -16,6 +16,7 @@ module.exports = {
   },
   timezone: 'Z',
   cache: true,
+  multipleStatements: true,
 };
 
 // "port": 3306,

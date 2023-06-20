@@ -41,6 +41,30 @@ let execution = async () => {
 
     if (!year) throw new Error('Nothing to close');
 
+    let dbTableNames = await manager.query(`SHOW FULL TABLES`);
+
+    let tableNames: string[] = [];
+
+    dbTableNames.forEach((table: any) => {
+      tableNames.push(table[Object.keys(table)[0]]);
+    });
+    let createTableQuery = ``;
+    // let createViewQuery = ``;
+    let insertQuery = ``;
+    for (let tableName of tableNames) {
+      if (tableName.includes('backup')) continue;
+
+      if (tableName.includes('view')) {
+        //Do Nothing
+      } else {
+        createTableQuery += `CREATE TABLE \`z_backup_${year.id}_${tableName}\` LIKE \`${tableName}\`; `;
+        insertQuery += `INSERT INTO \`z_backup_${year.id}_${tableName}\` SELECT * FROM \`${tableName}\`; `;
+      }
+    }
+
+    await trx.query(createTableQuery);
+    await trx.query(insertQuery);
+
     const userId = year.closedBy;
 
     let forceStatusChangeFlag = false;

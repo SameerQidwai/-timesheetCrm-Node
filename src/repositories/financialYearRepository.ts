@@ -354,6 +354,70 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
     });
   }
 
+  async revertYear(id: number): Promise<any> {
+    if (!id) throw new Error('Year not found');
+
+    return await this.manager.transaction(async (trx) => {
+      let year = await this.findOne(id);
+
+      if (!year) throw new Error('Year not found');
+
+      let allYears = await this.find({
+        where: { closed: true },
+        order: { startDate: 'DESC' },
+      });
+
+      if (allYears.length && allYears[0].id !== year.id)
+        throw new Error('Cannot revert this year');
+
+      if (!year.closed) throw new Error('Year is not closed');
+
+      var systemLock = await this.manager.findOne(GlobalSetting, {
+        where: { keyLabel: 'systemLock' },
+      });
+
+      if (!systemLock) {
+        throw new Error('Something went wrong');
+      }
+
+      systemLock.keyValue = '1';
+
+      await trx.save(systemLock);
+
+      year.closing = true;
+
+      await trx.save(year);
+
+      let child_process = spawn('ts-node src/databaseReverter.ts', [], {
+        shell: true,
+      });
+
+      child_process.stdout.on('data', function (data) {
+        console.log('stdout: ' + data);
+      });
+
+      child_process.stderr.on('data', function (data) {
+        console.log('stderr: ' + data);
+
+        //     let year = await this.findOne({
+        //       where: { closing: true },
+        //     });
+
+        //     if (year) {
+        //       year.closing = false;
+        //       (year.closedBy as any) = null;
+
+        //       await this.save(year);
+
+        //       console.log('Rolled back in repository');
+      });
+
+      child_process.on('close', function (code) {
+        console.log('child process exited with code ' + code);
+      });
+    });
+  }
+
   async _validateCreateFinancialYearDates(startDate: Moment, endDate: Moment) {
     let years = await this.find({
       order: { endDate: 'DESC' },

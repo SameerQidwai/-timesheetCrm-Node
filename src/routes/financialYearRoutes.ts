@@ -10,6 +10,9 @@ router
   .get([isLoggedIn], contr.getAll.bind(contr))
   .post([isLoggedIn], contr.createAndSave.bind(contr));
 
+// router.route('/replicateDatabase').get(contr.replicateDatabase.bind(contr));
+// router.route('/rollbackDatabase/').get(contr.rollbackDatabase.bind(contr));
+
 router
   .route('/:id')
   .get([isLoggedIn], contr.findOne.bind(contr))
@@ -17,5 +20,8 @@ router
   .delete([isLoggedIn], contr.deleteCustom.bind(contr));
 
 router.route('/:id/closeYear').patch([isLoggedIn], contr.closeYear.bind(contr));
+router
+  .route('/:id/revertYear')
+  .patch([isLoggedIn], contr.revertYear.bind(contr));
 
 export default router;
