@@ -760,6 +760,32 @@ export class TimesheetRepository extends Repository<Timesheet> {
           throw new Error('Milestone not found');
         }
 
+        let actualHours = 0;
+
+        if (
+          moment(timesheetDTO.endTime, 'HH:mm').diff(
+            moment(timesheetDTO.startTime, 'HH:mm'),
+            'minutes'
+          ) /
+            60 <
+          0
+        ) {
+          actualHours =
+            Math.abs(
+              moment(timesheetDTO.endTime, 'HH:mm')
+                .add(1, 'days')
+                .diff(moment(timesheetDTO.startTime, 'HH:mm'), 'minutes') / 60
+            ) - timesheetDTO.breakHours;
+        } else {
+          actualHours =
+            Math.abs(
+              moment(timesheetDTO.endTime, 'HH:mm').diff(
+                moment(timesheetDTO.startTime, 'HH:mm'),
+                'minutes'
+              ) / 60
+            ) - timesheetDTO.breakHours;
+        }
+
         for (let resource of milestone.opportunityResources) {
           for (let allocation of resource.opportunityResourceAllocations) {
             if (
@@ -771,6 +797,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
                 resource,
                 timesheet
               );
+              await this._validateHours(resource, actualHours, employee.id);
             }
           }
         }
@@ -801,29 +828,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         );
         entry.endTime = moment(timesheetDTO.endTime, 'HH:mm').format('HH:mm');
         entry.breakHours = timesheetDTO.breakHours;
-        if (
-          moment(timesheetDTO.endTime, 'HH:mm').diff(
-            moment(timesheetDTO.startTime, 'HH:mm'),
-            'minutes'
-          ) /
-            60 <
-          0
-        ) {
-          entry.hours =
-            Math.abs(
-              moment(timesheetDTO.endTime, 'HH:mm')
-                .add(1, 'days')
-                .diff(moment(timesheetDTO.startTime, 'HH:mm'), 'minutes') / 60
-            ) - timesheetDTO.breakHours;
-        } else {
-          entry.hours =
-            Math.abs(
-              moment(timesheetDTO.endTime, 'HH:mm').diff(
-                moment(timesheetDTO.startTime, 'HH:mm'),
-                'minutes'
-              ) / 60
-            ) - timesheetDTO.breakHours;
-        }
+        entry.hours = actualHours;
 
         entry.milestoneEntryId = milestoneEntry.id;
         entry.notes = timesheetDTO.notes;
@@ -959,6 +964,13 @@ export class TimesheetRepository extends Repository<Timesheet> {
                 resource,
                 timesheet
               );
+              await this._validateBulkHours(
+                bulkStartDate,
+                bulkEndDate,
+                resource,
+                bulkTimesheetDTO,
+                employee.id
+              );
             }
           }
         }
@@ -971,6 +983,23 @@ export class TimesheetRepository extends Repository<Timesheet> {
             true
           );
           const entryMomentEndTime = moment(loopedEntry.endTime, 'HH:mm', true);
+          let actualHours = 0;
+          if (
+            entryMomentEndTime.diff(entryMomentStartTime, 'minutes') / 60 <
+            0
+          ) {
+            actualHours =
+              Math.abs(
+                entryMomentEndTime
+                  .add(1, 'days')
+                  .diff(entryMomentStartTime, 'minutes') / 60
+              ) - loopedEntry.breakHours;
+          } else {
+            actualHours =
+              Math.abs(
+                entryMomentEndTime.diff(entryMomentStartTime, 'minutes') / 60
+              ) - loopedEntry.breakHours;
+          }
 
           let entry = new TimesheetEntry();
 
@@ -986,22 +1015,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
           entry.startTime = entryMomentStartTime.format('HH:mm');
           entry.endTime = moment(loopedEntry.endTime, 'HH:mm').format('HH:mm');
           entry.breakHours = loopedEntry.breakHours;
-          if (
-            entryMomentEndTime.diff(entryMomentStartTime, 'minutes') / 60 <
-            0
-          ) {
-            entry.hours =
-              Math.abs(
-                entryMomentEndTime
-                  .add(1, 'days')
-                  .diff(entryMomentStartTime, 'minutes') / 60
-              ) - loopedEntry.breakHours;
-          } else {
-            entry.hours =
-              Math.abs(
-                entryMomentEndTime.diff(entryMomentStartTime, 'minutes') / 60
-              ) - loopedEntry.breakHours;
-          }
+          entry.hours = actualHours;
 
           returnEntries.push(entry);
         }
@@ -1076,6 +1090,32 @@ export class TimesheetRepository extends Repository<Timesheet> {
           throw new Error('Milestone not found');
         }
 
+        let actualHours = 0;
+
+        if (
+          moment(timesheetDTO.endTime, 'HH:mm').diff(
+            moment(timesheetDTO.startTime, 'HH:mm'),
+            'minutes'
+          ) /
+            60 <
+          0
+        ) {
+          actualHours =
+            Math.abs(
+              moment(timesheetDTO.endTime, 'HH:mm')
+                .add(1, 'days')
+                .diff(moment(timesheetDTO.startTime, 'HH:mm'), 'minutes') / 60
+            ) - timesheetDTO.breakHours;
+        } else {
+          actualHours =
+            Math.abs(
+              moment(timesheetDTO.endTime, 'HH:mm').diff(
+                moment(timesheetDTO.startTime, 'HH:mm'),
+                'minutes'
+              ) / 60
+            ) - timesheetDTO.breakHours;
+        }
+
         for (let resource of milestone.opportunityResources) {
           if (resource.milestoneId == milestone.id) {
             for (let allocation of resource.opportunityResourceAllocations) {
@@ -1087,6 +1127,13 @@ export class TimesheetRepository extends Repository<Timesheet> {
                   moment(timesheetDTO.date, 'DD-MM-YYYY').toDate(),
                   resource,
                   entry.milestoneEntry.timesheet
+                );
+
+                await this._validateHours(
+                  resource,
+                  actualHours,
+                  employee.id,
+                  entry.id
                 );
               }
             }
@@ -1101,30 +1148,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         );
         entry.endTime = moment(timesheetDTO.endTime, 'HH:mm').format('HH:mm');
         entry.breakHours = timesheetDTO.breakHours;
-
-        if (
-          moment(timesheetDTO.endTime, 'HH:mm').diff(
-            moment(timesheetDTO.startTime, 'HH:mm'),
-            'minutes'
-          ) /
-            60 <
-          0
-        ) {
-          entry.hours =
-            Math.abs(
-              moment(timesheetDTO.endTime, 'HH:mm')
-                .add(1, 'days')
-                .diff(moment(timesheetDTO.startTime, 'HH:mm'), 'minutes') / 60
-            ) - timesheetDTO.breakHours;
-        } else {
-          entry.hours =
-            Math.abs(
-              moment(timesheetDTO.endTime, 'HH:mm').diff(
-                moment(timesheetDTO.startTime, 'HH:mm'),
-                'minutes'
-              ) / 60
-            ) - timesheetDTO.breakHours;
-        }
+        entry.hours = actualHours;
 
         entry.milestoneEntryId = timesheetDTO.milestoneEntryId;
         entry.notes = timesheetDTO.notes;
@@ -2739,5 +2763,104 @@ export class TimesheetRepository extends Repository<Timesheet> {
     if (!endDate.isBetween(resourceStart, resourceEnd, 'date', '[]')) {
       throw new Error('Bulk Start Date cannot be out of Position dates');
     }
+  }
+
+  async _validateHours(
+    resource: OpportunityResource,
+    hours: number,
+    employeeId: number,
+    entryId: number | null = null
+  ) {
+    let timesheets = await this.manager.find(Timesheet, {
+      where: { employeeId: employeeId },
+      relations: ['milestoneEntries', 'milestoneEntries.entries'],
+    });
+
+    let pastHours = 0;
+    for (let timesheet of timesheets) {
+      for (let milestoneEntry of timesheet.milestoneEntries) {
+        if (milestoneEntry.milestoneId != resource.milestoneId) continue;
+        for (let entry of milestoneEntry.entries) {
+          if (entry.id === entryId) continue;
+          pastHours += entry.hours;
+        }
+      }
+    }
+
+    console.log(
+      '🚀 ~ file: timesheetRepository.ts:2754 ~ TimesheetRepository ~ resource:',
+      resource.billableHours,
+      pastHours
+    );
+
+    if (pastHours + hours > resource.billableHours) {
+      throw new Error('logged hours cannot be more than billable hours');
+    }
+
+    return true;
+  }
+
+  async _validateBulkHours(
+    startDate: Moment,
+    endDate: Moment,
+    resource: OpportunityResource,
+    bulkTimesheetDTO: BulkTimesheetDTO,
+    employeeId: number
+  ) {
+    let timesheets = await this.manager.find(Timesheet, {
+      where: { employeeId: employeeId },
+      relations: ['milestoneEntries', 'milestoneEntries.entries'],
+    });
+
+    let pastHours = 0;
+    for (let timesheet of timesheets) {
+      for (let milestoneEntry of timesheet.milestoneEntries) {
+        if (milestoneEntry.milestoneId != resource.milestoneId) continue;
+        for (let entry of milestoneEntry.entries) {
+          if (
+            moment(entry.date, 'DD-MM-YYYY', true).isBetween(
+              startDate,
+              endDate,
+              'date',
+              '[]'
+            )
+          )
+            continue;
+          pastHours += entry.hours;
+        }
+      }
+    }
+
+    let currentHours = 0;
+    for (let currentEntry of bulkTimesheetDTO.entries) {
+      const entryMomentDate = moment(currentEntry.date, 'DD-MM-YYYY', true);
+      const entryMomentStartTime = moment(
+        currentEntry.startTime,
+        'HH:mm',
+        true
+      );
+      const entryMomentEndTime = moment(currentEntry.endTime, 'HH:mm', true);
+      let actualHours = 0;
+      if (entryMomentEndTime.diff(entryMomentStartTime, 'minutes') / 60 < 0) {
+        actualHours =
+          Math.abs(
+            entryMomentEndTime
+              .add(1, 'days')
+              .diff(entryMomentStartTime, 'minutes') / 60
+          ) - currentEntry.breakHours;
+      } else {
+        actualHours =
+          Math.abs(
+            entryMomentEndTime.diff(entryMomentStartTime, 'minutes') / 60
+          ) - currentEntry.breakHours;
+      }
+      currentHours += actualHours;
+    }
+
+    if (pastHours + currentHours > resource.billableHours) {
+      throw new Error('logged hours cannot be more than billable hours');
+    }
+
+    return true;
   }
 }

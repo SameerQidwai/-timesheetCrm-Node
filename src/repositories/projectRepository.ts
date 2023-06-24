@@ -1342,6 +1342,7 @@ export class ProjectRepository extends Repository<Opportunity> {
         resource.panelSkillStandardLevelId =
           projectResourceDTO.panelSkillStandardLevelId;
         resource.billableHours = projectResourceDTO.billableHours ?? 0;
+
         resource.opportunityId = projectId;
         resource.milestoneId = milestoneId;
         resource.title = projectResourceDTO.title;
@@ -1436,10 +1437,33 @@ export class ProjectRepository extends Repository<Opportunity> {
         );
       }
 
-      if (resource.billableHours != projectResourceDTO.billableHours) {
+      let timesheets = await this.manager.find(Timesheet, {
+        where: { employeeId: projectResourceDTO.contactPersonId },
+        relations: ['milestoneEntries', 'milestoneEntries.entries'],
+      });
+
+      let currentHours = 0;
+      for (let timesheet of timesheets) {
+        for (let milestoneEntry of timesheet.milestoneEntries) {
+          if (milestoneEntry.milestoneId !== resource.milestoneId) continue;
+          for (let entry of milestoneEntry.entries) {
+            currentHours += entry.hours;
+          }
+        }
+      }
+      console.log(
+        '🚀 ~ file: projectRepository.ts:1446 ~ ProjectRepository ~ awaitthis.manager.transaction ~ currentHours:',
+        currentHours
+      );
+
+      if (projectResourceDTO.billableHours < currentHours) {
+        throw new Error('Billable hours cannot be less than logged hours');
       }
 
-      resource.billableHours = projectResourceDTO.billableHours;
+      if (resource.billableHours != projectResourceDTO.billableHours) {
+        resource.billableHours = projectResourceDTO.billableHours;
+      }
+
       resource.title = projectResourceDTO.title;
 
       if (projectResourceDTO.startDate) {
