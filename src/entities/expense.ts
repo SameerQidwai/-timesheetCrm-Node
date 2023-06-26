@@ -5,6 +5,7 @@ import { ExpenseSheet } from './expenseSheet';
 import { ExpenseSheetExpense } from './expenseSheetExpense';
 import { ExpenseType } from './expenseType';
 import { Opportunity } from './opportunity';
+import { ExpenseStatus } from '../constants/constants';
 
 @Entity('expenses')
 export class Expense extends Base {
@@ -36,28 +37,12 @@ export class Expense extends Base {
   @JoinColumn({ name: 'project_id' })
   project: Opportunity;
 
-  @Column({ name: 'expense_sheet_id', nullable: true })
-  expenseSheetId: number | null;
-
-  @ManyToOne(() => ExpenseSheet)
-  @JoinColumn({ name: 'expense_sheet_id' })
-  expenseSheet: ExpenseSheet;
-
   @Column({ name: 'expense_type_id', nullable: false })
   expenseTypeId: number;
 
   @ManyToOne(() => ExpenseType)
   @JoinColumn({ name: 'expense_type_id' })
   expenseType: ExpenseType;
-
-  @Column({ type: 'date', name: 'submitted_at', nullable: true })
-  submittedAt: Date | null;
-
-  @Column({ type: 'date', name: 'approved_at', nullable: true })
-  approvedAt: Date | null;
-
-  @Column({ type: 'date', name: 'rejected_at', nullable: true })
-  rejectedAt: Date | null;
 
   @Column({ name: 'created_by', nullable: true })
   createdBy: number;
@@ -66,26 +51,12 @@ export class Expense extends Base {
   @JoinColumn({ name: 'created_by' })
   creator: Employee;
 
-  @Column({ name: 'submitted_by', nullable: true })
-  submittedBy: number;
+  @Column({ name: 'active_expense_sheet_id', nullable: true })
+  activeExpenseSheetId: number | null;
 
-  @ManyToOne(() => Employee)
-  @JoinColumn({ name: 'submitted_by' })
-  submitter: Employee | null;
-
-  @Column({ name: 'approved_by', nullable: true })
-  approvedBy: number | null;
-
-  @ManyToOne(() => Employee)
-  @JoinColumn({ name: 'approved_by' })
-  approver: Employee | null;
-
-  @Column({ name: 'rejected_by', nullable: true })
-  rejectedBy: number | null;
-
-  @ManyToOne(() => Employee)
-  @JoinColumn({ name: 'rejected_by' })
-  rejecter: Employee | null;
+  @ManyToOne(() => ExpenseSheet)
+  @JoinColumn({ name: 'active_expense_sheet_id' })
+  activeExpenseSheet: ExpenseSheet;
 
   @OneToMany(
     () => ExpenseSheetExpense,
@@ -95,4 +66,29 @@ export class Expense extends Base {
     }
   )
   entries: ExpenseSheetExpense[];
+
+  public get getStatus(): ExpenseStatus {
+    let status: ExpenseStatus = ExpenseStatus.SAVED;
+
+    for (let entry of this.entries) {
+      if (entry.submittedAt && entry.rejectedAt === null) {
+        status = ExpenseStatus.SUBMITTED;
+      }
+      if (entry.rejectedAt !== null) {
+        status = ExpenseStatus.REJECTED;
+      }
+      if (entry.approvedAt !== null) {
+        status = ExpenseStatus.APPROVED;
+      }
+
+      if (
+        status === ExpenseStatus.APPROVED ||
+        status === ExpenseStatus.SUBMITTED
+      ) {
+        break;
+      }
+    }
+
+    return status;
+  }
 }

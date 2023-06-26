@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction, query } from 'express';
 import { Employee } from '../entities/employee';
 import { Between, getManager, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
-import moment, { Moment } from 'moment';
+import moment from 'moment-timezone';
+import { Moment } from 'moment';
 import {
   buyRateByEmployee,
   getFiscalYear,
@@ -924,8 +925,8 @@ export class ReportExportController {
         GROUP BY project_id, month 
       ) as revenue_calculator
             
-        LEFT JOIN contact_person_View ON
-          contact_person_View.employee_id = project_manager_id
+        LEFT JOIN contact_person_view ON
+          contact_person_view.employee_id = project_manager_id
     `);
     /*********
            * I don't know how this fiscal year project getting me correct data ... need to fix

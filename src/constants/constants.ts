@@ -62,6 +62,13 @@ export enum TimesheetStatus {
   APPROVED = 'AP',
 }
 
+export enum TimesheetEntryStatus {
+  SAVED = 'SV',
+  SUBMITTED = 'SB',
+  REJECTED = 'RJ',
+  APPROVED = 'AP',
+}
+
 export enum EntityType {
   EMPLOYEE = 'EMP',
   CONTACT_PERSON = 'CPE',
@@ -158,4 +165,38 @@ export enum RecruitmentContractType {
   FULL_TIME = 'FTI',
   CASUAL = 'CAS',
   CONTRACTOR = 'CON',
+}
+
+export enum DisableConditionType {
+  FINANCIAL_YEAR = 'FIY',
+  STATIC = 'STA',
+  DYNAMIC = 'DYN',
+}
+
+export enum DisableCondtionDataType {
+  DATE = 'DATE',
+  NUMBER = 'NUMBER',
+  STRING = 'STRING',
+  ANY = 'ANY',
+}
+
+export enum SystemVariableValueType {
+  DATE = 'DATE',
+  NUMBER = 'NUMBER',
+  STRING = 'STRING',
+  BOOLEAN = 'BOOLEAN',
+}
+
+export enum GlobalSettingValueType {
+  DATE = 'date',
+  NUMBER = 'number',
+  STRING = 'string',
+  BOOLEAN = 'boolean',
+}
+
+export enum ExpenseStatus {
+  SAVED = 'SV',
+  SUBMITTED = 'SB',
+  REJECTED = 'RJ',
+  APPROVED = 'AP',
 }

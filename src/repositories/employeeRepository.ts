@@ -42,7 +42,7 @@ import {
   LeaveRequestTriggerFrequency,
   SuperannuationType,
 } from '../constants/constants';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { WelcomeMail } from '../mails/welcomeMail';
 
 @EntityRepository(Employee)
@@ -700,8 +700,6 @@ export class EmployeeRepository extends Repository<Employee> {
     if (!employee) {
       throw new Error('Employee not found');
     }
-
-    console.log('HAAAAAAAAAAAA', employee.getActiveContract);
 
     let pastContracts: EmploymentContract[] = [];
     let currentContract: EmploymentContract[] = [];

@@ -26,7 +26,7 @@ import {
   ProjectEntity,
   SubContractorEntity,
 } from '../dto';
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 export class ExportController {
   async status(req: Request, res: Response, next: NextFunction) {

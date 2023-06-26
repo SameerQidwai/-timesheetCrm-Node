@@ -9,6 +9,10 @@ import * as bodyParser from 'body-parser';
 import { createConnection } from 'typeorm';
 import allRoutes from './routes';
 import moment from 'moment-timezone';
+import { crmLock } from './middlewares/systemLock';
+
+//Moment Config
+moment.tz.setDefault('Etc/UTC');
 
 const corsOptions = {
   exposedHeaders: 'Authorization',
@@ -25,24 +29,21 @@ export const FRONTEND_URL =
     : 'http://localhost:3001/';
 
 // const app: express.Application = express();
-const app: any = express();
+const app: express.Application = express();
 // const wholeExp: any = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(require('cors')(corsOptions));
 
 //LOGS
-const originalSend = app.response.send;
+const originalSend = (app as any).response.send;
 
-app.response.send = function sendOverWrite(body: any) {
+(app as any).response.send = function sendOverWrite(body: any) {
   originalSend.call(this, body);
   this._logBody = body;
 };
 
 const connection = createConnection();
-
-//Moment Config
-moment.tz.setDefault('Etc/UTC');
 
 var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), {
   flags: 'a',
@@ -79,7 +80,7 @@ app.use(
 );
 
 //register routes
-app.use('/api/v1', allRoutes);
+app.use('/api/v1', [crmLock], allRoutes);
 
 // 404
 app.use((req: Request, res: Response) => {
@@ -103,7 +104,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 connection
   .then(() => {
     //register routes
-    app.use('/api/v1', allRoutes);
+    app.use('/api/v1', [crmLock], allRoutes);
 
     // 404
     app.use((req: Request, res: Response) => {

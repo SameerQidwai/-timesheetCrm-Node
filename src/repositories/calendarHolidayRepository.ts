@@ -3,7 +3,7 @@ import { CalendarHoliday } from '../entities/calendarHoliday';
 import { HolidayType } from '../entities/holidayType';
 import { EntityRepository, Repository } from 'typeorm';
 import { Calendar } from './../entities/calendar';
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 @EntityRepository(CalendarHoliday)
 export class CalendarHolidayRepository extends Repository<CalendarHoliday> {

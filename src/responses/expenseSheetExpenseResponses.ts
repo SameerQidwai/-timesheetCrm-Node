@@ -9,6 +9,10 @@ export class ExpenseSheetExpenseResponse {
   expenseTypeId: number;
   expenseTypeName: String;
   date: Date;
+  submittedAt: Date | null;
+  rejectedAt: Date | null;
+  approvedAt: Date | null;
+  updatedAt: Date | null;
   projectId: number | null;
   projectName: String | null;
   amount: number;
@@ -29,14 +33,17 @@ export class ExpenseSheetExpenseResponse {
     this.amount = expense.expense.amount;
     this.isBillable = expense.expense.isBillable ? true : false;
     this.isReimbursed = expense.expense.isReimbursed ? true : false;
-    this.isInSheet = !expense.expense.rejectedAt ? true : false;
+    this.submittedAt = expense.submittedAt;
+    this.rejectedAt = expense.rejectedAt;
+    this.approvedAt = expense.approvedAt;
+    this.updatedAt = expense.expense.updatedAt;
+    this.isInSheet = !expense.rejectedAt ? true : false;
     this.notes = expense.expense.notes;
     this.status = ExpenseSheetStatus.SAVED;
-    if (expense.expense.rejectedAt !== null)
-      this.status = ExpenseSheetStatus.REJECTED;
-    else if (expense.expense.approvedAt !== null)
+    if (expense.rejectedAt !== null) this.status = ExpenseSheetStatus.REJECTED;
+    else if (expense.approvedAt !== null)
       this.status = ExpenseSheetStatus.APPROVED;
-    else if (expense.expense.submittedAt !== null)
+    else if (expense.submittedAt !== null)
       this.status = ExpenseSheetStatus.SUBMITTED;
     this.attachments = expense.attachments?.length
       ? new AttachmentsResponse(expense.attachments).attachments

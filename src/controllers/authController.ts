@@ -4,7 +4,7 @@ import { secret } from '../utilities/configs';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { EmployeeRepository } from './../repositories/employeeRepository';
 import { ProjectRepository } from '../repositories/projectRepository';
 import { EmploymentContract } from '../entities/employmentContract';

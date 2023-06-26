@@ -1,70 +1,42 @@
 import { Request, Response, NextFunction } from 'express';
 import { getManager } from 'typeorm';
 import xlsx from 'xlsx';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
 import { TimesheetEntry } from '../entities/timesheetEntry';
 import { Milestone } from '../entities/milestone';
-import { dispatchMail, sendMail } from '../utilities/mailer';
+import { dispatchMail } from '../utilities/mailer';
 import { Timesheet } from '../entities/timesheet';
 import { Employee } from '../entities/employee';
 import { WelcomeMail } from '../mails/welcomeMail';
 import { ResetPasswordMail } from '../mails/resetPasswordMail';
+import { FinancialYear } from '../entities/financialYear';
+import { exec } from 'child_process';
 
 export class TestController {
   async test(req: Request, res: Response, next: NextFunction) {
     try {
       let manager = getManager();
-      let connection = manager.connection;
 
-      let columns: any = {};
+      // exec('node fakeWriter.ts');
+      // const { exec } = require("child_process");
 
-      const ignoreColumns: Array<string> = [
-        'id',
-        'created_at',
-        'updated_at',
-        'deleted_at',
-      ];
-
-      const ignoreTables: Array<string> = [
-        '_view',
-        '_metadata',
-        'typeorm',
-        'db_',
-        'system_',
-      ];
-
-      const regex = new RegExp(ignoreTables.join('|'));
-
-      let dbTableNames = await manager.query(`SHOW TABLES`);
-
-      let tableNames: string[] = [];
-
-      dbTableNames.forEach((table: any) => {
-        tableNames.push(table.Tables_in_onelm);
-      });
-
-      for (let table of tableNames) {
-        if (regex.test(table)) continue;
-        // let dbColumns = await manager.query(`DESCRIBE ${table}`);
-
-        let dbColumns = connection.getMetadata(table).ownColumns;
-
-        columns[table] = {};
-
-        for (let column of dbColumns) {
-          if (ignoreColumns.includes(column.databaseName)) continue;
-          columns[table][column.databaseName] = {
-            databaseName: column.databaseName,
-            typeOrmName: column.propertyName,
-          };
+      exec('ts-node src/financialYearLocker.ts', (error, stdout, stderr) => {
+        if (error) {
+          console.log(`error: ${error.message}`);
+          return;
         }
-      }
+        if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+        }
+        console.log(`stdout: ${stdout}`);
+      });
 
       res.status(200).json({
         success: true,
         message: 'Hello',
-        data: columns,
+        data: [],
       });
     } catch (e) {
       next(e);

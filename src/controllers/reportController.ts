@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction, query } from 'express';
 import { Employee } from '../entities/employee';
 import { Between, getManager, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
-import moment, { Moment } from 'moment';
+import moment from 'moment-timezone';
+import { Moment } from 'moment';
 import {
   buyRateByEmployee,
   getFiscalYear,
@@ -903,8 +904,8 @@ export class ReportController {
         GROUP BY project_id, month 
       ) as revenue_calculator
             
-        LEFT JOIN contact_person_View ON
-          contact_person_View.employee_id = project_manager_id
+        LEFT JOIN contact_person_view ON
+          contact_person_view.employee_id = project_manager_id
     `);
     /*********
            * I don't know how this fiscal year project getting me correct data ... need to fix
@@ -1269,7 +1270,7 @@ export class ReportController {
 
           if (!project) continue;
 
-          if (!projectData['project.id'])
+          if (!projectData[project.id])
             projectData[project.id] = {
               id: project.id,
               title: project.title,
@@ -1978,8 +1979,17 @@ export class ReportController {
     let fiscalYearStart = req.query.fiscalYearStart as string;
     let fiscalYearEnd = req.query.fiscalYearEnd as string;
     let currentMonthStart = moment().date(1).format('YYYY-MM-DD');
-    let acutalMonthEnd = moment().subtract(1, 'months').endOf('month').format('YYYY-MM-DD');
-    console.log({currentMonthStart,acutalMonthEnd})
+    let acutalMonthEnd = moment()
+      .subtract(1, 'months')
+      .endOf('month')
+      .format('YYYY-MM-DD');
+    acutalMonthEnd = moment(fiscalYearEnd).isBefore(
+      moment(acutalMonthEnd),
+      'month'
+    )
+      ? fiscalYearEnd
+      : acutalMonthEnd;
+    // console.log({currentMonthStart,acutalMonthEnd})
 
     const actual_revenue = await getManager().query(`
       SELECT 
@@ -2117,7 +2127,6 @@ export class ReportController {
       )
     GROUP BY month;
     `);
-
 
     const causal_salaries_forecast = await getManager().query(`
     SELECT SUM(casual_salaries) casual_salaries, SUM(casual_superannuation) casual_superannuation, month
@@ -2260,13 +2269,12 @@ export class ReportController {
             DATE_FORMAT( IFNULL(income_tax.end_date, '2049-06-30'), '%Y-%m-%d' )
       )
     GROUP BY month
-    `)
-
+    `);
 
     let length_of_loop = Math.max(
       ...[actual_revenue.length, forecast_revenue.length]
     );
-    
+
     let data: any = {
       MILESTONE_BASE: { total: 0 },
       TIME_BASE: { total: 0 },
@@ -2279,11 +2287,10 @@ export class ReportController {
       TOTAL_REVENUE: { total: 0 },
       TOTAL_COST: { total: 0 },
       TOTAL_DOH: { total: 0 },
-      INCOME_TAX_RATES: {}
+      INCOME_TAX_RATES: {},
     };
 
     for (let i = 0; i < length_of_loop; i++) {
-
       if (actual_revenue[i]) {
         let { project_type, month, month_total_sell = 0 } = actual_revenue[i];
         if (
@@ -2350,10 +2357,7 @@ export class ReportController {
         data['DOH_SUPER'][month] = parseFloat(doh_superannuation);
       }
       if (income_tax[i]) {
-        let {
-          month,
-          income_tax_rate = 0,
-        } = income_tax[i];
+        let { month, income_tax_rate = 0 } = income_tax[i];
         data['INCOME_TAX_RATES'][month] = parseFloat(income_tax_rate);
       }
     }
