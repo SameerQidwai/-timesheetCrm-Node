@@ -26,6 +26,7 @@ import { Expense } from './entities/expense';
 import { ExpenseSheet } from './entities/expenseSheet';
 import { EmploymentContract } from './entities/employmentContract';
 import { ExpenseSheetExpense } from './entities/expenseSheetExpense';
+import { TimesheetEntry } from './entities/timesheetEntry';
 
 const connection = createConnection();
 
@@ -415,6 +416,10 @@ let _closeTimesheets = async (
     relations: ['milestoneEntries', 'milestoneEntries.entries'],
   });
 
+  let batchCount = 1;
+  let updateBatches: { [key: string]: TimesheetEntry[] } = {};
+  updateBatches[`batch${batchCount}`] = [];
+
   timesheets.forEach((timesheet) => {
     const timesheetStatus = timesheet.getStatus;
 
@@ -430,13 +435,27 @@ let _closeTimesheets = async (
             entry.rejectedAt = moment().toDate();
             entry.rejectedBy = userId;
             entry.notes = 'Systematically Rejected because of Year closing';
+            updateBatches[`batch${batchCount}`].push(entry);
+
+            if (updateBatches[`batch${batchCount}`].length == 25) {
+              batchCount++;
+              updateBatches[`batch${batchCount}`] = [];
+            }
           }
         });
     });
   });
 
+  console.log(
+    '🚀 ~ file: financialYearLocker.ts:450 ~ batchCount:',
+    batchCount
+  );
+
   if (confirmFlag && forceStatusChangeFlag) {
-    await trx.save(timesheets);
+    for (let i = 1; i <= batchCount; i++) {
+      await trx.save(updateBatches[`batch${i}`]);
+    }
+    // await trx.save(timesheets);
   }
 
   return true;
@@ -539,16 +558,31 @@ connection
   .catch(async (error) => {
     const manager = getManager();
     console.error('error in DB connection: ', error);
-    let year = await manager.findOne(FinancialYear, {
-      where: { closing: true },
+
+    await manager.transaction(async (trx) => {
+      let year = await manager.findOne(FinancialYear, {
+        where: { closing: true },
+      });
+
+      if (year) {
+        year.closing = false;
+        (year.closedBy as any) = null;
+
+        await trx.save(year);
+
+        var systemLock = await manager.findOne(GlobalSetting, {
+          where: { keyLabel: 'systemLock' },
+        });
+
+        if (!systemLock) {
+          throw new Error('Something went wrong');
+        }
+
+        systemLock.keyValue = '0';
+
+        await trx.save(systemLock);
+
+        console.log('Rolled back');
+      }
     });
-
-    if (year) {
-      year.closing = false;
-      (year.closedBy as any) = null;
-
-      await manager.save(year);
-
-      console.log('Rolled back');
-    }
   });

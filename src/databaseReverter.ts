@@ -120,16 +120,30 @@ connection
   .catch(async (error) => {
     const manager = getManager();
     console.error('error in DB connection: ', error);
-    let year = await manager.findOne(FinancialYear, {
-      where: { closing: true },
+    await manager.transaction(async (trx) => {
+      let year = await manager.findOne(FinancialYear, {
+        where: { closing: true },
+      });
+
+      if (year) {
+        year.closing = false;
+        (year.closedBy as any) = null;
+
+        await trx.save(year);
+
+        var systemLock = await manager.findOne(GlobalSetting, {
+          where: { keyLabel: 'systemLock' },
+        });
+
+        if (!systemLock) {
+          throw new Error('Something went wrong');
+        }
+
+        systemLock.keyValue = '0';
+
+        await trx.save(systemLock);
+
+        console.log('Rolled back');
+      }
     });
-
-    if (year) {
-      year.closing = false;
-      (year.closedBy as any) = null;
-
-      await manager.save(year);
-
-      console.log('Rolled back');
-    }
   });
