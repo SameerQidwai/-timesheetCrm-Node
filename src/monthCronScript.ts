@@ -59,9 +59,9 @@ export let runMonthly = async () => {
                     ) {
                       balance.balanceHours = policy.resetHours;
                       balance.carryForward = policy.resetHours;
-                      balance.lastCronAt = moment().toDate();
                       balance.used = 0;
                     }
+                    balance.lastCronAt = moment().toDate();
                     promises.push(balance);
                   }
                 });
