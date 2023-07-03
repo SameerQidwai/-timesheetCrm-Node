@@ -16,7 +16,8 @@ connection
     leaveRequestYearlyCron.stop();
 
     console.log('all cron jobs stopped');
-    return 1;
+
+    process.exit();
   })
   .catch((error) => {
     console.error('error in DB connection: ', error);

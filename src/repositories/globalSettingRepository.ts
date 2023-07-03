@@ -34,7 +34,16 @@ export class GlobalSettingRepository extends Repository<GlobalSetting> {
     let response: any = {};
     let settings = await this.find({});
     settings.forEach((setting) => {
-      response[setting.keyLabel] = setting.keyValue;
+      switch (setting.dataType) {
+        case 'boolean':
+          response[setting.keyLabel] = setting.keyValue === '0' ? false : true;
+          break;
+        case 'number':
+          response[setting.keyLabel] = parseFloat(setting.keyValue);
+          break;
+        default:
+          response[setting.keyLabel] = setting.keyValue;
+      }
     });
 
     return response;
