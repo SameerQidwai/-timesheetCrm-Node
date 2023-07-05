@@ -55,6 +55,12 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
 
     let year = new FinancialYear();
 
+    console.log(
+      '🚀 ~ file: financialYearRepository.ts:52 ~ startDate:',
+      startDate
+    );
+    console.log('🚀 ~ file: financialYearRepository.ts:54 ~ endDate:', endDate);
+
     year.label = label;
     year.startDate = startDate.toDate();
     year.endDate = endDate.toDate();
