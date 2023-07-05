@@ -56,8 +56,8 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
     let year = new FinancialYear();
 
     year.label = label;
-    year.startDate = moment(startDate).toDate();
-    year.endDate = moment(endDate).toDate();
+    year.startDate = startDate.toDate();
+    year.endDate = endDate.toDate();
 
     // return 'hi';
     return this.save(year);
@@ -94,9 +94,8 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
     await this._validateUpdateFinancialYearDates(startDate, endDate, year);
 
     year.label = financialYearDTO.label;
-    year.startDate = financialYearDTO.startDate;
-    year.endDate = financialYearDTO.endDate;
-
+    year.startDate = startDate.toDate();
+    year.endDate = endDate.toDate();
     return this.save(year);
   }
 
