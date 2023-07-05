@@ -72,7 +72,7 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
 
     year.label = label;
     year.startDate = startDate.toDate();
-    year.endDate = endDate.toDate();
+    year.endDate = endDate.subtract(10, 'milliseconds').toDate();
 
     // return 'hi';
     return this.save(year);
