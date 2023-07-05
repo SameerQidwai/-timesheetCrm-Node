@@ -55,21 +55,6 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
 
     let year = new FinancialYear();
 
-    console.log(
-      '🚀 ~ file: financialYearRepository.ts:52 ~ startDate:',
-      startDate
-    );
-    console.log('🚀 ~ file: financialYearRepository.ts:54 ~ endDate:', endDate);
-
-    console.log(
-      '🚀 ~ file: financialYearRepository.ts:52 ~ startDate:',
-      startDate.toDate()
-    );
-    console.log(
-      '🚀 ~ file: financialYearRepository.ts:54 ~ endDate:',
-      endDate.toDate()
-    );
-
     year.label = label;
     year.startDate = startDate.toDate();
     year.endDate = endDate.set('milliseconds', 0).toDate();
@@ -110,7 +95,7 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
 
     year.label = financialYearDTO.label;
     year.startDate = startDate.toDate();
-    year.endDate = endDate.toDate();
+    year.endDate = endDate.set('milliseconds', 0).toDate();
     return this.save(year);
   }
 
@@ -574,6 +559,7 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
           .clone()
           .subtract(1, 'day')
           .endOf('day')
+          .set('milliseconds', 0)
           .toDate();
       }
     }
@@ -606,6 +592,7 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
           .clone()
           .subtract(1, 'day')
           .endOf('day')
+          .set('milliseconds', 0)
           .toDate();
       }
     }
