@@ -15,10 +15,10 @@ export class PurchaseOrder extends Base {
   @Column({ name: 'description', type: 'text', nullable: true })
   description: string;
 
-  @Column({ name: 'issue_date' })
+  @Column({ name: 'issue_date', precision: 3 })
   issueDate: Date;
 
-  @Column({ name: 'expiry_date' })
+  @Column({ name: 'expiry_date', precision: 3 })
   expiryDate: Date;
 
   @Column({ name: 'value', type: 'float', precision: 11, scale: 2 })

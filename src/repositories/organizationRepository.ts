@@ -8,6 +8,7 @@ import { ContactPerson } from '../entities/contactPerson';
 import { Attachment } from '../entities/attachment';
 import { Comment } from '../entities/comment';
 import { EntityType } from '../constants/constants';
+import moment from 'moment-timezone';
 
 @EntityRepository(Organization)
 export class OrganizationRepository extends Repository<Organization> {
@@ -41,11 +42,11 @@ export class OrganizationRepository extends Repository<Organization> {
       obj.plPolicyNumber = organization.plPolicyNumber;
       obj.wcPolicyNumber = organization.wcPolicyNumber;
       if (organization.piInsuranceExpiry)
-        obj.piInsuranceExpiry = new Date(organization.piInsuranceExpiry);
+        obj.piInsuranceExpiry = moment(organization.piInsuranceExpiry).toDate();
       if (organization.plInsuranceExpiry)
-        obj.plInsuranceExpiry = new Date(organization.plInsuranceExpiry);
+        obj.plInsuranceExpiry = moment(organization.plInsuranceExpiry).toDate();
       if (organization.wcInsuranceExpiry)
-        obj.wcInsuranceExpiry = new Date(organization.wcInsuranceExpiry);
+        obj.wcInsuranceExpiry = moment(organization.wcInsuranceExpiry).toDate();
       if (organization.parentOrganizationId)
         obj.parentOrganization = await this.findOne(
           organization.parentOrganizationId
@@ -113,11 +114,11 @@ export class OrganizationRepository extends Repository<Organization> {
       obj.wcPolicyNumber = organization.wcPolicyNumber;
 
       if (organization.piInsuranceExpiry)
-        obj.piInsuranceExpiry = new Date(organization.piInsuranceExpiry);
+        obj.piInsuranceExpiry = moment(organization.piInsuranceExpiry).toDate();
       if (organization.plInsuranceExpiry)
-        obj.plInsuranceExpiry = new Date(organization.plInsuranceExpiry);
+        obj.plInsuranceExpiry = moment(organization.plInsuranceExpiry).toDate();
       if (organization.wcInsuranceExpiry)
-        obj.wcInsuranceExpiry = new Date(organization.wcInsuranceExpiry);
+        obj.wcInsuranceExpiry = moment(organization.wcInsuranceExpiry).toDate();
       if (organization.parentOrganizationId) {
         let parentOrganization = await this.findOne(
           organization.parentOrganizationId

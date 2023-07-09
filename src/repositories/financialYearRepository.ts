@@ -57,7 +57,7 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
 
     year.label = label;
     year.startDate = startDate.toDate();
-    year.endDate = endDate.set('milliseconds', 0).toDate();
+    year.endDate = endDate.toDate();
 
     // return 'hi';
     return this.save(year);
@@ -95,7 +95,7 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
 
     year.label = financialYearDTO.label;
     year.startDate = startDate.toDate();
-    year.endDate = endDate.set('milliseconds', 0).toDate();
+    year.endDate = endDate.toDate();
     return this.save(year);
   }
 
@@ -559,7 +559,6 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
           .clone()
           .subtract(1, 'day')
           .endOf('day')
-          .set('milliseconds', 0)
           .toDate();
       }
     }
@@ -592,7 +591,6 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
           .clone()
           .subtract(1, 'day')
           .endOf('day')
-          .set('milliseconds', 0)
           .toDate();
       }
     }
@@ -737,7 +735,9 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
         delete (entry as any).leaveRequest;
         delete (entry as any).leaveRequestId;
 
-        (leaveRequest as any).endDate = momentEntryDate.format('YYYY-MM-DD');
+        (leaveRequest as any).endDate = momentEntryDate
+          .endOf('day')
+          .format('YYYY-MM-DD');
 
         if (momentEntryDate.isAfter(yearEndDate, 'date')) {
           (leaveRequest as any).inNextYear = true;
@@ -762,7 +762,9 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
       leaveRequestsIndex[leaveRequestId] = leaveRequests.length;
       (leaveRequest as any).inClosedYear = false;
       (leaveRequest as any).inNextYear = false;
-      (leaveRequest as any).startDate = momentEntryDate.format('YYYY-MM-DD');
+      (leaveRequest as any).startDate = momentEntryDate
+        .startOf('day')
+        .format('YYYY-MM-DD');
       (leaveRequest as any).futureEntries = [];
 
       if (momentEntryDate.isAfter(yearEndDate, 'year')) {

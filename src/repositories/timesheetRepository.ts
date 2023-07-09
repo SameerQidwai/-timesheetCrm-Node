@@ -704,11 +704,15 @@ export class TimesheetRepository extends Repository<Timesheet> {
           timesheet.startDate = moment(
             `${startDate} 00:00:00`,
             'DD-MM-YYYY HH:mm:ss'
-          ).toDate();
+          )
+            .startOf('day')
+            .toDate();
           timesheet.endDate = moment(
             `${endDate} 00:00:00`,
             'DD-MM-YYYY HH:mm:ss'
-          ).toDate();
+          )
+            .endOf('day')
+            .toDate();
           timesheet.employeeId = userId;
 
           timesheet = await transactionalEntityManager.save(timesheet);
@@ -876,11 +880,15 @@ export class TimesheetRepository extends Repository<Timesheet> {
           timesheet.startDate = moment(
             `${startDate} 00:00:00`,
             'DD-MM-YYYY HH:mm:ss'
-          ).toDate();
+          )
+            .startOf('day')
+            .toDate();
           timesheet.endDate = moment(
             `${endDate} 00:00:00`,
             'DD-MM-YYYY HH:mm:ss'
-          ).toDate();
+          )
+            .endOf('day')
+            .toDate();
           timesheet.employeeId = userId;
 
           timesheet = await transactionalEntityManager.save(timesheet);

@@ -6,10 +6,10 @@ import { Organization } from './organization';
 
 @Entity('contact_person_organizations')
 export class ContactPersonOrganization extends Base {
-  @Column({ name: 'start_date' })
+  @Column({ name: 'start_date', precision: 3 })
   startDate: Date;
 
-  @Column({ name: 'end_date', nullable: true })
+  @Column({ name: 'end_date', nullable: true, precision: 3 })
   endDate: Date;
 
   @Column({ name: 'designation' })

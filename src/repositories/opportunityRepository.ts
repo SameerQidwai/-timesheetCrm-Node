@@ -38,16 +38,20 @@ export class OpportunityRepository extends Repository<Opportunity> {
       let opportunityObj = new Opportunity();
       opportunityObj.title = opportunity.title;
       if (opportunity.startDate) {
-        opportunityObj.startDate = new Date(opportunity.startDate);
+        opportunityObj.startDate = moment(opportunity.startDate)
+          .startOf('day')
+          .toDate();
       }
       if (opportunity.endDate) {
-        opportunityObj.endDate = new Date(opportunity.endDate);
+        opportunityObj.endDate = moment(opportunity.endDate)
+          .endOf('day')
+          .toDate();
       }
       if (opportunity.bidDate) {
-        opportunityObj.bidDate = new Date(opportunity.bidDate);
+        opportunityObj.bidDate = moment(opportunity.bidDate).toDate();
       }
       if (opportunity.entryDate) {
-        opportunityObj.entryDate = new Date(opportunity.entryDate);
+        opportunityObj.entryDate = moment(opportunity.entryDate).toDate();
       }
       opportunityObj.qualifiedOps = opportunity.qualifiedOps ? true : false;
       opportunityObj.value = opportunity.value;
@@ -156,8 +160,12 @@ export class OpportunityRepository extends Repository<Opportunity> {
       let milestoneObj = new Milestone();
       milestoneObj.title = 'Default Milestone';
       milestoneObj.description = '-';
-      milestoneObj.startDate = newOpportunity.startDate;
-      milestoneObj.endDate = newOpportunity.endDate;
+      milestoneObj.startDate = moment(newOpportunity.startDate)
+        .startOf('day')
+        .toDate();
+      milestoneObj.endDate = moment(newOpportunity.endDate)
+        .endOf('day')
+        .toDate();
       milestoneObj.isApproved = '';
       milestoneObj.projectId = newOpportunity.id;
       milestoneObj.progress = 0;
@@ -278,11 +286,15 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
       if (opportunityDTO.startDate) {
         if (opportunityDTO.type == ProjectType.TIME_BASE) {
-          opportunityObj.milestones[0].startDate = new Date(
+          opportunityObj.milestones[0].startDate = moment(
             opportunityDTO.startDate
-          );
+          )
+            .startOf('day')
+            .toDate();
         }
-        opportunityObj.startDate = new Date(opportunityDTO.startDate);
+        opportunityObj.startDate = moment(opportunityDTO.startDate)
+          .startOf('day')
+          .toDate();
       } else {
         (opportunityObj as any).startDate = null;
         if (opportunityDTO.type == ProjectType.TIME_BASE) {
@@ -291,11 +303,13 @@ export class OpportunityRepository extends Repository<Opportunity> {
       }
       if (opportunityDTO.endDate) {
         if (opportunityDTO.type == ProjectType.TIME_BASE) {
-          opportunityObj.milestones[0].endDate = new Date(
-            opportunityDTO.endDate
-          );
+          opportunityObj.milestones[0].endDate = moment(opportunityDTO.endDate)
+            .endOf('day')
+            .toDate();
         }
-        opportunityObj.endDate = new Date(opportunityDTO.endDate);
+        opportunityObj.endDate = moment(opportunityDTO.endDate)
+          .endOf('day')
+          .toDate();
       } else {
         (opportunityObj as any).endDate = null;
         if (opportunityDTO.type == ProjectType.TIME_BASE) {
@@ -303,10 +317,10 @@ export class OpportunityRepository extends Repository<Opportunity> {
         }
       }
       if (opportunityDTO.bidDate) {
-        opportunityObj.bidDate = new Date(opportunityDTO.bidDate);
+        opportunityObj.bidDate = moment(opportunityDTO.bidDate).toDate();
       }
       if (opportunityDTO.entryDate) {
-        opportunityObj.entryDate = new Date(opportunityDTO.entryDate);
+        opportunityObj.entryDate = moment(opportunityDTO.entryDate).toDate();
       }
       opportunityObj.qualifiedOps = opportunityDTO.qualifiedOps ? true : false;
       opportunityObj.value = opportunityDTO.value;
@@ -578,10 +592,12 @@ export class OpportunityRepository extends Repository<Opportunity> {
     }
 
     if (milestoneDTO.startDate) {
-      milestone.startDate = new Date(milestoneDTO.startDate);
+      milestone.startDate = moment(milestoneDTO.startDate)
+        .startOf('day')
+        .toDate();
     }
     if (milestoneDTO.startDate) {
-      milestone.endDate = new Date(milestoneDTO.endDate);
+      milestone.endDate = moment(milestoneDTO.endDate).endOf('day').toDate();
     }
 
     milestone.isApproved = milestoneDTO.isApproved;
@@ -677,10 +693,12 @@ export class OpportunityRepository extends Repository<Opportunity> {
       milestone.title = milestoneDTO.title;
       milestone.description = milestoneDTO.description;
       if (milestoneDTO.startDate) {
-        milestone.startDate = new Date(milestoneDTO.startDate);
+        milestone.startDate = moment(milestoneDTO.startDate)
+          .startOf('day')
+          .toDate();
       }
       if (milestoneDTO.startDate) {
-        milestone.endDate = new Date(milestoneDTO.endDate);
+        milestone.endDate = moment(milestoneDTO.endDate).endOf('day').toDate();
       }
       milestone.isApproved = milestoneDTO.isApproved;
       milestone.progress = milestoneDTO.progress;
@@ -829,10 +847,14 @@ export class OpportunityRepository extends Repository<Opportunity> {
     resource.billableHours = opportunityResourceDTO.billableHours;
     resource.title = opportunityResourceDTO.title;
     if (opportunityResourceDTO.startDate) {
-      resource.startDate = new Date(opportunityResourceDTO.startDate);
+      resource.startDate = moment(opportunityResourceDTO.startDate)
+        .startOf('day')
+        .toDate();
     }
     if (opportunityResourceDTO.endDate) {
-      resource.endDate = new Date(opportunityResourceDTO.endDate);
+      resource.endDate = moment(opportunityResourceDTO.endDate)
+        .endOf('day')
+        .toDate();
     }
     // resource.startDate = opportunityResourceDTO.startDate;
     // resource.endDate = opportunityResourceDTO.endDate;
@@ -894,10 +916,14 @@ export class OpportunityRepository extends Repository<Opportunity> {
       resource.billableHours = opportunityResourceDTO.billableHours;
       resource.title = opportunityResourceDTO.title;
       if (opportunityResourceDTO.startDate) {
-        resource.startDate = new Date(opportunityResourceDTO.startDate);
+        resource.startDate = moment(opportunityResourceDTO.startDate)
+          .startOf('day')
+          .toDate();
       }
       if (opportunityResourceDTO.endDate) {
-        resource.endDate = new Date(opportunityResourceDTO.endDate);
+        resource.endDate = moment(opportunityResourceDTO.endDate)
+          .endOf('day')
+          .toDate();
       }
       // resource.startDate = opportunityResourceDTO.startDate;
       // resource.endDate = opportunityResourceDTO.endDate;
@@ -1587,31 +1613,37 @@ export class OpportunityRepository extends Repository<Opportunity> {
       opportunityObj.title = opportunityDTO.title;
 
       if (opportunityDTO.startDate) {
-        opportunityObj.startDate = new Date(opportunityDTO.startDate);
+        opportunityObj.startDate = moment(opportunityDTO.startDate)
+          .startOf('day')
+          .toDate();
         if (opportunityObj.type == ProjectType.TIME_BASE) {
-          opportunityObj.milestones[0].startDate = new Date(
+          opportunityObj.milestones[0].startDate = moment(
             opportunityDTO.startDate
-          );
+          )
+            .startOf('day')
+            .toDate();
         }
       } else {
         throw new Error('Start Date is required in Project');
       }
       if (opportunityDTO.endDate) {
-        opportunityObj.endDate = new Date(opportunityDTO.endDate);
+        opportunityObj.endDate = moment(opportunityDTO.endDate)
+          .endOf('day')
+          .toDate();
         if (opportunityObj.type == ProjectType.TIME_BASE) {
-          opportunityObj.milestones[0].endDate = new Date(
-            opportunityDTO.endDate
-          );
+          opportunityObj.milestones[0].endDate = moment(opportunityDTO.endDate)
+            .endOf('day')
+            .toDate();
         }
       } else {
         throw new Error('End Date is required in Project');
       }
 
       if (opportunityDTO.bidDate) {
-        opportunityObj.bidDate = new Date(opportunityDTO.bidDate);
+        opportunityObj.bidDate = moment(opportunityDTO.bidDate).toDate();
       }
       if (opportunityDTO.entryDate) {
-        opportunityObj.entryDate = new Date(opportunityDTO.entryDate);
+        opportunityObj.entryDate = moment(opportunityDTO.entryDate).toDate();
       }
       opportunityObj.qualifiedOps = opportunityDTO.qualifiedOps ? true : false;
       opportunityObj.value = opportunityDTO.value;
@@ -1739,10 +1771,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
       }
 
       opportunityObj.status = 'P';
-      (opportunityObj as any).wonDate = new Date()
-        .toISOString()
-        .slice(0, 19)
-        .replace('T', ' ');
+      (opportunityObj as any).wonDate = moment().toDate();
       // opportunityObj.opportunityManagerId = 1;
 
       await transactionalEntityManager.save(opportunityObj);
@@ -1775,10 +1804,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
       opportunityObj.wonById = opportunityObj.wonById;
       opportunityObj.phase = 0;
       // opportunityObj.opportunityManagerId = 1;
-      opportunityObj.lostDate = new Date()
-        .toISOString()
-        .slice(0, 19)
-        .replace('T', ' ');
+      opportunityObj.lostDate = moment().toDate();
 
       await transactionalEntityManager.save(opportunityObj);
     });

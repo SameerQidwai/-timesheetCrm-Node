@@ -15,7 +15,7 @@ export class LeaveRequestBalance extends Base {
   @Column({ name: 'used', type: 'float' })
   used: number;
 
-  @Column({ name: 'last_cron_at', nullable: true })
+  @Column({ name: 'last_cron_at', nullable: true, precision: 3 })
   lastCronAt: Date;
 
   @Column({ name: 'type_id' })

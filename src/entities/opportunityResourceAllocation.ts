@@ -58,10 +58,10 @@ export class OpportunityResourceAllocation extends Base {
   @JoinColumn({ name: 'contact_person_id' })
   contactPerson: ContactPerson;
 
-  // @Column({ name: 'start_date', nullable: true })
+  // @Column({ name: 'start_date', nullable: true, precision: 3 })
   // startDate: Date;
 
-  // @Column({ name: 'end_date', nullable: true })
+  // @Column({ name: 'end_date', nullable: true, precision: 3 })
   // endDate: Date;
 
   @Column({

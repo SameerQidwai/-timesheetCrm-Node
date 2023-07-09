@@ -8,6 +8,7 @@ import { Organization } from './../entities/organization';
 import { OpportunityResourceAllocation } from '../entities/opportunityResourceAllocation';
 import { Employee } from '../entities/employee';
 import { Opportunity } from '../entities/opportunity';
+import moment from 'moment-timezone';
 
 @EntityRepository(ContactPerson)
 export class ContactPersonRepository extends Repository<ContactPerson> {
@@ -23,7 +24,9 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
       contactPersonObj.gender = contactPersonDTO.gender;
       contactPersonObj.phoneNumber = contactPersonDTO.phoneNumber;
       if (contactPersonDTO.dateOfBirth)
-        contactPersonObj.dateOfBirth = new Date(contactPersonDTO.dateOfBirth);
+        contactPersonObj.dateOfBirth = moment(
+          contactPersonDTO.dateOfBirth
+        ).toDate();
 
       let state: State | undefined;
       if (contactPersonDTO.stateId) {
@@ -40,12 +43,12 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
         contactPersonDTO.clearanceExpiryDate
       ) {
         contactPersonObj.clearanceLevel = contactPersonDTO.clearanceLevel;
-        contactPersonObj.clearanceGrantedDate = new Date(
+        contactPersonObj.clearanceGrantedDate = moment(
           contactPersonDTO.clearanceGrantedDate
-        );
-        contactPersonObj.clearanceExpiryDate = new Date(
+        ).toDate();
+        contactPersonObj.clearanceExpiryDate = moment(
           contactPersonDTO.clearanceExpiryDate
-        );
+        ).toDate();
       }
 
       contactPersonObj.csidNumber = contactPersonDTO.csidNumber;
@@ -96,13 +99,17 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
         contactPersonDTO.contactPersonOrganizations.map(
           async (contactPersonOrganization) => {
             let contactPersonOrganizationObj = new ContactPersonOrganization();
-            contactPersonOrganizationObj.startDate = new Date(
+            contactPersonOrganizationObj.startDate = moment(
               contactPersonOrganization.startDate
-            );
+            )
+              .startOf('day')
+              .toDate();
             if (contactPersonOrganization.endDate)
-              contactPersonOrganizationObj.endDate = new Date(
+              contactPersonOrganizationObj.endDate = moment(
                 contactPersonOrganization.endDate
-              );
+              )
+                .endOf('day')
+                .toDate();
             contactPersonOrganizationObj.designation =
               contactPersonOrganization.designation;
             let organization = await transactionalEntityManager.findOne(
@@ -179,7 +186,9 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
       contactPersonObj.gender = contactPersonDTO.gender;
       contactPersonObj.phoneNumber = contactPersonDTO.phoneNumber;
       if (contactPersonDTO.dateOfBirth)
-        contactPersonObj.dateOfBirth = new Date(contactPersonDTO.dateOfBirth);
+        contactPersonObj.dateOfBirth = moment(
+          contactPersonDTO.dateOfBirth
+        ).toDate();
 
       let state: State | undefined;
       if (contactPersonDTO.stateId) {
@@ -196,12 +205,12 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
         contactPersonDTO.clearanceExpiryDate
       ) {
         contactPersonObj.clearanceLevel = contactPersonDTO.clearanceLevel;
-        contactPersonObj.clearanceGrantedDate = new Date(
+        contactPersonObj.clearanceGrantedDate = moment(
           contactPersonDTO.clearanceGrantedDate
-        );
-        contactPersonObj.clearanceExpiryDate = new Date(
+        ).toDate();
+        contactPersonObj.clearanceExpiryDate = moment(
           contactPersonDTO.clearanceExpiryDate
-        );
+        ).toDate();
       }
 
       contactPersonObj.csidNumber = contactPersonDTO.csidNumber;
@@ -268,13 +277,17 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
           includedAssociations.push(contactPersonOrganizationObjFound[0].id);
           contactPersonOrganizationObj = contactPersonOrganizationObjFound[0];
         }
-        contactPersonOrganizationObj.startDate = new Date(
+        contactPersonOrganizationObj.startDate = moment(
           contactPersonOrganization.startDate
-        );
+        )
+          .startOf('day')
+          .toDate();
         if (contactPersonOrganization.endDate)
-          contactPersonOrganizationObj.endDate = new Date(
+          contactPersonOrganizationObj.endDate = moment(
             contactPersonOrganization.endDate
-          );
+          )
+            .endOf('day')
+            .toDate();
         contactPersonOrganizationObj.designation =
           contactPersonOrganization.designation;
         let organization = await transactionalEntityManager.findOne(

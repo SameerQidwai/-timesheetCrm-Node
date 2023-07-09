@@ -58,17 +58,19 @@ export class ProjectRepository extends Repository<Opportunity> {
       let projectObj = new Opportunity();
       projectObj.title = project.title;
       if (project.startDate) {
-        projectObj.startDate = new Date(project.startDate);
+        projectObj.startDate = moment(project.startDate)
+          .startOf('day')
+          .toDate();
       } else {
         throw new Error('Start date is required in project');
       }
       if (project.endDate) {
-        projectObj.endDate = new Date(project.endDate);
+        projectObj.endDate = moment(project.endDate).endOf('day').toDate();
       } else {
         throw new Error('End date is required in project');
       }
       if (project.entryDate) {
-        projectObj.entryDate = new Date(project.entryDate);
+        projectObj.entryDate = moment(project.entryDate).toDate();
       }
       projectObj.qualifiedOps = project.qualifiedOps ? true : false;
       projectObj.value = project.value;
@@ -171,8 +173,10 @@ export class ProjectRepository extends Repository<Opportunity> {
       let milestoneObj = new Milestone();
       milestoneObj.title = 'Default Milestone';
       milestoneObj.description = '-';
-      milestoneObj.startDate = newProject.startDate;
-      milestoneObj.endDate = newProject.endDate;
+      milestoneObj.startDate = moment(newProject.startDate)
+        .startOf('day')
+        .toDate();
+      milestoneObj.endDate = moment(newProject.endDate).endOf('day').toDate();
       milestoneObj.isApproved = '';
       milestoneObj.projectId = newProject.id;
       milestoneObj.progress = 0;
@@ -401,23 +405,29 @@ export class ProjectRepository extends Repository<Opportunity> {
       }
 
       if (projectDTO.startDate) {
-        projectObj.startDate = new Date(projectDTO.startDate);
+        projectObj.startDate = moment(projectDTO.startDate)
+          .startOf('day')
+          .toDate();
         if (projectDTO.type == ProjectType.TIME_BASE) {
-          projectObj.milestones[0].startDate = new Date(projectDTO.startDate);
+          projectObj.milestones[0].startDate = moment(projectDTO.startDate)
+            .startOf('day')
+            .toDate();
         }
       } else {
         throw new Error('Project start date Cannot be null');
       }
       if (projectDTO.endDate) {
-        projectObj.endDate = new Date(projectDTO.endDate);
+        projectObj.endDate = moment(projectDTO.endDate).toDate();
         if (projectDTO.type == ProjectType.TIME_BASE) {
-          projectObj.milestones[0].endDate = new Date(projectDTO.endDate);
+          projectObj.milestones[0].endDate = moment(projectDTO.endDate)
+            .endOf('day')
+            .toDate();
         }
       } else {
         throw new Error('Project end date Cannot be null');
       }
       if (projectDTO.entryDate) {
-        projectObj.entryDate = new Date(projectDTO.entryDate);
+        projectObj.entryDate = moment(projectDTO.entryDate).toDate();
       }
       projectObj.qualifiedOps = projectDTO.qualifiedOps ? true : false;
       projectObj.value = projectDTO.value;
@@ -1099,10 +1109,14 @@ export class ProjectRepository extends Repository<Opportunity> {
         }
 
         if (milestoneDTO.startDate) {
-          milestone.startDate = new Date(milestoneDTO.startDate);
+          milestone.startDate = moment(milestoneDTO.startDate)
+            .startOf('day')
+            .toDate();
         }
         if (milestoneDTO.startDate) {
-          milestone.endDate = new Date(milestoneDTO.endDate);
+          milestone.endDate = moment(milestoneDTO.endDate)
+            .endOf('day')
+            .toDate();
         }
         milestone.isApproved = milestoneDTO.isApproved ?? '';
         milestone.projectId = projectId;
@@ -1213,10 +1227,12 @@ export class ProjectRepository extends Repository<Opportunity> {
       milestone.description = milestoneDTO.description;
 
       if (milestoneDTO.startDate) {
-        milestone.startDate = new Date(milestoneDTO.startDate);
+        milestone.startDate = moment(milestoneDTO.startDate)
+          .startOf('day')
+          .toDate();
       }
       if (milestoneDTO.startDate) {
-        milestone.endDate = new Date(milestoneDTO.endDate);
+        milestone.endDate = moment(milestoneDTO.endDate).endOf('day').toDate();
       }
 
       milestone.isApproved = milestoneDTO.isApproved ?? '';
@@ -1348,10 +1364,14 @@ export class ProjectRepository extends Repository<Opportunity> {
         resource.title = projectResourceDTO.title;
 
         if (projectResourceDTO.startDate) {
-          resource.startDate = new Date(projectResourceDTO.startDate);
+          resource.startDate = moment(projectResourceDTO.startDate)
+            .startOf('day')
+            .toDate();
         }
         if (projectResourceDTO.endDate) {
-          resource.endDate = new Date(projectResourceDTO.endDate);
+          resource.endDate = moment(projectResourceDTO.endDate)
+            .endOf('day')
+            .toDate();
         }
 
         resource = await transactionalEntityManager.save(resource);
@@ -1467,10 +1487,14 @@ export class ProjectRepository extends Repository<Opportunity> {
       resource.title = projectResourceDTO.title;
 
       if (projectResourceDTO.startDate) {
-        resource.startDate = new Date(projectResourceDTO.startDate);
+        resource.startDate = moment(projectResourceDTO.startDate)
+          .startOf('day')
+          .toDate();
       }
       if (projectResourceDTO.endDate) {
-        resource.endDate = new Date(projectResourceDTO.endDate);
+        resource.endDate = moment(projectResourceDTO.endDate)
+          .endOf('day')
+          .toDate();
       }
 
       resource.opportunityResourceAllocations[index].buyingRate =
@@ -2096,12 +2120,12 @@ export class ProjectRepository extends Repository<Opportunity> {
           project
         );
 
-        projectScheduleObj.startDate = moment(
-          projectScheduleDTO.startDate
-        ).toDate();
-        projectScheduleObj.endDate = moment(
-          projectScheduleDTO.endDate
-        ).toDate();
+        projectScheduleObj.startDate = moment(projectScheduleDTO.startDate)
+          .startOf('day')
+          .toDate();
+        projectScheduleObj.endDate = moment(projectScheduleDTO.endDate)
+          .endOf('day')
+          .toDate();
 
         projectScheduleObj.amount = projectScheduleDTO.amount;
 
@@ -2117,8 +2141,10 @@ export class ProjectRepository extends Repository<Opportunity> {
 
         for (let segmentDTO of projectScheduleDTO.segments) {
           let segment = new ProjectScheduleSegment();
-          segment.startDate = moment(segmentDTO.startDate).toDate();
-          segment.endDate = moment(segmentDTO.endDate).toDate();
+          segment.startDate = moment(segmentDTO.startDate)
+            .startOf('day')
+            .toDate();
+          segment.endDate = moment(segmentDTO.endDate).endOf('day').toDate();
           segment.amount = segmentDTO.amount;
           segment.scheduleId = schedule.id;
           sumAmount =
@@ -2179,11 +2205,13 @@ export class ProjectRepository extends Repository<Opportunity> {
         projectScheduleObj
       );
 
-      projectScheduleObj.startDate = moment(
-        projectScheduleDTO.startDate
-      ).toDate();
+      projectScheduleObj.startDate = moment(projectScheduleDTO.startDate)
+        .startOf('day')
+        .toDate();
 
-      projectScheduleObj.endDate = moment(projectScheduleDTO.endDate).toDate();
+      projectScheduleObj.endDate = moment(projectScheduleDTO.endDate)
+        .endOf('day')
+        .toDate();
 
       projectScheduleObj.amount = projectScheduleDTO.amount;
 
@@ -2197,8 +2225,10 @@ export class ProjectRepository extends Repository<Opportunity> {
 
       for (let segmentDTO of projectScheduleDTO.segments) {
         let segment = new ProjectScheduleSegment();
-        segment.startDate = moment(segmentDTO.startDate).toDate();
-        segment.endDate = moment(segmentDTO.endDate).toDate();
+        segment.startDate = moment(segmentDTO.startDate)
+          .startOf('day')
+          .toDate();
+        segment.endDate = moment(segmentDTO.endDate).endOf('day').toDate();
         segment.amount = segmentDTO.amount;
         sumAmount =
           parseFloat(sumAmount.toFixed(2)) +
@@ -2298,8 +2328,10 @@ export class ProjectRepository extends Repository<Opportunity> {
           project
         );
 
-        projectShutdownObj.startDate = shutdownStartDate.toDate();
-        projectShutdownObj.endDate = shutdownEndDate.toDate();
+        projectShutdownObj.startDate = shutdownStartDate
+          .startOf('day')
+          .toDate();
+        projectShutdownObj.endDate = shutdownEndDate.endOf('day').toDate();
 
         projectShutdownObj.notes = shutdownPeriodDTO.notes;
 
@@ -2350,9 +2382,9 @@ export class ProjectRepository extends Repository<Opportunity> {
         project
       );
 
-      shutdownPeriodObj.startDate = shutdownStartDate.toDate();
+      shutdownPeriodObj.startDate = shutdownStartDate.startOf('day').toDate();
 
-      shutdownPeriodObj.endDate = shutdownEndDate.toDate();
+      shutdownPeriodObj.endDate = shutdownEndDate.endOf('day').toDate();
 
       shutdownPeriodObj.notes = projectShutdownPeriodDTO.notes;
 

@@ -25,7 +25,7 @@ export class CalendarHolidayRepository extends Repository<CalendarHoliday> {
     let obj = new CalendarHoliday();
     obj.calendar = calendar;
     obj.holidayType = holidayType;
-    obj.date = new Date(calendarHoliday.date);
+    obj.date = moment(calendarHoliday.date).toDate();
     return await this.save(obj);
   }
 
@@ -60,7 +60,7 @@ export class CalendarHolidayRepository extends Repository<CalendarHoliday> {
       throw new Error('Holiday Type not found');
     }
     calendarHolidayObj.holidayTypeId = holidayType.id;
-    calendarHolidayObj.date = new Date(calendarHoliday.date);
+    calendarHolidayObj.date = moment(calendarHoliday.date).toDate();
     await this.update(id, calendarHolidayObj);
     return this.findOne(id, { relations: ['holidayType'] });
   }
