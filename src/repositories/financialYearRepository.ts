@@ -56,8 +56,8 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
     let year = new FinancialYear();
 
     year.label = label;
-    year.startDate = moment(startDate).toDate();
-    year.endDate = moment(endDate).toDate();
+    year.startDate = startDate.toDate();
+    year.endDate = endDate.toDate();
 
     // return 'hi';
     return this.save(year);
@@ -94,9 +94,8 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
     await this._validateUpdateFinancialYearDates(startDate, endDate, year);
 
     year.label = financialYearDTO.label;
-    year.startDate = financialYearDTO.startDate;
-    year.endDate = financialYearDTO.endDate;
-
+    year.startDate = startDate.toDate();
+    year.endDate = endDate.toDate();
     return this.save(year);
   }
 
@@ -556,7 +555,11 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
         if (moment(previousYear.startDate).add(30, 'days').isAfter(startDate)) {
           throw new Error('Span of financial year can be minimum of 30 days');
         }
-        previousYear.endDate = startDate.subtract(1, 'day').toDate();
+        previousYear.endDate = startDate
+          .clone()
+          .subtract(1, 'day')
+          .endOf('day')
+          .toDate();
       }
     }
 
@@ -567,7 +570,11 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
         if (moment(nextYear.endDate).subtract(30, 'days').isBefore(endDate)) {
           throw new Error('Span of financial year can be minimum of 30 days');
         }
-        nextYear.startDate = endDate.add(1, 'day').toDate();
+        nextYear.startDate = endDate
+          .clone()
+          .add(1, 'day')
+          .startOf('day')
+          .toDate();
       }
     }
 
@@ -580,7 +587,11 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
       )
     ) {
       if (previousYear) {
-        previousYear.endDate = startDate.subtract(1, 'day').toDate();
+        previousYear.endDate = startDate
+          .clone()
+          .subtract(1, 'day')
+          .endOf('day')
+          .toDate();
       }
     }
 
@@ -588,7 +599,11 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
       endDate.isBetween(updateYear.startDate, updateYear.endDate, 'date', '[]')
     ) {
       if (nextYear) {
-        nextYear.startDate = endDate.add(1, 'day').toDate();
+        nextYear.startDate = endDate
+          .clone()
+          .add(1, 'day')
+          .startOf('day')
+          .toDate();
       }
     }
 
@@ -720,7 +735,9 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
         delete (entry as any).leaveRequest;
         delete (entry as any).leaveRequestId;
 
-        (leaveRequest as any).endDate = momentEntryDate.format('YYYY-MM-DD');
+        (leaveRequest as any).endDate = momentEntryDate
+          .endOf('day')
+          .format('YYYY-MM-DD');
 
         if (momentEntryDate.isAfter(yearEndDate, 'date')) {
           (leaveRequest as any).inNextYear = true;
@@ -745,7 +762,9 @@ export class FinancialYearRepository extends Repository<FinancialYear> {
       leaveRequestsIndex[leaveRequestId] = leaveRequests.length;
       (leaveRequest as any).inClosedYear = false;
       (leaveRequest as any).inNextYear = false;
-      (leaveRequest as any).startDate = momentEntryDate.format('YYYY-MM-DD');
+      (leaveRequest as any).startDate = momentEntryDate
+        .startOf('day')
+        .format('YYYY-MM-DD');
       (leaveRequest as any).futureEntries = [];
 
       if (momentEntryDate.isAfter(yearEndDate, 'year')) {

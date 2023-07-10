@@ -21,10 +21,10 @@ export class EmploymentContract extends Base {
   })
   payFrequency: Frequency;
 
-  @Column({ name: 'start_date' })
+  @Column({ name: 'start_date', precision: 3 })
   startDate: Date;
 
-  @Column({ name: 'end_date', nullable: true })
+  @Column({ name: 'end_date', nullable: true, precision: 3 })
   endDate: Date;
 
   @Column({

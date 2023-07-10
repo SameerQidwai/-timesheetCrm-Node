@@ -147,7 +147,7 @@ export class EmployeeRepository extends Repository<Employee> {
       contactPersonObj.gender = employeeDTO.gender;
       contactPersonObj.phoneNumber = employeeDTO.phoneNumber;
       if (employeeDTO.dateOfBirth)
-        contactPersonObj.dateOfBirth = new Date(employeeDTO.dateOfBirth);
+        contactPersonObj.dateOfBirth = moment(employeeDTO.dateOfBirth).toDate();
 
       let state: State | undefined;
       if (employeeDTO.stateId) {
@@ -241,9 +241,9 @@ export class EmployeeRepository extends Repository<Employee> {
       employmentContract.payslipEmail = payslipEmail;
       employmentContract.comments = comments;
       employmentContract.payFrequency = payFrequency;
-      employmentContract.startDate = new Date(startDate);
+      employmentContract.startDate = moment(startDate).startOf('day').toDate();
       if (endDate) {
-        employmentContract.endDate = new Date(endDate);
+        employmentContract.endDate = moment(endDate).endOf('day').toDate();
       }
       employmentContract.bohPercent = bohPercent;
       employmentContract.type = type;
@@ -404,7 +404,7 @@ export class EmployeeRepository extends Repository<Employee> {
       contactPersonObj.gender = employeeDTO.gender;
       contactPersonObj.phoneNumber = employeeDTO.phoneNumber;
       if (employeeDTO.dateOfBirth)
-        contactPersonObj.dateOfBirth = new Date(employeeDTO.dateOfBirth);
+        contactPersonObj.dateOfBirth = moment(employeeDTO.dateOfBirth).toDate();
 
       let state: State | undefined;
       if (employeeDTO.stateId) {
@@ -504,10 +504,16 @@ export class EmployeeRepository extends Repository<Employee> {
         };
 
         if (dateCarrier.startDate == null) {
-          dateCarrier.startDate = moment().subtract(100, 'years').toDate();
+          dateCarrier.startDate = moment()
+            .subtract(100, 'years')
+            .startOf('day')
+            .toDate();
         }
         if (dateCarrier.endDate == null) {
-          dateCarrier.endDate = moment().add(100, 'years').toDate();
+          dateCarrier.endDate = moment()
+            .add(100, 'years')
+            .endOf('day')
+            .toDate();
         }
 
         if (
@@ -586,9 +592,9 @@ export class EmployeeRepository extends Repository<Employee> {
       employmentContract.payslipEmail = payslipEmail;
       employmentContract.comments = comments;
       employmentContract.payFrequency = payFrequency;
-      employmentContract.startDate = moment(startDate).toDate();
+      employmentContract.startDate = moment(startDate).startOf('day').toDate();
       if (endDate) {
-        employmentContract.endDate = moment(endDate).toDate();
+        employmentContract.endDate = moment(endDate).endOf('day').toDate();
       }
       employmentContract.bohPercent = bohPercent;
       employmentContract.type = type;
@@ -712,10 +718,13 @@ export class EmployeeRepository extends Repository<Employee> {
       };
 
       if (dateCarrier.startDate == null) {
-        dateCarrier.startDate = moment().subtract(100, 'years').toDate();
+        dateCarrier.startDate = moment()
+          .subtract(100, 'years')
+          .startOf('day')
+          .toDate();
       }
       if (dateCarrier.endDate == null) {
-        dateCarrier.endDate = moment().add(100, 'years').toDate();
+        dateCarrier.endDate = moment().add(100, 'years').endOf('day').toDate();
       }
 
       if (
@@ -971,10 +980,10 @@ export class EmployeeRepository extends Repository<Employee> {
     lease.vehicleRegistrationNo = leaseDTO.vehicleRegistrationNo;
     lease.vehicleMakeModel = leaseDTO.vehicleMakeModel;
     if (leaseDTO.startDate) {
-      lease.startDate = new Date(leaseDTO.startDate);
+      lease.startDate = moment(leaseDTO.startDate).startOf('day').toDate();
     }
     if (leaseDTO.endDate) {
-      lease.endDate = new Date(leaseDTO.endDate);
+      lease.endDate = moment(leaseDTO.endDate).endOf('day').toDate();
     }
     lease.financedAmount = leaseDTO.financedAmount;
     lease.installmentFrequency = leaseDTO.installmentFrequency;
@@ -1012,10 +1021,10 @@ export class EmployeeRepository extends Repository<Employee> {
     lease.vehicleRegistrationNo = leaseDTO.vehicleRegistrationNo;
     lease.vehicleMakeModel = leaseDTO.vehicleMakeModel;
     if (leaseDTO.startDate) {
-      lease.startDate = new Date(leaseDTO.startDate);
+      lease.startDate = moment(leaseDTO.startDate).startOf('day').toDate();
     }
     if (leaseDTO.endDate) {
-      lease.endDate = new Date(leaseDTO.endDate);
+      lease.endDate = moment(leaseDTO.endDate).endOf('day').toDate();
     }
     lease.financedAmount = leaseDTO.financedAmount;
     lease.installmentFrequency = leaseDTO.installmentFrequency;

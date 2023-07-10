@@ -86,12 +86,16 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
 
           globalVariableValue.globalVariableId = globalVariable.id;
           globalVariableValue.value = globalVariableLabelValueDTO.value;
-          globalVariableValue.startDate = new Date(
+          globalVariableValue.startDate = moment(
             globalVariableLabelValueDTO.startDate
-          );
-          globalVariableValue.endDate = new Date(
+          )
+            .startOf('day')
+            .toDate();
+          globalVariableValue.endDate = moment(
             globalVariableLabelValueDTO.endDate
-          );
+          )
+            .endOf('day')
+            .toDate();
 
           await transactionalEntityManager.save(globalVariableValue);
         }
@@ -120,8 +124,10 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
     let obj = new GlobalVariableValue();
     obj.globalVariableId = globalVariableValue.globalVariableId;
     obj.value = globalVariableValue.value;
-    obj.startDate = globalVariableValue.startDate;
-    obj.endDate = globalVariableValue.endDate;
+    obj.startDate = moment(globalVariableValue.startDate)
+      .startOf('day')
+      .toDate();
+    obj.endDate = moment(globalVariableValue.endDate).endOf('day').toDate();
 
     let response = await this.save(obj);
     return response;
@@ -137,8 +143,12 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
       throw new Error('Variable Value not found');
     }
     variableValue.value = globalVariableValue.value;
-    variableValue.startDate = globalVariableValue.startDate;
-    variableValue.endDate = globalVariableValue.endDate;
+    variableValue.startDate = moment(globalVariableValue.startDate)
+      .startOf('day')
+      .toDate();
+    variableValue.endDate = moment(globalVariableValue.endDate)
+      .endOf('day')
+      .toDate();
 
     let response = await this.save(variableValue);
 
@@ -309,8 +319,8 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
         }
 
         let globalVariableValue = new GlobalVariableValue();
-        globalVariableValue.startDate = valueStart.toDate();
-        globalVariableValue.endDate = valueEnd.toDate();
+        globalVariableValue.startDate = valueStart.startOf('day').toDate();
+        globalVariableValue.endDate = valueEnd.endOf('day').toDate();
         globalVariableValue.value = globalVariableLabelValueDTO.value;
         globalVariableValue.globalVariableId = globalVariable.id;
 
@@ -370,8 +380,8 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
         }
       }
 
-      globalVariableValue.startDate = valueStart.toDate();
-      globalVariableValue.endDate = valueEnd.toDate();
+      globalVariableValue.startDate = valueStart.startOf('day').toDate();
+      globalVariableValue.endDate = valueEnd.endOf('day').toDate();
       globalVariableValue.value = globalVariableLabelValueDTO.value;
 
       return transactionalEntityManager.save(

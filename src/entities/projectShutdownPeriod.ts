@@ -14,10 +14,10 @@ import { Opportunity } from './opportunity';
 
 @Entity('project_shutdown_periods')
 export class ProjectShutdownPeriod extends Base {
-  @Column({ name: 'start_date' })
+  @Column({ name: 'start_date', precision: 3 })
   startDate: Date;
 
-  @Column({ name: 'end_date' })
+  @Column({ name: 'end_date', precision: 3 })
   endDate: Date;
 
   @Column({ name: 'project_id', unique: false })

@@ -33,7 +33,7 @@ export class TimesheetEntry extends Base {
   @Column({ name: 'notes', nullable: true })
   notes: string;
 
-  @Column({ name: 'submitted_at', nullable: true })
+  @Column({ type: 'date', name: 'submitted_at', nullable: true })
   submittedAt: Date;
 
   @Column({ type: 'date', name: 'approved_at', nullable: true })

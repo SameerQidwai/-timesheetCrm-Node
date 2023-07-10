@@ -18,6 +18,6 @@ export class CalendarDay extends Base {
   @Column({ name: 'is_weekday', nullable: false })
   isWeekday: Boolean;
 
-  @Column({ name: 'actual_date', nullable: false })
+  @Column({ name: 'actual_date', nullable: false, precision: 3 })
   actualDate: Date;
 }

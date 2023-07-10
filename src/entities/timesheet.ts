@@ -14,10 +14,10 @@ import { Employee } from './employee';
 
 @Entity('timesheets')
 export class Timesheet extends Base {
-  @Column({ name: 'start_date' })
+  @Column({ name: 'start_date', precision: 3 })
   startDate: Date;
 
-  @Column({ name: 'end_date' })
+  @Column({ name: 'end_date', precision: 3 })
   endDate: Date;
 
   @Column({ name: 'employee_id', unique: false })

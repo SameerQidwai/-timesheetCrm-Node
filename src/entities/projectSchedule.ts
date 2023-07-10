@@ -15,13 +15,13 @@ export class ProjectSchedule extends Base {
   })
   amount: number;
 
-  @Column({ name: 'start_date' })
+  @Column({ name: 'start_date', precision: 3 })
   startDate: Date;
 
-  @Column({ name: 'end_date' })
+  @Column({ name: 'end_date', precision: 3 })
   endDate: Date;
 
-  @Column({ name: 'payment_date' })
+  @Column({ name: 'payment_date', precision: 3 })
   paymentDate: Date;
 
   @Column({ name: 'notes', nullable: true })

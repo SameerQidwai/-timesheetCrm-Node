@@ -85,9 +85,13 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
         obj.comments = employmentContractDTO.comments;
         obj.payslipEmail = employmentContractDTO.payslipEmail;
         obj.payFrequency = employmentContractDTO.payFrequency;
-        obj.startDate = moment(employmentContractDTO.startDate).toDate();
+        obj.startDate = moment(employmentContractDTO.startDate)
+          .startOf('day')
+          .toDate();
         if (employmentContractDTO.endDate) {
-          obj.endDate = moment(employmentContractDTO.endDate).toDate();
+          obj.endDate = moment(employmentContractDTO.endDate)
+            .endOf('day')
+            .toDate();
         } else {
           (obj.endDate as any) = null;
         }
@@ -244,11 +248,13 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
         employmentContractObj.payFrequency = employmentContractDTO.payFrequency;
         employmentContractObj.startDate = moment(
           employmentContractDTO.startDate
-        ).toDate();
+        )
+          .startOf('day')
+          .toDate();
         if (employmentContractDTO.endDate) {
-          employmentContractObj.endDate = moment(
-            employmentContractDTO.endDate
-          ).toDate();
+          employmentContractObj.endDate = moment(employmentContractDTO.endDate)
+            .endOf('day')
+            .toDate();
         } else {
           (employmentContractObj.endDate as any) = null;
         }

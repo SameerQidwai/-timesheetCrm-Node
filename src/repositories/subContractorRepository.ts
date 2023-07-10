@@ -85,7 +85,9 @@ export class SubContractorRepository extends Repository<Employee> {
       contactPersonObj.gender = subContractor.gender;
       contactPersonObj.phoneNumber = subContractor.phoneNumber;
       if (subContractor.dateOfBirth)
-        contactPersonObj.dateOfBirth = new Date(subContractor.dateOfBirth);
+        contactPersonObj.dateOfBirth = moment(
+          subContractor.dateOfBirth
+        ).toDate();
 
       let state: State | undefined;
       if (subContractor.stateId) {
@@ -143,9 +145,9 @@ export class SubContractorRepository extends Repository<Employee> {
         fileId,
       } = subContractor.latestContract;
 
-      employmentContract.startDate = new Date(startDate);
+      employmentContract.startDate = moment(startDate).startOf('day').toDate();
       if (endDate) {
-        employmentContract.endDate = new Date(endDate);
+        employmentContract.endDate = moment(endDate).endOf('day').toDate();
       }
       employmentContract.comments = comments;
       employmentContract.noOfHours = noOfHours;
@@ -276,7 +278,9 @@ export class SubContractorRepository extends Repository<Employee> {
       contactPersonObj.gender = subContractor.gender;
       contactPersonObj.phoneNumber = subContractor.phoneNumber;
       if (subContractor.dateOfBirth)
-        contactPersonObj.dateOfBirth = new Date(subContractor.dateOfBirth);
+        contactPersonObj.dateOfBirth = moment(
+          subContractor.dateOfBirth
+        ).toDate();
 
       let state: State | undefined;
       if (subContractor.stateId) {
@@ -353,10 +357,16 @@ export class SubContractorRepository extends Repository<Employee> {
         };
 
         if (dateCarrier.startDate == null) {
-          dateCarrier.startDate = moment().subtract(100, 'years').toDate();
+          dateCarrier.startDate = moment()
+            .subtract(100, 'years')
+            .startOf('day')
+            .toDate();
         }
         if (dateCarrier.endDate == null) {
-          dateCarrier.endDate = moment().add(100, 'years').toDate();
+          dateCarrier.endDate = moment()
+            .add(100, 'years')
+            .endOf('day')
+            .toDate();
         }
 
         if (
@@ -432,9 +442,11 @@ export class SubContractorRepository extends Repository<Employee> {
         subContractorContract = new EmploymentContract();
       }
 
-      subContractorContract.startDate = moment(startDate).toDate();
+      subContractorContract.startDate = moment(startDate)
+        .startOf('day')
+        .toDate();
       if (endDate) {
-        subContractorContract.endDate = moment(endDate).toDate();
+        subContractorContract.endDate = moment(endDate).endOf('day').toDate();
       }
       subContractorContract.comments = comments;
       subContractorContract.noOfHours = noOfHours;
@@ -476,10 +488,13 @@ export class SubContractorRepository extends Repository<Employee> {
       };
 
       if (dateCarrier.startDate == null) {
-        dateCarrier.startDate = moment().subtract(100, 'years').toDate();
+        dateCarrier.startDate = moment()
+          .subtract(100, 'years')
+          .startOf('day')
+          .toDate();
       }
       if (dateCarrier.endDate == null) {
-        dateCarrier.endDate = moment().add(100, 'years').toDate();
+        dateCarrier.endDate = moment().add(100, 'years').endOf('day').toDate();
       }
 
       if (

@@ -70,9 +70,9 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
 
     let obj = new EmploymentContract();
     obj.employee = employee;
-    obj.startDate = moment(contractDTO.startDate).toDate();
+    obj.startDate = moment(contractDTO.startDate).startOf('day').toDate();
     if (contractDTO.endDate) {
-      obj.endDate = moment(contractDTO.endDate).toDate();
+      obj.endDate = moment(contractDTO.endDate).endOf('day').toDate();
     } else {
       (obj.endDate as any) = null;
     }
@@ -169,9 +169,13 @@ export class SubContractorContractRepository extends Repository<EmploymentContra
     });
 
     employmentContractObj.employeeId = employee.id;
-    employmentContractObj.startDate = moment(contractDTO.startDate).toDate();
+    employmentContractObj.startDate = moment(contractDTO.startDate)
+      .startOf('day')
+      .toDate();
     if (contractDTO.endDate) {
-      employmentContractObj.endDate = moment(contractDTO.endDate).toDate();
+      employmentContractObj.endDate = moment(contractDTO.endDate)
+        .endOf('day')
+        .toDate();
     } else {
       (employmentContractObj.endDate as any) = null;
     }

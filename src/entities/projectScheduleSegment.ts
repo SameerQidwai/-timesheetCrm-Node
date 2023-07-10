@@ -6,10 +6,10 @@ import { ProjectSchedule } from './projectSchedule';
 
 @Entity('project_schedule_segments')
 export class ProjectScheduleSegment extends Base {
-  @Column({ name: 'start_date' })
+  @Column({ name: 'start_date', precision: 3 })
   startDate: Date;
 
-  @Column({ name: 'end_date' })
+  @Column({ name: 'end_date', precision: 3 })
   endDate: Date;
 
   @Column({

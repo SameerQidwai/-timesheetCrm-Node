@@ -9,10 +9,10 @@ export class Invoice extends Base {
   @Column({ name: 'invoiceId' })
   invoiceId: string;
 
-  @Column({ name: 'start_date', nullable: true })
+  @Column({ name: 'start_date', nullable: true, precision: 3 })
   startDate: Date;
 
-  @Column({ name: 'end_date', nullable: true })
+  @Column({ name: 'end_date', nullable: true, precision: 3 })
   endDate: Date;
 
   @Column({ name: 'reference', default: '', type: 'text' })
@@ -38,7 +38,4 @@ export class Invoice extends Base {
   @ManyToOne(() => Organization)
   @JoinColumn({ name: 'organization_id' })
   organization: Organization;
-
-  
 }
-

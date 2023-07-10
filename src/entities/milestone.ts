@@ -13,10 +13,10 @@ export class Milestone extends Base {
   @Column({ name: 'description', nullable: true })
   description: string;
 
-  @Column({ name: 'start_date', nullable: true })
+  @Column({ name: 'start_date', nullable: true, precision: 3 })
   startDate: Date;
 
-  @Column({ name: 'end_date', nullable: true })
+  @Column({ name: 'end_date', nullable: true, precision: 3 })
   endDate: Date;
 
   @Column({ name: '%completed', default: 0 })

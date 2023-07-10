@@ -14,6 +14,7 @@ import { Action, Resource, Grant } from '../constants/authorization';
 import { GlobalSetting } from '../entities/globalSetting';
 import { GlobalVariableLabel } from '../entities/globalVariableLabel';
 import { GlobalSettingDTO } from '../dto';
+import moment from 'moment-timezone';
 
 let runSeeders = async () => {
   console.log('running seeders');
@@ -264,11 +265,11 @@ let organizationSeeder = async () => {
       obj.plPolicyNumber = organizationData.plPolicyNumber;
       obj.wcPolicyNumber = organizationData.wcPolicyNumber;
       // if (organizationData.piInsuranceExpiry)
-      //   obj.piInsuranceExpiry = new Date(organizationData.piInsuranceExpiry);
+      //   obj.piInsuranceExpiry = moment(organizationData.piInsuranceExpiry);
       // if (organizationData.plInsuranceExpiry)
-      //   obj.plInsuranceExpiry = new Date(organizationData.plInsuranceExpiry);
+      //   obj.plInsuranceExpiry = moment(organizationData.plInsuranceExpiry);
       // if (organizationData.wcInsuranceExpiry)
-      //   obj.wcInsuranceExpiry = new Date(organizationData.wcInsuranceExpiry);
+      //   obj.wcInsuranceExpiry = moment(organizationData.wcInsuranceExpiry);
       // if (organizationData.parentOrganizationId)
       //   obj.parentOrganization = await getManager().findOne(
       //     Organization,
@@ -311,7 +312,7 @@ let contactPersonSeeder = async () => {
       // standardSkillStandardLevelIds: [2],
       contactPersonOrganizations: [
         {
-          startDate: new Date(),
+          startDate: moment().toDate(),
           designation: 'Admin',
           organizationId: 1,
         },
@@ -327,7 +328,7 @@ let contactPersonSeeder = async () => {
       contactPersonObj.gender = contactPersonData.gender;
       contactPersonObj.phoneNumber = contactPersonData.phoneNumber;
       // if (contactPersonData.dateOfBirth)
-      //   contactPersonObj.dateOfBirth = new Date(contactPersonData.dateOfBirth);
+      //   contactPersonObj.dateOfBirth = moment(contactPersonData.dateOfBirth);
 
       let state: State | undefined;
       if (contactPersonData.stateId) {
@@ -344,12 +345,12 @@ let contactPersonSeeder = async () => {
         contactPersonData.clearanceExpiryDate
       ) {
         contactPersonObj.clearanceLevel = contactPersonData.clearanceLevel;
-        contactPersonObj.clearanceGrantedDate = new Date(
+        contactPersonObj.clearanceGrantedDate = moment(
           contactPersonData.clearanceGrantedDate
-        );
-        contactPersonObj.clearanceExpiryDate = new Date(
+        ).toDate();
+        contactPersonObj.clearanceExpiryDate = moment(
           contactPersonData.clearanceExpiryDate
-        );
+        ).toDate();
       }
 
       let clearanceSponsor: Organization | undefined;
@@ -382,11 +383,13 @@ let contactPersonSeeder = async () => {
         contactPersonData.contactPersonOrganizations.map(
           async (contactPersonOrganization) => {
             let contactPersonOrganizationObj = new ContactPersonOrganization();
-            contactPersonOrganizationObj.startDate = new Date(
+            contactPersonOrganizationObj.startDate = moment(
               contactPersonOrganization.startDate
-            );
+            )
+              .startOf('day')
+              .toDate();
             // if (contactPersonOrganization.endDate)
-            //   contactPersonOrganizationObj.endDate = new Date(
+            //   contactPersonOrganizationObj.endDate = moment(
             //     contactPersonOrganization.endDate
             //   );
             contactPersonOrganizationObj.designation =
@@ -449,7 +452,7 @@ let employeeSeeder = async () => {
       latestEmploymentContract: {
         payslipEmail: 'mustafa.syed@1lm.com.au',
         payFrequency: 1,
-        startDate: new Date(),
+        startDate: moment(),
         endDate: null,
         type: 1,
         noOfHours: 8,
@@ -508,7 +511,7 @@ let employeeSeeder = async () => {
       contactPersonObj.gender = employeeData.gender;
       contactPersonObj.phoneNumber = employeeData.phoneNumber;
       // if (employeeData.dateOfBirth && employeeData.dateOfBirth != null)
-      //   contactPersonObj.dateOfBirth = new Date(employeeData.dateOfBirth);
+      //   contactPersonObj.dateOfBirth = moment(employeeData.dateOfBirth);
 
       let state: State | undefined;
       if (employeeData.stateId) {
@@ -569,9 +572,9 @@ let employeeSeeder = async () => {
       employmentContract.payslipEmail = payslipEmail;
       employmentContract.comments = comments;
       employmentContract.payFrequency = payFrequency;
-      employmentContract.startDate = new Date(startDate);
+      employmentContract.startDate = moment(startDate).startOf('day').toDate();
       // if (endDate) {
-      //   employmentContract.endDate = new Date(endDate);
+      //   employmentContract.endDate = moment(endDate);
       // }
       employmentContract.type = type;
       employmentContract.noOfHours = noOfHours;

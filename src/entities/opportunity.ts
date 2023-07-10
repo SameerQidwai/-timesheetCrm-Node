@@ -37,16 +37,16 @@ export class Opportunity extends Base {
   })
   type: ProjectType;
 
-  @Column({ name: 'start_date', nullable: true })
+  @Column({ name: 'start_date', nullable: true, precision: 3 })
   startDate: Date;
 
-  @Column({ name: 'end_date', nullable: true })
+  @Column({ name: 'end_date', nullable: true, precision: 3 })
   endDate: Date;
 
-  @Column({ name: 'bid_date', nullable: true })
+  @Column({ name: 'bid_date', nullable: true, precision: 3 })
   bidDate: Date;
 
-  @Column({ name: 'entry_date', nullable: true })
+  @Column({ name: 'entry_date', nullable: true, precision: 3 })
   entryDate: Date;
 
   @Column({ name: 'qualified_ops', nullable: true })
@@ -137,13 +137,13 @@ export class Opportunity extends Base {
   @Column({ name: 'project_manager_id', nullable: true })
   projectManagerId: number | null;
 
-  @Column({ name: 'won_date', nullable: true })
+  @Column({ name: 'won_date', nullable: true, precision: 3 })
   wonDate: Date;
 
-  @Column({ name: 'lost_date', nullable: true })
+  @Column({ name: 'lost_date', nullable: true, precision: 3 })
   lostDate: Date;
 
-  @Column({ name: 'completed_date', nullable: true })
+  @Column({ name: 'completed_date', nullable: true, precision: 3 })
   completedDate: Date;
 
   @Column({ name: 'winning_price', nullable: true })

@@ -57,8 +57,12 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         leaveRequest.type?.label ?? 'Unpaid';
       (leaveRequest as any).status = leaveRequest.getStatus;
       let leavRequestDetails = leaveRequest.getEntriesDetails;
-      (leaveRequest as any).startDate = leavRequestDetails.startDate;
-      (leaveRequest as any).endDate = leavRequestDetails.endDate;
+      (leaveRequest as any).startDate = moment(leavRequestDetails.startDate)
+        .startOf('day')
+        .toDate();
+      (leaveRequest as any).endDate = moment(leavRequestDetails.endDate)
+        .endOf('day')
+        .toDate();
       (leaveRequest as any).totalHours = leavRequestDetails.totalHours;
       (leaveRequest as any).project = leaveRequest.work?.title ?? null;
 
@@ -331,8 +335,12 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
       throw new Error('Leave Request not found');
     }
     let leavRequestDetails = leaveRequest.getEntriesDetails;
-    (leaveRequest as any).startDate = leavRequestDetails.startDate;
-    (leaveRequest as any).endDate = leavRequestDetails.endDate;
+    (leaveRequest as any).startDate = moment(leavRequestDetails.startDate)
+      .startOf('day')
+      .toDate();
+    (leaveRequest as any).endDate = moment(leavRequestDetails.endDate)
+      .endOf('day')
+      .toDate();
 
     let attachments = await this.manager.find(Attachment, {
       where: { targetType: 'LRE', targetId: leaveRequest.id },
@@ -397,8 +405,12 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     }
 
     let leavRequestDetails = leaveRequest.getEntriesDetails;
-    (leaveRequest as any).startDate = leavRequestDetails.startDate;
-    (leaveRequest as any).endDate = leavRequestDetails.endDate;
+    (leaveRequest as any).startDate = moment(leavRequestDetails.startDate)
+      .startOf('day')
+      .toDate();
+    (leaveRequest as any).endDate = moment(leavRequestDetails.endDate)
+      .endOf('day')
+      .toDate();
 
     let attachments = await this.manager.find(Attachment, {
       where: { targetType: 'LRE', targetId: leaveRequest.id },
@@ -451,8 +463,12 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
       throw new Error('Leave Request not found');
     }
     let leavRequestDetails = leaveRequest.getEntriesDetails;
-    (leaveRequest as any).startDate = leavRequestDetails.startDate;
-    (leaveRequest as any).endDate = leavRequestDetails.endDate;
+    (leaveRequest as any).startDate = moment(leavRequestDetails.startDate)
+      .startOf('day')
+      .toDate();
+    (leaveRequest as any).endDate = moment(leavRequestDetails.endDate)
+      .endOf('day')
+      .toDate();
 
     let attachments = await this.manager.find(Attachment, {
       where: { targetType: 'LRE', targetId: leaveRequest.id },
@@ -509,8 +525,12 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         leaveRequest.type?.label ?? 'Unpaid';
       (leaveRequest as any).status = requestStatus;
       let leavRequestDetails = leaveRequest.getEntriesDetails;
-      (leaveRequest as any).startDate = leavRequestDetails.startDate;
-      (leaveRequest as any).endDate = leavRequestDetails.endDate;
+      (leaveRequest as any).startDate = moment(leavRequestDetails.startDate)
+        .startOf('day')
+        .toDate();
+      (leaveRequest as any).endDate = moment(leavRequestDetails.endDate)
+        .endOf('day')
+        .toDate();
       (leaveRequest as any).totalHours = leavRequestDetails.totalHours;
       (leaveRequest as any).project = leaveRequest.work?.title ?? null;
 
@@ -580,8 +600,12 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         leaveRequest.type?.label ?? 'Unpaid';
       (leaveRequest as any).status = requestStatus;
       let leavRequestDetails = leaveRequest.getEntriesDetails;
-      (leaveRequest as any).startDate = leavRequestDetails.startDate;
-      (leaveRequest as any).endDate = leavRequestDetails.endDate;
+      (leaveRequest as any).startDate = moment(leavRequestDetails.startDate)
+        .startOf('day')
+        .toDate();
+      (leaveRequest as any).endDate = moment(leavRequestDetails.endDate)
+        .endOf('day')
+        .toDate();
       (leaveRequest as any).totalHours = leavRequestDetails.totalHours;
       (leaveRequest as any).project = leaveRequest.work?.title ?? null;
 

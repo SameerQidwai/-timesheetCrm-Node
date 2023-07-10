@@ -7,10 +7,10 @@ export class FinancialYear extends Base {
   @Column({ name: 'label' })
   label: String;
 
-  @Column({ name: 'start_date' })
+  @Column({ name: 'start_date', precision: 3 })
   startDate: Date;
 
-  @Column({ name: 'end_date' })
+  @Column({ name: 'end_date', precision: 3 })
   endDate: Date;
 
   @Column({ name: 'closing', default: false })
@@ -19,7 +19,7 @@ export class FinancialYear extends Base {
   @Column({ name: 'closed', default: false })
   closed: Boolean;
 
-  @Column({ name: 'closed_at', nullable: true })
+  @Column({ name: 'closed_at', nullable: true, precision: 3 })
   closedAt: Date;
 
   @Column({ name: 'closed_by', nullable: true })

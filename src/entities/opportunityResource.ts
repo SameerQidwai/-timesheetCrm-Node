@@ -29,10 +29,10 @@ export class OpportunityResource extends Base {
   @Column({ type: 'decimal', precision: 10, scale: 3, name: 'billable_hours' })
   billableHours: number;
 
-  @Column({ name: 'start_date', nullable: true })
+  @Column({ name: 'start_date', nullable: true, precision: 3 })
   startDate: Date;
 
-  @Column({ name: 'end_date', nullable: true })
+  @Column({ name: 'end_date', nullable: true, precision: 3 })
   endDate: Date;
 
   @Column({ name: 'opportunity_id' })
