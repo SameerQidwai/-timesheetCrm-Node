@@ -113,13 +113,13 @@ export class Organization extends Base {
   })
   wcSumInsured: number;
 
-  @Column({ name: 'pi_insurance_expiry', nullable: true, precision: 3 })
+  @Column({ name: 'pi_insurance_expiry', type: 'date', nullable: true })
   piInsuranceExpiry: Date;
 
-  @Column({ name: 'pl_insurance_expiry', nullable: true, precision: 3 })
+  @Column({ name: 'pl_insurance_expiry', type: 'date', nullable: true })
   plInsuranceExpiry: Date;
 
-  @Column({ name: 'wc_insurance_expiry', nullable: true, precision: 3 })
+  @Column({ name: 'wc_insurance_expiry', type: 'date', nullable: true })
   wcInsuranceExpiry: Date;
 
   @Column({ name: 'parent_organization_id', nullable: true })

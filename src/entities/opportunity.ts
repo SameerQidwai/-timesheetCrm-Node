@@ -43,10 +43,10 @@ export class Opportunity extends Base {
   @Column({ name: 'end_date', nullable: true, precision: 3 })
   endDate: Date;
 
-  @Column({ name: 'bid_date', nullable: true, precision: 3 })
+  @Column({ name: 'bid_date', type: 'date', nullable: true })
   bidDate: Date;
 
-  @Column({ name: 'entry_date', nullable: true, precision: 3 })
+  @Column({ name: 'entry_date', type: 'date', nullable: true })
   entryDate: Date;
 
   @Column({ name: 'qualified_ops', nullable: true })
