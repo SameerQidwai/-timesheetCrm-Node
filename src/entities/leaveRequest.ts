@@ -90,17 +90,18 @@ export class LeaveRequest extends Base {
   } {
     let startDate,
       endDate,
-      totalHours = 0;
+      scaledTotalHours = 0;
+      let factor = 100;
     this.entries.forEach((entry, index) => {
       index == 0 ? (startDate = entry.date) : '';
       index == this.entries.length - 1 ? (endDate = entry.date) : '';
-      totalHours += parseFloat((entry.hours as any).toFixed(2));
+      scaledTotalHours += parseFloat((entry.hours as any).toFixed(2)) * factor;
     });
 
     return {
       startDate: startDate,
       endDate: endDate,
-      totalHours: totalHours,
+      totalHours: scaledTotalHours /factor,
     };
   }
 
