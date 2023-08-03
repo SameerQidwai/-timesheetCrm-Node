@@ -13,7 +13,7 @@ import { ViewEntity, ViewColumn } from 'typeorm';
 
     o.cm_percentage project_cm_percentage, o.organization_id project_organization_id, 
     o.project_manager_id, o.type project_type, o.value project_amount, o.status project_status, 
-    o.phase project_phase, o.title project_title, 
+    o.phase project_phase, o.title project_title, o.hours_per_day project_hours_per_day,
     o.start_date project_start, o.end_date project_end, 
 
     org.name project_organization_name,
@@ -41,62 +41,99 @@ import { ViewEntity, ViewColumn } from 'typeorm';
 })
 export class RevenueCostView {
   @ViewColumn()
-  project_id: number;
+  projectId: number;
 
   @ViewColumn()
-  project_title: string;
+  milestoneId: number;
+  
+  @ViewColumn()
+  resourceStartDate: Date;
 
   @ViewColumn()
-  milestone_id: number;
+  resourceEndDate: Date;
 
   @ViewColumn()
-  resource_buying_rate: number;
+  resourceBuyingRate: number;
 
   @ViewColumn()
-  resource_selling_rate: number;
+  resourceSellingRate: number;
 
   @ViewColumn()
-  resource_contact_person_id: number;
+  resourceContactPersonId: number;
+  
+  @ViewColumn()
+  resourceEffortRate: number;
 
   @ViewColumn()
-  resource_employee_id: number;
+  resourceEmployeeId: number;
 
   @ViewColumn()
-  project_cm_percentage: number;
+  resourceName: String;
 
   @ViewColumn()
-  project_organization_id: number;
+  projectCmPercentage: number;
 
   @ViewColumn()
-  project_manager_id: number;
+  projectOrganizationId: number;
 
   @ViewColumn()
-  project_amount: number;
+  projectManagerId: number;
 
   @ViewColumn()
-  resource_start: Date;
+  projectType: number;
 
   @ViewColumn()
-  resource_end: Date;
+  projectAmount: number;
+  
+  @ViewColumn()
+  projectStatus: Boolean;
+  
+  @ViewColumn()
+  projectPhase: Boolean;
 
   @ViewColumn()
-  project_start: Date;
+  projectTitle: string;
+  
+  @ViewColumn()
+  projectHoursPerDay: number;
 
   @ViewColumn()
-  project_end: Date;
+  projectStartDate: Date;
 
   @ViewColumn()
-  project_type: number;
+  projectEndDate: Date;
 
   @ViewColumn()
-  project_status: Boolean;
+  projectOrganizationName: String;
 
   @ViewColumn()
-  project_phase: Boolean;
+  resourceContractHours: number;
 
   @ViewColumn()
-  resource_name: String;
+  resourceContractDaysPerWeek: number
 
   @ViewColumn()
-  project_organization_name: String;
+  resourceContractStartDate: Date;
+
+  @ViewColumn()
+  resourceContractEndDate: Date;
+
+  @ViewColumn()
+  salary: number;
+
+  @ViewColumn()
+  salaryPer: number;
+
+  @ViewColumn()
+  employmentType: number;
+
+  @ViewColumn()
+  bohPercent: number;
+
+  @ViewColumn()
+  costRate: number;
+
+  @ViewColumn()
+  revenueRate: number;
+  
 }

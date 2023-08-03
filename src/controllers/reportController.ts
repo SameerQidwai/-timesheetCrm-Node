@@ -2068,7 +2068,10 @@ export class ReportController {
                 WHERE CAST(start_date AS DATE) <= calendar_date
                     AND (CAST(end_date AS DATE) >= calendar_date OR end_date IS NULL)
                     AND project_id = revenue_cost_view.project_id
-            )
+            ) AND (
+              project_status = 'P'
+              OR project_status = 'C'
+          )
         GROUP BY project_type, month ) as time_base
     
       LEFT JOIN opportunities
@@ -2084,98 +2087,130 @@ export class ReportController {
     `);
 
     const causal_salaries_actual = await getManager().query(`
-    SELECT 
-      SUM(salary * actual_hours) casual_salaries,
-      SUM(salary * (
+      SELECT 
+        SUM(salary * actual_hours) casual_salaries,
+        SUM(salary * (
         SELECT
             SUM(global_variable_values.value/100) 
-            FROM global_variable_labels
+        FROM global_variable_labels
             JOIN global_variable_values ON global_variable_labels.id = global_variable_values.global_variable_id
         WHERE
             global_variable_labels.name = 'Superannuation'
-            AND timers.entry_date BETWEEN global_variable_values.start_date
-            AND global_variable_values.end_date)  * actual_hours) casual_superannuation,
-      DATE_FORMAT(entry_date, '%b %y') month
-    FROM 
-      (SELECT
+                AND timers.entry_date BETWEEN global_variable_values.start_date
+                AND global_variable_values.end_date)  * actual_hours) casual_superannuation,
+        DATE_FORMAT(entry_date, '%b %y') month
+      FROM 
+        (SELECT
           resource_employee_id,
           resource_contract_start,
           resource_contract_end,
+          resource_start,
+          resource_end,
+          project_id,
           salary
-      FROM
+        FROM
           revenue_cost_view 
-      WHERE
-          employment_type = 1
-          AND (
-              project_status = 'P'
-              OR project_status = 'C'
-          )
-      )as revenue_cost_views
-    LEFT JOIN (
-      SELECT 
-          resource_employee_id,
-          actual_hours,
-          STR_TO_DATE(entry_date,'%e-%m-%Y') entry_date
-      FROM profit_view
-      WHERE STR_TO_DATE(entry_date,'%e-%m-%Y') BETWEEN '${fiscalYearStart}' AND  '${acutalMonthEnd}' -- need to remove from here
-    ) as timers ON (
-        revenue_cost_views.resource_employee_id = timers.resource_employee_id AND
-        (timers.entry_date BETWEEN  
-            DATE_FORMAT(revenue_cost_views.resource_contract_start,'%Y-%m-%d') AND  
-            DATE_FORMAT(IFNULL(revenue_cost_views.resource_contract_end, '2049-06-30'),'%Y-%m-%d')
+        WHERE
+          employment_type = 1 
+            AND (
+                project_status = 'P'
+                OR project_status = 'C'
+            )
+        )as revenue_cost_views
+        JOIN (
+          SELECT 
+            resource_employee_id,
+            actual_hours,
+            STR_TO_DATE(entry_date,'%e-%m-%Y') entry_date,
+            project_id
+          FROM profit_view
+          WHERE STR_TO_DATE(entry_date,'%e-%m-%Y') BETWEEN '${fiscalYearStart}' AND  '${acutalMonthEnd}'
+        ) as timers ON (
+          revenue_cost_views.resource_employee_id = timers.resource_employee_id AND
+          revenue_cost_views.project_id = timers.project_id AND
+          timers.entry_date BETWEEN DATE_FORMAT(revenue_cost_views.resource_start,'%Y-%m-%d') AND DATE_FORMAT(IFNULL(revenue_cost_views.resource_end, '2049-06-30'),'%Y-%m-%d') AND
+          timers.entry_date BETWEEN DATE_FORMAT(revenue_cost_views.resource_contract_start,'%Y-%m-%d') AND DATE_FORMAT(IFNULL(revenue_cost_views.resource_contract_end, '2049-06-30'),'%Y-%m-%d')
         )
-      )
-    GROUP BY month;
+      GROUP BY month;
     `);
 
     const causal_salaries_forecast = await getManager().query(`
-    SELECT SUM(casual_salaries) casual_salaries, SUM(casual_superannuation) casual_superannuation, month
-        FROM (SELECT 
-          (salary * (resource_contract_hours/resource_contract_days_per_week)) casual_salaries,
-          (salary * (resource_contract_hours / resource_contract_days_per_week) * (
+      SELECT
+        SUM(casual_salary_per_day) AS casual_salaries,
+        SUM(casual_superannuation) AS casual_superannuations,
+        month
+      From (
+        SELECT
+          casual_salary_per_day,
+          casual_salary_per_day * (
             SELECT
-                SUM(global_variable_values.value/100) 
-            FROM global_variable_labels
-                JOIN global_variable_values ON global_variable_labels.id = global_variable_values.global_variable_id
+              SUM(global_variable_values.value / 100)
+            FROM
+              global_variable_labels
+              JOIN global_variable_values ON global_variable_labels.id = global_variable_values.global_variable_id
             WHERE
               global_variable_labels.name = 'Superannuation'
-              AND calendar_view_filtered.calendar_date BETWEEN global_variable_values.start_date
+              AND this_date BETWEEN global_variable_values.start_date
               AND global_variable_values.end_date
+        ) AS casual_superannuation,
+          DATE_FORMAT(STR_TO_DATE(this_date, '%Y-%m-%d'), '%b %y') AS month
+        From (
+          SELECT
+            calendar_date this_date
+          FROM
+            calendar_view -- 'start of this month' '2023-06-30'
+          WHERE
+            (
+              calendar_view.calendar_date BETWEEN '${currentMonthStart}' AND '${fiscalYearEnd}'
+              AND is_holidays = 0
+              AND is_weekday = 1
             )
-          ) casual_superannuation,
-          DATE_FORMAT(STR_TO_DATE(calendar_view_filtered.calendar_date,'%Y-%m-%d'), '%b %y') month 
-      From (
-        SELECT * FROM calendar_view          -- 'start of this month' '2023-06-30'
-        WHERE (calendar_view.calendar_date BETWEEN '${currentMonthStart}' AND '${fiscalYearEnd}')  -- remove SUM from subQuery will qive you 4211.68
         ) as calendar_view_filtered
-        LEFT JOIN (
-            SELECT * FROM revenue_cost_view 
-            WHERE employment_type = 1
-        ) as casual_employee
-        ON ((calendar_view_filtered.calendar_date BETWEEN  
-            DATE_FORMAT(resource_contract_start,'%Y-%m-%d') AND  
-            DATE_FORMAT(IFNULL(resource_contract_end, '2049-06-30'),'%Y-%m-%d')
-        ))
-      WHERE is_holidays = 0 AND is_weekday = 1 
+          LEFT JOIN (
+            SELECT
+              salary * project_hours_per_day * (resource_project_effort_rate / 100) AS casual_salary_per_day,
+              resource_start,
+              resource_end,
+              resource_contract_start,
+              resource_contract_end,
+              resource_employee_id
+            FROM
+              revenue_cost_view
+            WHERE
+              employment_type = 1
+          ) as casual_employee ON (
+            this_date BETWEEN DATE_FORMAT(resource_contract_start, '%Y-%m-%d') AND DATE_FORMAT( IFNULL(resource_contract_end, '2049-06-30'), '%Y-%m-%d' )
+            AND this_date BETWEEN DATE_FORMAT(resource_start, '%Y-%m-%d') AND DATE_FORMAT(resource_end, '%Y-%m-%d')
+          )
+      WHERE NOT EXISTS (
+        SELECT 1
+        FROM project_shutdown_periods 
+        WHERE project_id = project_shutdown_periods.project_id
+          AND this_date BETWEEN project_shutdown_periods.start_date AND project_shutdown_periods.end_date
+      )
       GROUP BY
-          resource_contract_start,
-          resource_contract_end,
-          resource_employee_id,
-          calendar_view_filtered.calendar_date
+        resource_start,
+        resource_end,
+        resource_contract_start,
+        resource_contract_end,
+        resource_employee_id,
+        this_date
       ) as costing
-    GROUP BY month;
+      GROUP BY
+        month;
     `);
 
     const permanent_salaries = await getManager().query(`
       SELECT 
         month, 
-        SUM(salary) permanent_salaries, 
+        SUM(salary_month) permanent_salaries, 
         SUM(superannuation) permanent_superannuation,
-        SUM(doh_salary) doh_salaries, SUM(doh_superannuation) doh_superannuation
+        SUM(doh_salary) doh_salaries, 
+        SUM(doh_superannuation) doh_superannuation
         FROM (
           SELECT
             -- to seperate boh percent for salaries
-              (salary / 12) * (ABS(boh_percent - 100) / 100) salary,
+              (salary / 12) * (ABS(boh_percent - 100) / 100) salary_month,
               (salary / 12) * (ABS(boh_percent - 100) / 100) * (superannuation_percentage) superannuation,
               
               -- to seperate boh percent for salaries
@@ -2291,12 +2326,12 @@ export class ReportController {
         let {
           month,
           casual_salaries: salary = 0,
-          casual_superannuation = 0,
+          casual_superannuations = 0,
         } = causal_salaries_forecast[i];
         salary ||= 0;
-        casual_superannuation ||= 0;
+        casual_superannuations ||= 0;
         data['CASUAL_SALARIES'][month] = parseFloat(salary);
-        data['CASUAL_SUPER'][month] = parseFloat(casual_superannuation);
+        data['CASUAL_SUPER'][month] = parseFloat(casual_superannuations);
       }
 
       if (causal_salaries_actual[i]) {
