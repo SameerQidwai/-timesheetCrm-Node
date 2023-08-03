@@ -1,9 +1,9 @@
-import { BeforeUpdate, Column, Entity } from 'typeorm';
-import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { Base } from './common/base';
+import { Employee } from './employee';
 import { LeaveRequestBalance } from './leaveRequestBalance';
 
-@Entity('')
+@Entity('leave_request_balance_transactions')
 export class LeaveRequestBalanceTransaction extends Base {
   @Column({ nullable: true, type: 'simple-json' })
   previousState: LeaveRequestBalance;
@@ -11,16 +11,14 @@ export class LeaveRequestBalanceTransaction extends Base {
   @Column({ type: 'simple-json' })
   newState: LeaveRequestBalance;
 
-  @Column({ type: 'simple-json' })
-  delta: Partial<LeaveRequestBalance>;
+  @Column({ type: 'simple-array', nullable: true })
+  delta: Array<string>;
+  // delta: Partial<LeaveRequestBalance>;
 
-  @BeforeUpdate()
-  async saveDelta() {
-    console.log(
-      '🚀 ~ file: leaveRequestBalanceTransaction.ts:19 ~ LeaveRequestBalanceTransaction ~ saveDelta ~ saveDelta:'
-    );
-    this.delta = {
-      carryForward: 999,
-    };
-  }
+  @Column({ name: 'employee_id' })
+  employeeId: number;
+
+  @ManyToOne(() => Employee)
+  @JoinColumn({ name: 'employee_id' })
+  employee: Employee;
 }
