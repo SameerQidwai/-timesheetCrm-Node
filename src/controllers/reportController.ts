@@ -2282,6 +2282,53 @@ export class ReportController {
       GROUP BY month
     `);
 
+
+    // in this query I tried to avoid subqueries with where to see performace
+    // I didn't find any but it is lot readable
+    const lead_forecast_revenue = await getManager().query(`
+      SELECT
+        SUM(monthly_project_work_days * per_day_value) AS month_total_sell,
+        SUM(monthly_project_work_days * (per_day_value - (per_day_value * cm_percentage/100))) AS month_total_buy,
+        month
+      FROM    
+        (SELECT 
+          COUNT(*) AS monthly_project_work_days,
+          -- SUM(COUNT(*)) OVER(PARTITION BY project_id) AS total_project_work_days,
+          project_discount_value/SUM(COUNT(*)) OVER(PARTITION BY project_id) AS per_day_value,
+          project_id,
+          cm_percentage,
+          -- project_discount_value,
+          DATE_FORMAT(working_dates, '%b %y') AS month
+        FROM   
+          (
+            SELECT 
+              cm_percentage,
+              (value * ((get_percentage * go_percentage)/100))/100 AS project_discount_value,
+              calendar_date AS working_dates,
+              opportunities.id AS project_id
+
+            FROM opportunities
+            LEFT JOIN calendar_view
+              ON (
+                calendar_date BETWEEN 
+                  DATE_FORMAT(start_date,'%Y-%m-%d') AND 
+                  DATE_FORMAT(end_date,'%Y-%m-%d') -- checking dates in opportunity 
+              )
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM project_shutdown_periods 
+                WHERE project_id = opportunities.id
+                    AND calendar_date BETWEEN start_date AND end_date
+            ) -- merged where
+                AND ( status ='O' AND deleted_at IS NULL AND type = 2) -- opprtunity where
+                AND (is_holidays = 0 AND is_weekday = 1) -- calander_view where
+                AND ( end_date >= '${fiscalYearStart}' AND start_date <= '${fiscalYearEnd}') -- date_range whre  -- date_range wehre
+            ) AS dayss
+        GROUP BY month, project_id
+      ) AS extracted_data
+    GROUP BY month;
+  `)
+
     let length_of_loop = Math.max(
       ...[actual_revenue.length, forecast_revenue.length]
     );
@@ -2289,6 +2336,8 @@ export class ReportController {
     let data: any = {
       MILESTONE_BASE: { total: 0 },
       TIME_BASE: { total: 0 },
+      LEAD_TIME_BASE: { total: 0 },
+      LEAD_COST: { total: 0 },
       CASUAL_SALARIES: { total: 0 },
       PERMANENT_SALARIES: { total: 0 },
       DOH_SALARIES: { total: 0 },
@@ -2320,6 +2369,18 @@ export class ReportController {
         ) {
           data[ProjectType[project_type]][month] = parseFloat(month_total_sell);
         }
+      }
+
+      if(lead_forecast_revenue[i]){
+        let { month, month_total_sell= 0, month_total_buy = 0 } = lead_forecast_revenue[i];
+        if (moment(month, 'MMM YY').isSameOrAfter(moment(), 'month')){
+          data['LEAD_TIME_BASE'][month] = parseFloat(month_total_sell)
+          data['LEAD_COST'][month] = parseFloat(month_total_buy)
+        }else{
+          data['LEAD_TIME_BASE'][month] = 0
+          data['LEAD_COST'][month] = 0
+        }
+        
       }
 
       if (causal_salaries_forecast[i]) {
