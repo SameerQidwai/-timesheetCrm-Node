@@ -2287,45 +2287,78 @@ export class ReportController {
     // I didn't find any but it is lot readable
     const lead_forecast_revenue = await getManager().query(`
       SELECT
-        SUM(monthly_project_work_days * per_day_value) AS month_total_sell,
-        SUM(monthly_project_work_days * (per_day_value - (per_day_value * cm_percentage/100))) AS month_total_buy,
+        SUM(monthly_project_work_days * project_discount_value/total_project_work_days) AS month_total_sell,
+        SUM(monthly_project_work_days * (project_discount_value/total_project_work_days - (project_discount_value/total_project_work_days * cm_percentage/100))) AS month_total_buy,
         month
-      FROM    
-        (SELECT 
-          COUNT(*) AS monthly_project_work_days,
-          project_discount_value/SUM(COUNT(*)) OVER(PARTITION BY project_id) AS per_day_value,
-          project_id,
-          cm_percentage,
-          DATE_FORMAT(working_dates, '%b %y') AS month
-        FROM   
-          (
-            SELECT 
-              cm_percentage,
-              (value * ((get_percentage * go_percentage)/100))/100 AS project_discount_value,
-              calendar_date AS working_dates,
-              opportunities.id AS project_id
 
-            FROM opportunities
-            JOIN calendar_view
-              ON (
-                calendar_date BETWEEN 
-                  DATE_FORMAT(start_date,'%Y-%m-%d') AND 
-                  DATE_FORMAT(end_date,'%Y-%m-%d') -- checking dates in opportunity 
-              )
-            WHERE NOT EXISTS (
-                SELECT 1
-                FROM project_shutdown_periods 
-                WHERE project_id = opportunities.id
+      FROM    
+      (SELECT 
+        COUNT(*) AS monthly_project_work_days,
+        project_id,
+        cm_percentage,
+        project_discount_value,
+        DATE_FORMAT(working_dates, '%b %y') AS month
+
+      FROM(
+        SELECT 
+          cm_percentage,
+          (value * ((get_percentage * go_percentage)/100))/100 AS project_discount_value,
+          calendar_date AS working_dates,
+          opportunities.id AS project_id
+
+        FROM opportunities
+        JOIN calendar_view
+          ON (
+          calendar_date BETWEEN 
+              DATE_FORMAT(start_date,'%Y-%m-%d') AND 
+              DATE_FORMAT(end_date,'%Y-%m-%d') -- checking dates in opportunity 
+          )
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM project_shutdown_periods 
+            WHERE project_id = opportunities.id
+                AND calendar_date BETWEEN start_date AND end_date
+        ) -- merged where
+            AND ( status ='O' AND deleted_at IS NULL AND type = 2) -- opprtunity where
+            AND (is_holidays = 0 AND is_weekday = 1) -- calander_view where
+            AND ( end_date >= '2023-07-01' AND start_date <= '2024-06-30')  -- date_range whre
+        ) AS dayss
+      GROUP BY month, project_id
+      ) AS extracted_data
+      LEFT JOIN (
+        SELECT
+          project_id,
+          COUNT(*) AS total_project_work_days
+
+        FROM (
+          SELECT
+            calendar_date AS working_dates,
+            opportunities.id AS project_id
+            
+          FROM
+            opportunities
+            JOIN calendar_view ON (
+              calendar_date BETWEEN DATE_FORMAT(start_date, '%Y-%m-%d')
+              AND DATE_FORMAT(end_date, '%Y-%m-%d') -- checking dates in opportunity 
+            )
+          WHERE
+            NOT EXISTS (
+                SELECT
+                    1
+                FROM
+                    project_shutdown_periods
+                WHERE
+                    project_id = opportunities.id
                     AND calendar_date BETWEEN start_date AND end_date
             ) -- merged where
-                AND ( status ='O' AND deleted_at IS NULL AND type = 2) -- opprtunity where
-                AND (is_holidays = 0 AND is_weekday = 1) -- calander_view where
-                AND ( end_date >= '${fiscalYearStart}' AND start_date <= '${fiscalYearEnd}') -- date_range whre
-            ) AS dayss
-        GROUP BY month, project_id
-      ) AS extracted_data
-    GROUP BY month;
-  `)
+            AND ( status = 'O' AND deleted_at IS NULL AND type = 2 ) -- opprtunity where
+            AND ( is_holidays = 0 AND is_weekday = 1 ) -- calander_view where
+            AND ( end_date >= '${fiscalYearStart}' AND start_date <= '${fiscalYearEnd}')
+        ) AS dayss_total
+        GROUP BY project_id
+      ) AS total_sum ON total_sum.project_id = extracted_data.project_id
+      GROUP BY month;
+    `)
 
     let length_of_loop = Math.max(
       ...[actual_revenue.length, forecast_revenue.length]
