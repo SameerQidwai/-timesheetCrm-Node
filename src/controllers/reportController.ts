@@ -2293,11 +2293,9 @@ export class ReportController {
       FROM    
         (SELECT 
           COUNT(*) AS monthly_project_work_days,
-          -- SUM(COUNT(*)) OVER(PARTITION BY project_id) AS total_project_work_days,
           project_discount_value/SUM(COUNT(*)) OVER(PARTITION BY project_id) AS per_day_value,
           project_id,
           cm_percentage,
-          -- project_discount_value,
           DATE_FORMAT(working_dates, '%b %y') AS month
         FROM   
           (
@@ -2322,7 +2320,7 @@ export class ReportController {
             ) -- merged where
                 AND ( status ='O' AND deleted_at IS NULL AND type = 2) -- opprtunity where
                 AND (is_holidays = 0 AND is_weekday = 1) -- calander_view where
-                AND ( end_date >= '${fiscalYearStart}' AND start_date <= '${fiscalYearEnd}') -- date_range whre  -- date_range wehre
+                AND ( end_date >= '${fiscalYearStart}' AND start_date <= '${fiscalYearEnd}') -- date_range whre
             ) AS dayss
         GROUP BY month, project_id
       ) AS extracted_data
