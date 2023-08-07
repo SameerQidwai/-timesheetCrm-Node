@@ -2308,7 +2308,7 @@ export class ReportController {
               opportunities.id AS project_id
 
             FROM opportunities
-            LEFT JOIN calendar_view
+            JOIN calendar_view
               ON (
                 calendar_date BETWEEN 
                   DATE_FORMAT(start_date,'%Y-%m-%d') AND 
