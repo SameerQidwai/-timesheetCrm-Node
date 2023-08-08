@@ -13,6 +13,7 @@ import {
   EntityRepository,
   In,
   IsNull,
+  LessThan,
   LessThanOrEqual,
   MoreThanOrEqual,
   Not,
@@ -49,6 +50,7 @@ import { getProjectsByUserId } from '../utilities/helperFunctions';
 import { ProjectSchedule } from '../entities/projectSchedule';
 import { ProjectScheduleSegment } from '../entities/projectScheduleSegment';
 import { ProjectShutdownPeriod } from '../entities/projectShutdownPeriod';
+import { FinancialYear } from '../entities/financialYear';
 
 @EntityRepository(Opportunity)
 export class ProjectRepository extends Repository<Opportunity> {
@@ -2709,12 +2711,47 @@ export class ProjectRepository extends Repository<Opportunity> {
     let startDate = moment(fiscalYear.start, 'DD-MM-YYYY');
     let endDate = moment(fiscalYear.end, 'DD-MM-YYYY');
 
+    
+    // finding previous Start Date
+    let previousYearStart = await this.manager.findOne(FinancialYear, {
+      order: {
+        startDate: 'ASC',
+      },
+    })
+    
     let projectStartDate = moment(project.startDate, 'YYYY-MM-DD');
     let previousYearStartDate = projectStartDate;
+
+    // finding start date fro previous year Or project
     if (projectStartDate.isAfter(startDate, 'date')) {
-      previousYearStartDate = startDate.clone().subtract(1, 'year');
+      if (previousYearStart){
+        previousYearStartDate = moment(previousYearStart.endDate);
+        // previousYearEndDate = startDate.clone().subtract(1, 'day');
+      }else{
+        previousYearStartDate = startDate.clone().subtract(1, 'year');
+      }
     }
-    let previousYearEndDate = startDate.clone().subtract(1, 'day');
+
+    
+    // finding previous End Date
+    let previousYearEnd = await this.manager.findOne(FinancialYear, {
+      where:{
+        endDate: LessThan(moment(fiscalYear.start, 'DD-MM-YYYY').toDate())
+      },
+      order: {
+        endDate: 'DESC'
+      }
+    })
+
+    let previousYearEndDate: Moment
+
+    if (previousYearEnd){
+      previousYearEndDate = moment(previousYearEnd.endDate);
+      // previousYearEndDate = startDate.clone().subtract(1, 'day');
+    }else{
+      previousYearEndDate = startDate.clone().subtract(1, 'day');
+    }
+
 
     let currentYearResponses = await this._getProjectTracking(
       startDate,
@@ -2775,13 +2812,32 @@ export class ProjectRepository extends Repository<Opportunity> {
         cmPercent: 0,
       };
 
+      let current: any = {
+        totalHours: 0,
+        utilizedHours: 0,
+        remainingHours: 0,
+        actualCost: 0,
+        actualRevenue: 0,
+        cm$: 0,
+        cmPercent: 0,
+      };
+
       total.totalHours += currentTotalHours;
       total.utilizedHours += currentUtilizedHours;
       total.remainingHours += currentTotalHours - currentUtilizedHours;
-      total.actualCost += currentActualCost;
-      total.actualRevenue += currentActualRevenue;
-      total.cm$ += currentCm$;
-      total.cmPercent += currentCmPercent;
+      // total.actualCost += currentActualCost;
+      // total.actualRevenue += currentActualRevenue;
+      // total.cm$ += currentCm$;
+      // total.cmPercent += currentCmPercent;
+
+      /**CURReNT YEAR */
+      // current.totalHours += currentTotalHours;
+      // current.utilizedHours += currentUtilizedHours;
+      // current.remainingHours += currentTotalHours - currentUtilizedHours;
+      current.actualCost += currentActualCost;
+      current.actualRevenue += currentActualRevenue;
+      current.cm$ += currentCm$;
+      current.cmPercent += currentCmPercent;
 
       let _flagFound = false;
       previousYearResponses.forEach((previousResponse: any) => {
@@ -2804,12 +2860,20 @@ export class ProjectRepository extends Repository<Opportunity> {
             ((previousCm$ / previousActualRevenue) * 100).toFixed(2)
           );
 
+          // total.utilizedHours += previousUtilizedHours;
+          // total.remainingHours -= previousUtilizedHours;
+          // total.actualCost += previousActualCost;
+          // total.actualRevenue += previousActualRevenue;
+          // total.cm$ += previousCm$;
+          // total.cmPercent += previousCmPercent;
+          // total.cmPercent = total.cmPercent / 2;
+
           total.utilizedHours += previousUtilizedHours;
           total.remainingHours -= previousUtilizedHours;
-          total.actualCost += previousActualCost;
-          total.actualRevenue += previousActualRevenue;
-          total.cm$ += previousCm$;
-          total.cmPercent += previousCmPercent;
+          total.actualCost = current.actualCost + previousActualCost;
+          total.actualRevenue = current.actualRevenue + previousActualRevenue;
+          total.cm$ = current.cm$ + previousCm$;
+          total.cmPercent = current.cmPercent + previousCmPercent;
           total.cmPercent = total.cmPercent / 2;
 
           currentResponse.currentYear.unshift(previousResponse.summary);
@@ -2819,6 +2883,7 @@ export class ProjectRepository extends Repository<Opportunity> {
         currentResponse.currentYear.unshift(dummySummary);
       }
       currentResponse.total = total;
+      currentResponse.current = current;
     });
 
     let responses = currentYearResponses;
