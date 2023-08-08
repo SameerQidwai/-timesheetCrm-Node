@@ -2711,8 +2711,30 @@ export class ProjectRepository extends Repository<Opportunity> {
     let startDate = moment(fiscalYear.start, 'DD-MM-YYYY');
     let endDate = moment(fiscalYear.end, 'DD-MM-YYYY');
 
-    // finding previous year 
-    let previousYear = await this.manager.findOne(FinancialYear, {
+    
+    // finding previous Start Date
+    let previousYearStart = await this.manager.findOne(FinancialYear, {
+      order: {
+        startDate: 'ASC',
+      },
+    })
+    
+    let projectStartDate = moment(project.startDate, 'YYYY-MM-DD');
+    let previousYearStartDate = projectStartDate;
+
+    // finding start date fro previous year Or project
+    if (projectStartDate.isAfter(startDate, 'date')) {
+      if (previousYearStart){
+        previousYearStartDate = moment(previousYearStart.endDate);
+        // previousYearEndDate = startDate.clone().subtract(1, 'day');
+      }else{
+        previousYearStartDate = startDate.clone().subtract(1, 'year');
+      }
+    }
+
+    
+    // finding previous End Date
+    let previousYearEnd = await this.manager.findOne(FinancialYear, {
       where:{
         endDate: LessThan(moment(fiscalYear.start, 'DD-MM-YYYY').toDate())
       },
@@ -2721,26 +2743,10 @@ export class ProjectRepository extends Repository<Opportunity> {
       }
     })
 
-    
-    let projectStartDate = moment(project.startDate, 'YYYY-MM-DD');
-    let previousYearStartDate = projectStartDate;
-
-    // finding start date fro previous year Or project
-    if (projectStartDate.isAfter(startDate, 'date')) {
-      if (previousYear){
-        previousYearStartDate = moment(previousYear.endDate);
-        // previousYearEndDate = startDate.clone().subtract(1, 'day');
-      }else{
-        previousYearStartDate = startDate.clone().subtract(1, 'year');
-      }
-    }
-
-    
-
     let previousYearEndDate: Moment
 
-    if (previousYear){
-      previousYearEndDate = moment(previousYear.endDate);
+    if (previousYearEnd){
+      previousYearEndDate = moment(previousYearEnd.endDate);
       // previousYearEndDate = startDate.clone().subtract(1, 'day');
     }else{
       previousYearEndDate = startDate.clone().subtract(1, 'day');
