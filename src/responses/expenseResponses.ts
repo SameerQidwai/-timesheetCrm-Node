@@ -35,8 +35,9 @@ export class ExpenseResponse {
     // this.rejectedAt = expense.rejectedAt;
     // this.approvedAt = expense.approvedAt;
     // this.updatedAt = expense.updatedAt;
-    this.isInSheet =
-      expense.entries.length > 0 && !expense.rejectedAt ? true : false;
+    this.isInSheet = expense.entries.find((entry: any) =>
+      !entry.rejectedAt ? true : false
+    );
     this.notes = expense.notes;
     this.status = ExpenseSheetStatus.SAVED;
     // if (expense.rejectedAt !== null) this.status = ExpenseSheetStatus.REJECTED;

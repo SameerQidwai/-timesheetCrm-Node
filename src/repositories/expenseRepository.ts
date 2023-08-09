@@ -344,7 +344,7 @@ export class ExpenseRepository extends Repository<Expense> {
     await this.manager.transaction(async (transactionalEntityManager) => {
       let expenseObj = await this.findOne(id, {
         where: { createdBy: authId },
-        relations: ['entries', 'entries.sheet', 'activeExpenseSheet'],
+        relations: ['entries', 'entries.sheet'],
       });
 
       if (!expenseObj) {
@@ -390,11 +390,8 @@ export class ExpenseRepository extends Repository<Expense> {
         this._validateExpenseDates(expenseDTO.date, project);
       }
 
-      if (
-        expenseStatus !== ExpenseStatus.REJECTED &&
-        expenseObj.entries.length > 0
-      ) {
-        if (expenseObj.activeExpenseSheet.projectId !== expenseDTO.projectId) {
+      if (expenseObj.entries.length) {
+        if (expenseObj.entries[0].sheet.projectId !== expenseDTO.projectId) {
           throw new Error('Assigned in sheet with different project');
         }
       }
@@ -463,8 +460,7 @@ export class ExpenseRepository extends Repository<Expense> {
         relations: [
           'entries',
           'entries.sheet',
-          'activeExpenseSheet',
-          'activeExpenseSheet.expenseSheetExpenses',
+          'entries.sheet.expenseSheetExpenses',
         ],
         where: { createdBy: authId },
       });
@@ -480,9 +476,11 @@ export class ExpenseRepository extends Repository<Expense> {
         throw new Error('Expense is in sheet');
       }
 
-      if (expense.activeExpenseSheet.expenseSheetExpenses.length == 1) {
-        throw new Error('Sheet has only one expense');
-      }
+      expense.entries.map((entry) => {
+        if (entry.sheet.expenseSheetExpenses.length == 1) {
+          throw new Error(`Sheet ID -  ${entry.sheet.id} has only one expense`);
+        }
+      });
 
       if (expense.entries.length)
         await transactionalEntityManager.softDelete(Expense, expense.entries);
