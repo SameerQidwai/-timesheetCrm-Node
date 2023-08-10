@@ -3,7 +3,7 @@ import moment from 'moment-timezone';
 import { runMonthly } from '../monthCronScript';
 import { runYearly } from '../yearCronScript';
 
-let monthCronString = '* * * * * *';
+let monthCronString = '1 0 0 15 * *';
 let yearCronString = '1 10 0 15 6 *';
 
 export const leaveRequestMonthlyCron = cron.schedule(
