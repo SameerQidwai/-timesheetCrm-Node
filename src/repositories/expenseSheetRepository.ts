@@ -78,7 +78,6 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           ) {
             throw new Error('Sheet Project is different');
           }
-          console.log('AAAAAAAAAAAAA', expense.getStatus);
 
           if (
             expense.getStatus != ExpenseStatus.REJECTED &&
@@ -871,11 +870,18 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
       }
 
       for (let sheet of expenseSheets) {
-        if (sheet.getStatus === ExpenseStatus.SUBMITTED) {
+        if (sheet.getStatus == ExpenseStatus.SUBMITTED) {
           throw new Error('Sheet already submitted');
         }
 
         for (let expense of sheet.expenseSheetExpenses) {
+          if (
+            expense.expense.getStatus == ExpenseStatus.APPROVED ||
+            expense.expense.getStatus == ExpenseStatus.SUBMITTED
+          ) {
+            throw new Error('Expense is already submitted or approved');
+          }
+
           expense.rejectedAt = null;
           expense.submittedAt = moment().toDate();
 

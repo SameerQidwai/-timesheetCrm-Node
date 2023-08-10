@@ -71,21 +71,23 @@ export class Expense extends Base {
     let status: ExpenseStatus = ExpenseStatus.SAVED;
 
     for (let entry of this.entries) {
-      if (entry.submittedAt && entry.rejectedAt === null) {
-        status = ExpenseStatus.SUBMITTED;
-      }
-      if (entry.rejectedAt !== null) {
-        status = ExpenseStatus.REJECTED;
-      }
-      if (entry.approvedAt !== null) {
-        status = ExpenseStatus.APPROVED;
+      if (!entry.submittedAt && !entry.rejectedAt && !entry.approvedAt) {
+        status = ExpenseStatus.SAVED;
+        break;
       }
 
-      if (
-        status === ExpenseStatus.APPROVED ||
-        status === ExpenseStatus.SUBMITTED
-      ) {
+      if (entry.submittedAt && entry.rejectedAt === null) {
+        status = ExpenseStatus.SUBMITTED;
         break;
+      }
+
+      if (entry.approvedAt !== null) {
+        status = ExpenseStatus.APPROVED;
+        break;
+      }
+
+      if (entry.rejectedAt !== null) {
+        status = ExpenseStatus.REJECTED;
       }
     }
 
