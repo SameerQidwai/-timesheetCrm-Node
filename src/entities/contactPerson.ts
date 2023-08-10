@@ -37,8 +37,8 @@ export class ContactPerson extends Base {
   })
   gender: Gender;
 
-  @Column({ name: 'date_of_birth', nullable: true, precision: 3 })
-  dateOfBirth: Date;
+  @Column({ name: 'date_of_birth', type: 'date', nullable: true })
+  dateOfBirth: Date | null;
 
   @Column({ name: 'phone_number', nullable: true })
   phoneNumber: string;
@@ -70,11 +70,11 @@ export class ContactPerson extends Base {
   @Column({ name: 'csid_number', nullable: true })
   csidNumber: string;
 
-  @Column({ name: 'clearance_granted_date', nullable: true, precision: 3 })
-  clearanceGrantedDate: Date;
+  @Column({ name: 'clearance_granted_date', nullable: true, type: 'date' })
+  clearanceGrantedDate: Date | null;
 
-  @Column({ name: 'clearance_expiry_date', nullable: true, precision: 3 })
-  clearanceExpiryDate: Date;
+  @Column({ name: 'clearance_expiry_date', nullable: true, type: 'date' })
+  clearanceExpiryDate: Date | null;
 
   @Column({ name: 'clearance_sponsor_id', nullable: true })
   clearanceSponsorId: number;

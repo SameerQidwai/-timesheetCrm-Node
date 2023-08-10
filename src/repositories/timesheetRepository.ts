@@ -42,10 +42,10 @@ export class TimesheetRepository extends Repository<Timesheet> {
     authId: number
   ): Promise<any | undefined> {
     let mStartDate = moment(startDate, 'DD-MM-YYYY');
-    let mEndDate = moment(endDate, 'DD-MM-YYYY');
+    let mEndDate = moment(endDate, 'DD-MM-YYYY').endOf('day');
 
-    let cStartDate = mStartDate.format('YYYY-MM-DD HH:mm:ss');
-    let cEndDate = mEndDate.format('YYYY-MM-DD HH:mm:ss');
+    let cStartDate = mStartDate.format('YYYY-MM-DD HH:mm:ss.SSS');
+    let cEndDate = mEndDate.format('YYYY-MM-DD HH:mm:ss.SSS');
 
     console.log(cStartDate, cEndDate);
     let timesheet = await this.findOne({
@@ -267,10 +267,10 @@ export class TimesheetRepository extends Repository<Timesheet> {
     authId: number
   ): Promise<any | undefined> {
     let mStartDate = moment(startDate, 'DD-MM-YYYY');
-    let mEndDate = moment(endDate, 'DD-MM-YYYY');
+    let mEndDate = moment(endDate, 'DD-MM-YYYY').endOf('day');
 
-    let cStartDate = mStartDate.format('YYYY-MM-DD HH:mm:ss');
-    let cEndDate = mEndDate.format('YYYY-MM-DD HH:mm:ss');
+    let cStartDate = mStartDate.format('YYYY-MM-DD HH:mm:ss.SSS');
+    let cEndDate = mEndDate.format('YYYY-MM-DD HH:mm:ss.SSS');
 
     let timesheet = await this.findOne({
       where: { startDate: cStartDate, endDate: cEndDate, employeeId: userId },
@@ -474,10 +474,10 @@ export class TimesheetRepository extends Repository<Timesheet> {
     authId: number
   ): Promise<any | undefined> {
     let mStartDate = moment(startDate, 'DD-MM-YYYY');
-    let mEndDate = moment(endDate, 'DD-MM-YYYY');
+    let mEndDate = moment(endDate, 'DD-MM-YYYY').endOf('day');
 
-    let cStartDate = mStartDate.format('YYYY-MM-DD HH:mm:ss');
-    let cEndDate = mEndDate.format('YYYY-MM-DD HH:mm:ss');
+    let cStartDate = mStartDate.format('YYYY-MM-DD HH:mm:ss.SSS');
+    let cEndDate = mEndDate.format('YYYY-MM-DD HH:mm:ss.SSS');
 
     let timesheet = await this.findOne({
       where: { startDate: cStartDate, endDate: cEndDate, employeeId: userId },
@@ -681,9 +681,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
     timesheetDTO: TimesheetDTO
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
-      'YYYY-MM-DD HH:mm:ss'
+      'YYYY-MM-DD HH:mm:ss.SSS'
     );
-    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+    let cEndDate = moment(endDate, 'DD-MM-YYYY')
+      .endOf('day')
+      .format('YYYY-MM-DD HH:mm:ss.SSSS');
 
     let entry = await this.manager.transaction(
       async (transactionalEntityManager) => {
@@ -703,13 +705,13 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
           timesheet.startDate = moment(
             `${startDate} 00:00:00`,
-            'DD-MM-YYYY HH:mm:ss'
+            'DD-MM-YYYY HH:mm:ss.SSS'
           )
             .startOf('day')
             .toDate();
           timesheet.endDate = moment(
             `${endDate} 00:00:00`,
-            'DD-MM-YYYY HH:mm:ss'
+            'DD-MM-YYYY HH:mm:ss.SSS'
           )
             .endOf('day')
             .toDate();
@@ -855,9 +857,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
     bulkTimesheetDTO: BulkTimesheetDTO
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
-      'YYYY-MM-DD HH:mm:ss'
+      'YYYY-MM-DD HH:mm:ss.SSS'
     );
-    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+    let cEndDate = moment(endDate, 'DD-MM-YYYY')
+      .endOf('day')
+      .format('YYYY-MM-DD HH:mm:ss.SSS');
 
     let entries = await this.manager.transaction(
       async (transactionalEntityManager) => {
@@ -879,13 +883,13 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
           timesheet.startDate = moment(
             `${startDate} 00:00:00`,
-            'DD-MM-YYYY HH:mm:ss'
+            'DD-MM-YYYY HH:mm:ss.SSS'
           )
             .startOf('day')
             .toDate();
           timesheet.endDate = moment(
             `${endDate} 00:00:00`,
-            'DD-MM-YYYY HH:mm:ss'
+            'DD-MM-YYYY HH:mm:ss.SSS'
           )
             .endOf('day')
             .toDate();
@@ -1177,9 +1181,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
     requestEntries: Array<number>
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
-      'YYYY-MM-DD HH:mm:ss'
+      'YYYY-MM-DD HH:mm:ss.SSS'
     );
-    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+    let cEndDate = moment(endDate, 'DD-MM-YYYY')
+      .endOf('day')
+      .format('YYYY-MM-DD HH:mm:ss.SSS');
 
     let milestoneEntries = await this.manager.transaction(
       async (transactionalEntityManager) => {
@@ -1237,9 +1243,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
     approveEntryDTO: TimesheetEntryApproveRejectDTO
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
-      'YYYY-MM-DD HH:mm:ss'
+      'YYYY-MM-DD HH:mm:ss.SSS'
     );
-    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+    let cEndDate = moment(endDate, 'DD-MM-YYYY')
+      .endOf('day')
+      .format('YYYY-MM-DD HH:mm:ss.SSS');
 
     let milestoneEntries = await this.manager.transaction(
       async (transactionalEntityManager) => {
@@ -1303,9 +1311,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
   ): Promise<any | undefined> {
     let flagUserIsAllowed = 0;
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
-      'YYYY-MM-DD HH:mm:ss'
+      'YYYY-MM-DD HH:mm:ss.SSS'
     );
-    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+    let cEndDate = moment(endDate, 'DD-MM-YYYY')
+      .endOf('day')
+      .format('YYYY-MM-DD HH:mm:ss.SSS');
 
     let milestoneEntries = await this.manager.transaction(
       async (transactionalEntityManager) => {
@@ -1374,9 +1384,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
     rejectEntryDTO: TimesheetEntryApproveRejectDTO
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
-      'YYYY-MM-DD HH:mm:ss'
+      'YYYY-MM-DD HH:mm:ss.SSS'
     );
-    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+    let cEndDate = moment(endDate, 'DD-MM-YYYY')
+      .endOf('day')
+      .format('YYYY-MM-DD HH:mm:ss.SSS');
 
     let milestoneEntries = await this.manager.transaction(
       async (transactionalEntityManager) => {
@@ -1439,9 +1451,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
   ): Promise<any | undefined> {
     let flagUserIsAllowed = 0;
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
-      'YYYY-MM-DD HH:mm:ss'
+      'YYYY-MM-DD HH:mm:ss.SSS'
     );
-    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+    let cEndDate = moment(endDate, 'DD-MM-YYYY')
+      .endOf('day')
+      .format('YYYY-MM-DD HH:mm:ss.SSS');
 
     let milestoneEntries = await this.manager.transaction(
       async (transactionalEntityManager) => {
@@ -1511,9 +1525,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
     rejectEntryDTO: TimesheetEntryApproveRejectDTO
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
-      'YYYY-MM-DD HH:mm:ss'
+      'YYYY-MM-DD HH:mm:ss.SSS'
     );
-    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+    let cEndDate = moment(endDate, 'DD-MM-YYYY')
+      .endOf('day')
+      .format('YYYY-MM-DD HH:mm:ss.SSS');
 
     let milestoneEntries = await this.manager.transaction(
       async (transactionalEntityManager) => {
@@ -1579,9 +1595,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
   ): Promise<any | undefined> {
     let flagUserIsAllowed = 0;
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
-      'YYYY-MM-DD HH:mm:ss'
+      'YYYY-MM-DD HH:mm:ss.SSS'
     );
-    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+    let cEndDate = moment(endDate, 'DD-MM-YYYY')
+      .endOf('day')
+      .format('YYYY-MM-DD HH:mm:ss.SSS');
 
     let milestoneEntries = await this.manager.transaction(
       async (transactionalEntityManager) => {
@@ -1653,9 +1671,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
     requestEntries: Array<number>
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
-      'YYYY-MM-DD HH:mm:ss'
+      'YYYY-MM-DD HH:mm:ss.SSS'
     );
-    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+    let cEndDate = moment(endDate, 'DD-MM-YYYY')
+      .endOf('day')
+      .format('YYYY-MM-DD HH:mm:ss.SSS');
 
     let milestoneEntries = await this.manager.transaction(
       async (transactionalEntityManager) => {
@@ -2284,9 +2304,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
     authId: number
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
-      'YYYY-MM-DD HH:mm:ss'
+      'YYYY-MM-DD HH:mm:ss.SSS'
     );
-    let cEndDate = moment(endDate, 'DD-MM-YYYY').format('YYYY-MM-DD HH:mm:ss');
+    let cEndDate = moment(endDate, 'DD-MM-YYYY')
+      .endOf('day')
+      .format('YYYY-MM-DD HH:mm:ss.SSS');
 
     console.log(cStartDate, cEndDate);
 

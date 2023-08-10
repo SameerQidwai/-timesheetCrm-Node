@@ -107,8 +107,8 @@ export class TestController {
       let startDate = currentDate.clone().startOf('month').startOf('day');
       let endDate = currentDate.clone().endOf('month').startOf('day');
 
-      let cStartDate = startDate.format('YYYY-MM-DD HH:mm:ss');
-      let cEndDate = endDate.format('YYYY-MM-DD HH:mm:ss');
+      let cStartDate = startDate.format('YYYY-MM-DD HH:mm:ss.SSS');
+      let cEndDate = endDate.endOf('day').format('YYYY-MM-DD HH:mm:ss.SSS');
 
       console.log({
         currentDate,

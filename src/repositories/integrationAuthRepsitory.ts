@@ -16,13 +16,26 @@ if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
   );
 }
 
+const scopes: string[] = [
+  'openid',
+  'profile',
+  'email',
+  'offline_access',
+  'accounting.settings',
+  'accounting.settings.read',
+  'accounting.transactions',
+  'accounting.contacts',
+  'accounting.contacts.read',
+  'accounting.attachments',
+  'files',
+  'files.read',
+];
+
 const xero = new XeroClient({
   clientId: process.env.CLIENT_ID,
   clientSecret: process.env.CLIENT_SECRET,
   redirectUris: [`${process.env.SERVER_API}/api/v1/integration/xero/callback`],
-  scopes: 'openid profile email accounting.transactions accounting.contacts accounting.contacts.read accounting.attachments offline_access files files.read'.split(
-    ' '
-  ),
+  scopes: scopes,
   httpTimeout: 3000, // ms (optional)
   clockTolerance: 10, // seconds (optional)
   /* other configuration options */
@@ -87,6 +100,9 @@ export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
           toolName: 'xero',
         },
       });
+      // await xero.updateTenants(false)
+      // const tenantId = xero.tenants[0].tenantId; 
+      
       // delete tokenSet['scope'];
       let dbToken = {
         userId: authId,
@@ -204,6 +220,7 @@ export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
       return false;
     }
   }
+
   async xeroToolAssets(queries: { [key: string]: string }): Promise<any> {
     try {
       let integration = await this.findOne({ where: { toolName: 'xero' } });
@@ -214,16 +231,17 @@ export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
       if (!xero || !tenantId) {
         throw new Error('No Integration Found');
       }
-
       let promises: any = [];
 
       if (queries.account) {
+        console.log(queries.account, tenantId)
         promises.push(() =>
           xero.accountingApi.getAccounts(tenantId, undefined, queries.account)
         );
       }
 
       if (queries.taxType) {
+        console.log(queries.taxType, tenantId)
         promises.push(() =>
           xero.accountingApi.getTaxRates(tenantId, queries.taxType)
         );

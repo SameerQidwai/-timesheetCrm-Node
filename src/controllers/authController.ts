@@ -158,36 +158,36 @@ export class AuthController {
       if (user.contactPersonOrganization.organizationId != 1) {
         delete (user as any).employmentContracts;
       } else {
-        for (let contract of user.employmentContracts) {
-          if (
-            moment().isAfter(moment(contract.startDate), 'date') &&
-            moment().isAfter(moment(contract.endDate), 'date')
-          ) {
-            pastContracts.push(contract);
-          } else if (
-            moment().isBetween(
-              moment(contract.startDate),
-              moment(contract.endDate),
-              'date'
-            )
-          ) {
-            currentContract.push(contract);
-          } else if (
-            moment().isBefore(moment(contract.startDate), 'date') &&
-            moment().isBefore(moment(contract.endDate), 'date')
-          ) {
-            futureContracts.push(contract);
-          }
-        }
-        if (currentContract.length) {
-          user.employmentContracts = [currentContract[0]];
-        } else if (futureContracts.length) {
-          user.employmentContracts = [
-            futureContracts[futureContracts.length - 1],
-          ];
-        } else if (pastContracts.length) {
-          user.employmentContracts = [pastContracts[pastContracts.length - 1]];
-        }
+        // for (let contract of user.employmentContracts) {
+        //   if (
+        //     moment().isAfter(moment(contract.startDate), 'date') &&
+        //     moment().isAfter(moment(contract.endDate), 'date')
+        //   ) {
+        //     pastContracts.push(contract);
+        //   } else if (
+        //     moment().isBetween(
+        //       moment(contract.startDate),
+        //       moment(contract.endDate),
+        //       'date'
+        //     )
+        //   ) {
+        //     currentContract.push(contract);
+        //   } else if (
+        //     moment().isBefore(moment(contract.startDate), 'date') &&
+        //     moment().isBefore(moment(contract.endDate), 'date')
+        //   ) {
+        //     futureContracts.push(contract);
+        //   }
+        // }
+        // if (currentContract.length) {
+        //   user.employmentContracts = [currentContract[0]];
+        // } else if (futureContracts.length) {
+        //   user.employmentContracts = [
+        //     futureContracts[futureContracts.length - 1],
+        //   ];
+        // } else if (pastContracts.length) {
+        //   user.employmentContracts = [pastContracts[pastContracts.length - 1]];
+        // }
       }
 
       res.status(200).json({

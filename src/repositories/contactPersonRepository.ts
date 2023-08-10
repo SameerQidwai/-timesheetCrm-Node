@@ -189,6 +189,7 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
         contactPersonObj.dateOfBirth = moment(
           contactPersonDTO.dateOfBirth
         ).toDate();
+      else contactPersonObj.dateOfBirth = null;
 
       let state: State | undefined;
       if (contactPersonDTO.stateId) {
@@ -211,6 +212,10 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
         contactPersonObj.clearanceExpiryDate = moment(
           contactPersonDTO.clearanceExpiryDate
         ).toDate();
+      } else {
+        (contactPersonObj as any).clearanceLevel = null;
+        contactPersonObj.clearanceGrantedDate = null;
+        contactPersonObj.clearanceExpiryDate = null;
       }
 
       contactPersonObj.csidNumber = contactPersonDTO.csidNumber;

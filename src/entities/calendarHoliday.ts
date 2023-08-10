@@ -11,7 +11,7 @@ export class CalendarHoliday extends Base {
   @Column({ name: 'holiday_type_id', nullable: true })
   holidayTypeId: number;
 
-  @Column({ name: 'date', precision: 3 })
+  @Column({ name: 'date', type: 'date' })
   date: Date;
 
   @ManyToOne(() => Calendar)
