@@ -53,6 +53,7 @@ export class IntegrationAuth extends Base {
       return {xero: null, tenantId: null};
     }
     
+    // let tenantId = this.tokenSet?.tenantId
     let tokenSet = this.tokenSet as TokenSet;
     await xero.setTokenSet(tokenSet);
     let readTokenSet = await xero.readTokenSet();
@@ -69,8 +70,8 @@ export class IntegrationAuth extends Base {
       }
     }
     await xero.setTokenSet(tokenSet);
-    await xero.updateTenants();
-    const tenantId = xero.tenants[0].tenantId;    
+    await xero.updateTenants(false)
+    const tenantId = xero.tenants[0].tenantId; 
 
     return {xero, tenantId};
   }
