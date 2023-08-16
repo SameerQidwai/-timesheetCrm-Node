@@ -52,7 +52,14 @@ export class invoiceController {
     try {
       let repository = getCustomRepository(InvoiceRepsitory);
       let records = await repository.createAndSave(req.body);
-      return res.status(200).json(records);
+      if (records.success){
+        return res.status(200).json(records);
+
+      }else{
+        console.log(records)
+        //424 failed dependency
+        return res.status(400).json(records);
+      }
     } catch (e) {
       next(e);
     }

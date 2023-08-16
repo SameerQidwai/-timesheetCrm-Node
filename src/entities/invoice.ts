@@ -3,6 +3,7 @@ import { Base } from './common/base';
 import { Organization } from './organization';
 import { Opportunity } from './opportunity';
 import { ProjectSchedule } from './projectSchedule';
+import { PurchaseOrder } from './purchaseOrder';
 
 @Entity('invoices')
 export class Invoice extends Base {
@@ -27,6 +28,9 @@ export class Invoice extends Base {
   @Column({ name: 'organization_id' })
   organizationId: number;
 
+  @Column({ name: 'purchase_order_id', nullable: true })
+  purchaseOrderId: number;
+
   @ManyToOne(() => ProjectSchedule)
   @JoinColumn({ name: 'schedule_id' })
   schedule: ProjectSchedule;
@@ -38,4 +42,8 @@ export class Invoice extends Base {
   @ManyToOne(() => Organization)
   @JoinColumn({ name: 'organization_id' })
   organization: Organization;
+
+  @ManyToOne(() => PurchaseOrder)
+  @JoinColumn({ name: 'purchase_order_id' })
+  purchaseOrder: PurchaseOrder;
 }

@@ -90,10 +90,17 @@ export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
   //   }
   // }
 
-  async xeroAuthCallback(authId: number, url: string): Promise<boolean> {
+  async xeroAuthCallback(authId: number, url: string): Promise<boolean|string> {
     try {
-      let tokenSet = await xero.apiCallback(url);
-      await xero.setTokenSet(tokenSet);
+      let tokenSet: TokenSet| string = ''
+      try {
+        tokenSet = await xero.apiCallback(url);
+        await xero.setTokenSet(tokenSet);
+      }catch (e){
+        throw new Error('Check Your Date & Time And Retry!');
+      }
+      
+
       let xeroAuth: IntegrationAuth[] = await this.find({
         where: {
           userId: authId,
@@ -115,14 +122,22 @@ export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
       };
 
       if (xeroAuth.length) {
-        await this.update(xeroAuth[0].id, dbToken);
+        try{
+          await this.update(xeroAuth[0].id, dbToken);
+        }catch (e){
+          throw new Error('Login failed');
+        }
       } else {
-        await this.save(dbToken);
+        try{
+          await this.save(dbToken);
+        }catch (e){
+          throw new Error('Login failed');
+        }
+        
       }
       return true;
-    } catch (e) {
-      console.log(e);
-      return false;
+    } catch (e: any) {
+      return e;
     }
   }
 
@@ -152,7 +167,7 @@ export class IntegrationAuthRepsitory extends Repository<IntegrationAuth> {
         let toolLogin: IntegrationAuth = result[0];
         let tokenSet = toolLogin.tokenSet as TokenSet;
         if (!tokenSet?.id_token) {
-          throw new Error('not interated with xero');
+          throw new Error('not intgerated with xero');
         }
         let decodedToken = jwt.decode(tokenSet.id_token);
         if (typeof decodedToken === 'object' && decodedToken !== null) {

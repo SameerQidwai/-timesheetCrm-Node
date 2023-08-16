@@ -23,6 +23,10 @@ export class InvoiceResponses {
             name: tempCrmInvoice.organization.name,
             id: tempCrmInvoice.organizationId,
         },
+        purchaseOrder: {
+          id: tempCrmInvoice.purchaseOrder.id,
+          orderNo: tempCrmInvoice.purchaseOrder.orderNo,
+        },
         project: {
             id: tempCrmInvoice.project.id,
             name: tempCrmInvoice.project.title,
@@ -42,6 +46,7 @@ export class InvoiceResponse {
     reference: string;
     invoiceNumber?: string;
     projectId: number;
+    purchaseOrderId: number;
     scheduleId: number;
     organizationId: number;
     type?: XeroInvoce.TypeEnum;
@@ -77,6 +82,7 @@ export class InvoiceResponse {
         this.reference = crmInvoice.reference;
         this.projectId= crmInvoice.projectId;
         this.scheduleId= crmInvoice.scheduleId;
+        this.purchaseOrderId= crmInvoice.purchaseOrderId;
         this.startDate= crmInvoice.startDate;
         this.endDate= crmInvoice.endDate;
         this.organizationId= crmInvoice.organizationId;
