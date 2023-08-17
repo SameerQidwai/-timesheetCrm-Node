@@ -68,6 +68,10 @@ export class InvoiceResponse {
         name: String;
         type: number;
     };
+    purchaseOrder: {
+        id: number;
+        orderNo: String;
+    };
     organization: {
         id: number;
         name: string;
@@ -103,6 +107,10 @@ export class InvoiceResponse {
             id: crmInvoice.projectId,
             name: crmInvoice.projectTitle,
             type: crmInvoice.projectType,
+        };
+        this.purchaseOrder= {
+            id: crmInvoice.purchaseOrderId,
+            orderNo: crmInvoice.orderNo,
         };
         this.organization = {
             id: crmInvoice.organizationId,

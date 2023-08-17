@@ -12,6 +12,7 @@ import { InvoicesInterface } from '../utilities/interfaces';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
+import { Organization } from '../entities/organization';
 dotenv.config();
 
 // const invoices = {
@@ -96,12 +97,16 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         throw new Error('Xero Invoice is empty');
       }
 
-      let [project, integration] = await Promise.all([
+      let [project, integration, thisCompany] = await Promise.all([
         this.manager.findOne(Opportunity,data.projectId  ,{
           relations: ['organization'],
         }),
         this.manager.findOne(IntegrationAuth, {
           where: { toolName: 'xero' },
+        }),
+        this.manager.findOne(Organization,{
+          where: { id: 1 },
+          relations: ['bankAccounts'] 
         })
       ]);
 
@@ -127,6 +132,24 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         throw new Error("Xero Does Not Have Any Customer With Provided ABN");
       }
 
+      let lineItems =  data?.lineItems.map((record: any) => ({
+        accountCode: record.accountCode,
+        taxType: record.taxType,
+        description: record.description,
+        quantity: record.quantity,
+        taxAmount: record.taxAmount,
+        unitAmount: record.unitAmount,
+      }))
+
+      if (thisCompany?.bankAccounts[0]?.name){
+        let bank = thisCompany?.bankAccounts[0]
+        lineItems.push({
+          description: `
+          Organisation: ${thisCompany.name} \n Account Name: ${bank.name} \n Account Number: ${bank.accountNo} \n BSB Number: ${bank.bsb} 
+          `
+        })
+      }
+
       const xeroInvoices = {
         invoices: [
           {
@@ -139,14 +162,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
             dueDate: moment(data.dueDate).format('YYYY-MM-DD'),
             reference: data.reference,
             lineAmountTypes: data.lineAmountTypes,
-            lineItems: data?.lineItems.map((record: any) => ({
-              accountCode: record.accountCode,
-              taxType: record.taxType,
-              description: record.description,
-              quantity: record.quantity,
-              taxAmount: record.taxAmount,
-              unitAmount: record.unitAmount,
-            })),
+            lineItems: lineItems,
           },
         ],
       };
@@ -262,6 +278,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
           invoices.project_id projectId,
           invoices.schedule_id scheduleId,
           invoices.purchase_order_id purchaseOrderId,
+          purchase_orders.order_no orderNo,
           invoices.start_date startDate,
           invoices.end_date endDate,
           invoices.organization_id organizationId, 
@@ -286,6 +303,8 @@ export class InvoiceRepsitory extends Repository<Invoice> {
               ']' --  1 Concatenates the string square brackets close
           ) attachments
         FROM invoices 
+          LEFT JOIN purchase_orders
+              ON purchase_orders.id = invoices.purchase_order_id
           LEFT JOIN profit_view
               ON (
                   profit_view.project_id = invoices.project_id AND
