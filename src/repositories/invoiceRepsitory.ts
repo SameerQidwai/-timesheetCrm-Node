@@ -243,13 +243,14 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         startDate: data.startDate,
         endDate: data.endDate,
       };
-      this.save(crmInvoice);
+      let newEntry = await this.save(crmInvoice);
       return {
         success: true,
         attachMessage,
         message: 'Invoice Created Successfully'
       };
     } catch (e: any) {
+      console.log(e)
       return {
         success: false,
         message: e.message
@@ -282,9 +283,9 @@ export class InvoiceRepsitory extends Repository<Invoice> {
           invoices.start_date startDate,
           invoices.end_date endDate,
           invoices.organization_id organizationId, 
-          project_title projectTitle,
-          project_type projectType,
-          project_organization_name organizationName,
+          profit_view.project_title projectTitle,
+          profit_view.project_type projectType,
+          profit_view.project_organization_name organizationName,
           CONCAT( -- 1 Concatenates the string square brackets open
               '[',
               GROUP_CONCAT( -- Aggregates the concatenated JSON objects
@@ -303,29 +304,30 @@ export class InvoiceRepsitory extends Repository<Invoice> {
               ']' --  1 Concatenates the string square brackets close
           ) attachments
         FROM invoices 
-          LEFT JOIN purchase_orders
-              ON purchase_orders.id = invoices.purchase_order_id
           LEFT JOIN profit_view
-              ON (
-                  profit_view.project_id = invoices.project_id AND
-                  STR_TO_DATE(profit_view.entry_date,'%e-%m-%Y') BETWEEN invoices.start_date AND  invoices.end_date
-              )
+          ON (
+              profit_view.project_id = invoices.project_id -- AND
+              -- STR_TO_DATE(profit_view.entry_date,'%e-%m-%Y') BETWEEN IFNULL(invoices.start_date, '2049-06-30') AND  IFNULL(invoices.end_date, '2049-06-30')
+          )
+          LEFT JOIN purchase_orders
+            ON purchase_orders.id = invoices.purchase_order_id
           LEFT JOIN attachments
-              ON (
-                  attachments.target_id = profit_view.milestone_entry_id
-                  AND attachments.target_type = "PEN"
-              )
+            ON (
+                attachments.target_id = profit_view.milestone_entry_id
+                AND attachments.target_type = "PEN"
+            )
           LEFT JOIN files
               ON (attachments.file_id = files.id)                  
         WHERE 
           invoices.invoiceId = '${id}'
       `
-
+      
       let [crmInvoice, xeroRes, attachmentsRes] = await Promise.all([
         this.query(query),
         xero.accountingApi.getInvoice( tenantId, id ),
         xero.accountingApi.getInvoiceAttachments(tenantId, id)
       ]);
+      console.log(crmInvoice)
 
       let xeroInvoice = xeroRes.body.invoices?.[0]
       if (!crmInvoice?.[0] || !xeroInvoice){
@@ -585,10 +587,10 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         resources = await this.query(`
           SELECT  
             CONCAT(DATE_FORMAT(project_schedules.start_date, '%b'), '-', DATE_FORMAT(project_schedules.end_date, '%b'))  description,
-            project_schedules.amount unitAmount,
+            project_schedules.amount unitAmount, 
             project_schedules.id id,
-              1 AS quantity, -- need to multiply this 
-              '-' AS hours -- but show this in table
+            '-' AS quantity, -- need to multiply this 
+            1 AS hours -- but show this in table
               FROM 
                 opportunities 
                   LEFT JOIN project_schedules ON

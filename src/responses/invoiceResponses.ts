@@ -119,6 +119,8 @@ export class InvoiceResponse {
         };
         this.lineItems = (xeroInvoice.lineItems ?? []).map((invoice: any, index:number) => ({
           ...invoice,
+          hours: invoice.quantity,
+          quantity: crmInvoice.projectType == 1 ? '-' : invoice.quantity,
           id: crmInvoice.scheduleId||index,
         }));
         this.attachments = (attachments).map((file: any) => ({
