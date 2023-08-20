@@ -524,7 +524,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
           throw new Error('Dates are not Defined');
         }
         // -- are the comments inside the sql query 
-        let descriptionDate = ` ${moment(startDate).format('DD')}-${moment(endDate).format('DD MMM YY')} - Daily Rate`
+        let descriptionDate = ` ${moment(startDate).format('DD')}-${moment(endDate).format('DD MMM YY')} - Hourly Rate`
         
 
         resources = await this.query(`
