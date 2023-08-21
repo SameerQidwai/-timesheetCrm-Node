@@ -17,8 +17,4 @@ export class LeaveRequestBalanceTransaction extends Base {
 
   @Column({ name: 'employee_id' })
   employeeId: number;
-
-  @ManyToOne(() => Employee)
-  @JoinColumn({ name: 'employee_id' })
-  employee: Employee;
 }
