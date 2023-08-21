@@ -306,8 +306,12 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         FROM invoices 
           LEFT JOIN profit_view
           ON (
-              profit_view.project_id = invoices.project_id -- AND
-              -- STR_TO_DATE(profit_view.entry_date,'%e-%m-%Y') BETWEEN IFNULL(invoices.start_date, '2049-06-30') AND  IFNULL(invoices.end_date, '2049-06-30')
+              profit_view.project_id = invoices.project_id AND
+              profit_view.project_type = 1 OR
+              (
+                profit_view.project_type = 2 AND
+                STR_TO_DATE(profit_view.entry_date,'%e-%m-%Y') BETWEEN IFNULL(invoices.start_date, '2018-06-30') AND  IFNULL(invoices.end_date, '2049-06-30')
+              )
           )
           LEFT JOIN purchase_orders
             ON purchase_orders.id = invoices.purchase_order_id

@@ -34,7 +34,7 @@ export class InvoiceResponses {
         issueDate: invoice.date,
         dueDate: invoice.dueDate,
         invoiceNumber: invoice.invoiceNumber,
-        reference: tempCrmInvoice.reference,
+        reference: invoice.reference,
       });
     });
   }
@@ -43,7 +43,7 @@ export class InvoiceResponses {
 export class InvoiceResponse {
     id: number;
     invoiceId: string;
-    reference: string;
+    reference: string | undefined;
     invoiceNumber?: string;
     projectId: number;
     purchaseOrderId: number;
@@ -83,7 +83,7 @@ export class InvoiceResponse {
     constructor(xeroInvoice: XeroInvoce, crmInvoice: any=[], attachments: any = []) {
         this.id = crmInvoice.id;
         this.invoiceId =  crmInvoice.invoiceId;
-        this.reference = crmInvoice.reference;
+        this.reference = xeroInvoice.reference;
         this.projectId= crmInvoice.projectId;
         this.scheduleId= crmInvoice.scheduleId;
         this.purchaseOrderId= crmInvoice.purchaseOrderId;
@@ -97,7 +97,7 @@ export class InvoiceResponse {
         this.lineAmountTypes= xeroInvoice.lineAmountTypes;
         this.status= xeroInvoice.status;
         this.totalAmounts ={
-            subTotal: (xeroInvoice.subTotal??0) + (xeroInvoice.totalTax??0),
+            subTotal: (xeroInvoice.subTotal??0), //+ (xeroInvoice.totalTax??0),
             totalTax: xeroInvoice.totalTax,
             total: xeroInvoice.total
         }
