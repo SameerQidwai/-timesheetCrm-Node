@@ -12,6 +12,7 @@ import { InvoicesInterface } from '../utilities/interfaces';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
+import { Organization } from '../entities/organization';
 dotenv.config();
 
 // const invoices = {
@@ -45,7 +46,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
       // let xero = new XeroClient()
       let [crmInvoice, integration] = await Promise.all([
         this.find({
-          relations: ['project', 'organization'],
+          relations: ['project', 'organization', 'purchaseOrder'],
         }),
         this.manager.findOne(IntegrationAuth, { where: { toolName: 'xero' } }),
       ]);
@@ -93,15 +94,19 @@ export class InvoiceRepsitory extends Repository<Invoice> {
   async createAndSave(data: any): Promise<any> {
     try {
       if (!data.lineItems?.length) {
-        throw new Error('XeroInvoice is empty');
+        throw new Error('Xero Invoice is empty');
       }
 
-      let [project, integration] = await Promise.all([
+      let [project, integration, thisCompany] = await Promise.all([
         this.manager.findOne(Opportunity,data.projectId  ,{
           relations: ['organization'],
         }),
         this.manager.findOne(IntegrationAuth, {
           where: { toolName: 'xero' },
+        }),
+        this.manager.findOne(Organization,{
+          where: { id: 1 },
+          relations: ['bankAccounts'] 
         })
       ]);
 
@@ -117,13 +122,32 @@ export class InvoiceRepsitory extends Repository<Invoice> {
       if (!project?.organization?.abn){
         throw new Error('Organization Do not have ABN in Timewize');
       }
+      let orgFormatted = project?.organization?.abn.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
 
-      const custRes = await xero.accountingApi.getContacts(tenantId, undefined, `taxNumber == "${project.organization.abn}"`);
+      const custRes = await xero.accountingApi.getContacts(tenantId, undefined, `taxNumber == "${project.organization.abn}" OR taxNumber == "${orgFormatted}"`);
 
       const contact = custRes?.body?.contacts?.[0];
 
       if (!contact){
         throw new Error("Xero Does Not Have Any Customer With Provided ABN");
+      }
+
+      let lineItems =  data?.lineItems.map((record: any) => ({
+        accountCode: record.accountCode,
+        taxType: record.taxType,
+        description: record.description,
+        quantity: record.quantity,
+        taxAmount: record.taxAmount,
+        unitAmount: record.unitAmount,
+      }))
+
+      if (thisCompany?.bankAccounts[0]?.name){
+        let bank = thisCompany?.bankAccounts[0]
+        lineItems.push({
+          description: `
+          Organisation: ${thisCompany.name} \n Account Name: ${bank.name} \n Account Number: ${bank.accountNo} \n BSB Number: ${bank.bsb} 
+          `
+        })
       }
 
       const xeroInvoices = {
@@ -138,14 +162,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
             dueDate: moment(data.dueDate).format('YYYY-MM-DD'),
             reference: data.reference,
             lineAmountTypes: data.lineAmountTypes,
-            lineItems: data?.lineItems.map((record: any) => ({
-              accountCode: record.accountCode,
-              taxType: record.taxType,
-              description: record.description,
-              quantity: record.quantity,
-              taxAmount: record.taxAmount,
-              unitAmount: record.unitAmount,
-            })),
+            lineItems: lineItems,
           },
         ],
       };
@@ -219,23 +236,24 @@ export class InvoiceRepsitory extends Repository<Invoice> {
       const crmInvoice = {
         organizationId: project.organization.id,
         projectId: data.projectId,
+        purchaseOrderId: data.purchaseOrderId,
         invoiceId: invoiceId,
         reference: data.reference,
         scheduleId: data.scheduleId,
         startDate: data.startDate,
         endDate: data.endDate,
       };
-      this.save(crmInvoice);
+      let newEntry = await this.save(crmInvoice);
       return {
         success: true,
         attachMessage,
         message: 'Invoice Created Successfully'
       };
-    } catch (e) {
+    } catch (e: any) {
       console.log(e)
       return {
-        success: true,
-        message: 'Invoice Not Created'
+        success: false,
+        message: e.message
       };
     }
   }
@@ -260,12 +278,14 @@ export class InvoiceRepsitory extends Repository<Invoice> {
           invoices.reference,
           invoices.project_id projectId,
           invoices.schedule_id scheduleId,
+          invoices.purchase_order_id purchaseOrderId,
+          purchase_orders.order_no orderNo,
           invoices.start_date startDate,
           invoices.end_date endDate,
           invoices.organization_id organizationId, 
-          project_title projectTitle,
-          project_type projectType,
-          project_organization_name organizationName,
+          profit_view.project_title projectTitle,
+          profit_view.project_type projectType,
+          profit_view.project_organization_name organizationName,
           CONCAT( -- 1 Concatenates the string square brackets open
               '[',
               GROUP_CONCAT( -- Aggregates the concatenated JSON objects
@@ -285,26 +305,33 @@ export class InvoiceRepsitory extends Repository<Invoice> {
           ) attachments
         FROM invoices 
           LEFT JOIN profit_view
-              ON (
-                  profit_view.project_id = invoices.project_id AND
-                  STR_TO_DATE(profit_view.entry_date,'%e-%m-%Y') BETWEEN invoices.start_date AND  invoices.end_date
+          ON (
+              profit_view.project_id = invoices.project_id AND
+              profit_view.project_type = 1 OR
+              (
+                profit_view.project_type = 2 AND
+                STR_TO_DATE(profit_view.entry_date,'%e-%m-%Y') BETWEEN IFNULL(invoices.start_date, '2018-06-30') AND  IFNULL(invoices.end_date, '2049-06-30')
               )
+          )
+          LEFT JOIN purchase_orders
+            ON purchase_orders.id = invoices.purchase_order_id
           LEFT JOIN attachments
-              ON (
-                  attachments.target_id = profit_view.milestone_entry_id
-                  AND attachments.target_type = "PEN"
-              )
+            ON (
+                attachments.target_id = profit_view.milestone_entry_id
+                AND attachments.target_type = "PEN"
+            )
           LEFT JOIN files
               ON (attachments.file_id = files.id)                  
         WHERE 
           invoices.invoiceId = '${id}'
       `
-
+      
       let [crmInvoice, xeroRes, attachmentsRes] = await Promise.all([
         this.query(query),
         xero.accountingApi.getInvoice( tenantId, id ),
         xero.accountingApi.getInvoiceAttachments(tenantId, id)
       ]);
+      console.log(crmInvoice)
 
       let xeroInvoice = xeroRes.body.invoices?.[0]
       if (!crmInvoice?.[0] || !xeroInvoice){
@@ -450,6 +477,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
       const crmInvoice = {
         organizationId: project.organization.id,
         projectId: data.projectId,
+        purchaseOrderId: data.purchaseOrderId,
         invoiceId: invoiceId,
         reference: data.reference,
         scheduleId: data.schedule,
@@ -477,23 +505,40 @@ export class InvoiceRepsitory extends Repository<Invoice> {
     endDate: string
   ): Promise<any> {
     try {
-      let project = await this.manager.findOne(Opportunity, projectId);
+      let project = await this.manager.findOne(Opportunity, projectId, { relations: ['purchaseOrders']});
 
+      
       if (!project) {
         throw new Error('Project Not Found');
       }
+
+      let rest = {
+        hoursPerDay: project.hoursPerDay,
+        purchaseOrders: project.purchaseOrders.map(order=>({
+          value:order.id,
+          label: order.orderNo
+        }))
+      }
+
+      let resources: any 
+      let attachments: any[] =[];
+
       if (project.type === 2) {
         if (startDate === 'undefined' || endDate === 'undefined') {
           throw new Error('Dates are not Defined');
         }
         // -- are the comments inside the sql query 
-        try {
-          let resources = await this.query(`
+        let descriptionDate = ` ${moment(startDate).format('DD')}-${moment(endDate).format('DD MMM YY')} - Hourly Rate`
+        
+
+        resources = await this.query(`
             SELECT  
-              SUM(actual_hours) quantity, -- need to multiply this 
-              SUM(actual_hours) hours, -- but show this in table
-              resource_selling_rate unitAmount,
-              resource_name description,
+              SUM(actual_hours) quantity, -- need to show this in table
+              SUM(actual_hours) hours, -- need to sum this 
+              -- COUNT(resource_id) noOfDays,
+              resource_selling_rate unitAmount, -- need to show this in table
+              resource_selling_rate perHours, -- need to sum this 
+              CONCAT(resource_name, '${descriptionDate}') description,
               CONCAT( -- 1 Concatenates the string square brackets open
                 '[',
                 GROUP_CONCAT( -- Aggregates the concatenated JSON objects
@@ -522,9 +567,9 @@ export class InvoiceRepsitory extends Repository<Invoice> {
               WHERE project_id=${projectId}  AND 
               STR_TO_DATE(entry_date,'%e-%m-%Y') BETWEEN '${startDate}' AND  '${endDate}'
             GROUP BY resource_id
-          `);
+        `);
           // console.log(resources)
-          let attachments: any[] =[];
+          
           let fileIds: number[] = [];
           resources = resources.map((resource:any)=>{ //checking the file should be unique for all resouces
             for (let attach of (JSON.parse(resource?.attachments)??[])) {
@@ -540,20 +585,16 @@ export class InvoiceRepsitory extends Repository<Invoice> {
             delete resource.attachments // delete attachment from all resouce to added array seperatly 
             return resource // return updated element to map 
           });
-          return {resources, attachments};
+          
           // return resources
-        } catch (e) {
-          console.error(e);
-        }
-      } else {
-        try {
-          const resources = await this.query(`
-            SELECT  
+      } else if (project.type === 1) {
+        resources = await this.query(`
+          SELECT  
             CONCAT(DATE_FORMAT(project_schedules.start_date, '%b'), '-', DATE_FORMAT(project_schedules.end_date, '%b'))  description,
-            project_schedules.amount unitAmount,
+            project_schedules.amount unitAmount, 
             project_schedules.id id,
-              1 AS quantity, -- need to multiply this 
-              '-' AS hours -- but show this in table
+            '-' AS quantity, -- need to multiply this 
+            1 AS hours -- but show this in table
               FROM 
                 opportunities 
                   LEFT JOIN project_schedules ON
@@ -562,14 +603,13 @@ export class InvoiceRepsitory extends Repository<Invoice> {
               WHERE opportunities.id=${projectId}
               AND project_schedules.deleted_at IS NULL 
           `);
-
-          return {resources};
-        } catch (e) {
-          console.error(e);
-        }
       }
+      
 
-      return [];
+      
+
+      return {resources, attachments, ...rest};
+    
     } catch (e) {
       return '';
     }
@@ -591,12 +631,12 @@ export class InvoiceRepsitory extends Repository<Invoice> {
       }
 
       if (action === 'Send_Email'){
-        let createdInvoicesResponse = await xero.accountingApi.emailInvoice(
-          tenantId,
-          id,
-          {}
-        );
-        return 'Email Sent'
+        // let createdInvoicesResponse = await xero.accountingApi.emailInvoice(
+        //   tenantId,
+        //   id,
+        //   {}
+        // );
+        return 'Email Can not be sent from here.'
       }else{
         const xeroInvoices = {
           invoices: [

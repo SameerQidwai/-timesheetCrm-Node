@@ -51,6 +51,10 @@ export interface InvoicesInterface {
     name: string;
     id: number;
   };
+  purchaseOrder: {
+    id: number;
+    orderNo: String,
+  }
   issueDate: Date | null;
   dueDate: Date | null;
   invoiceNumber: string;

@@ -23,6 +23,10 @@ export class InvoiceResponses {
             name: tempCrmInvoice.organization.name,
             id: tempCrmInvoice.organizationId,
         },
+        purchaseOrder: {
+          id: tempCrmInvoice.purchaseOrder.id,
+          orderNo: tempCrmInvoice.purchaseOrder.orderNo,
+        },
         project: {
             id: tempCrmInvoice.project.id,
             name: tempCrmInvoice.project.title,
@@ -30,7 +34,7 @@ export class InvoiceResponses {
         issueDate: invoice.date,
         dueDate: invoice.dueDate,
         invoiceNumber: invoice.invoiceNumber,
-        reference: tempCrmInvoice.reference,
+        reference: invoice.reference,
       });
     });
   }
@@ -39,9 +43,10 @@ export class InvoiceResponses {
 export class InvoiceResponse {
     id: number;
     invoiceId: string;
-    reference: string;
+    reference: string | undefined;
     invoiceNumber?: string;
     projectId: number;
+    purchaseOrderId: number;
     scheduleId: number;
     organizationId: number;
     type?: XeroInvoce.TypeEnum;
@@ -63,6 +68,10 @@ export class InvoiceResponse {
         name: String;
         type: number;
     };
+    purchaseOrder: {
+        id: number;
+        orderNo: String;
+    };
     organization: {
         id: number;
         name: string;
@@ -74,9 +83,10 @@ export class InvoiceResponse {
     constructor(xeroInvoice: XeroInvoce, crmInvoice: any=[], attachments: any = []) {
         this.id = crmInvoice.id;
         this.invoiceId =  crmInvoice.invoiceId;
-        this.reference = crmInvoice.reference;
+        this.reference = xeroInvoice.reference;
         this.projectId= crmInvoice.projectId;
         this.scheduleId= crmInvoice.scheduleId;
+        this.purchaseOrderId= crmInvoice.purchaseOrderId;
         this.startDate= crmInvoice.startDate;
         this.endDate= crmInvoice.endDate;
         this.organizationId= crmInvoice.organizationId;
@@ -87,7 +97,7 @@ export class InvoiceResponse {
         this.lineAmountTypes= xeroInvoice.lineAmountTypes;
         this.status= xeroInvoice.status;
         this.totalAmounts ={
-            subTotal: (xeroInvoice.subTotal??0) + (xeroInvoice.totalTax??0),
+            subTotal: (xeroInvoice.subTotal??0), //+ (xeroInvoice.totalTax??0),
             totalTax: xeroInvoice.totalTax,
             total: xeroInvoice.total
         }
@@ -98,6 +108,10 @@ export class InvoiceResponse {
             name: crmInvoice.projectTitle,
             type: crmInvoice.projectType,
         };
+        this.purchaseOrder= {
+            id: crmInvoice.purchaseOrderId,
+            orderNo: crmInvoice.orderNo,
+        };
         this.organization = {
             id: crmInvoice.organizationId,
             name: crmInvoice.organizationName,
@@ -105,6 +119,8 @@ export class InvoiceResponse {
         };
         this.lineItems = (xeroInvoice.lineItems ?? []).map((invoice: any, index:number) => ({
           ...invoice,
+          hours: invoice.quantity,
+          quantity: crmInvoice.projectType == 1 ? '-' : invoice.quantity,
           id: crmInvoice.scheduleId||index,
         }));
         this.attachments = (attachments).map((file: any) => ({

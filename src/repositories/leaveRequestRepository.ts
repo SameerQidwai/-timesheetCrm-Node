@@ -120,7 +120,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         let employeeActivePolicy =
           employee.getActiveContract.leaveRequestPolicy;
 
-        if (!employeeActivePolicy) {
+        if (!employeeActivePolicy && leaveRequestDTO.typeId !== 0) {
           throw new Error('No Active Leave Request of Employee');
         }
 
