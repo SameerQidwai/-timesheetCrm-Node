@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction, urlencoded } from 'express';
-import { Any, getCustomRepository, getManager } from 'typeorm';
+import { Any, In, getCustomRepository, getManager } from 'typeorm';
 import { secret } from '../utilities/configs';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -12,6 +12,7 @@ import { dispatchMail } from '../utilities/mailer';
 import { Employee } from '../entities/employee';
 import { PasswordReset } from '../entities/passwordReset';
 import { ResetPasswordMail } from '../mails/resetPasswordMail';
+import { Notification } from '../entities/notification';
 
 export class AuthController {
   async login(req: Request, res: Response, next: NextFunction) {
@@ -519,6 +520,116 @@ export class AuthController {
 
       await manager.save(user);
       await manager.save(link);
+
+      // });
+      return res.status(200).json({
+        success: true,
+        message: 'Password Updated Successfully',
+        data: null,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async getNotifications(req: Request, res: Response, next: NextFunction) {
+    try {
+      let limit = parseInt(req.query.limit?.toString() ?? '');
+      let page = parseInt(req.query.page?.toString() ?? '');
+      limit = isNaN(limit) ? 5 : limit;
+      page = isNaN(page) ? 1 : page;
+
+      const manager = getManager();
+
+      let [records, count] = await manager.findAndCount(Notification, {
+        skip: limit * (page - 1),
+        take: limit,
+      });
+
+      const lastPage = Math.ceil(count / limit);
+
+      // });
+      return res.status(200).json({
+        success: true,
+        message: 'Password Updated Successfully',
+        data: {
+          records: records,
+          meta: {
+            itemCount:
+              count > limit
+                ? lastPage == page
+                  ? count % limit
+                  : limit
+                : count,
+            totalItems: count,
+            itemsPerPage: limit,
+            totalPages: lastPage,
+            currentPage: page,
+          },
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async markNotificationsAsRead(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const manager = getManager();
+
+      let ids = [];
+
+      for (let item of (req.query.notificationIds as string).split(',')) {
+        if (isNaN(parseInt(item))) continue;
+
+        ids.push(parseInt(item));
+      }
+
+      let notifications = await manager.find(Notification, {
+        where: { id: In(ids) },
+      });
+
+      for (let notification of notifications) {
+        notification.readAt = moment().toDate();
+      }
+
+      await manager.save(notifications);
+
+      // });
+      return res.status(200).json({
+        success: true,
+        message: 'Notifications marked as read',
+        data: notifications,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+  async clearRecentNotifications(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const manager = getManager();
+
+      const userId = res.locals.jwtPayload.id;
+
+      let user = await manager.findOne(Employee, {
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new Error('User not found!');
+      }
+
+      user.notificationsClearedAt = moment().toDate();
+
+      await manager.save(user);
 
       // });
       return res.status(200).json({

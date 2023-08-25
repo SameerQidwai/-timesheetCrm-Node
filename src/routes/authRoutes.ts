@@ -50,4 +50,6 @@ router.route('/auth/addSkill').post([isLoggedIn], contr.addSkill.bind(contr));
 router.route('/forgotPassword').post(contr.forgotPassword.bind(contr));
 router.route('/resetPassword/:token').post(contr.resetPassword.bind(contr));
 
+router.route('/notifications').get(contr.getNotifications.bind(contr));
+
 export default router;
