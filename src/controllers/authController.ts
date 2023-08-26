@@ -551,7 +551,7 @@ export class AuthController {
       // });
       return res.status(200).json({
         success: true,
-        message: 'Password Updated Successfully',
+        message: '',
         data: {
           records: records,
           meta: {
@@ -609,6 +609,7 @@ export class AuthController {
       next(e);
     }
   }
+
   async clearRecentNotifications(
     req: Request,
     res: Response,
@@ -634,7 +635,7 @@ export class AuthController {
       // });
       return res.status(200).json({
         success: true,
-        message: 'Password Updated Successfully',
+        message: 'Notifications cleared',
         data: null,
       });
     } catch (e) {
