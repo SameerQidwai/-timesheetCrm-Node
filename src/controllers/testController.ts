@@ -12,6 +12,7 @@ import { WelcomeMail } from '../mails/welcomeMail';
 import { ResetPasswordMail } from '../mails/resetPasswordMail';
 import { FinancialYear } from '../entities/financialYear';
 import { exec } from 'child_process';
+import { Notification } from '../entities/notification';
 
 export class TestController {
   async test(req: Request, res: Response, next: NextFunction) {
@@ -229,5 +230,41 @@ export class TestController {
       message: 'Data',
       data: jsonData,
     });
+  }
+
+  async createDummyNotification(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      let title = (req.query.title ?? 'Dummy Title') as string;
+      let content = (req.query.event ??
+        'This is Dummy Content about the Timesheet Approval Notification') as string;
+      let type = parseInt((req.query.type ?? 1) as string);
+      type = isNaN(type) ? 1 : type;
+      let event = (req.query.event ?? 'timesheet.approve') as string;
+
+      const manager = getManager();
+
+      const notification = manager.create(Notification, {
+        title,
+        content,
+        type: 1,
+        notifiableId: 1,
+        url: `${process.env.ENV_URL}/time-sheet/`,
+        event,
+      });
+
+      await manager.save(notification);
+
+      res.status(200).json({
+        success: true,
+        message: 'Notification created',
+        data: notification,
+      });
+    } catch (e) {
+      next(e);
+    }
   }
 }

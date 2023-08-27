@@ -20,10 +20,14 @@ export class Notification extends Base {
   @Column({ name: 'content' })
   content: string;
 
-  @Column({ name: 'type' })
+  //0 = ALERT
+  //1 = INFO
+  //2 = SUCCESS
+  //3 = DECLINE
+  @Column({ name: 'type', default: 1 })
   type: number;
 
-  @Column({ name: 'read_at' })
+  @Column({ name: 'read_at', nullable: true })
   readAt: Date;
 
   @Column({ name: 'notifiable_id' })
