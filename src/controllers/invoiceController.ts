@@ -71,6 +71,7 @@ export class invoiceController {
       let invoiceId = req.params.invoiceId;
       let record = await repository.findOneCustom(invoiceId);
       if (!record) throw new Error('not found');
+      console.log('get Invocie id', record.id,  'at ', moment())
       res.status(200).json({
         success: true,
         message: `Get`,

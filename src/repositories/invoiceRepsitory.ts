@@ -304,26 +304,31 @@ export class InvoiceRepsitory extends Repository<Invoice> {
               ']' --  1 Concatenates the string square brackets close
           ) attachments
         FROM invoices 
-          LEFT JOIN profit_view
+        LEFT JOIN profit_view
+        ON (
+            profit_view.project_id = invoices.project_id AND (
+            profit_view.project_type = 1 OR
+            (
+              profit_view.project_type = 2 AND
+              STR_TO_DATE(profit_view.entry_date,'%e-%m-%Y') BETWEEN IFNULL(invoices.start_date, '2018-06-30') AND  IFNULL(invoices.end_date, '2049-06-30')
+            ))
+        )
+        LEFT JOIN purchase_orders
+          ON purchase_orders.id = invoices.purchase_order_id
+        LEFT JOIN attachments
           ON (
-              profit_view.project_id = invoices.project_id AND
-              profit_view.project_type = 1 OR
-              (
-                profit_view.project_type = 2 AND
-                STR_TO_DATE(profit_view.entry_date,'%e-%m-%Y') BETWEEN IFNULL(invoices.start_date, '2018-06-30') AND  IFNULL(invoices.end_date, '2049-06-30')
-              )
+              attachments.target_id = profit_view.milestone_entry_id
+              AND attachments.target_type = "PEN"
           )
-          LEFT JOIN purchase_orders
-            ON purchase_orders.id = invoices.purchase_order_id
-          LEFT JOIN attachments
-            ON (
-                attachments.target_id = profit_view.milestone_entry_id
-                AND attachments.target_type = "PEN"
-            )
-          LEFT JOIN files
-              ON (attachments.file_id = files.id)                  
-        WHERE 
-          invoices.invoiceId = '${id}'
+        LEFT JOIN milestones
+          ON milestones.project_id = invoices.project_id
+        LEFT JOIN files
+          ON  (
+            (profit_view.project_type = 2 AND attachments.file_id = files.id) OR
+            (profit_view.project_type = 1 AND milestones.file_id = files.id)
+          )                          
+      WHERE 
+        invoices.invoiceId = '${id}'
       `
       
       let [crmInvoice, xeroRes, attachmentsRes] = await Promise.all([
@@ -331,7 +336,6 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         xero.accountingApi.getInvoice( tenantId, id ),
         xero.accountingApi.getInvoiceAttachments(tenantId, id)
       ]);
-      console.log(crmInvoice)
 
       let xeroInvoice = xeroRes.body.invoices?.[0]
       if (!crmInvoice?.[0] || !xeroInvoice){
