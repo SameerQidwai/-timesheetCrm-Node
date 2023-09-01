@@ -50,6 +50,21 @@ router.route('/auth/addSkill').post([isLoggedIn], contr.addSkill.bind(contr));
 router.route('/forgotPassword').post(contr.forgotPassword.bind(contr));
 router.route('/resetPassword/:token').post(contr.resetPassword.bind(contr));
 
-router.route('/notifications').get(contr.getNotifications.bind(contr));
+router
+  .route('/auth/notifications')
+  .get([isLoggedIn], contr.getNotifications.bind(contr));
+
+router
+  .route('/auth/unclearedNotifications')
+  .get([isLoggedIn], contr.getUnclearedNotifications.bind(contr));
+
+router
+  .route('/auth/readNotifications')
+  .get([isLoggedIn], contr.markNotificationsAsRead.bind(contr))
+  .patch([isLoggedIn], contr.markNotificationsAsRead.bind(contr));
+
+router
+  .route('/auth/clearNotifications')
+  .patch([isLoggedIn], contr.clearRecentNotifications.bind(contr));
 
 export default router;

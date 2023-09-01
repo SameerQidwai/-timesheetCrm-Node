@@ -30,9 +30,11 @@ import { Attachment } from '../entities/attachment';
 import {
   EntityType,
   ExpenseStatus,
+  NotificationEventType,
   OpportunityStatus,
 } from '../constants/constants';
 import moment from 'moment-timezone';
+import { NotificationManager } from '../utilities/notifier';
 
 @EntityRepository(ExpenseSheet)
 export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
@@ -863,7 +865,16 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         throw new Error('Expense sheet not found');
       }
 
-      let emplyoee = await transactionalEntityManager.findOne(Employee, authId);
+      let emplyoee = await transactionalEntityManager.findOne(
+        Employee,
+        authId,
+        {
+          relations: [
+            'contactPersonOrganization',
+            'contactPersonOrganization.contactPerson',
+          ],
+        }
+      );
 
       if (!emplyoee) {
         throw new Error('Employee not found');
@@ -893,6 +904,26 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         sheet.notes = expenseSheetsSubmitDTO.notes;
 
         let expenseSheet = await transactionalEntityManager.save(sheet);
+
+        if (sheet.projectId) {
+          if (sheet.project.projectManagerId) {
+            await NotificationManager.info(
+              [sheet.project.projectManagerId],
+              `Expense Sheet Submitted`,
+              `An Expense sheet has been Submitted of Project ${sheet.project.title} by ${emplyoee.getFullName}`,
+              `${process.env.ENV_URL}/expense-sheet-approval`,
+              NotificationEventType.EXPENSE_SHEET_SUBMIT
+            );
+          }
+        } else {
+          await NotificationManager.info(
+            [1],
+            `Expense Sheet Submitted`,
+            `An Expense sheet linked to no project has been Submitted by ${emplyoee.getFullName}`,
+            `${process.env.ENV_URL}/expense-sheet-approval`,
+            NotificationEventType.EXPENSE_SHEET_SUBMIT
+          );
+        }
       }
     });
 
@@ -942,6 +973,14 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         sheet.notes = expenseSheetsApproveDTO.notes;
 
         let expenseSheet = await transactionalEntityManager.save(sheet);
+
+        await NotificationManager.success(
+          [sheet.createdBy],
+          `Expense Sheet Approved`,
+          `Your Expense sheet with id ${sheet.id} has been Approved`,
+          `${process.env.ENV_URL}/expense-sheets`,
+          NotificationEventType.EXPENSE_SHEET_APPROVE
+        );
       }
     });
 
@@ -991,6 +1030,14 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         sheet.notes = expenseSheetsRejectDTO.notes;
 
         let expenseSheet = await transactionalEntityManager.save(sheet);
+
+        await NotificationManager.danger(
+          [sheet.createdBy],
+          `Expense Sheet Rejected`,
+          `Your Expense sheet with id ${sheet.id} has been Rejected`,
+          `${process.env.ENV_URL}/expense-sheets`,
+          NotificationEventType.EXPENSE_SHEET_REJECT
+        );
       }
     });
 

@@ -1,5 +1,11 @@
 import { Request, Response, NextFunction, urlencoded } from 'express';
-import { Any, In, getCustomRepository, getManager } from 'typeorm';
+import {
+  Any,
+  In,
+  getCustomRepository,
+  getManager,
+  MoreThanOrEqual,
+} from 'typeorm';
 import { secret } from '../utilities/configs';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -544,6 +550,7 @@ export class AuthController {
       let [records, count] = await manager.findAndCount(Notification, {
         skip: limit * (page - 1),
         take: limit,
+        order: { id: 'DESC' },
       });
 
       const lastPage = Math.ceil(count / limit);
@@ -573,6 +580,44 @@ export class AuthController {
     }
   }
 
+  async getUnclearedNotifications(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const manager = getManager();
+
+      const currentUserId = res.locals.jwtPayload.id;
+
+      if (!currentUserId) {
+        throw new Error('Unauthorized');
+      }
+
+      const currentUser = await manager.findOne(Employee, {
+        id: currentUserId,
+      });
+
+      if (!currentUser) {
+        throw new Error('Unauthorized');
+      }
+
+      const notifications = await manager.find(Notification, {
+        where: {
+          createdAt: MoreThanOrEqual(
+            currentUser.notificationsClearedAt ?? '2000-01-01'
+          ),
+        },
+      });
+
+      return res
+        .status(200)
+        .json({ success: true, message: '', data: notifications });
+    } catch (e) {
+      next(e);
+    }
+  }
+
   async markNotificationsAsRead(
     req: Request,
     res: Response,
@@ -583,11 +628,14 @@ export class AuthController {
 
       let ids = [];
 
-      for (let item of (req.query.notificationIds as string).split(',')) {
-        if (isNaN(parseInt(item))) continue;
+      if (req.query.notificationIds)
+        for (let item of (req.query.notificationIds as string).split(',')) {
+          if (isNaN(parseInt(item))) continue;
 
-        ids.push(parseInt(item));
-      }
+          ids.push(parseInt(item));
+        }
+
+      ids.push(req.body.notificationIds);
 
       let notifications = await manager.find(Notification, {
         where: { id: In(ids) },

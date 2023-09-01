@@ -23,6 +23,7 @@ import {
   TimesheetStatus,
   EntityType,
   OpportunityStatus,
+  NotificationEventType,
 } from '../constants/constants';
 import { Employee } from '../entities/employee';
 import { Opportunity } from '../entities/opportunity';
@@ -31,7 +32,8 @@ import moment from 'moment-timezone';
 import { Moment } from 'moment';
 import { Milestone } from '../entities/milestone';
 import { LeaveRequest } from '../entities/leaveRequest';
-import { OpportunityResource } from 'src/entities/opportunityResource';
+import { OpportunityResource } from '../entities/opportunityResource';
+import { NotificationManager } from '../utilities/notifier';
 
 @EntityRepository(Timesheet)
 export class TimesheetRepository extends Repository<Timesheet> {
@@ -1199,6 +1201,9 @@ export class TimesheetRepository extends Repository<Timesheet> {
             'milestoneEntries',
             'milestoneEntries.milestone',
             'milestoneEntries.entries',
+            'employee',
+            'employee.contactPersonOrganization',
+            'employee.contactPersonOrganization.contactPerson',
           ],
         });
 
@@ -1227,6 +1232,18 @@ export class TimesheetRepository extends Repository<Timesheet> {
         }
 
         await transactionalEntityManager.save(timesheet);
+
+        await NotificationManager.info(
+          [1],
+          `Timesheet Submitted`,
+          `Timesheet of date ${moment(timesheet.startDate).format(
+            'DD-MM-YYYY'
+          )} - ${moment(timesheet.endDate).format(
+            'DD-MM-YYYY'
+          )} is submitted by ${timesheet.employee.getFullName}`,
+          `${process.env.ENV_URL}/time-sheet-approval`,
+          NotificationEventType.TIME_SHEET_SUBMIT
+        );
 
         return responseEntries;
       }
@@ -1260,6 +1277,9 @@ export class TimesheetRepository extends Repository<Timesheet> {
             'milestoneEntries',
             'milestoneEntries.milestone',
             'milestoneEntries.entries',
+            'employee',
+            'employee.contactPersonOrganization',
+            'employee.contactPersonOrganization.contactPerson',
           ],
         });
 
@@ -1293,6 +1313,18 @@ export class TimesheetRepository extends Repository<Timesheet> {
         }
 
         await transactionalEntityManager.save(timesheets);
+
+        // for (let timesheet of timesheets) {
+        //   await NotificationManager.info(
+        //     [1],
+        //     `Timesheet Approved`,
+        //     `Timesheet of date ${moment(timesheet.startDate).format(
+        //       'DD-MM-YYYY'
+        //     )} - ${moment(timesheet.endDate).format('DD-MM-YYYY')} is approved`,
+        //     `${process.env.ENV_URL}/time-sheet`,
+        //     NotificationEventType.TIME_SHEET_APPROVE
+        //   );
+        // }
 
         return responseEntries;
       }

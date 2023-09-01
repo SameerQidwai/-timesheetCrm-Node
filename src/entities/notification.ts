@@ -23,7 +23,7 @@ export class Notification extends Base {
   //0 = ALERT
   //1 = INFO
   //2 = SUCCESS
-  //3 = DECLINE
+  //3 = DANGER
   @Column({ name: 'type', default: 1 })
   type: number;
 
@@ -35,6 +35,9 @@ export class Notification extends Base {
 
   @Column({ name: 'url' })
   url: string;
+
+  @Column({ name: 'silent', default: false })
+  silent: Boolean;
 
   @Column({ name: 'event' })
   event: string;
