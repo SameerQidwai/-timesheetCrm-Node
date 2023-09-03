@@ -908,10 +908,10 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         if (sheet.projectId) {
           if (sheet.project.projectManagerId) {
             await NotificationManager.info(
-              [sheet.project.projectManagerId],
+              [1],
               `Expense Sheet Submitted`,
               `An Expense sheet has been Submitted of Project ${sheet.project.title} by ${emplyoee.getFullName}`,
-              `${process.env.ENV_URL}/expense-sheet-approval`,
+              `/expense-sheet-approval`,
               NotificationEventType.EXPENSE_SHEET_SUBMIT
             );
           }
@@ -920,7 +920,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
             [1],
             `Expense Sheet Submitted`,
             `An Expense sheet linked to no project has been Submitted by ${emplyoee.getFullName}`,
-            `${process.env.ENV_URL}/expense-sheet-approval`,
+            `/expense-sheet-approval`,
             NotificationEventType.EXPENSE_SHEET_SUBMIT
           );
         }
@@ -975,10 +975,10 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         let expenseSheet = await transactionalEntityManager.save(sheet);
 
         await NotificationManager.success(
-          [sheet.createdBy],
+          [1],
           `Expense Sheet Approved`,
           `Your Expense sheet with id ${sheet.id} has been Approved`,
-          `${process.env.ENV_URL}/expense-sheets`,
+          `/expense-sheets`,
           NotificationEventType.EXPENSE_SHEET_APPROVE
         );
       }
@@ -1032,10 +1032,10 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         let expenseSheet = await transactionalEntityManager.save(sheet);
 
         await NotificationManager.danger(
-          [sheet.createdBy],
+          [1],
           `Expense Sheet Rejected`,
           `Your Expense sheet with id ${sheet.id} has been Rejected`,
-          `${process.env.ENV_URL}/expense-sheets`,
+          `/expense-sheets`,
           NotificationEventType.EXPENSE_SHEET_REJECT
         );
       }

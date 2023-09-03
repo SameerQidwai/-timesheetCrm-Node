@@ -21,12 +21,17 @@ import { Attachment } from '../entities/attachment';
 import { LeaveRequestBalance } from '../entities/leaveRequestBalance';
 import { Employee } from '../entities/employee';
 import { LeaveRequestPolicyLeaveRequestType } from '../entities/leaveRequestPolicyLeaveRequestType';
-import { LeaveRequestStatus, OpportunityStatus } from '../constants/constants';
+import {
+  LeaveRequestStatus,
+  NotificationEventType,
+  OpportunityStatus,
+} from '../constants/constants';
 import { EntityType } from '../constants/constants';
 import moment from 'moment-timezone';
 import { Calendar } from '../entities/calendar';
 import { OpportunityResourceAllocation } from '../entities/opportunityResourceAllocation';
 import { OpportunityResource } from '../entities/opportunityResource';
+import { NotificationManager } from '../utilities/notifier';
 
 @EntityRepository(LeaveRequest)
 export class LeaveRequestRepository extends Repository<LeaveRequest> {
@@ -310,6 +315,18 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
             );
           }
         }
+
+        await NotificationManager.info(
+          [1],
+          `Leave Request Submission`,
+          `Leave of date ${moment(_firstDate).format('DD-MM-YYYY')} - ${moment(
+            _lastDate
+          ).format('DD-MM-YYYY')} is submitted by Employee ${
+            employee.getFullName
+          }`,
+          `/approve-request`,
+          NotificationEventType.LEAVE_REQUEST_SUBMIT
+        );
 
         return leaveRequest;
       }
@@ -639,7 +656,12 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           LeaveRequest,
           {
             where: { id: In(leaveRequestApproveDTO.leaveRequests) },
-            relations: ['entries'],
+            relations: [
+              'entries',
+              'employee',
+              'employee.contactPersonOrganization',
+              'employee.contactPersonOrganization.contactPerson',
+            ],
           }
         );
 
@@ -659,6 +681,20 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
         leaveRequests = await transactionalEntityManager.save(leaveRequests);
 
+        for (let leaveRequest of leaveRequests) {
+          await NotificationManager.success(
+            [1],
+            `Leave Request Approved`,
+            `Leave of date ${moment(
+              leaveRequest.getEntriesDetails.startDate
+            ).format('DD-MM-YYYY')} to ${moment(
+              leaveRequest.getEntriesDetails.endDate
+            ).format('DD-MM-YYYY')} has been approved`,
+            `/leave-request`,
+            NotificationEventType.LEAVE_REQUEST_APPROVE
+          );
+        }
+
         return leaveRequests;
       }
     );
@@ -677,7 +713,12 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           LeaveRequest,
           {
             where: { id: In(leaveRequestApproveDTO.leaveRequests) },
-            relations: ['entries'],
+            relations: [
+              'entries',
+              'employee',
+              'employee.contactPersonOrganization',
+              'employee.contactPersonOrganization.contactPerson',
+            ],
           }
         );
 
@@ -726,6 +767,20 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         }
 
         leaveRequests = await transactionalEntityManager.save(leaveRequests);
+
+        for (let leaveRequest of leaveRequests) {
+          await NotificationManager.danger(
+            [1],
+            `Leave Request Rejection`,
+            `Leave from date ${moment(
+              leaveRequest.getEntriesDetails.startDate
+            ).format('DD-MM-YYYY')} to ${moment(
+              leaveRequest.getEntriesDetails.endDate
+            ).format('DD-MM-YYYY')} has been rejected`,
+            `/leave-request`,
+            NotificationEventType.LEAVE_REQUEST_REJECT
+          );
+        }
 
         return leaveRequests;
       }
@@ -1067,21 +1122,22 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         let employeeLeaveRequestPolicy =
           employee.getActiveContract.leaveRequestPolicy;
 
-        if (!employeeLeaveRequestPolicy) {
-          throw new Error('No Active Policy of Employee');
+        if (!employeeLeaveRequestPolicy && leaveRequestDTO.typeId !== 0) {
+          throw new Error('No Active Leave Request of Employee');
         }
 
         leaveRequestObj.desc = leaveRequestDTO.description;
 
-        let leaveRequestPolicyType = await transactionalEntityManager.findOne(
-          LeaveRequestPolicyLeaveRequestType,
-          {
-            where: {
-              leaveRequestTypeId: leaveRequestDTO.typeId,
-              leaveRequestPolicyId: employeeLeaveRequestPolicy.id,
-            },
-          }
-        );
+        if (employeeLeaveRequestPolicy)
+          var leaveRequestPolicyType = await transactionalEntityManager.findOne(
+            LeaveRequestPolicyLeaveRequestType,
+            {
+              where: {
+                leaveRequestTypeId: leaveRequestDTO.typeId,
+                leaveRequestPolicyId: employeeLeaveRequestPolicy.id,
+              },
+            }
+          );
 
         if (!leaveRequestPolicyType && leaveRequestDTO.typeId != 0) {
           throw new Error('Leave Request Type not found!');
@@ -1321,6 +1377,18 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           let attachment = await transactionalEntityManager.save(attachmentObj);
         }
 
+        await NotificationManager.info(
+          [1],
+          `Leave Request Re-Submission`,
+          `Leave of date ${moment(_firstDate).format('DD-MM-YYYY')} - ${moment(
+            _lastDate
+          ).format('DD-MM-YYYY')} is re-submitted by Employee ${
+            employee.getFullName
+          }`,
+          `/approve-request`,
+          NotificationEventType.LEAVE_REQUEST_SUBMIT
+        );
+
         return leaveRequest;
       }
     );
@@ -1440,7 +1508,14 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
   ): Promise<any | undefined> {
     let leaveRequestBalance = await this.manager.findOne(
       LeaveRequestBalance,
-      id
+      id,
+      {
+        relations: [
+          'employee',
+          'employee.contactPersonOrganization',
+          'employee.contactPersonOrganizaation.contactPerson',
+        ],
+      }
     );
 
     if (!leaveRequestBalance) {
@@ -1450,6 +1525,14 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     let difference = leaveRequestBalance.carryForward - accuredDTO.carryForward;
     leaveRequestBalance.carryForward = accuredDTO.carryForward;
     leaveRequestBalance.balanceHours -= difference;
+
+    await NotificationManager.info(
+      [1],
+      `Leave Request Balance Updated`,
+      `Leave Request Balance of Employee ${leaveRequestBalance.employee.getFullName} was updated.`,
+      `/Employees/${leaveRequestBalance.employeeId}/info#leave-balance`,
+      NotificationEventType.LEAVE_BALANCE_UPDATE
+    );
 
     return this.manager.save(leaveRequestBalance);
   }

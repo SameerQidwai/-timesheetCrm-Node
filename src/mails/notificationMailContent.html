@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Expense Sheet Update</title>
+    <title>{{title}}</title>
   </head>
   <body style="background-color: #f7f7f7; font-family: Arial, sans-serif">
     <table
@@ -22,22 +22,15 @@
             text-align: center;
           "
         >
-          <h1>Expense Sheet Update</h1>
+          <h1>{{title}}</h1>
         </td>
       </tr>
       <tr>
         <td style="padding: 40px">
           <p>Dear {{userName}},</p>
           <p>{{content}}</p>
-          <p>
-            <a href="{{url}}">{{url}}</a>
-          </p>
-          <p>
-            If you have any questions or need assistance, please don't hesitate
-            to contact us at support@timewize.au.
-          </p>
-          <p>Best regards,</p>
-          <p>The Timewize Team</p>
+          <p><a href="{{url}}">{{url}}</a></p>
+          <p>Best regards<br />The Timewize Team</p>
         </td>
       </tr>
       <tr>
@@ -50,9 +43,8 @@
           "
         >
           <p>
-            You are receiving this email because you have been invited to join
-            Timewize by {{organization}}. If you did not expect to receive this
-            email, please contact us at support@timewize.au.
+            If you need further assistance, please contact us at
+            support@timewize.au.
           </p>
         </td>
       </tr>

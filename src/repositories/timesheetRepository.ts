@@ -1233,17 +1233,26 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
         await transactionalEntityManager.save(timesheet);
 
-        await NotificationManager.info(
-          [1],
-          `Timesheet Submitted`,
-          `Timesheet of date ${moment(timesheet.startDate).format(
-            'DD-MM-YYYY'
-          )} - ${moment(timesheet.endDate).format(
-            'DD-MM-YYYY'
-          )} is submitted by ${timesheet.employee.getFullName}`,
-          `${process.env.ENV_URL}/time-sheet-approval`,
-          NotificationEventType.TIME_SHEET_SUBMIT
-        );
+        //NOTIFICATION LOOP
+        for (const requestEntry of requestEntries) {
+          let milestoneEntry = timesheet.milestoneEntries.filter(
+            (entry) => entry.id === requestEntry
+          )[0];
+
+          if (milestoneEntry) {
+            await NotificationManager.info(
+              [1],
+              `Timesheet Submitted`,
+              `Timesheet of date ${moment(timesheet.startDate).format(
+                'DD-MM-YYYY'
+              )} - ${moment(timesheet.endDate).format(
+                'DD-MM-YYYY'
+              )} is submitted by ${timesheet.employee.getFullName}`,
+              `/time-sheet-approval`,
+              NotificationEventType.TIME_SHEET_SUBMIT
+            );
+          }
+        }
 
         return responseEntries;
       }
@@ -1314,17 +1323,28 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
         await transactionalEntityManager.save(timesheets);
 
-        // for (let timesheet of timesheets) {
-        //   await NotificationManager.info(
-        //     [1],
-        //     `Timesheet Approved`,
-        //     `Timesheet of date ${moment(timesheet.startDate).format(
-        //       'DD-MM-YYYY'
-        //     )} - ${moment(timesheet.endDate).format('DD-MM-YYYY')} is approved`,
-        //     `${process.env.ENV_URL}/time-sheet`,
-        //     NotificationEventType.TIME_SHEET_APPROVE
-        //   );
-        // }
+        //NOTIFICATION LOOP
+        for (const requestEntry of approveEntryDTO.milestoneEntries) {
+          for (let timesheet of timesheets) {
+            let milestoneEntry = timesheet.milestoneEntries.filter(
+              (entry) => entry.id === requestEntry
+            )[0];
+
+            if (milestoneEntry) {
+              await NotificationManager.success(
+                [1],
+                `Timesheet Approved`,
+                `Timesheet of date ${moment(timesheet.startDate).format(
+                  'DD-MM-YYYY'
+                )} - ${moment(timesheet.endDate).format(
+                  'DD-MM-YYYY'
+                )} is approved`,
+                `/time-sheet`,
+                NotificationEventType.TIME_SHEET_APPROVE
+              );
+            }
+          }
+        }
 
         return responseEntries;
       }
@@ -1401,6 +1421,27 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
         await transactionalEntityManager.save(timesheet);
 
+        //NOTIFICATION LOOP
+        for (const requestEntry of approveEntryDTO.milestoneEntries) {
+          let milestoneEntry = timesheet.milestoneEntries.filter(
+            (entry) => entry.id === requestEntry
+          )[0];
+
+          if (milestoneEntry) {
+            await NotificationManager.success(
+              [1],
+              `Timesheet Approved`,
+              `Timesheet of date ${moment(timesheet.startDate).format(
+                'DD-MM-YYYY'
+              )} - ${moment(timesheet.endDate).format(
+                'DD-MM-YYYY'
+              )} is approved`,
+              `/time-sheet`,
+              NotificationEventType.TIME_SHEET_APPROVE
+            );
+          }
+        }
+
         return responseEntries;
       }
     );
@@ -1466,6 +1507,29 @@ export class TimesheetRepository extends Repository<Timesheet> {
         }
 
         await transactionalEntityManager.save(timesheets);
+
+        //NOTIFICATION LOOP
+        for (const requestEntry of rejectEntryDTO.milestoneEntries) {
+          for (let timesheet of timesheets) {
+            let milestoneEntry = timesheet.milestoneEntries.filter(
+              (entry) => entry.id === requestEntry
+            )[0];
+
+            if (milestoneEntry) {
+              await NotificationManager.danger(
+                [1],
+                `Timesheet Rejection`,
+                `Timesheet of date ${moment(timesheet.startDate).format(
+                  'DD-MM-YYYY'
+                )} - ${moment(timesheet.endDate).format(
+                  'DD-MM-YYYY'
+                )} is rejected`,
+                `/time-sheet`,
+                NotificationEventType.TIME_SHEET_REJECT
+              );
+            }
+          }
+        }
 
         return responseEntries;
       }
@@ -1542,6 +1606,27 @@ export class TimesheetRepository extends Repository<Timesheet> {
         }
         await transactionalEntityManager.save(timesheet);
 
+        //NOTIFICATION LOOP
+        for (const requestEntry of rejectEntryDTO.milestoneEntries) {
+          let milestoneEntry = timesheet.milestoneEntries.filter(
+            (entry) => entry.id === requestEntry
+          )[0];
+
+          if (milestoneEntry) {
+            await NotificationManager.danger(
+              [1],
+              `Timesheet Rejection`,
+              `Timesheet of date ${moment(timesheet.startDate).format(
+                'DD-MM-YYYY'
+              )} - ${moment(timesheet.endDate).format(
+                'DD-MM-YYYY'
+              )} is rejected`,
+              `/time-sheet`,
+              NotificationEventType.TIME_SHEET_REJECT
+            );
+          }
+        }
+
         return responseEntries;
       }
     );
@@ -1610,6 +1695,29 @@ export class TimesheetRepository extends Repository<Timesheet> {
         }
 
         await transactionalEntityManager.save(timesheets);
+
+        //NOTIFICATION LOOP
+        for (const requestEntry of rejectEntryDTO.milestoneEntries) {
+          for (let timesheet of timesheets) {
+            let milestoneEntry = timesheet.milestoneEntries.filter(
+              (entry) => entry.id === requestEntry
+            )[0];
+
+            if (milestoneEntry) {
+              await NotificationManager.danger(
+                [1],
+                `Timesheet Unapproved`,
+                `Timesheet of date ${moment(timesheet.startDate).format(
+                  'DD-MM-YYYY'
+                )} - ${moment(timesheet.endDate).format(
+                  'DD-MM-YYYY'
+                )} is unapproved`,
+                `/time-sheet`,
+                NotificationEventType.TIME_SHEET_UNAPPROVE
+              );
+            }
+          }
+        }
 
         return responseEntries;
       }
@@ -1686,7 +1794,29 @@ export class TimesheetRepository extends Repository<Timesheet> {
           milestoneEntry.actionNotes = rejectEntryDTO.note;
           responseEntries.push(milestoneEntry);
         }
+
         await transactionalEntityManager.save(timesheet);
+
+        //NOTIFICATION LOOP
+        for (const requestEntry of rejectEntryDTO.milestoneEntries) {
+          let milestoneEntry = timesheet.milestoneEntries.filter(
+            (entry) => entry.id === requestEntry
+          )[0];
+
+          if (milestoneEntry) {
+            await NotificationManager.danger(
+              [1],
+              `Timesheet Unapproved`,
+              `Timesheet of date ${moment(timesheet.startDate).format(
+                'DD-MM-YYYY'
+              )} - ${moment(timesheet.endDate).format(
+                'DD-MM-YYYY'
+              )} is unapproved`,
+              `/time-sheet`,
+              NotificationEventType.TIME_SHEET_UNAPPROVE
+            );
+          }
+        }
 
         return responseEntries;
       }

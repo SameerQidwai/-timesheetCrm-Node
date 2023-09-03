@@ -40,10 +40,12 @@ import { LeaveRequest } from '../entities/leaveRequest';
 import {
   EntityType,
   LeaveRequestTriggerFrequency,
+  NotificationEventType,
   SuperannuationType,
 } from '../constants/constants';
 import moment from 'moment-timezone';
 import { WelcomeMail } from '../mails/welcomeMail';
+import { NotificationManager } from '../utilities/notifier';
 
 @EntityRepository(Employee)
 export class EmployeeRepository extends Repository<Employee> {
@@ -683,6 +685,15 @@ export class EmployeeRepository extends Repository<Employee> {
       bankAccount.fileId = bankAccountFileId;
       bankAccount.employeeId = employeeObj.id;
       await transactionalEntityManager.save(bankAccount);
+
+      await NotificationManager.info(
+        [1],
+        `Employee Updated`,
+        `Details of Employee ${employeeObj?.getFullName} are updated`,
+        `/Employees/${employeeObj.id}/info`,
+        NotificationEventType.EMPLOYEE_UPDATE
+      );
+
       return employeeObj.id;
     });
     return this.findOneCustom(id);

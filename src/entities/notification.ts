@@ -15,7 +15,7 @@ import { ExpenseSheet } from './expenseSheet';
 @Entity('notifications')
 export class Notification extends Base {
   @Column({ name: 'title' })
-  title: String;
+  title: string;
 
   @Column({ name: 'content' })
   content: string;

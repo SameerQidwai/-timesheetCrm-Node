@@ -7,8 +7,7 @@ import { Notification } from '../entities/notification';
 import { getManager, In } from 'typeorm';
 import { StandardMailUserInterface } from './interfaces';
 import { dispatchMail } from './mailer';
-import { ExpenseSheetMail } from '../mails/expenseSheetMail';
-import { TimesheetMail } from '../mails/timesheetMail';
+import { NotificationMail } from '../mails/notificationMail';
 
 let getNotifiers = async (userIds: Array<number>) => {
   const manager = getManager();
@@ -53,12 +52,12 @@ let getNotifiers = async (userIds: Array<number>) => {
 
 let dispatchNotification = async (
   notifiableId: number,
-  title: String,
+  title: string,
   content: string,
   type: NotificationType,
   url: string,
   event: NotificationEventType
-) => {
+): Promise<Notification> => {
   const manager = getManager();
 
   let notification = manager.create(Notification, {
@@ -70,13 +69,13 @@ let dispatchNotification = async (
     event,
   });
 
-  await manager.save(notification);
+  return await manager.save(notification);
 };
 
 export class NotificationManager {
   public static async info(
     userIds: Array<number>,
-    title: String,
+    title: string,
     content: string,
     url: string,
     event: NotificationEventType
@@ -85,7 +84,7 @@ export class NotificationManager {
       let users = await getNotifiers(userIds);
 
       for (let user of users) {
-        await dispatchNotification(
+        let notification = await dispatchNotification(
           user.id,
           title,
           content,
@@ -94,17 +93,10 @@ export class NotificationManager {
           event
         );
 
-        if (event.includes('expense-sheet'))
-          dispatchMail(
-            new ExpenseSheetMail(user.emailObj.username, content, url),
-            user.emailObj
-          );
-        else if (event.includes('time-sheet')) {
-          dispatchMail(
-            new TimesheetMail(user.emailObj.username, content, url),
-            user.emailObj
-          );
-        }
+        dispatchMail(
+          new NotificationMail(user.emailObj.username, notification),
+          user.emailObj
+        );
       }
     } catch (e) {
       console.log(e);
@@ -113,7 +105,7 @@ export class NotificationManager {
 
   public static async success(
     userIds: Array<number>,
-    title: String,
+    title: string,
     content: string,
     url: string,
     event: NotificationEventType
@@ -122,7 +114,7 @@ export class NotificationManager {
       let users = await getNotifiers(userIds);
 
       for (let user of users) {
-        await dispatchNotification(
+        let notification = await dispatchNotification(
           user.id,
           title,
           content,
@@ -131,17 +123,10 @@ export class NotificationManager {
           event
         );
 
-        if (event.includes('expense-sheet'))
-          dispatchMail(
-            new ExpenseSheetMail(user.emailObj.username, content, url),
-            user.emailObj
-          );
-        else if (event.includes('time-sheet')) {
-          dispatchMail(
-            new TimesheetMail(user.emailObj.username, content, url),
-            user.emailObj
-          );
-        }
+        dispatchMail(
+          new NotificationMail(user.emailObj.username, notification),
+          user.emailObj
+        );
       }
     } catch (e) {
       console.log(e);
@@ -150,7 +135,7 @@ export class NotificationManager {
 
   public static async danger(
     userIds: Array<number>,
-    title: String,
+    title: string,
     content: string,
     url: string,
     event: NotificationEventType
@@ -159,7 +144,7 @@ export class NotificationManager {
       let users = await getNotifiers(userIds);
 
       for (let user of users) {
-        await dispatchNotification(
+        let notification = await dispatchNotification(
           user.id,
           title,
           content,
@@ -168,17 +153,41 @@ export class NotificationManager {
           event
         );
 
-        if (event.includes('expense-sheet'))
-          dispatchMail(
-            new ExpenseSheetMail(user.emailObj.username, content, url),
-            user.emailObj
-          );
-        else if (event.includes('time-sheet')) {
-          dispatchMail(
-            new TimesheetMail(user.emailObj.username, content, url),
-            user.emailObj
-          );
-        }
+        dispatchMail(
+          new NotificationMail(user.emailObj.username, notification),
+          user.emailObj
+        );
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  public static async dynamic(
+    userIds: Array<number>,
+    title: string,
+    content: string,
+    url: string,
+    event: NotificationEventType,
+    type: NotificationType
+  ): Promise<any> {
+    try {
+      let users = await getNotifiers(userIds);
+
+      for (let user of users) {
+        let notification = await dispatchNotification(
+          user.id,
+          title,
+          content,
+          type,
+          url,
+          event
+        );
+
+        dispatchMail(
+          new NotificationMail(user.emailObj.username, notification),
+          user.emailObj
+        );
       }
     } catch (e) {
       console.log(e);

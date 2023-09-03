@@ -252,7 +252,7 @@ export class TestController {
         content,
         type: 1,
         notifiableId: 1,
-        url: `${process.env.ENV_URL}/time-sheet/`,
+        url: `/time-sheet/`,
         event,
       });
 

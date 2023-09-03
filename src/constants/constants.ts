@@ -207,10 +207,13 @@ export enum NotificationEventType {
   EXPENSE_SHEET_REJECT = 'expense-sheet-reject',
   TIME_SHEET_SUBMIT = 'time-sheet-submit',
   TIME_SHEET_APPROVE = 'time-sheet-approve',
+  TIME_SHEET_UNAPPROVE = 'time-sheet-unapprove',
   TIME_SHEET_REJECT = 'time-sheet-reject',
-  LEAVE_REQUEST_SUBMIT = 'time-sheet-submit',
-  LEAVE_REQUEST_APPROVE = 'time-sheet-approve',
-  LEAVE_REQUEST_REJECT = 'time-sheet-reject',
+  LEAVE_REQUEST_SUBMIT = 'leave-request-submit',
+  LEAVE_REQUEST_APPROVE = 'leave-request-approve',
+  LEAVE_REQUEST_REJECT = 'leave-request-reject',
+  LEAVE_BALANCE_UPDATE = 'leave-balance-update',
+  EMPLOYEE_UPDATE = 'employee-update',
 }
 
 export enum NotificationType {
