@@ -20,7 +20,8 @@ import { ViewEntity, ViewColumn } from 'typeorm';
     ec.no_of_hours resource_contract_hours, ec.no_of_days resource_contract_days_per_week, 
     ec.start_date resource_contract_start, ec.end_date  resource_contract_end, 
     ec.remuneration_amount salary, ec.remuneration_amount_per salary_per,
-    ec.type employment_type, ec.boh_percent,
+    ec.type employment_type, ec.boh_percent, cpv.organization_id resource_organization_id, 
+    cpv.organization_name resource_organization_name,
 
     (ora.buying_rate *( (o.hours_per_day) * (ora.effort_rate /100) ) ) cost_rate,
     (ora.selling_rate *( (o.hours_per_day) * (ora.effort_rate /100) ) ) revenue_rate

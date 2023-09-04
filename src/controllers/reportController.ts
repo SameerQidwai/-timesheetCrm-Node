@@ -2130,12 +2130,11 @@ export class ReportController {
         FROM
           revenue_cost_view 
         WHERE
-          employment_type = 1 
-            AND (
-                project_status = 'P'
-                OR project_status = 'C'
-            )
-        )as revenue_cost_views
+          employment_type = 1 AND
+          resource_organization_id = 1 AND
+          ( project_status = 'P' OR project_status = 'C' )
+          
+        ) as casual_employees
         JOIN (
           SELECT 
             resource_employee_id,
@@ -2145,10 +2144,10 @@ export class ReportController {
           FROM profit_view
           WHERE STR_TO_DATE(entry_date,'%e-%m-%Y') BETWEEN '${fiscalYearStart}' AND  '${acutalMonthEnd}'
         ) as timers ON (
-          revenue_cost_views.resource_employee_id = timers.resource_employee_id AND
-          revenue_cost_views.project_id = timers.project_id AND
-          timers.entry_date BETWEEN DATE_FORMAT(revenue_cost_views.resource_start,'%Y-%m-%d') AND DATE_FORMAT(IFNULL(revenue_cost_views.resource_end, '2049-06-30'),'%Y-%m-%d') AND
-          timers.entry_date BETWEEN DATE_FORMAT(revenue_cost_views.resource_contract_start,'%Y-%m-%d') AND DATE_FORMAT(IFNULL(revenue_cost_views.resource_contract_end, '2049-06-30'),'%Y-%m-%d')
+          casual_employees.resource_employee_id = timers.resource_employee_id AND
+          casual_employees.project_id = timers.project_id AND
+          timers.entry_date BETWEEN DATE_FORMAT(casual_employees.resource_start,'%Y-%m-%d') AND DATE_FORMAT(IFNULL(casual_employees.resource_end, '2049-06-30'),'%Y-%m-%d') AND
+          timers.entry_date BETWEEN DATE_FORMAT(casual_employees.resource_contract_start,'%Y-%m-%d') AND DATE_FORMAT(IFNULL(casual_employees.resource_contract_end, '2049-06-30'),'%Y-%m-%d')
         )
       GROUP BY month;
     `);
@@ -2202,7 +2201,9 @@ export class ReportController {
             FROM
               revenue_cost_view
             WHERE
-              employment_type = 1
+              employment_type = 1 AND 
+              resource_organization_id = 1
+              
           ) as casual_employee ON (
             this_date BETWEEN DATE_FORMAT(resource_contract_start, '%Y-%m-%d') AND DATE_FORMAT( IFNULL(resource_contract_end, '2049-06-30'), '%Y-%m-%d' )
             AND this_date BETWEEN DATE_FORMAT(resource_start, '%Y-%m-%d') AND DATE_FORMAT(resource_end, '%Y-%m-%d')
@@ -2402,6 +2403,123 @@ export class ReportController {
       GROUP BY month;
     `)
 
+    const sub_salaries_actual = await getManager().query(`
+      SELECT 
+        SUM(salary * actual_hours) sub_salaries,
+        DATE_FORMAT(entry_date, '%b %y') month
+      FROM 
+        (SELECT
+          resource_employee_id,
+          resource_contract_start,
+          resource_contract_end,
+          resource_start,
+          resource_end,
+          project_id,
+          salary
+        FROM
+          revenue_cost_view 
+        WHERE
+          employment_type = 1 AND 
+          resource_organization_id != 1 AND 
+          ( project_status = 'P' OR project_status = 'C' )
+
+        ) as sub_contractor
+
+        JOIN (
+          SELECT 
+            resource_employee_id,
+            actual_hours,
+            STR_TO_DATE(entry_date,'%e-%m-%Y') entry_date,
+            project_id
+          FROM profit_view
+          WHERE STR_TO_DATE(entry_date,'%e-%m-%Y') BETWEEN '${fiscalYearStart}' AND  '${acutalMonthEnd}'
+
+        ) as timers ON (
+          sub_contractor.resource_employee_id = timers.resource_employee_id AND
+          sub_contractor.project_id = timers.project_id AND
+          timers.entry_date BETWEEN DATE_FORMAT(sub_contractor.resource_start,'%Y-%m-%d') AND DATE_FORMAT(IFNULL(sub_contractor.resource_end, '2049-06-30'),'%Y-%m-%d') AND
+          timers.entry_date BETWEEN DATE_FORMAT(sub_contractor.resource_contract_start,'%Y-%m-%d') AND DATE_FORMAT(IFNULL(sub_contractor.resource_contract_end, '2049-06-30'),'%Y-%m-%d')
+        )
+      GROUP BY month;
+    `);
+
+    const sub_salaries_forecast = await getManager().query(`
+      SELECT
+        SUM(sub_salary_per_day) AS sub_salaries,
+        month
+      From (
+        SELECT
+          salary * (project_hours_per_day - IFNULL(leave_hours ,0) 
+          ) * (resource_project_effort_rate / 100) AS sub_salary_per_day, -- removing leave_hour and calclyate salary
+
+          DATE_FORMAT(STR_TO_DATE(this_date, '%Y-%m-%d'), '%b %y') AS month
+        From (
+          SELECT
+            calendar_date this_date
+          FROM
+            calendar_view -- 'start of this month' '2023-06-30'
+          WHERE
+            (
+              calendar_view.calendar_date BETWEEN '${currentMonthStart}' AND '${fiscalYearEnd}'
+              AND is_holidays = 0
+              AND is_weekday = 1
+            )
+        ) as calendar_view_filtered
+          LEFT JOIN (
+            SELECT
+              salary,
+              project_hours_per_day,
+              resource_project_effort_rate,
+              resource_start,
+              resource_end,
+              resource_contract_start,
+              resource_contract_end,
+              resource_employee_id
+            FROM
+              revenue_cost_view
+            WHERE
+              employment_type = 1 AND 
+              resource_organization_id != 1
+          ) as sub_contractors ON (
+
+            this_date BETWEEN DATE_FORMAT(resource_contract_start, '%Y-%m-%d') AND DATE_FORMAT( IFNULL(resource_contract_end, '2049-06-30'), '%Y-%m-%d' )
+            AND this_date BETWEEN DATE_FORMAT(resource_start, '%Y-%m-%d') AND DATE_FORMAT(resource_end, '%Y-%m-%d')
+          )
+            LEFT JOIN (
+                SELECT  
+                    employee_id,
+                    date as leave_date,
+                    hours as leave_hours
+                FROM 
+                leave_requests
+                JOIN leave_request_entries
+                    ON leave_request_entries.leave_request_id = leave_requests.id
+                WHERE leave_requests.deleted_at IS NULL  
+                    AND leave_request_entries.deleted_at IS NULL
+                    AND rejected_at IS NULL
+                    AND type_id IS NULL
+            ) as employee_leaves ON (
+                employee_id = resource_employee_id AND
+                this_date = leave_date
+            )
+        WHERE NOT EXISTS (
+          SELECT 1
+          FROM project_shutdown_periods 
+          WHERE project_id = project_shutdown_periods.project_id
+            AND this_date BETWEEN project_shutdown_periods.start_date AND project_shutdown_periods.end_date
+        )
+        GROUP BY
+          resource_start,
+          resource_end,
+          resource_contract_start,
+          resource_contract_end,
+          resource_employee_id,
+          this_date
+      ) as costing
+        GROUP BY
+          month;
+    `);
+
     let length_of_loop = Math.max(
       ...[actual_revenue.length, forecast_revenue.length]
     );
@@ -2412,6 +2530,7 @@ export class ReportController {
       LEAD_TIME_BASE: { total: 0 },
       LEAD_COST: { total: 0 },
       CASUAL_SALARIES: { total: 0 },
+      SUB_SALARIES: { total: 0 },
       PERMANENT_SALARIES: { total: 0 },
       DOH_SALARIES: { total: 0 },
       PERMANENT_SUPER: { total: 0 },
@@ -2478,6 +2597,24 @@ export class ReportController {
         casual_superannuation ||= 0;
         data['CASUAL_SALARIES'][month] = parseFloat(salary);
         data['CASUAL_SUPER'][month] = parseFloat(casual_superannuation);
+      }
+
+      if (sub_salaries_forecast[i]) {
+        let {
+          month,
+          sub_salaries: salary = 0,
+        } = sub_salaries_forecast[i];
+        salary ||= 0;
+        data['SUB_SALARIES'][month] = parseFloat(salary);
+      }
+
+      if (sub_salaries_actual[i]) {
+        let {
+          month,
+          sub_salaries: salary = 0,
+        } = sub_salaries_actual[i];
+        salary ||= 0;
+        data['SUB_SALARIES'][month] = parseFloat(salary);
       }
 
       if (permanent_salaries[i]) {
