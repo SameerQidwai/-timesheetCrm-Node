@@ -2064,17 +2064,14 @@ export class ReportController {
               )
           )
           LEFT JOIN (
-              SELECT  
-                employee_id,
-                date as leave_date,
-                hours as leave_hours
-              FROM 
-              leave_requests
-              JOIN leave_request_entries
-              ON leave_request_entries.leave_request_id = leave_requests.id
-              WHERE leave_requests.deleted_at IS NULL  
-                AND leave_request_entries.deleted_at IS NULL
-                AND rejected_at IS NULL
+            SELECT  
+              employee_id,
+              leave_entry_hours as leave_hours,
+              leave_entry_date as leave_date
+            FROM 
+              leaves_view
+            WHERE 
+              leave_status_index != 0
 
           ) as employee_leaves ON (
               employee_id = revenue_cost_view.resource_employee_id AND
@@ -2209,18 +2206,16 @@ export class ReportController {
             AND this_date BETWEEN DATE_FORMAT(resource_start, '%Y-%m-%d') AND DATE_FORMAT(resource_end, '%Y-%m-%d')
           )
             LEFT JOIN (
-                SELECT  
-                    employee_id,
-                    date as leave_date,
-                    hours as leave_hours
-                FROM 
-                leave_requests
-                JOIN leave_request_entries
-                    ON leave_request_entries.leave_request_id = leave_requests.id
-                WHERE leave_requests.deleted_at IS NULL  
-                    AND leave_request_entries.deleted_at IS NULL
-                    AND rejected_at IS NULL
-                    AND type_id IS NULL
+              SELECT  
+                employee_id,
+                leave_entry_hours as leave_hours,
+                leave_entry_date as leave_date
+              FROM 
+                leaves_view
+              WHERE 
+                leave_status_index != 0
+                AND leave_type_name = 'unpaid'
+
             ) as employee_leaves ON (
                 employee_id = resource_employee_id AND
                 this_date = leave_date
@@ -2246,57 +2241,90 @@ export class ReportController {
     const permanent_salaries = await getManager().query(`
       SELECT 
         month, 
-        SUM(salary_month) permanent_salaries, 
+        SUM(monthly_salary - IFNULL(salary_deduction,0)) permanent_salaries, 
         SUM(superannuation) permanent_superannuation,
-        SUM(doh_salary) doh_salaries, 
+        SUM(monthly_doh - IFNULL(doh_salary_deduction,0)) doh_salaries, 
         SUM(doh_superannuation) doh_superannuation
-        FROM (
-          SELECT
-            -- to seperate boh percent for salaries
-              (salary / 12) * (ABS(boh_percent - 100) / 100) salary_month,
-              (salary / 12) * (ABS(boh_percent - 100) / 100) * (superannuation_percentage) superannuation,
-              
-              -- to seperate boh percent for salaries
-              (salary / 12) * (boh_percent)/100 doh_salary ,
-              (salary / 12) * (boh_percent)/100 * (superannuation_percentage) doh_superannuation, -- to seperate boh percent for salaries
-              
-              DATE_FORMAT( STR_TO_DATE(calendar_view_filtered.calendar_date, '%Y-%m-%d'), '%b %y' ) month 
-              -- month wise salary checking contracts end
-          From
-          (
-              SELECT calendar_date, global_variable_values.value / 100 superannuation_percentage
-              FROM
-                  calendar_view
-                      LEFT JOIN global_variable_values ON calendar_view.calendar_date BETWEEN global_variable_values.start_date
-                          AND global_variable_values.end_date
-                      LEFT JOIN global_variable_labels ON global_variable_labels.id = global_variable_values.global_variable_id
-              WHERE
-                  (                                      -- '2022-07-01'
-                      calendar_view.calendar_date BETWEEN '${fiscalYearStart}' AND '${fiscalYearEnd}' -- '2023-06-30'
-                      AND global_variable_labels.name = 'Superannuation'
-                  ) -- checking for only one fiscal year
-              GROUP BY calendar_view.month -- group by to get only a date for month
-          ) as calendar_view_filtered
-              LEFT JOIN (
-                  SELECT *
-                  FROM
-                      revenue_cost_view
-                  WHERE
-                      employment_type != 1
-              ) as casual_employee -- group by to get only ONE date for month  to check contracts running dates on every month
-              ON (
-                  (    -- JOIN ONLY ON CONTRACT TO AVOID REPEATED ALLOCATIONs
-                      calendar_view_filtered.calendar_date BETWEEN DATE_FORMAT(resource_contract_start, '%Y-%m-%d')
-                      AND 
-                      DATE_FORMAT( IFNULL(resource_contract_end, '2049-06-30'), '%Y-%m-%d' )
-                  )
-              )
-          GROUP BY
-              resource_contract_start,
-              resource_contract_end,
-              resource_employee_id,
-              month
-        ) as costing
+
+      FROM(
+        SELECT 
+          employee.employee_id,
+
+          -- monthly Salaries
+          monthly_salary * foh_percent AS monthly_salary,
+          monthly_salary * foh_percent * superannuation_percentage AS superannuation,
+          
+          -- to seperate boh percent for salaries
+          monthly_salary * boh_percent AS monthly_doh,
+          monthly_salary * boh_percent * superannuation_percentage AS doh_superannuation, 
+
+          -- Leave deduction 
+          SUM(leave_hours * hourly_salary) * boh_percent AS doh_salary_deduction,
+          SUM(leave_hours * hourly_salary) * foh_percent AS salary_deduction,
+
+          DATE_FORMAT( STR_TO_DATE(calendar_view_filtered.calendar_date, '%Y-%m-%d'), '%b %y' ) month 
+
+        FROM ( -- to run daily dates run and get superannuation 
+          SELECT 
+            calendar_date, 
+            (global_variable_values.value / 100 ) AS superannuation_percentage
+          FROM
+            calendar_view
+              LEFT JOIN global_variable_values ON calendar_view.calendar_date BETWEEN global_variable_values.start_date
+                AND global_variable_values.end_date
+              LEFT JOIN global_variable_labels ON global_variable_labels.id = global_variable_values.global_variable_id
+          WHERE
+            (                                      -- '2022-07-01'
+              calendar_view.calendar_date BETWEEN '${fiscalYearStart}' AND '${fiscalYearEnd}' -- '2023-06-30'
+              AND global_variable_labels.name = 'Superannuation' 
+              AND is_holidays = 0
+              AND is_weekday = 1
+              ) -- checking for only one fiscal year
+        ) as calendar_view_filtered -- to run daily dates run and get superannuation 
+        LEFT JOIN ( 
+          SELECT -- To get employees whose contracts are still runs 
+            contact_person_view.employee_id AS employee_id,
+            (remuneration_amount / 12) AS monthly_salary,
+            (ABS(boh_percent - 100) / 100) AS foh_percent,
+            (boh_percent)/100 boh_percent,
+            (remuneration_amount / 52 / (no_of_hours - no_of_days) ) AS hourly_salary,
+            start_date AS contract_start,
+            end_date AS contract_end
+
+          FROM
+            contact_person_view
+          LEFT JOIN 
+            employment_contracts ON
+              contact_person_view.employee_id = employment_contracts.employee_id
+          WHERE
+            type != 1 AND
+            employment_contracts.deleted_at IS NULL 
+        ) AS employee -- group by to get only ONE date for month  to check contracts running dates on every month
+        ON (    
+          -- JOIN ONLY ON CONTRACT TO AVOID MULTIPLE CONTRACTS
+          calendar_date BETWEEN DATE_FORMAT(contract_start, '%Y-%m-%d') AND 
+          DATE_FORMAT( IFNULL(contract_end, '2049-06-30'), '%Y-%m-%d' )
+        )
+        LEFT JOIN (
+          SELECT  
+            employee_id,
+            leave_entry_hours as leave_hours,
+            leave_entry_date as leave_date
+          FROM 
+            leaves_view
+          WHERE 
+            leave_status_index != 0
+            AND leave_type_name = 'unpaid'
+        ) as employee_leaves ON (
+          employee_leaves.employee_id = employee.employee_id AND
+          calendar_date = leave_date
+        )
+        GROUP BY
+          contract_start,
+          contract_end,
+          employee_id,
+          month
+      ) as costing
       GROUP BY month;
     `);
 
@@ -2486,18 +2514,16 @@ export class ReportController {
             AND this_date BETWEEN DATE_FORMAT(resource_start, '%Y-%m-%d') AND DATE_FORMAT(resource_end, '%Y-%m-%d')
           )
             LEFT JOIN (
-                SELECT  
-                    employee_id,
-                    date as leave_date,
-                    hours as leave_hours
-                FROM 
-                leave_requests
-                JOIN leave_request_entries
-                    ON leave_request_entries.leave_request_id = leave_requests.id
-                WHERE leave_requests.deleted_at IS NULL  
-                    AND leave_request_entries.deleted_at IS NULL
-                    AND rejected_at IS NULL
-                    AND type_id IS NULL
+              SELECT  
+                employee_id,
+                leave_entry_hours as leave_hours,
+                leave_entry_date as leave_date
+              FROM 
+                leaves_view
+              WHERE 
+                leave_status_index != 0
+                AND leave_type_name = 'unpaid'
+              
             ) as employee_leaves ON (
                 employee_id = resource_employee_id AND
                 this_date = leave_date
