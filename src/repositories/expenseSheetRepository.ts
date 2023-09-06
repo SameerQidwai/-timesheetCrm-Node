@@ -908,7 +908,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         if (sheet.projectId) {
           if (sheet.project.projectManagerId) {
             await NotificationManager.info(
-              [1],
+              [sheet.project.projectManagerId],
               `Expense Sheet Submitted`,
               `An Expense sheet has been Submitted of Project ${sheet.project.title} by ${emplyoee.getFullName}`,
               `/expense-sheet-approval`,
@@ -917,7 +917,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
           }
         } else {
           await NotificationManager.info(
-            [1],
+            [],
             `Expense Sheet Submitted`,
             `An Expense sheet linked to no project has been Submitted by ${emplyoee.getFullName}`,
             `/expense-sheet-approval`,
@@ -975,7 +975,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         let expenseSheet = await transactionalEntityManager.save(sheet);
 
         await NotificationManager.success(
-          [1],
+          [sheet.createdBy],
           `Expense Sheet Approved`,
           `Your Expense sheet with id ${sheet.id} has been Approved`,
           `/expense-sheets`,
@@ -1032,7 +1032,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         let expenseSheet = await transactionalEntityManager.save(sheet);
 
         await NotificationManager.danger(
-          [1],
+          [sheet.createdBy],
           `Expense Sheet Rejected`,
           `Your Expense sheet with id ${sheet.id} has been Rejected`,
           `/expense-sheets`,

@@ -1241,7 +1241,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
           if (milestoneEntry) {
             await NotificationManager.info(
-              [1],
+              [timesheet.employee.lineManagerId],
               `Timesheet Submitted`,
               `Timesheet of date ${moment(timesheet.startDate).format(
                 'DD-MM-YYYY'
@@ -1332,7 +1332,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
             if (milestoneEntry) {
               await NotificationManager.success(
-                [1],
+                [timesheet.employeeId],
                 `Timesheet Approved`,
                 `Timesheet of date ${moment(timesheet.startDate).format(
                   'DD-MM-YYYY'
@@ -1429,7 +1429,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
           if (milestoneEntry) {
             await NotificationManager.success(
-              [1],
+              [timesheet.employeeId],
               `Timesheet Approved`,
               `Timesheet of date ${moment(timesheet.startDate).format(
                 'DD-MM-YYYY'
@@ -1517,7 +1517,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
             if (milestoneEntry) {
               await NotificationManager.danger(
-                [1],
+                [timesheet.employeeId],
                 `Timesheet Rejection`,
                 `Timesheet of date ${moment(timesheet.startDate).format(
                   'DD-MM-YYYY'
@@ -1614,7 +1614,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
           if (milestoneEntry) {
             await NotificationManager.danger(
-              [1],
+              [timesheet.employeeId],
               `Timesheet Rejection`,
               `Timesheet of date ${moment(timesheet.startDate).format(
                 'DD-MM-YYYY'
@@ -1705,7 +1705,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
             if (milestoneEntry) {
               await NotificationManager.danger(
-                [1],
+                [timesheet.employeeId],
                 `Timesheet Unapproved`,
                 `Timesheet of date ${moment(timesheet.startDate).format(
                   'DD-MM-YYYY'
@@ -1805,7 +1805,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
           if (milestoneEntry) {
             await NotificationManager.danger(
-              [1],
+              [timesheet.employeeId],
               `Timesheet Unapproved`,
               `Timesheet of date ${moment(timesheet.startDate).format(
                 'DD-MM-YYYY'

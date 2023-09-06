@@ -8,8 +8,9 @@ import { getManager, In } from 'typeorm';
 import { StandardMailUserInterface } from './interfaces';
 import { dispatchMail } from './mailer';
 import { NotificationMail } from '../mails/notificationMail';
+import moment from 'moment-timezone';
 
-let getNotifiers = async (userIds: Array<number>) => {
+let getNotifiers = async (userIds: Array<number | null | undefined>) => {
   const manager = getManager();
 
   let responseUsers: Array<{
@@ -19,13 +20,13 @@ let getNotifiers = async (userIds: Array<number>) => {
 
   let users: Array<Employee> = [];
 
-  if (userIds) {
+  if (process.env.DUMMY_NOTIFICATION === 'true') {
     users = await manager.find(Employee, {
       relations: [
         'contactPersonOrganization',
         'contactPersonOrganization.contactPerson',
       ],
-      where: { id: In(userIds) },
+      where: { id: 1 },
     });
   } else {
     users = await manager.find(Employee, {
@@ -33,9 +34,20 @@ let getNotifiers = async (userIds: Array<number>) => {
         'contactPersonOrganization',
         'contactPersonOrganization.contactPerson',
       ],
-      where: { role: 1 },
+      where: [{ id: In(userIds) }, { roleId: 1 }],
     });
   }
+  // if (userIds) {
+
+  // } else {
+  // users = await manager.find(Employee, {
+  //   relations: [
+  //     'contactPersonOrganization',
+  //     'contactPersonOrganization.contactPerson',
+  //   ],
+  //   where: { role: 1 },
+  // });
+  // }
 
   if (!users.length) {
     throw new Error('Users not found');
@@ -67,6 +79,7 @@ let dispatchNotification = async (
     notifiableId,
     url,
     event,
+    generatedAt: moment().toDate(),
   });
 
   return await manager.save(notification);
@@ -74,7 +87,7 @@ let dispatchNotification = async (
 
 export class NotificationManager {
   public static async info(
-    userIds: Array<number>,
+    userIds: Array<number | null | undefined>,
     title: string,
     content: string,
     url: string,
@@ -93,10 +106,12 @@ export class NotificationManager {
           event
         );
 
-        dispatchMail(
-          new NotificationMail(user.emailObj.username, notification),
-          user.emailObj
-        );
+        if (process.env.SEND_NOTIFICATION_MAIL === 'true') {
+          dispatchMail(
+            new NotificationMail(user.emailObj.username, notification),
+            user.emailObj
+          );
+        }
       }
     } catch (e) {
       console.log(e);
@@ -104,7 +119,7 @@ export class NotificationManager {
   }
 
   public static async success(
-    userIds: Array<number>,
+    userIds: Array<number | null | undefined>,
     title: string,
     content: string,
     url: string,
@@ -123,10 +138,12 @@ export class NotificationManager {
           event
         );
 
-        dispatchMail(
-          new NotificationMail(user.emailObj.username, notification),
-          user.emailObj
-        );
+        if (process.env.SEND_NOTIFICATION_MAIL === 'true') {
+          dispatchMail(
+            new NotificationMail(user.emailObj.username, notification),
+            user.emailObj
+          );
+        }
       }
     } catch (e) {
       console.log(e);
@@ -134,7 +151,7 @@ export class NotificationManager {
   }
 
   public static async danger(
-    userIds: Array<number>,
+    userIds: Array<number | null | undefined>,
     title: string,
     content: string,
     url: string,
@@ -153,10 +170,12 @@ export class NotificationManager {
           event
         );
 
-        dispatchMail(
-          new NotificationMail(user.emailObj.username, notification),
-          user.emailObj
-        );
+        if (process.env.SEND_NOTIFICATION_MAIL === 'true') {
+          dispatchMail(
+            new NotificationMail(user.emailObj.username, notification),
+            user.emailObj
+          );
+        }
       }
     } catch (e) {
       console.log(e);
@@ -164,7 +183,7 @@ export class NotificationManager {
   }
 
   public static async dynamic(
-    userIds: Array<number>,
+    userIds: Array<number | null | undefined>,
     title: string,
     content: string,
     url: string,
@@ -184,10 +203,12 @@ export class NotificationManager {
           event
         );
 
-        dispatchMail(
-          new NotificationMail(user.emailObj.username, notification),
-          user.emailObj
-        );
+        if (process.env.SEND_NOTIFICATION_MAIL === 'true') {
+          dispatchMail(
+            new NotificationMail(user.emailObj.username, notification),
+            user.emailObj
+          );
+        }
       }
     } catch (e) {
       console.log(e);

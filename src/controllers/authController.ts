@@ -547,10 +547,25 @@ export class AuthController {
 
       const manager = getManager();
 
+      const currentUserId = res.locals.jwtPayload.id;
+
+      if (!currentUserId) {
+        throw new Error('Unauthorized');
+      }
+
+      const currentUser = await manager.findOne(Employee, {
+        id: currentUserId,
+      });
+
+      if (!currentUser) {
+        throw new Error('Unauthorized');
+      }
+
       let [records, count] = await manager.findAndCount(Notification, {
         skip: limit * (page - 1),
         take: limit,
         order: { id: 'DESC' },
+        where: { notifiableId: currentUser.id },
       });
 
       const lastPage = Math.ceil(count / limit);
@@ -604,9 +619,10 @@ export class AuthController {
 
       const notifications = await manager.find(Notification, {
         where: {
-          createdAt: MoreThanOrEqual(
+          generatedAt: MoreThanOrEqual(
             currentUser.notificationsClearedAt ?? '2000-01-01'
           ),
+          notifiableId: currentUser.id,
         },
       });
 
@@ -626,6 +642,20 @@ export class AuthController {
     try {
       const manager = getManager();
 
+      const currentUserId = res.locals.jwtPayload.id;
+
+      if (!currentUserId) {
+        throw new Error('Unauthorized');
+      }
+
+      const currentUser = await manager.findOne(Employee, {
+        id: currentUserId,
+      });
+
+      if (!currentUser) {
+        throw new Error('Unauthorized');
+      }
+
       let ids = [];
 
       if (req.query.notificationIds)
@@ -638,7 +668,7 @@ export class AuthController {
       ids.push(req.body.notificationIds);
 
       let notifications = await manager.find(Notification, {
-        where: { id: In(ids) },
+        where: { id: In(ids), notifiableId: currentUser.id },
       });
 
       for (let notification of notifications) {

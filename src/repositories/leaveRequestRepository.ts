@@ -317,7 +317,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         }
 
         await NotificationManager.info(
-          [1],
+          [employee.lineManagerId, project?.projectManagerId],
           `Leave Request Submission`,
           `Leave of date ${moment(_firstDate).format('DD-MM-YYYY')} - ${moment(
             _lastDate
@@ -683,7 +683,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
         for (let leaveRequest of leaveRequests) {
           await NotificationManager.success(
-            [1],
+            [leaveRequest.employeeId],
             `Leave Request Approved`,
             `Leave of date ${moment(
               leaveRequest.getEntriesDetails.startDate
@@ -770,7 +770,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
 
         for (let leaveRequest of leaveRequests) {
           await NotificationManager.danger(
-            [1],
+            [leaveRequest.employeeId],
             `Leave Request Rejection`,
             `Leave from date ${moment(
               leaveRequest.getEntriesDetails.startDate
@@ -1378,7 +1378,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         }
 
         await NotificationManager.info(
-          [1],
+          [employee.lineManagerId],
           `Leave Request Re-Submission`,
           `Leave of date ${moment(_firstDate).format('DD-MM-YYYY')} - ${moment(
             _lastDate
@@ -1527,7 +1527,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
     leaveRequestBalance.balanceHours -= difference;
 
     await NotificationManager.info(
-      [1],
+      [leaveRequestBalance.employee.lineManagerId],
       `Leave Request Balance Updated`,
       `Leave Request Balance of Employee ${leaveRequestBalance.employee.getFullName} was updated.`,
       `/Employees/${leaveRequestBalance.employeeId}/info#leave-balance`,

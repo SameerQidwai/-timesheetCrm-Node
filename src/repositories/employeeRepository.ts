@@ -687,7 +687,7 @@ export class EmployeeRepository extends Repository<Employee> {
       await transactionalEntityManager.save(bankAccount);
 
       await NotificationManager.info(
-        [1],
+        [employeeObj.lineManagerId],
         `Employee Updated`,
         `Details of Employee ${employeeObj?.getFullName} are updated`,
         `/Employees/${employeeObj.id}/info`,

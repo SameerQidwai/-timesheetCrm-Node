@@ -27,6 +27,9 @@ export class Notification extends Base {
   @Column({ name: 'type', default: 1 })
   type: number;
 
+  @Column({ name: 'generated_at', type: 'datetime' })
+  generatedAt: Date;
+
   @Column({ name: 'read_at', nullable: true })
   readAt: Date;
 
