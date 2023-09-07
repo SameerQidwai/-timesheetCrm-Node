@@ -13,4 +13,8 @@ router
   .route('/upload')
   .post([], upload.single('file'), contr.uploadTimesheetFunction.bind(contr));
 
+router
+  .route('/dummyNotification')
+  .get(contr.createDummyNotification.bind(contr));
+
 export default router;

@@ -114,6 +114,9 @@ export class Employee extends Base {
   @Column({ name: 'training', nullable: true })
   training: string;
 
+  @Column({ name: 'notifications_cleared_at', nullable: true })
+  notificationsClearedAt: Date;
+
   // ---------------------------------------------------Management----------------------------------------
 
   @Column({ name: 'line_manager_id', nullable: true })

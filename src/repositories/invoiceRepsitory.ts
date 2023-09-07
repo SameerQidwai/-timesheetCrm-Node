@@ -304,26 +304,31 @@ export class InvoiceRepsitory extends Repository<Invoice> {
               ']' --  1 Concatenates the string square brackets close
           ) attachments
         FROM invoices 
-          LEFT JOIN profit_view
+        LEFT JOIN profit_view
+        ON (
+            profit_view.project_id = invoices.project_id AND (
+            profit_view.project_type = 1 OR
+            (
+              profit_view.project_type = 2 AND
+              STR_TO_DATE(profit_view.entry_date,'%e-%m-%Y') BETWEEN IFNULL(invoices.start_date, '2018-06-30') AND  IFNULL(invoices.end_date, '2049-06-30')
+            ))
+        )
+        LEFT JOIN purchase_orders
+          ON purchase_orders.id = invoices.purchase_order_id
+        LEFT JOIN attachments
           ON (
-              profit_view.project_id = invoices.project_id AND
-              profit_view.project_type = 1 OR
-              (
-                profit_view.project_type = 2 AND
-                STR_TO_DATE(profit_view.entry_date,'%e-%m-%Y') BETWEEN IFNULL(invoices.start_date, '2018-06-30') AND  IFNULL(invoices.end_date, '2049-06-30')
-              )
+              attachments.target_id = profit_view.milestone_entry_id
+              AND attachments.target_type = "PEN"
           )
-          LEFT JOIN purchase_orders
-            ON purchase_orders.id = invoices.purchase_order_id
-          LEFT JOIN attachments
-            ON (
-                attachments.target_id = profit_view.milestone_entry_id
-                AND attachments.target_type = "PEN"
-            )
-          LEFT JOIN files
-              ON (attachments.file_id = files.id)                  
-        WHERE 
-          invoices.invoiceId = '${id}'
+        LEFT JOIN milestones
+          ON milestones.project_id = invoices.project_id
+        LEFT JOIN files
+          ON  (
+            (profit_view.project_type = 2 AND attachments.file_id = files.id) OR
+            (profit_view.project_type = 1 AND milestones.file_id = files.id)
+          )                          
+      WHERE 
+        invoices.invoiceId = '${id}'
       `
       
       let [crmInvoice, xeroRes, attachmentsRes] = await Promise.all([
@@ -331,7 +336,6 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         xero.accountingApi.getInvoice( tenantId, id ),
         xero.accountingApi.getInvoiceAttachments(tenantId, id)
       ]);
-      console.log(crmInvoice)
 
       let xeroInvoice = xeroRes.body.invoices?.[0]
       if (!crmInvoice?.[0] || !xeroInvoice){
@@ -570,23 +574,6 @@ export class InvoiceRepsitory extends Repository<Invoice> {
         `);
           // console.log(resources)
           
-          let fileIds: number[] = [];
-          resources = resources.map((resource:any)=>{ //checking the file should be unique for all resouces
-            for (let attach of (JSON.parse(resource?.attachments)??[])) {
-              if (!fileIds.includes(attach.fileId)){ //check if fileName is created unique
-                attach.thumbUrl = `${process.env.ENV_URL}${thumbUrlGenerator(attach.type)}`
-                attach.url = `${process.env.SERVER_API}/api/v1/files/${attach.uniqueName}`
-                attach.attachXero = true
-                attach.includeOnline = true
-                attachments.push(attach) 
-                fileIds.push(attach.fileId) //adding to this array to check later 
-              }
-            }
-            delete resource.attachments // delete attachment from all resouce to added array seperatly 
-            return resource // return updated element to map 
-          });
-          
-          // return resources
       } else if (project.type === 1) {
         resources = await this.query(`
           SELECT  
@@ -594,19 +581,52 @@ export class InvoiceRepsitory extends Repository<Invoice> {
             project_schedules.amount unitAmount, 
             project_schedules.id id,
             '-' AS quantity, -- need to multiply this 
-            1 AS hours -- but show this in table
-              FROM 
-                opportunities 
-                  LEFT JOIN project_schedules ON
-                  opportunities.id = project_schedules.project_id
-
-              WHERE opportunities.id=${projectId}
-              AND project_schedules.deleted_at IS NULL 
+            1 AS hours, -- but show this in table
+            CONCAT( -- 1 Concatenates the string square brackets open
+              '[',
+              GROUP_CONCAT( -- Aggregates the concatenated JSON objects
+                DISTINCT CONCAT( -- Only allow Unique Concatenates the JSON object
+                  '{
+                    "type": "', files.type, '",
+                    "name": "', files.original_name, '",
+                    "uniqueName": "', files.unique_name, '",
+                    "fileId": ', files.id, 
+                  '}' 
+                )
+                SEPARATOR ','  -- Separator for each JSON object
+              ),
+              ']' --  1 Concatenates the string square brackets close
+            ) attachments
+          FROM 
+            opportunities 
+              LEFT JOIN project_schedules ON
+                opportunities.id = project_schedules.project_id
+              LEFT JOIN milestones ON
+                milestones.project_id = opportunities.id
+              LEFT JOIN files
+                ON  milestones.file_id = files.id
+          WHERE opportunities.id=${projectId}
+          AND project_schedules.deleted_at IS NULL 
           `);
       }
       
-
-      
+      let fileIds: number[] = [];
+      resources = resources.map((resource:any)=>{ //checking the file should be unique for all resouces
+        for (let attach of (JSON.parse(resource?.attachments)??[])) {
+          if (!fileIds.includes(attach.fileId)){ //check if fileName is created unique
+            attach.thumbUrl = `${process.env.ENV_URL}${thumbUrlGenerator(attach.type)}`
+            attach.url = `${process.env.SERVER_API}/api/v1/files/${attach.uniqueName}`
+            attach.attachXero = true
+            attach.includeOnline = true
+            attachments.push(attach) 
+            fileIds.push(attach.fileId) //adding to this array to check later 
+          }
+        }
+        delete resource.attachments // delete attachment from all resouce to added array seperatly 
+        return resource // return updated element to map 
+      });
+        
+      // return resources
 
       return {resources, attachments, ...rest};
     

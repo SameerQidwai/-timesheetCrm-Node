@@ -200,3 +200,36 @@ export enum ExpenseStatus {
   REJECTED = 'RJ',
   APPROVED = 'AP',
 }
+
+export enum NotificationEventType {
+  EXPENSE_SHEET_SUBMIT = 'expense-sheet-submit',
+  EXPENSE_SHEET_APPROVE = 'expense-sheet-approve',
+  EXPENSE_SHEET_REJECT = 'expense-sheet-reject',
+  TIME_SHEET_SUBMIT = 'time-sheet-submit',
+  TIME_SHEET_APPROVE = 'time-sheet-approve',
+  TIME_SHEET_UNAPPROVE = 'time-sheet-unapprove',
+  TIME_SHEET_REJECT = 'time-sheet-reject',
+  LEAVE_REQUEST_SUBMIT = 'leave-request-submit',
+  LEAVE_REQUEST_APPROVE = 'leave-request-approve',
+  LEAVE_REQUEST_REJECT = 'leave-request-reject',
+  LEAVE_BALANCE_UPDATE = 'leave-balance-update',
+  EMPLOYEE_UPDATE = 'employee-update',
+}
+
+export enum NotificationType {
+  ALERT = 0,
+  INFO = 1,
+  SUCCESS = 2,
+  DANGER = 3,
+}
+
+export enum NotificationMediumType {
+  MAIL = 1,
+  SMS = 2,
+  APP = 3,
+  WEB = 4,
+}
+
+export enum NotificationUrl {
+  EXPENSESHEET_APPROVAL = 'whatsoever',
+}
