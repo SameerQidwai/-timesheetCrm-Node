@@ -2358,77 +2358,103 @@ export class ReportController {
     // I didn't find any but it is lot readable
     const lead_forecast_revenue = await getManager().query(`
       SELECT
-        SUM(monthly_project_work_days * project_discount_value/total_project_work_days) AS month_total_sell,
-        SUM(monthly_project_work_days * (project_discount_value/total_project_work_days - (project_discount_value/total_project_work_days * cm_percentage/100))) AS month_total_buy,
-        month
+        month,
+        
+        -- Time base project revnute project_type=2
+        (CASE WHEN project_type = 2 
+        THEN 
+            SUM(monthly_project_work_days * project_discount_value/total_project_work_days)
+        ELSE 
+            0
+        END ) AS monthly_time_sell,
 
-      FROM    
-      (SELECT 
-        COUNT(*) AS monthly_project_work_days,
-        project_id,
-        cm_percentage,
-        project_discount_value,
-        DATE_FORMAT(working_dates, '%b %y') AS month
+        (CASE WHEN project_type = 2 
+        THEN 
+            SUM(monthly_project_work_days * (project_discount_value/total_project_work_days - (project_discount_value/total_project_work_days * cm_percentage/100)))
+        ELSE 
+            0
+        END ) AS monthly_time_buy,
+        
+        -- Milestone project revenue
+        (CASE WHEN project_type = 1
+        THEN 
+            SUM(monthly_project_work_days * project_discount_value/total_project_work_days)
+        ELSE 
+            0
+        END ) AS monthly_milestone_sell,
 
-      FROM(
+        (CASE WHEN project_type = 1
+        THEN 
+            SUM(monthly_project_work_days * (project_discount_value/total_project_work_days - (project_discount_value/total_project_work_days * cm_percentage/100)))
+        ELSE 
+            0
+        END ) AS monthly_milestone_buy
+      
+      FROM (
         SELECT 
+          COUNT(*) AS monthly_project_work_days,
+          project_id,
           cm_percentage,
-          (value * ((get_percentage * go_percentage)/100))/100 AS project_discount_value,
-          calendar_date AS working_dates,
-          opportunities.id AS project_id
+          project_discount_value,
+          project_type,
+          DATE_FORMAT(working_dates, '%b %y') AS month
+        FROM (
+          SELECT 
+            cm_percentage,
+            (value * ((get_percentage * go_percentage)/100))/100 AS project_discount_value,
+            calendar_date AS working_dates,
+            opportunities.id AS project_id,
+            type AS project_type
 
-        FROM opportunities
-        JOIN calendar_view
-          ON (
-          calendar_date BETWEEN 
-              DATE_FORMAT(start_date,'%Y-%m-%d') AND 
-              DATE_FORMAT(end_date,'%Y-%m-%d') -- checking dates in opportunity 
-          )
-        WHERE NOT EXISTS (
-            SELECT 1
-            FROM project_shutdown_periods 
-            WHERE project_id = opportunities.id
-                AND calendar_date BETWEEN start_date AND end_date
-        ) -- merged where
-            AND ( status ='O' AND deleted_at IS NULL AND type = 2) -- opprtunity where
-            AND (is_holidays = 0 AND is_weekday = 1) -- calander_view where
-            AND ( end_date >= '2023-07-01' AND start_date <= '2024-06-30')  -- date_range whre
-        ) AS dayss
-      GROUP BY month, project_id
+          FROM opportunities
+          JOIN calendar_view
+            ON (
+              calendar_date BETWEEN DATE_FORMAT(start_date,'%Y-%m-%d') AND 
+                DATE_FORMAT(end_date,'%Y-%m-%d') -- checking dates in opportunity 
+            )
+          WHERE NOT EXISTS (
+              SELECT 1
+              FROM project_shutdown_periods 
+              WHERE project_id = opportunities.id
+                  AND calendar_date BETWEEN start_date AND end_date
+          ) -- merged where
+              AND ( status ='O' AND deleted_at IS NULL) -- opprtunity where
+              AND (is_holidays = 0 AND is_weekday = 1) -- calander_view where
+              AND ( end_date >= '${fiscalYearStart}' AND start_date <= '${fiscalYearEnd}')  -- date_range whre
+          ) AS dayss
+        GROUP BY month, project_id
       ) AS extracted_data
       LEFT JOIN (
         SELECT
           project_id,
           COUNT(*) AS total_project_work_days
-
         FROM (
           SELECT
-            calendar_date AS working_dates,
-            opportunities.id AS project_id
-            
+              calendar_date AS working_dates,
+              opportunities.id AS project_id
           FROM
-            opportunities
-            JOIN calendar_view ON (
-              calendar_date BETWEEN DATE_FORMAT(start_date, '%Y-%m-%d')
-              AND DATE_FORMAT(end_date, '%Y-%m-%d') -- checking dates in opportunity 
-            )
+              opportunities
+              JOIN calendar_view ON (
+                calendar_date BETWEEN DATE_FORMAT(start_date, '%Y-%m-%d')
+                  AND DATE_FORMAT(end_date, '%Y-%m-%d') -- checking dates in opportunity 
+              )
           WHERE
-            NOT EXISTS (
-                SELECT
+              NOT EXISTS (
+                  SELECT
                     1
-                FROM
+                  FROM
                     project_shutdown_periods
-                WHERE
+                  WHERE
                     project_id = opportunities.id
                     AND calendar_date BETWEEN start_date AND end_date
-            ) -- merged where
-            AND ( status = 'O' AND deleted_at IS NULL AND type = 2 ) -- opprtunity where
-            AND ( is_holidays = 0 AND is_weekday = 1 ) -- calander_view where
-            AND ( end_date >= '${fiscalYearStart}' AND start_date <= '${fiscalYearEnd}')
+              ) -- merged where
+              AND ( status = 'O' AND deleted_at IS NULL ) -- opprtunity where
+              AND ( is_holidays = 0 AND is_weekday = 1 ) -- calander_view where
+              AND ( end_date >= '${fiscalYearStart}' AND start_date <= '${fiscalYearEnd}') 
         ) AS dayss_total
         GROUP BY project_id
       ) AS total_sum ON total_sum.project_id = extracted_data.project_id
-      GROUP BY month;
+      GROUP BY month, project_type;
     `)
 
     const sub_salaries_actual = await getManager().query(`
@@ -2554,6 +2580,7 @@ export class ReportController {
       MILESTONE_BASE: { total: 0 },
       TIME_BASE: { total: 0 },
       LEAD_TIME_BASE: { total: 0 },
+      LEAD_MILESTONE_BASE: { total: 0 },
       LEAD_COST: { total: 0 },
       CASUAL_SALARIES: { total: 0 },
       SUB_SALARIES: { total: 0 },
@@ -2590,13 +2617,20 @@ export class ReportController {
       }
 
       if(lead_forecast_revenue[i]){
-        let { month, month_total_sell= 0, month_total_buy = 0 } = lead_forecast_revenue[i];
+        let { month, monthly_time_sell =0, monthly_time_buy = 0, monthly_milestone_sell = 0, monthly_milestone_buy=0 } = lead_forecast_revenue[i];
         if (moment(month, 'MMM YY').isSameOrAfter(moment(), 'month')){
-          data['LEAD_TIME_BASE'][month] = parseFloat(month_total_sell)
-          data['LEAD_COST'][month] = parseFloat(month_total_buy)
-        }else{
-          data['LEAD_TIME_BASE'][month] = 0
-          data['LEAD_COST'][month] = 0
+          console.log({month, monthly_time_buy, monthly_milestone_sell, monthly_milestone_buy})
+          if (!data['LEAD_COST'][month]){
+            data['LEAD_COST'][month] = 0
+          }
+          if (!['LEAD_TIME_BASE'][month]){
+            data['LEAD_TIME_BASE'][month] = parseFloat(monthly_time_sell)
+            data['LEAD_COST'][month] += parseFloat(monthly_time_buy)
+          }
+          if (!['LEAD_MILESTONE_BASE'][month]){
+            data['LEAD_MILESTONE_BASE'][month] = parseFloat(monthly_milestone_sell)
+            data['LEAD_COST'][month] += parseFloat(monthly_milestone_buy)
+          }
         }
         
       }
