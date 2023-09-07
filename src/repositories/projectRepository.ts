@@ -2732,7 +2732,7 @@ export class ProjectRepository extends Repository<Opportunity> {
       }
     }
 
-    
+
     // finding previous End Date
     let previousYearEnd = await this.manager.findOne(FinancialYear, {
       where:{
@@ -2980,11 +2980,11 @@ export class ProjectRepository extends Repository<Opportunity> {
         let positionEndDate = moment(position.endDate, 'YYYY-MM-DD');
         // let positionMonths: any = {}
         if (
-          positionStartDate.isBetween(startDate, endDate, 'date') ||
-          positionEndDate.isBetween(startDate, endDate, 'date') ||
-          startDate.isBetween(positionStartDate, positionEndDate, 'date') ||
-          endDate.isBetween(positionStartDate, positionEndDate, 'date')
-        )
+          positionStartDate.isBetween(startDate, endDate, 'date', '[]') ||
+          positionEndDate.isBetween(startDate, endDate, 'date', '[]') ||
+          startDate.isBetween(positionStartDate, positionEndDate, 'date', '[]') ||
+          endDate.isBetween(positionStartDate, positionEndDate, 'date', '[]')
+        ){
           position.opportunityResourceAllocations.forEach((allocation) => {
             if (
               allocation.isMarkedAsSelected &&
@@ -3089,6 +3089,7 @@ export class ProjectRepository extends Repository<Opportunity> {
               allocations.push(newAllocation);
             }
           });
+        }
       });
     });
 
