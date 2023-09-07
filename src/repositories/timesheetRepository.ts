@@ -810,7 +810,21 @@ export class TimesheetRepository extends Repository<Timesheet> {
           }
         }
 
-        let entry = new TimesheetEntry();
+        let previousEntry = await this.manager.findOne(TimesheetEntry, {
+          where: {
+            date: moment(timesheetDTO.date, 'DD-MM-YYYY').format('DD-MM-YYYY'),
+            milestoneEntryId: milestoneEntry.id,
+          },
+        });
+
+        let entry: TimesheetEntry;
+
+        if (previousEntry) {
+          entry = previousEntry;
+        } else {
+          entry = new TimesheetEntry();
+        }
+
         //--COMMENTED TIMEZONE LOGIC
         {
           // console.log(timesheetDTO.date, timesheetDTO.startTime);
@@ -1249,7 +1263,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
                 'DD-MM-YYYY'
               )} is submitted by ${timesheet.employee.getFullName}`,
               `/time-sheet-approval`,
-              NotificationEventType.TIME_SHEET_SUBMIT
+              NotificationEventType.TIME_SHEET_SUBMIT,
+              [timesheet.employeeId]
             );
           }
         }

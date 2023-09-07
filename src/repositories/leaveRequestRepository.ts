@@ -325,7 +325,8 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
             employee.getFullName
           }`,
           `/approve-request`,
-          NotificationEventType.LEAVE_REQUEST_SUBMIT
+          NotificationEventType.LEAVE_REQUEST_SUBMIT,
+          [leaveRequest.employeeId]
         );
 
         return leaveRequest;

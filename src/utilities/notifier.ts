@@ -91,12 +91,15 @@ export class NotificationManager {
     title: string,
     content: string,
     url: string,
-    event: NotificationEventType
+    event: NotificationEventType,
+    exceptIds: Array<number> = []
   ): Promise<any> {
     try {
       let users = await getNotifiers(userIds);
 
       for (let user of users) {
+        if (exceptIds.includes(user.id)) continue;
+
         let notification = await dispatchNotification(
           user.id,
           title,
@@ -123,12 +126,15 @@ export class NotificationManager {
     title: string,
     content: string,
     url: string,
-    event: NotificationEventType
+    event: NotificationEventType,
+    exceptIds: Array<number> = []
   ): Promise<any> {
     try {
       let users = await getNotifiers(userIds);
 
       for (let user of users) {
+        if (exceptIds.includes(user.id)) continue;
+
         let notification = await dispatchNotification(
           user.id,
           title,
@@ -155,12 +161,15 @@ export class NotificationManager {
     title: string,
     content: string,
     url: string,
-    event: NotificationEventType
+    event: NotificationEventType,
+    exceptIds: Array<number> = []
   ): Promise<any> {
     try {
       let users = await getNotifiers(userIds);
 
       for (let user of users) {
+        if (exceptIds.includes(user.id)) continue;
+
         let notification = await dispatchNotification(
           user.id,
           title,

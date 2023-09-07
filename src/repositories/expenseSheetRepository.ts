@@ -912,7 +912,8 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
               `Expense Sheet Submitted`,
               `An Expense sheet has been Submitted of Project ${sheet.project.title} by ${emplyoee.getFullName}`,
               `/expense-sheet-approval`,
-              NotificationEventType.EXPENSE_SHEET_SUBMIT
+              NotificationEventType.EXPENSE_SHEET_SUBMIT,
+              [sheet.createdBy]
             );
           }
         } else {
@@ -921,7 +922,8 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
             `Expense Sheet Submitted`,
             `An Expense sheet linked to no project has been Submitted by ${emplyoee.getFullName}`,
             `/expense-sheet-approval`,
-            NotificationEventType.EXPENSE_SHEET_SUBMIT
+            NotificationEventType.EXPENSE_SHEET_SUBMIT,
+            [sheet.createdBy]
           );
         }
       }
