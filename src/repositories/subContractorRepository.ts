@@ -673,8 +673,10 @@ export class SubContractorRepository extends Repository<Employee> {
             (currentContract?.dailyHours * 22);
     let buyRate: any = 0;
     // if (currentContract?.hourlyBaseRate){
-    let stateName: string | undefined =
+    let stateName: string | null =
       subContractor?.contactPersonOrganization.contactPerson?.state?.label;
+    
+    stateName = stateName?? 'No State'
 
     let golobalVariables: any = await this.manager
       .getRepository(GlobalVariableLabel)
@@ -690,6 +692,9 @@ export class SubContractorRepository extends Repository<Employee> {
       .getMany();
 
     buyRate = currentContract?.hourlyBaseRate;
+
+    
+
     golobalVariables = golobalVariables.map((variable: any) => {
       let value: any = variable?.values?.[0];
       buyRate += (currentContract?.hourlyBaseRate * value.value) / 100;
@@ -702,7 +707,18 @@ export class SubContractorRepository extends Repository<Employee> {
         amount: (currentContract?.hourlyBaseRate * value.value) / 100,
       };
     });
-    // }
+
+    //set state if state is not assigned to employee
+    if (stateName === 'No State') {
+      golobalVariables[0] = {
+        name: stateName,
+        variableId: 0,
+        valueId: 0,
+        value: 0
+      }
+    }
+
+    
 
     return {
       contract: currentContract,
