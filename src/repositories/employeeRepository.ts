@@ -710,11 +710,11 @@ export class EmployeeRepository extends Repository<Employee> {
         employeeObj.contactPersonOrganization.organizationId === 1;
 
       NotificationManager.info(
-        [employeeObj?.lineManagerId],
+        [employeeObj.lineManagerId],
         `${isEmployee ? 'Employee' : 'Subcontractor'} Resource Updated`,
         `${isEmployee ? 'Employee' : 'Subcontractor'} Resource with the name: ${
-          employeeObj?.getFullName
-        } details has been updated`,
+          employeeObj.getFullName
+        } details have been updated`,
         `${isEmployee ? '/Employees' : '/sub-contractors'}/${
           employeeObj.id
         }/info`,
@@ -1579,10 +1579,10 @@ export class EmployeeRepository extends Repository<Employee> {
     let setGolobalVariables: any = [];
     // if coontract is found
     if (currentContract?.hourlyBaseRate) {
-      let stateName: string| null =
+      let stateName: string | null =
         employee?.contactPersonOrganization.contactPerson?.state?.label;
-        
-        stateName = stateName?? 'No State'
+
+      stateName = stateName ?? 'No State';
       // let variables: any = [
       //   { name: 'Superannuation' },
       //   { name: stateName },
@@ -1637,9 +1637,9 @@ export class EmployeeRepository extends Repository<Employee> {
         let value: any = variable.values?.[0];
         let manipulateVariable: any = {
           name: variable.name,
-          variableId: variable.id??0,
-          valueId: value.id??0,
-          value: value.value??0,
+          variableId: variable.id ?? 0,
+          valueId: value.id ?? 0,
+          value: value.value ?? 0,
         };
         /** Checking if element is from a sort variables */
         if (sortIndex[variable.name] >= 0) {
@@ -1679,15 +1679,15 @@ export class EmployeeRepository extends Repository<Employee> {
 
       // set state if state is not assigned to employee
       if (stateName === 'No State') {
-        console.log('here')
+        console.log('here');
         setGolobalVariables[1] = {
           name: stateName,
           variableId: 0,
           valueId: 0,
           value: 0,
-        }
+        };
       }
-     
+
       //** Calculation to get cost Rate for the employee **//
       buyRate = currentContract?.hourlyBaseRate;
       // console.log(setGolobalVariables);
@@ -1713,9 +1713,7 @@ export class EmployeeRepository extends Repository<Employee> {
         }
       );
 
-       
-
-      console.log(setGolobalVariables)
+      console.log(setGolobalVariables);
       /**let calendar = await this.manager.find(CalendarHoliday);
 
       let holidays: any = [];

@@ -12,7 +12,7 @@ import { EmploymentContract } from './../entities/employmentContract';
 import { BankAccount } from './../entities/bankAccount';
 import { Attachment } from '../entities/attachment';
 import { Comment } from '../entities/comment';
-import { EntityType } from '../constants/constants';
+import { EntityType, NotificationEventType } from '../constants/constants';
 import { OpportunityResourceAllocation } from '../entities/opportunityResourceAllocation';
 import { Opportunity } from '../entities/opportunity';
 import { GlobalVariableLabel } from '../entities/globalVariableLabel';
@@ -20,6 +20,7 @@ import { CalendarHoliday } from '../entities/calendarHoliday';
 
 import moment from 'moment-timezone';
 import { WelcomeMail } from '../mails/welcomeMail';
+import { NotificationManager } from '../utilities/notifier';
 
 @EntityRepository(Employee)
 export class SubContractorRepository extends Repository<Employee> {
@@ -169,6 +170,21 @@ export class SubContractorRepository extends Repository<Employee> {
     dispatchMail(
       new WelcomeMail(user.username, user.email, generatedPassword),
       user
+    );
+
+    const isEmployee =
+      responseSubContractor.contactPersonOrganization.organizationId === 1;
+
+    NotificationManager.info(
+      [],
+      `${isEmployee ? 'Employee' : 'Subcontractor'} Resource Added`,
+      `${isEmployee ? 'Employee' : 'Subcontractor'} Resource with the name: ${
+        responseSubContractor.getFullName
+      } has been created`,
+      `${isEmployee ? '/Employees' : '/sub-contractors'}`,
+      isEmployee
+        ? NotificationEventType.EMPLOYEE_CREATE
+        : NotificationEventType.SUBCONTRACTOR_CREATE
     );
   }
 
@@ -457,6 +473,24 @@ export class SubContractorRepository extends Repository<Employee> {
       subContractorContract.employeeId = subContractorObj.id;
       if (fileId) subContractorContract.fileId = fileId;
       await transactionalEntityManager.save(subContractorContract);
+
+      let isEmployee =
+        subContractorObj.contactPersonOrganization.organizationId === 1;
+
+      NotificationManager.info(
+        [subContractorObj.lineManagerId],
+        `${isEmployee ? 'Employee' : 'Subcontractor'} Resource Updated`,
+        `${isEmployee ? 'Employee' : 'Subcontractor'} Resource with the name: ${
+          subContractorObj.getFullName
+        } details have been updated`,
+        `${isEmployee ? '/Employees' : '/sub-contractors'}/${
+          subContractorObj.id
+        }/info`,
+        isEmployee
+          ? NotificationEventType.EMPLOYEE_UPDATE
+          : NotificationEventType.SUBCONTRACTOR_UPDATE
+      );
+
       return subContractorObj.id;
     });
     return this.findOneCustom(id);
@@ -675,8 +709,8 @@ export class SubContractorRepository extends Repository<Employee> {
     // if (currentContract?.hourlyBaseRate){
     let stateName: string | null =
       subContractor?.contactPersonOrganization.contactPerson?.state?.label;
-    
-    stateName = stateName?? 'No State'
+
+    stateName = stateName ?? 'No State';
 
     let golobalVariables: any = await this.manager
       .getRepository(GlobalVariableLabel)
@@ -692,8 +726,6 @@ export class SubContractorRepository extends Repository<Employee> {
       .getMany();
 
     buyRate = currentContract?.hourlyBaseRate;
-
-    
 
     golobalVariables = golobalVariables.map((variable: any) => {
       let value: any = variable?.values?.[0];
@@ -714,11 +746,9 @@ export class SubContractorRepository extends Repository<Employee> {
         name: stateName,
         variableId: 0,
         valueId: 0,
-        value: 0
-      }
+        value: 0,
+      };
     }
-
-    
 
     return {
       contract: currentContract,
