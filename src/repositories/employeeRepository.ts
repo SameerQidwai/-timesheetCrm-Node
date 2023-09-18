@@ -288,6 +288,11 @@ export class EmployeeRepository extends Repository<Employee> {
       return employeeObj.id;
     });
     let responseEmployee = await this.findOneCustom(id);
+
+    if (!responseEmployee) {
+      throw new Error('Employee not found');
+    }
+
     let user = {
       username:
         responseEmployee.contactPersonOrganization.contactPerson.firstName,
@@ -297,6 +302,21 @@ export class EmployeeRepository extends Repository<Employee> {
     dispatchMail(
       new WelcomeMail(user.username, user.email, generatedPassword),
       user
+    );
+
+    const isEmployee =
+      responseEmployee.contactPersonOrganization.organizationId === 1;
+
+    NotificationManager.info(
+      [],
+      `${isEmployee ? 'Employee' : 'Subcontractor'} Resource Added`,
+      `${isEmployee ? 'Employee' : 'Subcontractor'} Resource with the name: ${
+        responseEmployee.getFullName
+      } has been created`,
+      `${isEmployee ? '/Employees' : '/sub-contractors'}`,
+      isEmployee
+        ? NotificationEventType.EMPLOYEE_CREATE
+        : NotificationEventType.SUBCONTRACTOR_CREATE
     );
 
     return responseEmployee;
@@ -686,12 +706,21 @@ export class EmployeeRepository extends Repository<Employee> {
       bankAccount.employeeId = employeeObj.id;
       await transactionalEntityManager.save(bankAccount);
 
-      await NotificationManager.info(
-        [employeeObj.lineManagerId],
-        `Employee Updated`,
-        `Details of Employee ${employeeObj?.getFullName} are updated`,
-        `/Employees/${employeeObj.id}/info`,
-        NotificationEventType.EMPLOYEE_UPDATE
+      let isEmployee =
+        employeeObj.contactPersonOrganization.organizationId === 1;
+
+      NotificationManager.info(
+        [employeeObj?.lineManagerId],
+        `${isEmployee ? 'Employee' : 'Subcontractor'} Resource Updated`,
+        `${isEmployee ? 'Employee' : 'Subcontractor'} Resource with the name: ${
+          employeeObj?.getFullName
+        } details has been updated`,
+        `${isEmployee ? '/Employees' : '/sub-contractors'}/${
+          employeeObj.id
+        }/info`,
+        isEmployee
+          ? NotificationEventType.EMPLOYEE_UPDATE
+          : NotificationEventType.SUBCONTRACTOR_UPDATE
       );
 
       return employeeObj.id;
@@ -1282,7 +1311,13 @@ export class EmployeeRepository extends Repository<Employee> {
       throw new Error('Employee not found!');
     }
 
-    let employee = await this.findOne(authId, { relations: ['bankAccounts'] });
+    let employee = await this.findOne(authId, {
+      relations: [
+        'bankAccounts',
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+      ],
+    });
 
     if (!employee) {
       throw new Error('Employee not found!');
@@ -1323,7 +1358,21 @@ export class EmployeeRepository extends Repository<Employee> {
 
     employee.bankAccounts[0] = bankAccount;
 
-    this.save(employee);
+    await this.save(employee);
+
+    let isEmployee = employee.contactPersonOrganization.organizationId === 1;
+
+    NotificationManager.info(
+      [employee.lineManagerId],
+      `${isEmployee ? 'Employee' : 'Subcontractor'} Updated Info`,
+      `${isEmployee ? 'Employee' : 'Subcontractor'} Resource with the name: ${
+        employee.getFullName
+      } has updated the details`,
+      `${isEmployee ? '/Employees' : '/sub-contractors'}/${employee.id}/info`,
+      isEmployee
+        ? NotificationEventType.EMPLOYEE_SETTINGS_UPDATE
+        : NotificationEventType.SUBCONTRACTOR_SETTINGS_UPDATE
+    );
 
     return employee;
   }

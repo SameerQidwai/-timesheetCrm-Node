@@ -905,27 +905,14 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
 
         let expenseSheet = await transactionalEntityManager.save(sheet);
 
-        if (sheet.projectId) {
-          if (sheet.project.projectManagerId) {
-            await NotificationManager.info(
-              [sheet.project.projectManagerId],
-              `Expense Sheet Submitted`,
-              `An Expense sheet has been Submitted of Project ${sheet.project.title} by ${emplyoee.getFullName}`,
-              `/expense-sheet-approval`,
-              NotificationEventType.EXPENSE_SHEET_SUBMIT,
-              [sheet.createdBy]
-            );
-          }
-        } else {
-          await NotificationManager.info(
-            [],
-            `Expense Sheet Submitted`,
-            `An Expense sheet linked to no project has been Submitted by ${emplyoee.getFullName}`,
-            `/expense-sheet-approval`,
-            NotificationEventType.EXPENSE_SHEET_SUBMIT,
-            [sheet.createdBy]
-          );
-        }
+        await NotificationManager.info(
+          [sheet.project.projectManagerId],
+          `Expense Sheet Submitted`,
+          `An Expense sheet has been Submitted of Project ${sheet.project.title} by ${emplyoee.getFullName}`,
+          `/expense-sheet-approval`,
+          NotificationEventType.EXPENSE_SHEET_SUBMIT,
+          [sheet.createdBy]
+        );
       }
     });
 
@@ -1089,6 +1076,14 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         sheet.notes = expenseSheetsApproveDTO.notes;
 
         let expenseSheet = await transactionalEntityManager.save(sheet);
+
+        await NotificationManager.danger(
+          [sheet.project.projectManagerId, sheet.createdBy],
+          `Expense Sheet Unapproved`,
+          `Expense sheet with id ${sheet.id} has been Unapproved`,
+          `/expense-sheets`,
+          NotificationEventType.EXPENSE_SHEET_UNAPPROVE
+        );
       }
     });
 

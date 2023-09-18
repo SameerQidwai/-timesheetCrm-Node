@@ -4,7 +4,11 @@ import { BaseMail } from './baseMail';
 export class WelcomeMail extends BaseMail implements StandardMailInterface {
   fileName: string;
 
-  constructor(userName: string | String, email: string, password: string) {
+  constructor(
+    userName: string | String,
+    email: string | String,
+    password: string
+  ) {
     super();
     this.fileName = 'welcomeMailContent.html';
     this.subject = `Invitation to ${process.env.ORGANIZATION}`;

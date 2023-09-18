@@ -9,6 +9,8 @@ import { OpportunityResourceAllocation } from '../entities/opportunityResourceAl
 import { Employee } from '../entities/employee';
 import { Opportunity } from '../entities/opportunity';
 import moment from 'moment-timezone';
+import { NotificationManager } from '../utilities/notifier';
+import { NotificationEventType } from '../constants/constants';
 
 @EntityRepository(ContactPerson)
 export class ContactPersonRepository extends Repository<ContactPerson> {
@@ -133,7 +135,22 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
       console.log('contactPersonOrganizations: ', contactPersonOrganizations);
       return contactPersonObj.id;
     });
-    return await this.findOneCustom(id);
+
+    let contactPerson = await this.findOneCustom(id);
+
+    if (!contactPerson) {
+      throw new Error('Contact Person not found');
+    }
+
+    NotificationManager.info(
+      [],
+      `Contact Person Added`,
+      `Contact Person with the name: ${contactPerson.getFullName} has been created`,
+      `/contacts`,
+      NotificationEventType.CONTACT_PERSON_CREATE
+    );
+
+    return contactPerson;
   }
 
   async getAllActive(): Promise<any[]> {
@@ -353,6 +370,14 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
         ? 'Employee'
         : 'Sub Contractor'
       : 'Contact Person';
+
+    NotificationManager.info(
+      [],
+      `Contact Person Updated`,
+      `Contact Person with the name: ${contactPerson.getFullName} has been updated`,
+      `/contacts`,
+      NotificationEventType.CONTACT_PERSON_UPDATE
+    );
 
     return contactPerson;
   }
