@@ -397,6 +397,11 @@ export class EmployeeRepository extends Repository<Employee> {
     employeeDTO: EmployeeDTO
   ): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
+      let _flagStateNotification = false;
+      let _flagOtherNotification = false;
+      let _flagManagerNotification = false;
+      let _flagLeavePolicyNotification = false;
+
       let employeeObj = await this.findOne(id, {
         relations: [
           'employmentContracts',
@@ -429,6 +434,10 @@ export class EmployeeRepository extends Repository<Employee> {
         contactPersonObj.dateOfBirth = moment(employeeDTO.dateOfBirth).toDate();
 
       let state: State | undefined;
+
+      if (employeeDTO.stateId !== contactPersonObj.stateId)
+        _flagStateNotification = true;
+
       if (employeeDTO.stateId) {
         state = await transactionalEntityManager.findOne(
           State,
@@ -438,9 +447,20 @@ export class EmployeeRepository extends Repository<Employee> {
           throw new Error('State not found');
         }
         contactPersonObj.state = state;
+      } else {
+        (contactPersonObj.stateId as any) = null;
       }
       await transactionalEntityManager.save(contactPersonObj);
       employeeObj.username = employeeDTO.username;
+
+      if (
+        employeeDTO.nextOfKinName !== employeeObj.nextOfKinName ||
+        employeeDTO.nextOfKinPhoneNumber !== employeeObj.nextOfKinPhoneNumber ||
+        employeeDTO.nextOfKinEmail !== employeeObj.nextOfKinEmail ||
+        employeeDTO.nextOfKinRelation !== employeeObj.nextOfKinRelation
+      )
+        _flagOtherNotification = true;
+
       employeeObj.nextOfKinName = employeeDTO.nextOfKinName;
       employeeObj.nextOfKinPhoneNumber = employeeDTO.nextOfKinPhoneNumber;
       employeeObj.nextOfKinEmail = employeeDTO.nextOfKinEmail;
@@ -462,6 +482,21 @@ export class EmployeeRepository extends Repository<Employee> {
       } else {
         employeeObj.superannuationType = null;
       }
+
+      if (
+        employeeDTO.superannuationAbnOrUsi !==
+          employeeObj.superannuationAbnOrUsi ||
+        employeeDTO.superannuationAddress !==
+          employeeObj.superannuationAddress ||
+        employeeDTO.superannuationBankName !==
+          employeeObj.superannuationBankName ||
+        employeeDTO.superannuationBankBsb !==
+          employeeObj.superannuationBankBsb ||
+        employeeDTO.superannuationBankAccountOrMembershipNumber !==
+          employeeObj.superannuationBankAccountOrMembershipNumber
+      )
+        _flagOtherNotification = true;
+
       employeeObj.superannuationAbnOrUsi = employeeDTO.superannuationAbnOrUsi;
       employeeObj.superannuationAddress = employeeDTO.superannuationAddress;
       employeeObj.superannuationBankName = employeeDTO.superannuationBankName;
@@ -471,6 +506,9 @@ export class EmployeeRepository extends Repository<Employee> {
       employeeObj.superannuationFileId = employeeDTO.superannuationFileId;
       employeeObj.training = employeeDTO.training;
       employeeObj.roleId = employeeDTO.roleId;
+
+      if (employeeDTO.lineManagerId !== employeeObj.lineManagerId)
+        _flagManagerNotification = true;
 
       if (employeeDTO.lineManagerId) {
         let linerManager = await transactionalEntityManager.findOne(
@@ -626,6 +664,9 @@ export class EmployeeRepository extends Repository<Employee> {
       employmentContract.remunerationAmountPer = remunerationAmountPer;
       employmentContract.employeeId = employeeObj.id;
 
+      if (leaveRequestPolicyId !== employmentContract.leaveRequestPolicyId)
+        _flagLeavePolicyNotification = true;
+
       if (leaveRequestPolicyId) {
         let policy = await transactionalEntityManager.findOne(
           LeaveRequestPolicy,
@@ -709,19 +750,91 @@ export class EmployeeRepository extends Repository<Employee> {
       let isEmployee =
         employeeObj.contactPersonOrganization.organizationId === 1;
 
-      NotificationManager.info(
-        [employeeObj.lineManagerId],
-        `${isEmployee ? 'Employee' : 'Subcontractor'} Resource Updated`,
-        `${isEmployee ? 'Employee' : 'Subcontractor'} Resource with the name: ${
-          employeeObj.getFullName
-        } details have been updated`,
-        `${isEmployee ? '/Employees' : '/sub-contractors'}/${
-          employeeObj.id
-        }/info`,
-        isEmployee
-          ? NotificationEventType.EMPLOYEE_UPDATE
-          : NotificationEventType.SUBCONTRACTOR_UPDATE
-      );
+      // NotificationManager.info(
+      //   [employeeObj.lineManagerId],
+      //   `${isEmployee ? 'Employee' : 'Subcontractor'} Resource Updated`,
+      //   `${isEmployee ? 'Employee' : 'Subcontractor'} Resource with the name: ${
+      //     employeeObj.getFullName
+      //   } details have been updated`,
+      //   `${isEmployee ? '/Employees' : '/sub-contractors'}/${
+      //     employeeObj.id
+      //   }/info`,
+      //   isEmployee
+      //     ? NotificationEventType.EMPLOYEE_UPDATE
+      //     : NotificationEventType.SUBCONTRACTOR_UPDATE
+      // );
+
+      if (_flagLeavePolicyNotification) {
+        await NotificationManager.info(
+          [employeeObj.lineManagerId],
+          `${isEmployee ? 'Employee' : 'Subcontractor'} Resource Updated`,
+          `${
+            isEmployee ? 'Employee' : 'Subcontractor'
+          } Resource with the name: ${
+            employeeObj.getFullName
+          } Policy have been updated`,
+          `${isEmployee ? '/Employees' : '/sub-contractors'}/${
+            employeeObj.id
+          }/info`,
+          isEmployee
+            ? NotificationEventType.EMPLOYEE_UPDATE
+            : NotificationEventType.SUBCONTRACTOR_UPDATE
+        );
+      }
+
+      if (_flagManagerNotification) {
+        await NotificationManager.info(
+          [employeeObj.lineManagerId],
+          `${isEmployee ? 'Employee' : 'Subcontractor'} Resource Updated`,
+          `${
+            isEmployee ? 'Employee' : 'Subcontractor'
+          } Resource with the name: ${
+            employeeObj.getFullName
+          } manager have been updated`,
+          `${isEmployee ? '/Employees' : '/sub-contractors'}/${
+            employeeObj.id
+          }/info`,
+          isEmployee
+            ? NotificationEventType.EMPLOYEE_UPDATE
+            : NotificationEventType.SUBCONTRACTOR_UPDATE
+        );
+      }
+
+      if (_flagOtherNotification) {
+        await NotificationManager.info(
+          [employeeObj.lineManagerId],
+          `${isEmployee ? 'Employee' : 'Subcontractor'} Resource Updated`,
+          `${
+            isEmployee ? 'Employee' : 'Subcontractor'
+          } Resource with the name: ${
+            employeeObj.getFullName
+          } details have been updated`,
+          `${isEmployee ? '/Employees' : '/sub-contractors'}/${
+            employeeObj.id
+          }/info`,
+          isEmployee
+            ? NotificationEventType.EMPLOYEE_UPDATE
+            : NotificationEventType.SUBCONTRACTOR_UPDATE
+        );
+      }
+
+      if (_flagStateNotification) {
+        await NotificationManager.info(
+          [employeeObj.lineManagerId],
+          `${isEmployee ? 'Employee' : 'Subcontractor'} Resource Updated`,
+          `${
+            isEmployee ? 'Employee' : 'Subcontractor'
+          } Resource with the name: ${
+            employeeObj.getFullName
+          } Payroll details have been updated`,
+          `${isEmployee ? '/Employees' : '/sub-contractors'}/${
+            employeeObj.id
+          }/info`,
+          isEmployee
+            ? NotificationEventType.EMPLOYEE_UPDATE
+            : NotificationEventType.SUBCONTRACTOR_UPDATE
+        );
+      }
 
       return employeeObj.id;
     });
