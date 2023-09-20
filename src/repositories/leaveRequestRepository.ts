@@ -1514,7 +1514,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         relations: [
           'employee',
           'employee.contactPersonOrganization',
-          'employee.contactPersonOrganizaation.contactPerson',
+          'employee.contactPersonOrganization.contactPerson',
         ],
       }
     );
