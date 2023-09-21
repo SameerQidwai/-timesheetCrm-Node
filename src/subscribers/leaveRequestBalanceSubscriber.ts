@@ -40,7 +40,7 @@ export class PostSubscriber
       const newDataKey = parseInt((newData as any)[key]);
       const oldDataKey = parseInt((oldData as any)[key]);
 
-      console.log('NEW AND OLD DATA', oldDataKey, newDataKey);
+      // console.log('NEW AND OLD DATA', oldDataKey, newDataKey);
 
       if (!isNaN(newDataKey))
         if (newDataKey > oldDataKey) {

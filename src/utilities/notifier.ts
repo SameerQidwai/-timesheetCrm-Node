@@ -116,6 +116,8 @@ export class NotificationManager {
           );
         }
       }
+
+      return true;
     } catch (e) {
       console.log(e);
     }
@@ -151,6 +153,7 @@ export class NotificationManager {
           );
         }
       }
+      return true;
     } catch (e) {
       console.log(e);
     }
@@ -186,6 +189,7 @@ export class NotificationManager {
           );
         }
       }
+      return true;
     } catch (e) {
       console.log(e);
     }
@@ -219,6 +223,7 @@ export class NotificationManager {
           );
         }
       }
+      return true;
     } catch (e) {
       console.log(e);
     }

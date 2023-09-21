@@ -3,6 +3,7 @@ const connection = createConnection();
 import {
   leaveRequestMonthlyCron,
   leaveRequestYearlyCron,
+  notficiationsCron,
 } from './utilities/crons';
 
 connection
@@ -14,6 +15,9 @@ connection
 
     console.log('stopping yearly cron job');
     leaveRequestYearlyCron.stop();
+
+    console.log('stopping notifications cron job');
+    notficiationsCron.stop();
 
     console.log('all cron jobs stopped');
 

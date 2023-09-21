@@ -13,6 +13,10 @@ let monthCronString = '1 0 0 15 * *';
 let yearCronString = '1 10 0 15 6 *';
 let notificationsCronString = '* * * * *';
 
+// export const everysecond = cron.schedule(notificationsCronString, async () => {
+//   console.log('Every second');
+// });
+
 export const leaveRequestMonthlyCron = cron.schedule(
   monthCronString,
   async () => {
@@ -28,7 +32,7 @@ export const leaveRequestMonthlyCron = cron.schedule(
     }
   },
   {
-    scheduled: true,
+    scheduled: false,
     timezone: 'Australia/Melbourne',
   }
 );
@@ -48,7 +52,7 @@ export const leaveRequestYearlyCron = cron.schedule(
     }
   },
   {
-    scheduled: true,
+    scheduled: false,
     timezone: 'Australia/Melbourne',
   }
 );
@@ -79,7 +83,7 @@ export const notficiationsCron = cron.schedule(
             contract.employee.contactPersonOrganization.organizationId === 1;
 
           if (moment().add(3, 'days').isAfter(moment(contract.endDate))) {
-            NotificationManager.danger(
+            await NotificationManager.danger(
               [],
               'Contract Ending',
               `Contract of ${
@@ -104,7 +108,7 @@ export const notficiationsCron = cron.schedule(
           if (
             moment(organization.createdAt).isAfter(moment().subtract(1, 'day'))
           ) {
-            NotificationManager.info(
+            await NotificationManager.info(
               [],
               'New Organization',
               `New Organization with the name ${organization.name} (${
@@ -122,7 +126,7 @@ export const notficiationsCron = cron.schedule(
         let timesheets = await transactionalEntityManager.find(Timesheet, {
           relations: [
             'milestoneEntries',
-            'milestoneEntries.entires',
+            'milestoneEntries.entries',
             'employee',
             'employee.contactPersonOrganization',
             'employee.contactPersonOrganization.contactPerson',
@@ -133,7 +137,7 @@ export const notficiationsCron = cron.schedule(
           if (moment().add(3, 'days').isAfter(moment(timesheet.endDate))) {
             if (timesheet.getStatus !== TimesheetStatus.SAVED) continue;
 
-            NotificationManager.danger(
+            await NotificationManager.danger(
               [timesheet.employeeId],
               'Timesheet Pending',
               `Timesheet of month ${moment(timesheet.startDate).format(
@@ -156,6 +160,10 @@ export const notficiationsCron = cron.schedule(
       );
       console.log(e);
     }
+  },
+  {
+    scheduled: false,
+    timezone: 'Australia/Melbourne',
   }
 );
 
@@ -171,10 +179,17 @@ let startYearlyCrons = () => {
   return 1;
 };
 
+let startNotificationsCron = () => {
+  console.log('Scheduling Notifications Crons');
+  notficiationsCron.start();
+  return 1;
+};
+
 let runCrons = async () => {
   console.log('Starting Crons');
   startMonthlyCrons();
   startYearlyCrons();
+  startNotificationsCron();
 };
 
 export default runCrons = runCrons;
