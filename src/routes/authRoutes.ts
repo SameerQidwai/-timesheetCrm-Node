@@ -64,6 +64,11 @@ router
   .patch([isLoggedIn], contr.markNotificationsAsRead.bind(contr));
 
 router
+  .route('/auth/unreadNotifications')
+  .get([isLoggedIn], contr.markNotificationsAsUnRead.bind(contr))
+  .patch([isLoggedIn], contr.markNotificationsAsUnRead.bind(contr));
+
+router
   .route('/auth/clearNotifications')
   .patch([isLoggedIn], contr.clearRecentNotifications.bind(contr));
 

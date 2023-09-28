@@ -688,6 +688,60 @@ export class AuthController {
     }
   }
 
+  async markNotificationsAsUnRead(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const manager = getManager();
+
+      const currentUserId = res.locals.jwtPayload.id;
+
+      if (!currentUserId) {
+        throw new Error('Unauthorized');
+      }
+
+      const currentUser = await manager.findOne(Employee, {
+        id: currentUserId,
+      });
+
+      if (!currentUser) {
+        throw new Error('Unauthorized');
+      }
+
+      let ids = [];
+
+      if (req.query.notificationIds)
+        for (let item of (req.query.notificationIds as string).split(',')) {
+          if (isNaN(parseInt(item))) continue;
+
+          ids.push(parseInt(item));
+        }
+
+      ids.push(req.body.notificationIds);
+
+      let notifications = await manager.find(Notification, {
+        where: { id: In(ids), notifiableId: currentUser.id },
+      });
+
+      for (let notification of notifications) {
+        (notification.readAt as any) = null;
+      }
+
+      await manager.save(notifications);
+
+      // });
+      return res.status(200).json({
+        success: true,
+        message: 'Notifications marked as unread',
+        data: notifications,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
   async clearRecentNotifications(
     req: Request,
     res: Response,

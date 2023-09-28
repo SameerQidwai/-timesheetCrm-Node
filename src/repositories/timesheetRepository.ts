@@ -1262,7 +1262,13 @@ export class TimesheetRepository extends Repository<Timesheet> {
               )} - ${moment(timesheet.endDate).format(
                 'DD-MM-YYYY'
               )} is submitted by ${timesheet.employee.getFullName}`,
-              `/time-sheet-approval`,
+              `/time-sheet-approval?startDate=${moment(
+                timesheet.startDate
+              ).format('DD-MM-YYYY')}&endDate=${moment(
+                timesheet.endDate
+              ).format('DD-MM-YYYY')}&userId=${
+                timesheet.employeeId
+              }&timesheetId=${timesheet.id}`,
               NotificationEventType.TIME_SHEET_SUBMIT,
               [timesheet.employeeId]
             );
@@ -1354,7 +1360,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
                 )} - ${moment(timesheet.endDate).format(
                   'DD-MM-YYYY'
                 )} is approved`,
-                `/time-sheet`,
+                `/time-sheet?startDate=${moment(timesheet.startDate).format(
+                  'DD-MM-YYYY'
+                )}&endDate=${moment(timesheet.endDate).format(
+                  'DD-MM-YYYY'
+                )}&userId=${timesheet.employeeId}&timesheetId=${timesheet.id}`,
                 NotificationEventType.TIME_SHEET_APPROVE
               );
             }
@@ -1451,7 +1461,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
               )} - ${moment(timesheet.endDate).format(
                 'DD-MM-YYYY'
               )} is approved`,
-              `/time-sheet`,
+              `/time-sheet?startDate=${moment(timesheet.startDate).format(
+                'DD-MM-YYYY'
+              )}&endDate=${moment(timesheet.endDate).format(
+                'DD-MM-YYYY'
+              )}&userId=${timesheet.employeeId}&timesheetId=${timesheet.id}`,
               NotificationEventType.TIME_SHEET_APPROVE
             );
           }
@@ -1539,7 +1553,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
                 )} - ${moment(timesheet.endDate).format(
                   'DD-MM-YYYY'
                 )} is rejected`,
-                `/time-sheet`,
+                `/time-sheet?startDate=${moment(timesheet.startDate).format(
+                  'DD-MM-YYYY'
+                )}&endDate=${moment(timesheet.endDate).format(
+                  'DD-MM-YYYY'
+                )}&userId=${timesheet.employeeId}&timesheetId=${timesheet.id}`,
                 NotificationEventType.TIME_SHEET_REJECT
               );
             }
@@ -1636,7 +1654,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
               )} - ${moment(timesheet.endDate).format(
                 'DD-MM-YYYY'
               )} is rejected`,
-              `/time-sheet`,
+              `/time-sheet?startDate=${moment(timesheet.startDate).format(
+                'DD-MM-YYYY'
+              )}&endDate=${moment(timesheet.endDate).format(
+                'DD-MM-YYYY'
+              )}&userId=${timesheet.employeeId}&timesheetId=${timesheet.id}`,
               NotificationEventType.TIME_SHEET_REJECT
             );
           }
@@ -1727,7 +1749,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
                 )} - ${moment(timesheet.endDate).format(
                   'DD-MM-YYYY'
                 )} is unapproved`,
-                `/time-sheet`,
+                `/time-sheet?startDate=${moment(timesheet.startDate).format(
+                  'DD-MM-YYYY'
+                )}&endDate=${moment(timesheet.endDate).format(
+                  'DD-MM-YYYY'
+                )}&userId=${timesheet.employeeId}&timesheetId=${timesheet.id}`,
                 NotificationEventType.TIME_SHEET_UNAPPROVE
               );
             }
@@ -1827,7 +1853,11 @@ export class TimesheetRepository extends Repository<Timesheet> {
               )} - ${moment(timesheet.endDate).format(
                 'DD-MM-YYYY'
               )} is unapproved`,
-              `/time-sheet`,
+              `/time-sheet?startDate=${moment(timesheet.startDate).format(
+                'DD-MM-YYYY'
+              )}&endDate=${moment(timesheet.endDate).format(
+                'DD-MM-YYYY'
+              )}&userId=${timesheet.employeeId}&timesheetId=${timesheet.id}`,
               NotificationEventType.TIME_SHEET_UNAPPROVE
             );
           }

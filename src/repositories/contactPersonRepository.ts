@@ -347,7 +347,18 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
         contactPersonOrganizations;
       await transactionalEntityManager.save(contactPersonObj);
     });
-    return this.findOneCustom(id);
+
+    let contactPerson = await this.findOneCustom(id);
+
+    await NotificationManager.info(
+      [],
+      `Contact Person Updated`,
+      `Contact Person with the name: ${contactPerson.getFullName} has been updated`,
+      `/contacts`,
+      NotificationEventType.CONTACT_PERSON_UPDATE
+    );
+
+    return contactPerson;
   }
 
   async findOneCustom(id: number): Promise<any | undefined> {
@@ -370,14 +381,6 @@ export class ContactPersonRepository extends Repository<ContactPerson> {
         ? 'Employee'
         : 'Sub Contractor'
       : 'Contact Person';
-
-    NotificationManager.info(
-      [],
-      `Contact Person Updated`,
-      `Contact Person with the name: ${contactPerson.getFullName} has been updated`,
-      `/contacts`,
-      NotificationEventType.CONTACT_PERSON_UPDATE
-    );
 
     return contactPerson;
   }

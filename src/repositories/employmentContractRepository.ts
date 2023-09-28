@@ -360,7 +360,7 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
             isEmployee ? 'Employee' : 'Subcontractor'
           } Resource with the name: ${
             employee?.getFullName
-          } contract  has been updated`,
+          } contract has been updated`,
           `${isEmployee ? '/Employees' : '/sub-contractors'}/${
             employee.id
           }/contracts`,
