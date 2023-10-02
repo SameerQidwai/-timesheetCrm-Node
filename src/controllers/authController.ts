@@ -540,6 +540,7 @@ export class AuthController {
 
   async getNotifications(req: Request, res: Response, next: NextFunction) {
     try {
+      let _flagUnread = parseInt(req.query.unread?.toString() ?? '');
       let limit = parseInt(req.query.limit?.toString() ?? '');
       let page = parseInt(req.query.page?.toString() ?? '');
       limit = isNaN(limit) ? 5 : limit;
@@ -561,11 +562,18 @@ export class AuthController {
         throw new Error('Unauthorized');
       }
 
+      let unreadCondition = {};
+      if (_flagUnread) {
+        unreadCondition = {
+          readAt: null,
+        };
+      }
+
       let [records, count] = await manager.findAndCount(Notification, {
         skip: limit * (page - 1),
         take: limit,
         order: { id: 'DESC' },
-        where: { notifiableId: currentUser.id },
+        where: { notifiableId: currentUser.id, ...unreadCondition },
       });
 
       const lastPage = Math.ceil(count / limit);
