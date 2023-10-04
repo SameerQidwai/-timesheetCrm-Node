@@ -1268,7 +1268,9 @@ export class TimesheetRepository extends Repository<Timesheet> {
                 timesheet.endDate
               ).format('DD-MM-YYYY')}&userId=${
                 timesheet.employeeId
-              }&timesheetId=${timesheet.id}`,
+              }&timesheetId=${timesheet.id}&milestoneId=${
+                milestoneEntry.milestoneId
+              }`,
               NotificationEventType.TIME_SHEET_SUBMIT,
               [timesheet.employeeId]
             );
