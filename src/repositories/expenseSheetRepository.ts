@@ -906,16 +906,18 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         let expenseSheet = await transactionalEntityManager.save(sheet);
 
         await NotificationManager.info(
-          [sheet.project.projectManagerId],
+          [sheet.project?.projectManagerId],
           `Expense Sheet Submitted`,
-          `An Expense sheet has been Submitted of Project ${sheet.project.title} by ${emplyoee.getFullName}`,
+          `An Expense sheet has been Submitted of  ${
+            sheet.project ? sheet.project?.title : 'No'
+          } Project by ${emplyoee.getFullName}`,
           `/expense-sheet-approval?startDate=${moment(sheet.createdAt)
             .startOf('month')
             .format('DD-MM-YYYY')}&endDate=${moment(sheet.createdAt)
             .endOf('month')
-            .format('DD-MM-YYYY')}&projectId=${sheet.projectId}&sheetId=${
-            sheet.id
-          }`,
+            .format('DD-MM-YYYY')}${
+            sheet.project ? `&projectId=${sheet.projectId}` : ''
+          }&sheetId=${sheet.id}`,
           NotificationEventType.EXPENSE_SHEET_SUBMIT,
           [sheet.createdBy]
         );
@@ -1084,7 +1086,7 @@ export class ExpenseSheetRepository extends Repository<ExpenseSheet> {
         let expenseSheet = await transactionalEntityManager.save(sheet);
 
         await NotificationManager.danger(
-          [sheet.project.projectManagerId, sheet.createdBy],
+          [sheet.project?.projectManagerId, sheet.createdBy],
           `Expense Sheet Unapproved`,
           `Expense sheet with id ${sheet.id} has been Unapproved`,
           `/expense-sheets?sheetId=${sheet.id}`,
