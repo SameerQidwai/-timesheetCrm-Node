@@ -1390,7 +1390,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           ).format('DD-MM-YYYY')} is re-submitted by Employee ${
             employee.getFullName
           }`,
-          `/approve-request?requestId=${leaveRequest.id}`,
+          `/approve-request?requestId=${leaveRequest.id}&startDate=${_firstDate}&endDate=${_lastDate}`,
           NotificationEventType.LEAVE_REQUEST_SUBMIT
         );
 
