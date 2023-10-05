@@ -11,11 +11,15 @@ import { Timesheet } from '../entities/timesheet';
 
 let monthCronString = '1 0 0 15 * *';
 let yearCronString = '1 10 0 15 6 *';
-let notificationsCronString = '1 0 0 * * *';
+let notificationsCronString = '*/30 * * * * *';
+let everySecondCronString = '* * * * * *';
 
-// export const everysecond = cron.schedule(notificationsCronString, async () => {
-//   console.log('Every second');
-// });
+export const everySecondCron = cron.schedule(
+  everySecondCronString,
+  async () => {
+    console.log('Every second');
+  }
+);
 
 export const leaveRequestMonthlyCron = cron.schedule(
   monthCronString,
@@ -185,11 +189,18 @@ let startNotificationsCron = () => {
   return 1;
 };
 
+let startEverySecondCron = () => {
+  console.log('Scheduling EverySecond Cron');
+  everySecondCron.start();
+  return 1;
+};
+
 let runCrons = async () => {
   console.log('Starting Crons');
   startMonthlyCrons();
   startYearlyCrons();
   startNotificationsCron();
+  startEverySecondCron();
 };
 
 export default runCrons = runCrons;
