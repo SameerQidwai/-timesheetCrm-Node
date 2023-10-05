@@ -202,6 +202,15 @@ export enum ExpenseStatus {
 }
 
 export enum NotificationEventType {
+  OPPORTUNITY_WON = 'opportunity-won',
+  OPPORTUNITY_LOST = 'opportunity-lost',
+  OPPORTUNITY_ACDIRECTOR_ASSIGN = 'opportunity-ac-director-assign',
+  OPPORTUNITY_ACMANAGER_ASSIGN = 'opportunity-ac-manager-assign',
+  OPPORTUNITY_MANAGER_ASSIGN = 'opportunity-manager-assign',
+  PROJECT_OPEN = 'project-open',
+  PROJECT_CLOSE = 'project-close',
+  PROJECT_ESTIMATE_UPDATE = 'project-estimate-update',
+  RESOURCE_SELECTED = 'resource-selected',
   EXPENSE_SHEET_SUBMIT = 'expense-sheet-submit',
   EXPENSE_SHEET_APPROVE = 'expense-sheet-approve',
   EXPENSE_SHEET_UNAPPROVE = 'expense-sheet-unapprove',

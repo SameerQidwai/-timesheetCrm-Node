@@ -11,7 +11,7 @@ import { Timesheet } from '../entities/timesheet';
 
 let monthCronString = '1 0 0 15 * *';
 let yearCronString = '1 10 0 15 6 *';
-let notificationsCronString = '* * * * *';
+let notificationsCronString = '1 0 0 * * *';
 
 // export const everysecond = cron.schedule(notificationsCronString, async () => {
 //   console.log('Every second');
@@ -102,25 +102,25 @@ export const notficiationsCron = cron.schedule(
         }
 
         //-- ORGANIZATIONS CREATED
-        let organizations = await transactionalEntityManager.find(Organization);
+        // let organizations = await transactionalEntityManager.find(Organization);
 
-        for (let organization of organizations) {
-          if (
-            moment(organization.createdAt).isAfter(moment().subtract(1, 'day'))
-          ) {
-            await NotificationManager.info(
-              [],
-              'New Organization',
-              `New Organization with the name ${organization.name} (${
-                organization.title
-              }) was created yesterday at ${moment(
-                organization.createdAt
-              ).format('HH:mm')}`,
-              `/organisations`,
-              NotificationEventType.ORGANIZATION_CREATE
-            );
-          }
-        }
+        // for (let organization of organizations) {
+        //   if (
+        //     moment(organization.createdAt).isAfter(moment().subtract(1, 'day'))
+        //   ) {
+        //     await NotificationManager.info(
+        //       [],
+        //       'New Organization',
+        //       `New Organization with the name ${organization.name} (${
+        //         organization.title
+        //       }) was created yesterday at ${moment(
+        //         organization.createdAt
+        //       ).format('HH:mm')}`,
+        //       `/organisations`,
+        //       NotificationEventType.ORGANIZATION_CREATE
+        //     );
+        //   }
+        // }
 
         //-- NOT SUBMITTED TIMESHEETS
         let timesheets = await transactionalEntityManager.find(Timesheet, {

@@ -19,7 +19,11 @@ import { Employee } from '../entities/employee';
 import { Milestone } from '../entities/milestone';
 import { PurchaseOrder } from '../entities/purchaseOrder';
 import { Attachment } from '../entities/attachment';
-import { EntityType, ProjectType } from '../constants/constants';
+import {
+  EntityType,
+  NotificationEventType,
+  ProjectType,
+} from '../constants/constants';
 import { Comment } from '../entities/comment';
 import { Calendar } from '../entities/calendar';
 import moment from 'moment-timezone';
@@ -29,6 +33,7 @@ import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
 import { MilestoneExpense } from '../entities/milestoneExpense';
 import { ExpenseType } from '../entities/expenseType';
 import { ProjectShutdownPeriod } from '../entities/projectShutdownPeriod';
+import { NotificationManager } from '../utilities/notifier';
 
 @EntityRepository(Opportunity)
 export class OpportunityRepository extends Repository<Opportunity> {
@@ -200,6 +205,9 @@ export class OpportunityRepository extends Repository<Opportunity> {
     opportunityDTO: OpportunityDTO
   ): Promise<any | undefined> {
     await this.manager.transaction(async (transactionalEntityManager) => {
+      let _flagAccountDirectorUpdated,
+        _flagAccountManagerUpdated,
+        _flagOpportunityManagerUpdated = false;
       let opportunityObj = await transactionalEntityManager.findOne(
         Opportunity,
         id,
@@ -387,10 +395,14 @@ export class OpportunityRepository extends Repository<Opportunity> {
       } else if (opportunityDTO.accountDirectorId) {
         accountDirector = await this.manager.findOne(
           Employee,
-          opportunityDTO.accountDirectorId
+          opportunityDTO.accountDirectorId,
+          { relations: ['contactPersonOrganization', 'contactPerson'] }
         );
         if (!accountDirector) {
           throw new Error('Account Director not found');
+        }
+        if (opportunityObj.accountDirectorId != accountDirector.id) {
+          _flagAccountDirectorUpdated = true;
         }
         opportunityObj.accountDirectorId = accountDirector.id;
       }
@@ -402,10 +414,14 @@ export class OpportunityRepository extends Repository<Opportunity> {
       } else if (opportunityDTO.accountManagerId) {
         accountManager = await this.manager.findOne(
           Employee,
-          opportunityDTO.accountManagerId
+          opportunityDTO.accountManagerId,
+          { relations: ['contactPersonOrganization', 'contactPerson'] }
         );
         if (!accountManager) {
           throw new Error('Account Manager not found');
+        }
+        if (opportunityObj.accountManagerId != accountManager.id) {
+          _flagAccountManagerUpdated = true;
         }
         opportunityObj.accountManagerId = accountManager.id;
       }
@@ -417,16 +433,47 @@ export class OpportunityRepository extends Repository<Opportunity> {
       } else if (opportunityDTO.opportunityManagerId) {
         opportunityManager = await this.manager.findOne(
           Employee,
-          opportunityDTO.opportunityManagerId
+          opportunityDTO.opportunityManagerId,
+          { relations: ['contactPersonOrganization', 'contactPerson'] }
         );
         if (!opportunityManager) {
           throw new Error('Opportunity Manager not found');
+        }
+        if (opportunityObj.opportunityManagerId != opportunityManager.id) {
+          _flagOpportunityManagerUpdated = true;
         }
         opportunityObj.opportunityManagerId = opportunityManager.id;
       }
       // opportunityObj.opportunityManagerId = 1;
 
       await transactionalEntityManager.save(opportunityObj);
+
+      if (_flagAccountDirectorUpdated)
+        await NotificationManager.info(
+          [accountDirector?.id],
+          'Account Director Assigned',
+          `${accountDirector?.getFullName} has been assigned as Account Director in Opportunity ${opportunityObj.title}`,
+          `opportunities/${opportunityObj.id}`,
+          NotificationEventType.OPPORTUNITY_ACDIRECTOR_ASSIGN
+        );
+
+      if (_flagAccountManagerUpdated)
+        await NotificationManager.info(
+          [accountDirector?.id],
+          'Account Manager Assigned',
+          `${accountDirector?.getFullName} has been assigned as Account Manager in Opportunity ${opportunityObj.title}`,
+          `opportunities/${opportunityObj.id}`,
+          NotificationEventType.OPPORTUNITY_ACMANAGER_ASSIGN
+        );
+
+      if (_flagOpportunityManagerUpdated)
+        await NotificationManager.info(
+          [accountDirector?.id],
+          'Opportunity Manager Assigned',
+          `${accountDirector?.getFullName} has been assigned as Opportunity Manager in Opportunity ${opportunityObj.title}`,
+          `opportunities/${opportunityObj.id}`,
+          NotificationEventType.OPPORTUNITY_MANAGER_ASSIGN
+        );
     });
     return this.findOneCustom(id);
   }
@@ -1260,6 +1307,7 @@ export class OpportunityRepository extends Repository<Opportunity> {
       ],
     });
 
+    let _flagContactPersonAdded = false;
     if (!opportunity) {
       throw new Error('Opportunity not found!');
     }
@@ -1293,6 +1341,14 @@ export class OpportunityRepository extends Repository<Opportunity> {
       opportunityResourceAllocationDTO.sellingRate;
     // resourceAllocation.isMarkedAsSelected = opportunityResourceAllocationDTO.isMarkedAsSelected;
     if (opportunityResourceAllocationDTO.contactPersonId) {
+      var contactPerson = await this.manager.findOne(
+        ContactPerson,
+        opportunityResourceAllocationDTO.contactPersonId
+      );
+      if (!contactPerson) {
+        throw new Error('Contact not found');
+      }
+      _flagContactPersonAdded = true;
       resourceAllocation.contactPersonId =
         opportunityResourceAllocationDTO.contactPersonId;
     }
@@ -1307,6 +1363,16 @@ export class OpportunityRepository extends Repository<Opportunity> {
     }
 
     resourceAllocation = await this.manager.save(resourceAllocation);
+
+    if (_flagContactPersonAdded)
+      await NotificationManager.info(
+        [],
+        `Resource set in opportunity`,
+        `Contact with name ${contactPerson?.getFullName} is marked as selected in opportunity ${opportunity.title}`,
+        `/opportunities/${opportunity.id}/info#resources`,
+        NotificationEventType.RESOURCE_SELECTED
+      );
+
     return this.findOneCustomResourceAllocation(
       opportunityId,
       milestoneId,
@@ -1772,9 +1838,22 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
       opportunityObj.status = 'P';
       (opportunityObj as any).wonDate = moment().toDate();
+
       // opportunityObj.opportunityManagerId = 1;
 
       await transactionalEntityManager.save(opportunityObj);
+
+      await NotificationManager.success(
+        [
+          opportunityObj?.accountDirectorId,
+          opportunityObj?.accountManagerId,
+          opportunityObj?.projectManagerId,
+        ],
+        `Opportunity Won`,
+        `Opportunity with the title ${opportunityObj.title} is now converted to project`,
+        `/projects/${opportunityObj.id}/info`,
+        NotificationEventType.OPPORTUNITY_WON
+      );
     });
     return this.findOneCustom(id);
   }
@@ -1807,6 +1886,18 @@ export class OpportunityRepository extends Repository<Opportunity> {
       opportunityObj.lostDate = moment().toDate();
 
       await transactionalEntityManager.save(opportunityObj);
+
+      await NotificationManager.danger(
+        [
+          opportunityObj?.accountDirectorId,
+          opportunityObj?.accountManagerId,
+          opportunityObj?.projectManagerId,
+        ],
+        `Opportunity Lost`,
+        `Opportunity with the title ${opportunityObj.title} has been lost.`,
+        `/opportunities/${opportunityObj.id}/info`,
+        NotificationEventType.OPPORTUNITY_LOST
+      );
     });
     return this.findOneCustom(id);
   }

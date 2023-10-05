@@ -40,6 +40,7 @@ import { MilestoneExpense } from '../entities/milestoneExpense';
 import { Calendar } from '../entities/calendar';
 import {
   EntityType,
+  NotificationEventType,
   OpportunityStatus,
   ProjectType,
 } from '../constants/constants';
@@ -51,6 +52,7 @@ import { ProjectSchedule } from '../entities/projectSchedule';
 import { ProjectScheduleSegment } from '../entities/projectScheduleSegment';
 import { ProjectShutdownPeriod } from '../entities/projectShutdownPeriod';
 import { FinancialYear } from '../entities/financialYear';
+import { NotificationManager } from '../utilities/notifier';
 
 @EntityRepository(Opportunity)
 export class ProjectRepository extends Repository<Opportunity> {
@@ -2456,6 +2458,18 @@ export class ProjectRepository extends Repository<Opportunity> {
       projectObj.phase = true;
 
       await transactionalEntityManager.save(projectObj);
+
+      await NotificationManager.info(
+        [
+          projectObj?.projectManagerId,
+          projectObj?.accountDirectorId,
+          projectObj.accountManagerId,
+        ],
+        `Project Opened`,
+        `Project with title ${projectObj.title} has been reopened`,
+        `/projects/${projectObj.id}/info`,
+        NotificationEventType.PROJECT_OPEN
+      );
     });
     return this.findOneCustom(id);
   }
@@ -2474,6 +2488,18 @@ export class ProjectRepository extends Repository<Opportunity> {
       projectObj.phase = false;
 
       await transactionalEntityManager.save(projectObj);
+
+      await NotificationManager.info(
+        [
+          projectObj?.projectManagerId,
+          projectObj?.accountDirectorId,
+          projectObj.accountManagerId,
+        ],
+        `Project Closed`,
+        `Project with title ${projectObj.title} has been marked as closed`,
+        `/projects/${projectObj.id}/info`,
+        NotificationEventType.PROJECT_CLOSE
+      );
     });
     return this.findOneCustom(id);
   }
@@ -2711,47 +2737,44 @@ export class ProjectRepository extends Repository<Opportunity> {
     let startDate = moment(fiscalYear.start, 'DD-MM-YYYY');
     let endDate = moment(fiscalYear.end, 'DD-MM-YYYY');
 
-    
     // finding previous Start Date
     let previousYearStart = await this.manager.findOne(FinancialYear, {
       order: {
         startDate: 'ASC',
       },
-    })
-    
+    });
+
     let projectStartDate = moment(project.startDate, 'YYYY-MM-DD');
     let previousYearStartDate = projectStartDate;
 
     // finding start date fro previous year Or project
     if (projectStartDate.isAfter(startDate, 'date')) {
-      if (previousYearStart){
+      if (previousYearStart) {
         previousYearStartDate = moment(previousYearStart.endDate);
         // previousYearEndDate = startDate.clone().subtract(1, 'day');
-      }else{
+      } else {
         previousYearStartDate = startDate.clone().subtract(1, 'year');
       }
     }
 
-
     // finding previous End Date
     let previousYearEnd = await this.manager.findOne(FinancialYear, {
-      where:{
-        endDate: LessThan(moment(fiscalYear.start, 'DD-MM-YYYY').toDate())
+      where: {
+        endDate: LessThan(moment(fiscalYear.start, 'DD-MM-YYYY').toDate()),
       },
       order: {
-        endDate: 'DESC'
-      }
-    })
+        endDate: 'DESC',
+      },
+    });
 
-    let previousYearEndDate: Moment
+    let previousYearEndDate: Moment;
 
-    if (previousYearEnd){
+    if (previousYearEnd) {
       previousYearEndDate = moment(previousYearEnd.endDate);
       // previousYearEndDate = startDate.clone().subtract(1, 'day');
-    }else{
+    } else {
       previousYearEndDate = startDate.clone().subtract(1, 'day');
     }
-
 
     let currentYearResponses = await this._getProjectTracking(
       startDate,
@@ -2982,9 +3005,14 @@ export class ProjectRepository extends Repository<Opportunity> {
         if (
           positionStartDate.isBetween(startDate, endDate, 'date', '[]') ||
           positionEndDate.isBetween(startDate, endDate, 'date', '[]') ||
-          startDate.isBetween(positionStartDate, positionEndDate, 'date', '[]') ||
+          startDate.isBetween(
+            positionStartDate,
+            positionEndDate,
+            'date',
+            '[]'
+          ) ||
           endDate.isBetween(positionStartDate, positionEndDate, 'date', '[]')
-        ){
+        ) {
           position.opportunityResourceAllocations.forEach((allocation) => {
             if (
               allocation.isMarkedAsSelected &&
@@ -3645,7 +3673,19 @@ export class ProjectRepository extends Repository<Opportunity> {
     });
 
     project.value = value;
-    this.save(project);
+    await this.save(project);
+
+    await NotificationManager.info(
+      [
+        project?.projectManagerId,
+        project?.accountDirectorId,
+        project.accountManagerId,
+      ],
+      `Project Estimated Value Updated`,
+      `Project with title ${project.title} Estimated value has been updated`,
+      `/projects/${project.id}/info`,
+      NotificationEventType.PROJECT_ESTIMATE_UPDATE
+    );
 
     return project;
   }
