@@ -8,16 +8,27 @@ import { NotificationManager } from './notifier';
 import { NotificationEventType, TimesheetStatus } from '../constants/constants';
 import { Organization } from '../entities/organization';
 import { Timesheet } from '../entities/timesheet';
+moment.tz.setDefault('Australia/Melbourne');
 
 let monthCronString = '1 0 0 15 * *';
-let yearCronString = '1 10 0 15 6 *';
-let notificationsCronString = '*/30 * * * * *';
+let yearCronString = '1 0 5 15 6 *';
+let notificationsCronString = '1 0 0 * * *';
 let everySecondCronString = '* * * * * *';
 
 export const everySecondCron = cron.schedule(
   everySecondCronString,
   async () => {
+    console.log(
+      moment().format('s'),
+      moment().format('D'),
+      moment().format('M')
+    );
+    if (moment().format('s') === '35') return true;
     console.log('Every second');
+  },
+  {
+    scheduled: false,
+    timezone: 'Australia/Melbourne',
   }
 );
 
@@ -65,6 +76,7 @@ export const notficiationsCron = cron.schedule(
   notificationsCronString,
   async () => {
     try {
+      if (moment().format('D') == '15') return true;
       await getManager().transaction(async (transactionalEntityManager) => {
         //-- CONTRACTS ENDING
         let contracts = await transactionalEntityManager.find(
@@ -137,7 +149,9 @@ export const notficiationsCron = cron.schedule(
           ],
         });
 
+        let _index = 1;
         for (let timesheet of timesheets) {
+          console.log((_index / timesheets.length) * 100);
           if (moment().add(3, 'days').isAfter(moment(timesheet.endDate))) {
             if (timesheet.getStatus !== TimesheetStatus.SAVED) continue;
 
@@ -151,12 +165,15 @@ export const notficiationsCron = cron.schedule(
               NotificationEventType.TIMESHEET_PENDING
             );
           }
+          _index++;
         }
       });
       console.log(
         'Notifications Cron Ran At',
         moment().format('DD MMM YYYY H:mm:s')
       );
+
+      return true;
     } catch (e) {
       console.log(
         'Notifications Cron Failed At',
@@ -200,7 +217,7 @@ let runCrons = async () => {
   startMonthlyCrons();
   startYearlyCrons();
   startNotificationsCron();
-  startEverySecondCron();
+  // startEverySecondCron();
 };
 
 export default runCrons = runCrons;
