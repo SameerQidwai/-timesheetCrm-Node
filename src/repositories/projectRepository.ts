@@ -1643,7 +1643,10 @@ export class ProjectRepository extends Repository<Opportunity> {
         }
 
         let timesheets = await transactionalEntityManager.find(Timesheet, {
-          where: { employeeId: allocation.contactPerson.getEmployee.id },
+          where: {
+            employeeId: allocation.contactPerson.getEmployee.id,
+            startDate: MoreThanOrEqual(resource.startDate),
+          },
           relations: ['milestoneEntries'],
         });
 

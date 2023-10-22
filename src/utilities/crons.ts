@@ -21,7 +21,7 @@ export const everySecondCron = cron.schedule(
     console.log(
       moment().format('s'),
       moment().format('D'),
-      moment().format('M')
+      moment('2023-05-20').format('M')
     );
     if (moment().format('s') === '35') return true;
     console.log('Every second');
@@ -76,7 +76,13 @@ export const notficiationsCron = cron.schedule(
   notificationsCronString,
   async () => {
     try {
-      if (moment().format('D') == '15') return true;
+      if (moment().format('D') == '15' && moment().format('M') == '5') {
+        console.log(
+          'Notifications Cron Skipped At',
+          moment().format('DD MMM YYYY H:mm:s')
+        );
+        return true;
+      }
       await getManager().transaction(async (transactionalEntityManager) => {
         //-- CONTRACTS ENDING
         let contracts = await transactionalEntityManager.find(

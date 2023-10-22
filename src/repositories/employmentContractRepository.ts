@@ -210,7 +210,7 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
           {
             relations: [
               'leaveRequestBalances',
-              'contactPersonOrganizaation',
+              'contactPersonOrganization',
               'contactPersonOrganization.contactPerson',
             ],
           }
