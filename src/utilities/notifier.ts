@@ -95,6 +95,8 @@ export class NotificationManager {
     exceptIds: Array<number> = []
   ): Promise<any> {
     try {
+      if (process.env.NOTIFICATION_MODULE === 'false') return true;
+
       let users = await getNotifiers(userIds);
 
       for (let user of users) {
