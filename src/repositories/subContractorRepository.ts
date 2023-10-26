@@ -1,7 +1,13 @@
 import bcrypt from 'bcryptjs';
 import { dispatchMail, sendMail } from '../utilities/mailer';
 import { ContactPersonDTO, EmployeeDTO, SubContractorDTO } from '../dto';
-import { EntityRepository, getRepository, Not, Repository } from 'typeorm';
+import {
+  EntityRepository,
+  getRepository,
+  MoreThanOrEqual,
+  Not,
+  Repository,
+} from 'typeorm';
 import { ContactPerson } from './../entities/contactPerson';
 import { ContactPersonOrganization } from './../entities/contactPersonOrganization';
 import { State } from './../entities/state';
@@ -640,7 +646,7 @@ export class SubContractorRepository extends Repository<Employee> {
     });
   }
 
-  async costCalculator(id: number, searchIn: boolean) {
+  async costCalculator(id: number, searchIn: boolean, startDate: string) {
     let searchId: number = id;
 
     if (searchIn) {
@@ -672,7 +678,21 @@ export class SubContractorRepository extends Repository<Employee> {
       throw new Error('Employee not found');
     }
 
-    let currentContract: any = subContractor.getActiveContract;
+    let currentContract: any;
+    let momentStartDate = moment(startDate, 'YYYY-MM-DD');
+
+    if (momentStartDate.isValid()) {
+      currentContract = await this.manager.findOne(EmploymentContract, {
+        where: {
+          startDate: MoreThanOrEqual(momentStartDate.toDate()),
+          employeeId: subContractor.id,
+        },
+      });
+
+      if (!currentContract) currentContract = subContractor.getActiveContract;
+    } else {
+      currentContract = subContractor.getActiveContract;
+    }
 
     if (!currentContract) {
       throw new Error('No Active Contract');

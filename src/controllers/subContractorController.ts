@@ -34,9 +34,11 @@ export class SubContractorController extends BaseController<
       let contractorId = req.params.contractorId;
       if (!contractorId) throw new Error('not found');
       let searchIn = !!(req.query.searchIn === 'contactPerson');
+      let startDate = req.query.startDate as string;
       let record = await repository.costCalculator(
         parseInt(contractorId),
-        searchIn
+        searchIn,
+        startDate
       );
       if (!record) throw new Error('not found');
       res.status(200).json({
