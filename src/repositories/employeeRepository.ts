@@ -13,6 +13,7 @@ import {
   EntityRepository,
   getRepository,
   IsNull,
+  MoreThanOrEqual,
   Not,
   Repository,
 } from 'typeorm';
@@ -1631,7 +1632,7 @@ export class EmployeeRepository extends Repository<Employee> {
     return contactPerson.standardSkillStandardLevels;
   }
 
-  async costCalculator(id: number, searchIn: boolean) {
+  async costCalculator(id: number, searchIn: boolean, startDate: string) {
     let searchId: number = id;
     if (searchIn) {
       let contactPerson = await this.manager.findOne(ContactPerson, id, {
@@ -1666,7 +1667,21 @@ export class EmployeeRepository extends Repository<Employee> {
       throw new Error('Employee not found');
     }
 
-    let currentContract: any = employee.getActiveContract;
+    let currentContract: any;
+    let momentStartDate = moment(startDate, 'YYYY-MM-DD');
+
+    if (momentStartDate.isValid()) {
+      currentContract = this.manager.findOne(EmploymentContract, {
+        where: {
+          startDate: MoreThanOrEqual(momentStartDate.toDate()),
+          employeeId: employee.id,
+        },
+      });
+
+      if (!currentContract) currentContract = employee.getActiveContract;
+    } else {
+      currentContract = employee.getActiveContract;
+    }
 
     if (!currentContract) {
       throw new Error('No Active Contract');
