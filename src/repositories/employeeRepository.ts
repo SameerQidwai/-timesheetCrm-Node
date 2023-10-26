@@ -1671,7 +1671,7 @@ export class EmployeeRepository extends Repository<Employee> {
     let momentStartDate = moment(startDate, 'YYYY-MM-DD');
 
     if (momentStartDate.isValid()) {
-      currentContract = this.manager.findOne(EmploymentContract, {
+      currentContract = await this.manager.findOne(EmploymentContract, {
         where: {
           startDate: MoreThanOrEqual(momentStartDate.toDate()),
           employeeId: employee.id,
