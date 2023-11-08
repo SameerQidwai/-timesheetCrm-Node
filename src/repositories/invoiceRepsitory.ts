@@ -274,7 +274,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
       let query = ` 
         SELECT 
           invoices.id,
-          invoiceId,
+          invoices.invoiceId,
           invoices.reference,
           invoices.project_id projectId,
           invoices.schedule_id scheduleId,
@@ -286,82 +286,99 @@ export class InvoiceRepsitory extends Repository<Invoice> {
           profit_view.project_title projectTitle,
           profit_view.project_type projectType,
           profit_view.project_organization_name organizationName,
-          CONCAT( -- 1 Concatenates the string square brackets open
-              '[',
-              GROUP_CONCAT( -- Aggregates the concatenated JSON objects
-              DISTINCT CONCAT( -- Only allow Unique Concatenates the JSON object
-                '{
-                  "mimeType": "', files.type, '",
-                  "fileName": "', files.original_name, '",
-                  "uniqueName": "', files.unique_name, '",
-                  "fileId": ', files.id, ',
-                  "attachXero": ${0},
-                  "includeOnline": ${0}
-                }'
-              )
-              SEPARATOR ','  -- Separator for each JSON object
-              ),
-              ']' --  1 Concatenates the string square brackets close
-          ) attachments
+          files.type AS mimeType,
+          files.original_name AS fileName,
+          files.unique_name AS uniqueName,
+          files.id AS fileId,
+          0 AS attachXero,
+          0 AS includeOnline
         FROM invoices 
         LEFT JOIN profit_view
-        ON (
+          ON (
             profit_view.project_id = invoices.project_id AND (
             profit_view.project_type = 1 OR
             (
-              profit_view.project_type = 2 AND
-              STR_TO_DATE(profit_view.entry_date,'%e-%m-%Y') BETWEEN IFNULL(invoices.start_date, '2018-06-30') AND  IFNULL(invoices.end_date, '2049-06-30')
+                profit_view.project_type = 2 AND
+                STR_TO_DATE(profit_view.entry_date,'%e-%m-%Y') BETWEEN IFNULL(invoices.start_date, '2018-06-30') AND  IFNULL(invoices.end_date, '2049-06-30')
             ))
-        )
-        LEFT JOIN purchase_orders
-          ON purchase_orders.id = invoices.purchase_order_id
-        LEFT JOIN attachments
-          ON (
-              attachments.target_id = profit_view.milestone_entry_id
-              AND attachments.target_type = "PEN"
           )
-        LEFT JOIN milestones
-          ON milestones.project_id = invoices.project_id
-        LEFT JOIN files
-          ON  (
-            (profit_view.project_type = 2 AND attachments.file_id = files.id) OR
-            (profit_view.project_type = 1 AND milestones.file_id = files.id)
-          )                          
-      WHERE 
-        invoices.invoiceId = '${id}'
-      `
+          LEFT JOIN purchase_orders
+              ON purchase_orders.id = invoices.purchase_order_id
+          LEFT JOIN attachments
+            ON (
+                attachments.target_id = profit_view.milestone_entry_id
+                AND attachments.target_type = "PEN"
+            )
+          LEFT JOIN milestones
+              ON milestones.project_id = profit_view.project_id
+          LEFT JOIN files
+            ON (
+                (profit_view.project_type = 2 AND attachments.file_id = files.id) OR
+                (profit_view.project_type = 1 AND milestones.file_id = files.id)
+            )
+          WHERE 
+            invoices.invoiceId = '${id}'
+            AND (
+              profit_view.project_id = invoices.project_id AND (
+              profit_view.project_type = 1 OR
+              (
+                  profit_view.project_type = 2 AND
+                  STR_TO_DATE(profit_view.entry_date,'%e-%m-%Y') BETWEEN IFNULL(invoices.start_date, '2018-06-30') AND  IFNULL(invoices.end_date, '2049-06-30')
+              ))
+            )
+          GROUP BY invoices.id, files.id;
+       `
       
-      let [crmInvoice, xeroRes, attachmentsRes] = await Promise.all([
+      let [invoceQueryData, xeroRes, attachmentsRes] = await Promise.all([
         this.query(query),
         xero.accountingApi.getInvoice( tenantId, id ),
         xero.accountingApi.getInvoiceAttachments(tenantId, id)
       ]);
 
       let xeroInvoice = xeroRes.body.invoices?.[0]
-      if (!crmInvoice?.[0] || !xeroInvoice){
+      if (!invoceQueryData?.[0] || !xeroInvoice){
         throw new Error ('Invoice Not Found')
       }
 
       let attachments = []
-      let crmAttachments = JSON.parse(crmInvoice[0].attachments)
       let xeroAttachments = attachmentsRes?.body?.attachments
 
-      if (crmAttachments?.length && xeroAttachments?.length){
-        attachments = crmAttachments.map((attach: any)=>{
+      if (invoceQueryData?.length && xeroAttachments?.length){
+        invoceQueryData.forEach((attach: any)=>{
+          let newAttach = {
+            mimeType: attach.mimeType,
+            attachmentID: '',
+            fileName: attach.fileName,
+            uniqueName: attach.uniqueName,
+            fileId: attach.fileId,
+            attachXero: attach.attachXero,
+            includeOnline: attach.includeOnline
+          };
           xeroAttachments.forEach((xeroAttachment:any)=>{
             if (attach.fileName === xeroAttachment.fileName){
-              attach.attachmentID = xeroAttachment.attachmentID
-              attach.attachXero = true;
-              attach.includeOnline = xeroAttachment.includeOnline
+              newAttach.attachmentID = xeroAttachment.attachmentID
+              newAttach.attachXero = true;
+              newAttach.includeOnline = xeroAttachment.includeOnline
             }
-          })
-          return attach
-        })
+          });
+          attachments.push(newAttach)
+        });
       }else {
-        attachments = crmAttachments||[]
+        attachments = invoceQueryData.forEach((attach: any) =>
+          attachments.push({
+            mimeType: attach.mimeType,
+            attachmentID: '',
+            fileName: attach.fileName,
+            uniqueName: attach.uniqueName,
+            fileId: attach.fileId,
+            attachXero: attach.attachXero,
+            includeOnline: attach.includeOnline,
+          })
+        );
       }
+      let {mimeType, fileName, uniqueName, fileId, attachXero, includeOnline, ...crmInvoice} = invoceQueryData[0]
 
-      return new InvoiceResponse(xeroInvoice, crmInvoice[0], attachments)
+      return new InvoiceResponse(xeroInvoice, crmInvoice, attachments)
     }catch (e){
       console.log(e)
       return {}
