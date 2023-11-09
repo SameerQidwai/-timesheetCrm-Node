@@ -1462,7 +1462,27 @@ export class ProjectRepository extends Repository<Opportunity> {
       }
 
       let timesheets = await this.manager.find(Timesheet, {
-        where: { employeeId: projectResourceDTO.contactPersonId },
+        where: [
+          {
+            employeeId: projectResourceDTO.contactPersonId,
+            startDate: Between(
+              projectResourceDTO.startDate,
+              projectResourceDTO.endDate
+            ),
+          },
+          {
+            employeeId: projectResourceDTO.contactPersonId,
+            endDate: Between(
+              projectResourceDTO.startDate,
+              projectResourceDTO.endDate
+            ),
+          },
+          {
+            employeeId: projectResourceDTO.contactPersonId,
+            startDate: LessThanOrEqual(projectResourceDTO.startDate),
+            endDate: MoreThanOrEqual(projectResourceDTO.endDate),
+          },
+        ],
         relations: ['milestoneEntries', 'milestoneEntries.entries'],
       });
 
