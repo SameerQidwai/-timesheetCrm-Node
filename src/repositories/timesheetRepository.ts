@@ -793,7 +793,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
           timesheet
         );
 
-        let resource = await this.manager.findOne(OpportunityResource, {
+        let resources = await this.manager.find(OpportunityResource, {
           where: [
             {
               startDate: LessThanOrEqual(
@@ -804,30 +804,28 @@ export class TimesheetRepository extends Repository<Timesheet> {
               ),
               milestoneId: milestone.id,
             },
-            {
-              startDate: LessThanOrEqual(
-                moment(timesheetDTO.date, 'DD-MM-YYYY').toDate()
-              ),
-              endDate: IsNull(),
-              milestoneId: milestone.id,
-            },
           ],
           relations: ['opportunityResourceAllocations'],
         });
 
-        if (!resource) {
+        if (!resources.length) {
           throw new Error('Cannot log timesheet outside of allocation date.');
         }
 
         let _flagAllocationFound = false;
-        for (let allocation of resource.opportunityResourceAllocations) {
-          if (
-            allocation.contactPersonId ==
-              employee.contactPersonOrganization.contactPersonId &&
-            allocation.isMarkedAsSelected
-          ) {
-            _flagAllocationFound = true;
-            await this._validateHours(resource, actualHours, employee.id);
+        for (let resource of resources) {
+          for (let allocation of resource.opportunityResourceAllocations) {
+            if (
+              allocation.contactPersonId ==
+                employee.contactPersonOrganization.contactPersonId &&
+              allocation.isMarkedAsSelected
+            ) {
+              _flagAllocationFound = true;
+              await this._validateHours(resource, actualHours, employee.id);
+            }
+            if (_flagAllocationFound) {
+              break;
+            }
           }
         }
 
