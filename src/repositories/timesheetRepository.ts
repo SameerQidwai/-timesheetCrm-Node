@@ -1015,6 +1015,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         });
 
         this._validateBulkEntryDates(bulkStartDate, bulkEndDate, timesheet);
+
         // await this._validateBulkHours(
         //   bulkStartDate,
         //   bulkEndDate,
@@ -1022,6 +1023,55 @@ export class TimesheetRepository extends Repository<Timesheet> {
         //   bulkTimesheetDTO,
         //   employee.id
         // );
+
+        let timesheets = await this.manager.find(Timesheet, {
+          where: { employeeId: employee.id },
+          relations: ['milestoneEntries', 'milestoneEntries.entries'],
+        });
+
+        let resourceHours: any = {};
+
+        for (let resource of resources) {
+          for (let timesheet of timesheets) {
+            if (
+              !moment(timesheet.startDate).isBetween(
+                resource.startDate,
+                resource.endDate,
+                'date',
+                '[]'
+              ) &&
+              !moment(timesheet.endDate).isBetween(
+                resource.startDate,
+                resource.endDate,
+                'date',
+                '[]'
+              )
+            )
+              continue;
+            resourceHours[resource.id] = 0;
+            for (let milestoneEntry of timesheet.milestoneEntries) {
+              if (milestoneEntry.milestoneId != resource.milestoneId) continue;
+              for (let entry of milestoneEntry.entries) {
+                if (
+                  moment(entry.date, 'DD-MM-YYYY', true).isBetween(
+                    bulkStartDate,
+                    bulkEndDate,
+                    'date',
+                    '[]'
+                  ) ||
+                  !moment(entry.date, 'DD-MM-YYYY', true).isBetween(
+                    resource.startDate,
+                    resource.endDate,
+                    'date',
+                    '[]'
+                  )
+                )
+                  continue;
+                resourceHours[resource.id] += entry.hours;
+              }
+            }
+          }
+        }
 
         let foundEntries: any[] = [];
 
@@ -1047,7 +1097,39 @@ export class TimesheetRepository extends Repository<Timesheet> {
                     '[]'
                   )
                 ) {
+                  const entryMomentStartTime = moment(
+                    dtoEntry.startTime,
+                    'HH:mm',
+                    true
+                  );
+                  const entryMomentEndTime = moment(
+                    dtoEntry.endTime,
+                    'HH:mm',
+                    true
+                  );
+                  let actualHours = 0;
+                  if (
+                    entryMomentEndTime.diff(entryMomentStartTime, 'minutes') /
+                      60 <
+                    0
+                  ) {
+                    actualHours =
+                      Math.abs(
+                        entryMomentEndTime
+                          .add(1, 'days')
+                          .diff(entryMomentStartTime, 'minutes') / 60
+                      ) - dtoEntry.breakHours;
+                  } else {
+                    actualHours =
+                      Math.abs(
+                        entryMomentEndTime.diff(
+                          entryMomentStartTime,
+                          'minutes'
+                        ) / 60
+                      ) - dtoEntry.breakHours;
+                  }
                   foundEntries.push(entryMomentDate);
+                  resourceHours[resource.id] += actualHours;
                 }
               }
             }
@@ -1056,6 +1138,30 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
         if (foundEntries.length !== bulkTimesheetDTO.entries.length) {
           throw new Error('Cannot log timesheet outside of allocation date.');
+        }
+
+        for (let resource of resources) {
+          for (let allocation of resource.opportunityResourceAllocations) {
+            if (
+              allocation.contactPersonId ==
+                employee.contactPersonOrganization.contactPersonId &&
+              allocation.isMarkedAsSelected
+            ) {
+              if (resource.billableHours < resourceHours[resource.id]) {
+                console.log(
+                  '🚀 ~ file: timesheetRepository.ts:1145 ~ TimesheetRepository ~ resourceHours[resource.id]:',
+                  resourceHours[resource.id]
+                );
+                console.log(
+                  '🚀 ~ file: timesheetRepository.ts:1145 ~ TimesheetRepository ~ resource.billableHours:',
+                  resource.billableHours
+                );
+                throw new Error(
+                  'logged hours cannot be more than billable hours'
+                );
+              }
+            }
+          }
         }
 
         for (let loopedEntry of bulkTimesheetDTO.entries) {

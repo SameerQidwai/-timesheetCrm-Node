@@ -1346,11 +1346,41 @@ export class ProjectRepository extends Repository<Opportunity> {
           throw new Error('Milestone not found');
         }
 
+        let momentStartDate = moment(projectResourceDTO.startDate);
+        let momentEndDate = moment(projectResourceDTO.endDate);
+
+        let resources = await this.manager.find(OpportunityResource, {
+          where: [
+            {
+              startDate: Between(
+                momentStartDate.toDate(),
+                momentEndDate.toDate()
+              ),
+              milestoneId: milestone.id,
+            },
+            {
+              endDate: Between(
+                momentStartDate.toDate(),
+                momentEndDate.toDate()
+              ),
+              milestoneId: milestone.id,
+            },
+            {
+              startDate: LessThanOrEqual(momentStartDate.toDate()),
+              endDate: MoreThanOrEqual(momentEndDate.toDate()),
+              milestoneId: milestone.id,
+            },
+          ],
+          relations: ['opportunityResourceAllocations'],
+        });
+
         if (projectResourceDTO.startDate || projectResourceDTO.endDate) {
           this._validateResourceDates(
             projectResourceDTO.startDate,
             projectResourceDTO.endDate,
             milestone,
+            resources,
+            projectResourceDTO.contactPersonId,
             [],
             []
           );
@@ -1451,11 +1481,43 @@ export class ProjectRepository extends Repository<Opportunity> {
         (x) => x.isMarkedAsSelected == true
       );
 
+      let whereCondition: any = {
+        milestoneId: milestone.id,
+        id: Not(resource.id),
+      };
+
+      let momentStartDate = moment(projectResourceDTO.startDate);
+      let momentEndDate = moment(projectResourceDTO.endDate);
+
+      let resources = await this.manager.find(OpportunityResource, {
+        where: [
+          {
+            startDate: Between(
+              momentStartDate.toDate(),
+              momentEndDate.toDate()
+            ),
+            ...whereCondition,
+          },
+          {
+            endDate: Between(momentStartDate.toDate(), momentEndDate.toDate()),
+            ...whereCondition,
+          },
+          {
+            startDate: LessThanOrEqual(momentStartDate.toDate()),
+            endDate: MoreThanOrEqual(momentEndDate.toDate()),
+            ...whereCondition,
+          },
+        ],
+        relations: ['opportunityResourceAllocations'],
+      });
+
       if (projectResourceDTO.startDate || projectResourceDTO.endDate) {
         this._validateResourceDates(
           projectResourceDTO.startDate,
           projectResourceDTO.endDate,
           milestone,
+          resources,
+          projectResourceDTO.contactPersonId,
           [],
           []
         );
@@ -1491,7 +1553,15 @@ export class ProjectRepository extends Repository<Opportunity> {
         for (let milestoneEntry of timesheet.milestoneEntries) {
           if (milestoneEntry.milestoneId !== resource.milestoneId) continue;
           for (let entry of milestoneEntry.entries) {
-            currentHours += entry.hours;
+            if (
+              moment(entry.date, 'DD-MM-YYYY').isBetween(
+                projectResourceDTO.startDate,
+                projectResourceDTO.endDate,
+                'date',
+                '[]'
+              )
+            )
+              currentHours += entry.hours;
           }
         }
       }
@@ -3939,6 +4009,8 @@ export class ProjectRepository extends Repository<Opportunity> {
     startDate: Date | null,
     endDate: Date | null,
     milestone: Milestone,
+    resources: OpportunityResource[],
+    contactPersonId: number | null,
     leaveRequests: LeaveRequest[],
     timesheet: Timesheet[]
   ) {
@@ -3974,6 +4046,17 @@ export class ProjectRepository extends Repository<Opportunity> {
       }
       if (moment(endDate).isAfter(moment(milestone.endDate), 'date')) {
         throw new Error('Resource End Date cannot be After Milestone End Date');
+      }
+    }
+
+    for (let resource of resources) {
+      for (let allocation of resource.opportunityResourceAllocations) {
+        if (
+          allocation.contactPersonId == contactPersonId &&
+          allocation.isMarkedAsSelected
+        ) {
+          throw new Error('Resource Allocation dates cannot overlap');
+        }
       }
     }
   }
