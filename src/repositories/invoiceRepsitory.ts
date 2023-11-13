@@ -592,6 +592,7 @@ export class InvoiceRepsitory extends Repository<Invoice> {
           // console.log(resources)
           
       } else if (project.type === 1) {
+        // IF this is giving error check conactPersonStandardSkillStandardLeve.ts_remove
         resources = await this.query(`
           SELECT  
             CONCAT(DATE_FORMAT(project_schedules.start_date, '%b'), '-', DATE_FORMAT(project_schedules.end_date, '%b'))  description,
