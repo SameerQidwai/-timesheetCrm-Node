@@ -540,6 +540,7 @@ export class AuthController {
 
   async getNotifications(req: Request, res: Response, next: NextFunction) {
     try {
+      let _flagUnread = parseInt(req.query.unread?.toString() ?? '');
       let limit = parseInt(req.query.limit?.toString() ?? '');
       let page = parseInt(req.query.page?.toString() ?? '');
       limit = isNaN(limit) ? 5 : limit;
@@ -561,11 +562,18 @@ export class AuthController {
         throw new Error('Unauthorized');
       }
 
+      let unreadCondition = {};
+      if (_flagUnread) {
+        unreadCondition = {
+          readAt: null,
+        };
+      }
+
       let [records, count] = await manager.findAndCount(Notification, {
         skip: limit * (page - 1),
         take: limit,
         order: { id: 'DESC' },
-        where: { notifiableId: currentUser.id },
+        where: { notifiableId: currentUser.id, ...unreadCondition },
       });
 
       const lastPage = Math.ceil(count / limit);
@@ -681,6 +689,60 @@ export class AuthController {
       return res.status(200).json({
         success: true,
         message: 'Notifications marked as read',
+        data: notifications,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async markNotificationsAsUnRead(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const manager = getManager();
+
+      const currentUserId = res.locals.jwtPayload.id;
+
+      if (!currentUserId) {
+        throw new Error('Unauthorized');
+      }
+
+      const currentUser = await manager.findOne(Employee, {
+        id: currentUserId,
+      });
+
+      if (!currentUser) {
+        throw new Error('Unauthorized');
+      }
+
+      let ids = [];
+
+      if (req.query.notificationIds)
+        for (let item of (req.query.notificationIds as string).split(',')) {
+          if (isNaN(parseInt(item))) continue;
+
+          ids.push(parseInt(item));
+        }
+
+      ids.push(req.body.notificationIds);
+
+      let notifications = await manager.find(Notification, {
+        where: { id: In(ids), notifiableId: currentUser.id },
+      });
+
+      for (let notification of notifications) {
+        (notification.readAt as any) = null;
+      }
+
+      await manager.save(notifications);
+
+      // });
+      return res.status(200).json({
+        success: true,
+        message: 'Notifications marked as unread',
         data: notifications,
       });
     } catch (e) {

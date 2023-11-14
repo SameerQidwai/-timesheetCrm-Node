@@ -24,7 +24,7 @@ export class ExpenseSheetExpenseResponse {
   attachments: AttachmentResponse[];
 
   constructor(expense: ExpenseSheetExpense & { attachments?: Attachment[] }) {
-    this.id = expense.id;
+    this.id = expense.expense.id;
     this.expenseTypeId = expense.expense.expenseTypeId;
     this.expenseTypeName = expense.expense.expenseType.label;
     this.date = expense.expense.date;

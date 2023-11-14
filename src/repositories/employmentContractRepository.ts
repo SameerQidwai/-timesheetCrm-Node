@@ -9,6 +9,8 @@ import { EmploymentContract } from './../entities/employmentContract';
 import { Employee } from './../entities/employee';
 import { LeaveRequestBalance } from '../entities/leaveRequestBalance';
 import moment from 'moment-timezone';
+import { NotificationManager } from '../utilities/notifier';
+import { NotificationEventType } from '../constants/constants';
 
 @EntityRepository(EmploymentContract)
 export class EmploymentContractRepository extends Repository<EmploymentContract> {
@@ -20,7 +22,13 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
         let employee = await this.manager.findOne(
           Employee,
           employmentContractDTO.employeeId,
-          { relations: ['leaveRequestBalances'] }
+          {
+            relations: [
+              'leaveRequestBalances',
+              'contactPersonOrganization',
+              'contactPersonOrganization.contactPerson',
+            ],
+          }
         );
         if (!employee) {
           throw new Error('Employee not found');
@@ -145,6 +153,25 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
           }
         }
 
+        const isEmployee =
+          employee.contactPersonOrganization.organizationId === 1;
+
+        NotificationManager.info(
+          [],
+          `${isEmployee ? 'Employee' : 'Subcontractor'} Contract Added`,
+          `${
+            isEmployee ? 'Employee' : 'Subcontractor'
+          } Resource with the name: ${
+            employee?.getFullName
+          } contract has been created`,
+          `${isEmployee ? '/Employees' : '/sub-contractors'}/${
+            employee.id
+          }/contracts`,
+          isEmployee
+            ? NotificationEventType.EMPLOYEE_CONTRACT_CREATE
+            : NotificationEventType.SUBCONTRACTOR_CONTRACT_CREATE
+        );
+
         return contract;
       }
     );
@@ -180,7 +207,13 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
         let employee = await this.manager.findOne(
           Employee,
           employmentContractObj.employeeId,
-          { relations: ['leaveRequestBalances'] }
+          {
+            relations: [
+              'leaveRequestBalances',
+              'contactPersonOrganization',
+              'contactPersonOrganization.contactPerson',
+            ],
+          }
         );
         if (!employee) {
           throw new Error('Employee not found');
@@ -316,6 +349,25 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
             }
           }
         }
+
+        const isEmployee =
+          employee.contactPersonOrganization.organizationId === 1;
+
+        NotificationManager.info(
+          [],
+          `${isEmployee ? 'Employee' : 'Subcontractor'} Contract Updated`,
+          `${
+            isEmployee ? 'Employee' : 'Subcontractor'
+          } Resource with the name: ${
+            employee?.getFullName
+          } contract has been updated`,
+          `${isEmployee ? '/Employees' : '/sub-contractors'}/${
+            employee.id
+          }/contracts`,
+          isEmployee
+            ? NotificationEventType.EMPLOYEE_CONTRACT_UPDATE
+            : NotificationEventType.SUBCONTRACTOR_CONTRACT_UPDATE
+        );
 
         return contract;
       }

@@ -324,7 +324,11 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           ).format('DD-MM-YYYY')} is submitted by Employee ${
             employee.getFullName
           }`,
-          `/approve-request`,
+          `/approve-request?requestId=${leaveRequest.id}&startDate=${moment(
+            _firstDate
+          ).format('DD-MM-YYYY')}&endDate=${moment(_lastDate).format(
+            'DD-MM-YYYY'
+          )}`,
           NotificationEventType.LEAVE_REQUEST_SUBMIT,
           [leaveRequest.employeeId]
         );
@@ -691,7 +695,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
             ).format('DD-MM-YYYY')} to ${moment(
               leaveRequest.getEntriesDetails.endDate
             ).format('DD-MM-YYYY')} has been approved`,
-            `/leave-request`,
+            `/leave-request?requestId=${leaveRequest.id}`,
             NotificationEventType.LEAVE_REQUEST_APPROVE
           );
         }
@@ -778,7 +782,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
             ).format('DD-MM-YYYY')} to ${moment(
               leaveRequest.getEntriesDetails.endDate
             ).format('DD-MM-YYYY')} has been rejected`,
-            `/leave-request`,
+            `/leave-request?requestId=${leaveRequest.id}`,
             NotificationEventType.LEAVE_REQUEST_REJECT
           );
         }
@@ -1386,7 +1390,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
           ).format('DD-MM-YYYY')} is re-submitted by Employee ${
             employee.getFullName
           }`,
-          `/approve-request`,
+          `/approve-request?requestId=${leaveRequest.id}&startDate=${_firstDate}&endDate=${_lastDate}`,
           NotificationEventType.LEAVE_REQUEST_SUBMIT
         );
 
@@ -1514,7 +1518,7 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         relations: [
           'employee',
           'employee.contactPersonOrganization',
-          'employee.contactPersonOrganizaation.contactPerson',
+          'employee.contactPersonOrganization.contactPerson',
         ],
       }
     );

@@ -54,9 +54,11 @@ export class EmployeeController extends BaseController<
       const repository = getCustomRepository(EmployeeRepository);
       let employeeId = req.params.employeeId;
       let searchIn = !!(req.query.searchIn === 'contactPerson');
+      let startDate = req.query.startDate as string;
       let record = await repository.costCalculator(
         parseInt(employeeId),
-        searchIn
+        searchIn,
+        startDate
       );
       if (!record) throw new Error('not found');
       res.status(200).json({

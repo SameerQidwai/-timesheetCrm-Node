@@ -1,7 +1,13 @@
 import bcrypt from 'bcryptjs';
 import { dispatchMail, sendMail } from '../utilities/mailer';
 import { ContactPersonDTO, EmployeeDTO, SubContractorDTO } from '../dto';
-import { EntityRepository, getRepository, Not, Repository } from 'typeorm';
+import {
+  EntityRepository,
+  getRepository,
+  MoreThanOrEqual,
+  Not,
+  Repository,
+} from 'typeorm';
 import { ContactPerson } from './../entities/contactPerson';
 import { ContactPersonOrganization } from './../entities/contactPersonOrganization';
 import { State } from './../entities/state';
@@ -12,7 +18,7 @@ import { EmploymentContract } from './../entities/employmentContract';
 import { BankAccount } from './../entities/bankAccount';
 import { Attachment } from '../entities/attachment';
 import { Comment } from '../entities/comment';
-import { EntityType } from '../constants/constants';
+import { EntityType, NotificationEventType } from '../constants/constants';
 import { OpportunityResourceAllocation } from '../entities/opportunityResourceAllocation';
 import { Opportunity } from '../entities/opportunity';
 import { GlobalVariableLabel } from '../entities/globalVariableLabel';
@@ -20,6 +26,7 @@ import { CalendarHoliday } from '../entities/calendarHoliday';
 
 import moment from 'moment-timezone';
 import { WelcomeMail } from '../mails/welcomeMail';
+import { NotificationManager } from '../utilities/notifier';
 
 @EntityRepository(Employee)
 export class SubContractorRepository extends Repository<Employee> {
@@ -169,6 +176,21 @@ export class SubContractorRepository extends Repository<Employee> {
     dispatchMail(
       new WelcomeMail(user.username, user.email, generatedPassword),
       user
+    );
+
+    const isEmployee =
+      responseSubContractor.contactPersonOrganization.organizationId === 1;
+
+    NotificationManager.info(
+      [],
+      `${isEmployee ? 'Employee' : 'Subcontractor'} Resource Added`,
+      `${isEmployee ? 'Employee' : 'Subcontractor'} Resource with the name: ${
+        responseSubContractor.getFullName
+      } has been created`,
+      `${isEmployee ? '/Employees' : '/sub-contractors'}`,
+      isEmployee
+        ? NotificationEventType.EMPLOYEE_CREATE
+        : NotificationEventType.SUBCONTRACTOR_CREATE
     );
   }
 
@@ -457,6 +479,24 @@ export class SubContractorRepository extends Repository<Employee> {
       subContractorContract.employeeId = subContractorObj.id;
       if (fileId) subContractorContract.fileId = fileId;
       await transactionalEntityManager.save(subContractorContract);
+
+      let isEmployee =
+        subContractorObj.contactPersonOrganization.organizationId === 1;
+
+      NotificationManager.info(
+        [subContractorObj.lineManagerId],
+        `${isEmployee ? 'Employee' : 'Subcontractor'} Resource Updated`,
+        `${isEmployee ? 'Employee' : 'Subcontractor'} Resource with the name: ${
+          subContractorObj.getFullName
+        } details have been updated`,
+        `${isEmployee ? '/Employees' : '/sub-contractors'}/${
+          subContractorObj.id
+        }/info`,
+        isEmployee
+          ? NotificationEventType.EMPLOYEE_UPDATE
+          : NotificationEventType.SUBCONTRACTOR_UPDATE
+      );
+
       return subContractorObj.id;
     });
     return this.findOneCustom(id);
@@ -606,7 +646,7 @@ export class SubContractorRepository extends Repository<Employee> {
     });
   }
 
-  async costCalculator(id: number, searchIn: boolean) {
+  async costCalculator(id: number, searchIn: boolean, startDate: string) {
     let searchId: number = id;
 
     if (searchIn) {
@@ -638,7 +678,21 @@ export class SubContractorRepository extends Repository<Employee> {
       throw new Error('Employee not found');
     }
 
-    let currentContract: any = subContractor.getActiveContract;
+    let currentContract: any;
+    let momentStartDate = moment(startDate, 'YYYY-MM-DD');
+
+    if (momentStartDate.isValid()) {
+      currentContract = await this.manager.findOne(EmploymentContract, {
+        where: {
+          startDate: MoreThanOrEqual(momentStartDate.toDate()),
+          employeeId: subContractor.id,
+        },
+      });
+
+      if (!currentContract) currentContract = subContractor.getActiveContract;
+    } else {
+      currentContract = subContractor.getActiveContract;
+    }
 
     if (!currentContract) {
       throw new Error('No Active Contract');
@@ -673,8 +727,10 @@ export class SubContractorRepository extends Repository<Employee> {
             (currentContract?.dailyHours * 22);
     let buyRate: any = 0;
     // if (currentContract?.hourlyBaseRate){
-    let stateName: string | undefined =
+    let stateName: string | null =
       subContractor?.contactPersonOrganization.contactPerson?.state?.label;
+
+    stateName = stateName ?? 'No State';
 
     let golobalVariables: any = await this.manager
       .getRepository(GlobalVariableLabel)
@@ -690,6 +746,7 @@ export class SubContractorRepository extends Repository<Employee> {
       .getMany();
 
     buyRate = currentContract?.hourlyBaseRate;
+
     golobalVariables = golobalVariables.map((variable: any) => {
       let value: any = variable?.values?.[0];
       buyRate += (currentContract?.hourlyBaseRate * value.value) / 100;
@@ -702,7 +759,16 @@ export class SubContractorRepository extends Repository<Employee> {
         amount: (currentContract?.hourlyBaseRate * value.value) / 100,
       };
     });
-    // }
+
+    //set state if state is not assigned to employee
+    if (stateName === 'No State') {
+      golobalVariables[0] = {
+        name: stateName,
+        variableId: 0,
+        valueId: 0,
+        value: 0,
+      };
+    }
 
     return {
       contract: currentContract,
