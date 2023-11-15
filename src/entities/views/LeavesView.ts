@@ -39,7 +39,7 @@ import { ViewEntity, ViewColumn } from 'typeorm';
             THEN
                 'unpaid'
             ELSE
-                lrt.label
+            lt.label
         END) leave_type_name,
 
         lr.employee_id,
@@ -58,26 +58,52 @@ import { ViewEntity, ViewColumn } from 'typeorm';
                 lr.id = lre.leave_request_id
             JOIN contact_person_view cpv ON
                 lr.employee_id = cpv.employee_id
-            LEFT JOIN leave_request_policy_leave_request_types policy_type ON 
-                lr.type_id = policy_type.id
-            LEFT JOIN leave_request_types lrt ON
-                policy_type.leave_request_type_id = lrt.id
+            LEFT JOIN leave_request_types lt ON 
+                lr.type_id = lt.id
             LEFT JOIN opportunities o ON
                 lr.work_id = o.id
 
-    WHERE lr.deleted_at IS NULL AND lre.deleted_at IS NULL AND lrt.deleted_at IS NULL
+    WHERE lr.deleted_at IS NULL AND lre.deleted_at IS NULL
     `,
 })
 export class LeavesView {
   @ViewColumn()
-  project_id: number;
+  leaveRequestId: number;
+  
+  @ViewColumn()
+  leaveStatus: string;
+  
+  @ViewColumn()
+  leaveStatusIndex: number;
+  
+  @ViewColumn()
+  leaveEntryId: number;
+  
+  @ViewColumn()
+  leaveEntryHours: number;
+  
+  @ViewColumn()
+  leaveEntryDate: Date;
+  
+  @ViewColumn()
+  leaveTypeId: number;
+  
+  @ViewColumn()
+  leaveTypeName: string;
+  
+  @ViewColumn()
+  employeeId: number;
+  
+  @ViewColumn()
+  employeeName: string;
+  
+  @ViewColumn()
+  contactPersonId: number;
+  
+  @ViewColumn()
+  projectId: number;
 
   @ViewColumn()
-  project_title: string;
+  projectTitle: string;
 
-  @ViewColumn()
-  resource_start: Date;
-
-  @ViewColumn()
-  project_status: Boolean;
 }
