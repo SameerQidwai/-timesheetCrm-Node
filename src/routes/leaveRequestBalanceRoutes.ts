@@ -16,7 +16,7 @@ router
 router
   .route('/:id')
   .patch(
-    [isLoggedIn, can(Action.UPDATE, Resource.LEAVE_REQUESTS)],
+    [isLoggedIn, can(Action.APPROVAL, Resource.LEAVE_REQUESTS)],
     contr.updateLeaveRequestBalancedAccured.bind(contr)
   );
 
