@@ -1897,26 +1897,26 @@ export class ReportController {
         : '';
 
       const leave_requests = await manager.query(`
-      SELECT 
-        leave_request_id,
-        leave_status,
-        leave_status_index,
-        leave_type_id,
-        leave_type_name,
-        contact_person_id,
-        employee_id,
-        employee_name,
-        project_id,
-        project_title,
-        CAST(sum(leave_entry_hours) AS DECIMAL(32,4)) total_request_hours,
-        MIN(leave_entry_date) start_leave_date,
-        MAX(leave_entry_date) end_leave_date
-      
-        FROM leaves_view 
-        WHERE leave_entry_date >= STR_TO_DATE('${startDate}' ,'%Y-%m-%d')
-          AND leave_entry_date <= STR_TO_DATE('${endDate}' ,'%Y-%m-%d')
-          ${projectFilter} ${leaveTypeFilter} ${contactPersonFilter} ${leaveStatusFilter}
-      GROUP BY employee_id, leave_request_id
+        SELECT 
+          leave_request_id,
+          leave_status,
+          leave_status_index,
+          leave_type_id,
+          leave_type_name,
+          contact_person_id,
+          employee_id,
+          employee_name,
+          project_id,
+          project_title,
+          CAST(sum(leave_entry_hours) AS DECIMAL(32,4)) total_request_hours,
+          MIN(leave_entry_date) start_leave_date,
+          MAX(leave_entry_date) end_leave_date
+        
+          FROM leaves_view 
+          WHERE leave_entry_date >= STR_TO_DATE('${startDate}' ,'%Y-%m-%d')
+            AND leave_entry_date <= STR_TO_DATE('${endDate}' ,'%Y-%m-%d')
+            ${projectFilter} ${leaveTypeFilter} ${contactPersonFilter} ${leaveStatusFilter}
+        GROUP BY employee_id, leave_request_id
       `);
 
       interface SummaryInterface {
