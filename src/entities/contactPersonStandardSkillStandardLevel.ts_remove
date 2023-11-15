@@ -727,3 +727,25 @@ SELECT
     GROUP BY project_id
   ) AS total_sum ON total_sum.project_id = extracted_data.project_id
 GROUP BY month;
+
+-- SQL FOR INOVOCE DATA WITH PROJECT DATA for invoice_data 
+SELECT
+  CONCAT(DATE_FORMAT(project_schedules.start_date, '%b'), '-', DATE_FORMAT(project_schedules.end_date, '%b')) AS description,
+  project_schedules.amount AS unitAmount,
+  project_schedules.id AS id,
+  '-' AS quantity, -- need to multiply this
+  1 AS hours, -- but show this in table
+  files.type AS type,
+  files.original_name AS name,
+  files.unique_name AS uniqueName,
+  files.id AS fileId
+  FROM
+    opportunities
+        LEFT JOIN project_schedules ON
+        opportunities.id = project_schedules.project_id
+        LEFT JOIN milestones ON
+        milestones.project_id = opportunities.id
+        LEFT JOIN files
+        ON  milestones.file_id = files.id
+  WHERE opportunities.id=8
+AND project_schedules.deleted_at IS NULL;
