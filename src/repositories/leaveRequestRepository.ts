@@ -12,6 +12,8 @@ import {
   Between,
   Not,
   IsNull,
+  LessThanOrEqual,
+  MoreThanOrEqual,
 } from 'typeorm';
 import { LeaveRequest } from '../entities/leaveRequest';
 import { LeaveRequestEntry } from '../entities/leaveRequestEntry';
@@ -217,23 +219,62 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         }
 
         if (project) {
-          let employeeAllocations = await transactionalEntityManager.find(
-            OpportunityResourceAllocation,
-            {
-              where: {
-                contactPersonId:
-                  employee.contactPersonOrganization.contactPerson.id,
-              },
-              relations: ['opportunityResource'],
-            }
-          );
+          // let employeeAllocations = await transactionalEntityManager.find(
+          //   OpportunityResourceAllocation,
+          //   {
+          //     where: {
+          //       contactPersonId:
+          //         employee.contactPersonOrganization.contactPerson.id,
+          //     },
+          //     relations: ['opportunityResource'],
+          //   }
+          // );
 
-          for (let allocation of employeeAllocations) {
-            if (allocation.opportunityResource.opportunityId == project.id) {
-              this._validateRequestDates(
-                _firstDate,
-                _lastDate,
-                allocation.opportunityResource
+          // for (let allocation of employeeAllocations) {
+          //   if (allocation.opportunityResource.opportunityId == project.id) {
+          //     this._validateRequestDates(
+          //       _firstDate,
+          //       _lastDate,
+          //       allocation.opportunityResource
+          //     );
+          //   }
+          // }
+
+          let resources = await this.manager.find(OpportunityResource, {
+            where: {
+              startDate: LessThanOrEqual(moment(_firstDate).toDate()),
+              endDate: MoreThanOrEqual(moment(_lastDate).toDate()),
+              opportunityId: project.id,
+            },
+
+            order: { startDate: 'ASC' },
+            relations: ['opportunityResourceAllocations'],
+          });
+
+          if (!resources) {
+            throw new Error(
+              'Leave Request Date should be in between allocation dates'
+            );
+          }
+
+          for (let leaveRequestEntry of leaveRequestDTO.entries) {
+            let _flagFound = false;
+
+            for (let resource of resources) {
+              if (
+                moment(leaveRequestEntry.date).isBetween(
+                  resource.startDate,
+                  resource.endDate,
+                  'date',
+                  '[]'
+                )
+              )
+                _flagFound = true;
+            }
+
+            if (!_flagFound) {
+              throw new Error(
+                'Leave Request Date should be in between allocation dates'
               );
             }
           }
@@ -1218,23 +1259,62 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
         }
 
         if (project) {
-          let employeeAllocations = await transactionalEntityManager.find(
-            OpportunityResourceAllocation,
-            {
-              where: {
-                contactPersonId:
-                  employee.contactPersonOrganization.contactPerson.id,
-              },
-              relations: ['opportunityResource'],
-            }
-          );
+          // let employeeAllocations = await transactionalEntityManager.find(
+          //   OpportunityResourceAllocation,
+          //   {
+          //     where: {
+          //       contactPersonId:
+          //         employee.contactPersonOrganization.contactPerson.id,
+          //     },
+          //     relations: ['opportunityResource'],
+          //   }
+          // );
 
-          for (let allocation of employeeAllocations) {
-            if (allocation.opportunityResource.opportunityId == project.id) {
-              this._validateRequestDates(
-                _firstDate,
-                _lastDate,
-                allocation.opportunityResource
+          // for (let allocation of employeeAllocations) {
+          //   if (allocation.opportunityResource.opportunityId == project.id) {
+          //     this._validateRequestDates(
+          //       _firstDate,
+          //       _lastDate,
+          //       allocation.opportunityResource
+          //     );
+          //   }
+          // }
+
+          let resources = await this.manager.find(OpportunityResource, {
+            where: {
+              startDate: LessThanOrEqual(moment(_firstDate).toDate()),
+              endDate: MoreThanOrEqual(moment(_lastDate).toDate()),
+              opportunityId: project.id,
+            },
+
+            order: { startDate: 'ASC' },
+            relations: ['opportunityResourceAllocations'],
+          });
+
+          if (!resources) {
+            throw new Error(
+              'Leave Request Date should be in between allocation dates'
+            );
+          }
+
+          for (let leaveRequestEntry of leaveRequestDTO.entries) {
+            let _flagFound = false;
+
+            for (let resource of resources) {
+              if (
+                moment(leaveRequestEntry.date).isBetween(
+                  resource.startDate,
+                  resource.endDate,
+                  'date',
+                  '[]'
+                )
+              )
+                _flagFound = true;
+            }
+
+            if (!_flagFound) {
+              throw new Error(
+                'Leave Request Date should be in between allocation dates'
               );
             }
           }
