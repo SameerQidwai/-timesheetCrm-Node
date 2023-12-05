@@ -675,8 +675,14 @@ export class AuthController {
 
       ids.push(req.body.notificationIds);
 
+      let where: any = { notifiableId: currentUser.id };
+
+      if (ids.length) {
+        where['id'] = In(ids);
+      }
+
       let notifications = await manager.find(Notification, {
-        where: { id: In(ids), notifiableId: currentUser.id },
+        where,
       });
 
       for (let notification of notifications) {
