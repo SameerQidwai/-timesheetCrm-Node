@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { getManager } from 'typeorm';
+import { getManager, In } from 'typeorm';
 import xlsx from 'xlsx';
 import moment from 'moment-timezone';
 import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
@@ -13,6 +13,9 @@ import { ResetPasswordMail } from '../mails/resetPasswordMail';
 import { FinancialYear } from '../entities/financialYear';
 import { exec } from 'child_process';
 import { Notification } from '../entities/notification';
+import PDFDocument from 'pdfkit';
+import fs from 'fs';
+import path from 'path';
 
 export class TestController {
   async test(req: Request, res: Response, next: NextFunction) {
@@ -262,6 +265,320 @@ export class TestController {
         success: true,
         message: 'Notification created',
         data: notification,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async createDummyPDF(req: Request, res: Response, next: NextFunction) {
+    try {
+      const TOP_MARGIN = 20;
+      const RIGHT_MARGIN = 10;
+      const BOTTOM_MARGIN = 20;
+      const LEFT_MARGIN = 10;
+      const BORDER_COLOR = '#f0f0f0';
+      const BACKGROUND_COLOR = '#fafafa';
+      const WHITE_COLOR = '#ffffff';
+      const PAGE_WIDTH = 595.28;
+      const PAGE_HEIGHT = 841.89;
+      const manager = getManager();
+
+      const doc = new PDFDocument({
+        size: 'A4',
+        margins: {
+          top: TOP_MARGIN,
+          right: RIGHT_MARGIN,
+          bottom: BOTTOM_MARGIN,
+          left: LEFT_MARGIN,
+        },
+      });
+
+      const generateTable = (
+        doc: PDFKit.PDFDocument,
+        rowCount: number,
+        start: number,
+        difference: number,
+        columns: {
+          width?: number;
+        }[] = [],
+        data: Array<string> = []
+      ) => {
+        let currentY = start;
+
+        for (let i = 1; i <= rowCount; i++) {
+          var currentX = 25;
+          for (let j = 0; j < columns.length; j++) {
+            let column = columns[j];
+            if (!column.width) continue;
+
+            doc
+              .rect(currentX, currentY, column.width, difference)
+              .stroke(BORDER_COLOR);
+
+            if (data) {
+              doc.fontSize(10);
+              doc.text(`2/3/2023`, currentX, currentY + difference / 2, {
+                height: difference,
+                width: column.width,
+                align: 'center',
+                baseline: 'hanging',
+              });
+            }
+
+            currentX += column.width;
+          }
+
+          doc
+            .polygon([25, currentY], [PAGE_WIDTH - 25, currentY])
+            .stroke(BORDER_COLOR);
+
+          currentY += difference;
+        }
+      };
+
+      let milestoneEntries = await manager.find(TimesheetMilestoneEntry, {
+        where: { id: In([472]) },
+        relations: [
+          'timesheet',
+          'timesheet.employee',
+          'timesheet.employee.contactPersonOrganization',
+          'timesheet.employee.contactPersonOrganization.organization',
+          'timesheet.employee.contactPersonOrganization.contactPerson',
+          'milestone',
+          'milestone.project',
+          'milestone.project.organization',
+          'milestone.project.organization.delegateContactPerson',
+          'entries',
+        ],
+      });
+
+      if (!milestoneEntries) {
+        throw new Error('Milestone Entry not found');
+      }
+
+      //-- START OF MODIFIED RESPSONSE FOR FRONTEND
+
+      interface Any {
+        [key: string]: any;
+      }
+
+      let response: Any = [];
+
+      milestoneEntries.forEach((milestoneEntry) => {
+        let startDate = moment(
+          milestoneEntry.timesheet.startDate,
+          'DD-MM-YYYY'
+        );
+        let cStartDate = moment(
+          milestoneEntry.timesheet.startDate,
+          'DD-MM-YYYY'
+        ).format('DD/MM/YYYY');
+        let cEndDate = moment(
+          milestoneEntry.timesheet.endDate,
+          'DD-MM-YYYY'
+        ).format('DD/MM/YYYY');
+
+        let cMonthDays = moment(
+          milestoneEntry.timesheet.startDate,
+          'DD-MM-YYYY'
+        ).daysInMonth();
+
+        ``;
+
+        let milestone: Any = {
+          milestoneEntryId: milestoneEntry.id,
+          milestoneId: milestoneEntry.milestoneId,
+          name:
+            milestoneEntry.milestone.project.type == 1
+              ? `${milestoneEntry.milestone.project.title} - (${milestoneEntry.milestone.title})`
+              : `${milestoneEntry.milestone.project.title}`,
+          client: milestoneEntry.milestone.project.organization.name,
+          contact:
+            `${
+              milestoneEntry.milestone.project.organization
+                .delegateContactPerson?.firstName ?? '-'
+            } ${
+              milestoneEntry.milestone.project.organization
+                .delegateContactPerson?.lastName ?? '-'
+            }` ?? '-',
+          notes: milestoneEntry.notes,
+          totalHours: 0,
+          invoicedDays: 0,
+          hoursPerDay: milestoneEntry.milestone.project.hoursPerDay,
+          entries: [],
+        };
+
+        for (let i = 1; i <= cMonthDays; i++) {
+          let _flagFound = 0;
+          let _foundEntry: TimesheetEntry | undefined;
+          milestoneEntry.entries.map((entry: TimesheetEntry) => {
+            if (parseInt(entry.date.substring(0, 2)) == i) {
+              _flagFound = 1;
+              _foundEntry = entry;
+            }
+          });
+          if (_flagFound == 1 && _foundEntry != undefined) {
+            milestone.totalHours += _foundEntry.hours;
+            milestone.entries.push({
+              entryId: _foundEntry.id,
+              date: moment(_foundEntry.date, 'DD-MM-YYYY').format('D/M/Y'),
+              day: moment(_foundEntry.date, 'DD-MM-YYYY').format('dddd'),
+              startTime: moment(_foundEntry.startTime, 'HH:mm').format('HH:mm'),
+              endTime: moment(_foundEntry.endTime, 'HH:mm').format('HH:mm'),
+              breakHours: _foundEntry.breakHours,
+              breakMinutes: _foundEntry.breakHours * 60,
+              actualHours: _foundEntry.hours,
+              notes: _foundEntry.notes,
+            });
+          } else {
+            console.log(`${i}-${startDate.month()}-${startDate.year()}`);
+            milestone.totalHours += 0;
+            milestone.entries.push({
+              entryId: '-',
+              date: moment(
+                `${i}-${startDate.month() + 1}-${startDate.year()}`,
+                'DD-MM-YYYY'
+              ).format('D/M/Y'),
+              day: moment(
+                `${i}-${startDate.month() + 1}-${startDate.year()}`,
+                'DD-MM-YYYY'
+              ).format('dddd'),
+              startTime: '-',
+              endTime: '-',
+              breakHours: '-',
+              breakMinutes: '-',
+              actualHours: '-',
+              notes: '-',
+            });
+          }
+        }
+
+        milestone.invoicedDays =
+          milestone.totalHours / milestoneEntry.milestone.project.hoursPerDay;
+
+        let entry = {
+          id: milestoneEntry.id,
+          project: milestoneEntry.milestone.project.title,
+          company:
+            milestoneEntry.timesheet.employee.contactPersonOrganization
+              .organization.name,
+          employee: `${milestoneEntry.timesheet.employee.contactPersonOrganization.contactPerson.firstName} ${milestoneEntry.timesheet.employee.contactPersonOrganization.contactPerson.lastName}`,
+          period: `${cStartDate} - ${cEndDate}`,
+          notes: milestoneEntry.timesheet.notes,
+          milestone: milestone,
+        };
+
+        response.push(entry);
+      });
+
+      doc.pipe(
+        fs.createWriteStream(
+          path.join(__dirname, '../../public/downloads/dummy.pdf')
+        )
+      );
+
+      // write to PDF
+      // doc.pipe(res); // HTTP response
+
+      let car: PDFKit.Mixins.TextOptions;
+      doc.fontSize(25);
+      doc.text(`Timesheet`, 25, 30);
+
+      doc.image(
+        'C:/Users/Shahzaib/Desktop/TimesheetPdf/z-cp-logo.png',
+        PAGE_WIDTH - 180,
+        25,
+        { width: 150 }
+      );
+
+      //-- TOP SECTION
+      //* CURRENT HEIGHT 0
+
+      doc.rect(25, 75, PAGE_WIDTH - 50, 80).stroke(BORDER_COLOR);
+      // doc.rect(25.5, 75.5, 120, 19).fill(BACKGROUND_COLOR);
+      // doc.rect(280, 75.5, 120, 19).fill(BACKGROUND_COLOR);
+      // doc.rect(25.5, 135, 120, 19).fill(BACKGROUND_COLOR);
+      // doc.rect(280, 135, 120, 19).fill(BACKGROUND_COLOR);
+
+      //* CURRENT HEIGHT 45
+      generateTable(doc, 3, 95, 20);
+
+      doc.fontSize(12);
+      doc.text(`Company`, 30, 80);
+      doc.text(`Employee`, 285, 80);
+      doc.text(`Client`, 30, 100);
+      doc.text(`Project`, 30, 120);
+      doc.text(`Client Contact`, 30, 140);
+      doc.text(`Timesheet Period`, 285, 140);
+
+      //-- CENTER TABLE
+      //* CURRENT HEIGHT 125
+      doc.rect(25, 180, PAGE_WIDTH - 50, 530).stroke(BORDER_COLOR);
+
+      doc.rect(25, 180, 50, 50).stroke(BORDER_COLOR);
+      doc.rect(75, 180, 50, 50).stroke(BORDER_COLOR);
+      doc.rect(125, 180, 70, 50).stroke(BORDER_COLOR);
+      doc.rect(125, 205, 35, 25).stroke(BORDER_COLOR);
+      doc.rect(160, 205, 35, 25).stroke(BORDER_COLOR);
+      doc.rect(195, 180, 35, 50).stroke(BORDER_COLOR);
+      doc.rect(230, 180, 35, 50).stroke(BORDER_COLOR);
+      doc.rect(265, 180, 305, 50).stroke(BORDER_COLOR);
+
+      //* CURRENT HEIGHT 150
+      generateTable(
+        doc,
+        response[0].milestone.entries.length,
+        230,
+        16,
+        [
+          { width: 50 },
+          { width: 50 },
+          { width: 35 },
+          { width: 35 },
+          { width: 35 },
+          { width: 35 },
+          { width: 305 },
+        ],
+        response[0]
+      );
+
+      //-- SUM ROW
+      //* CURRENT HEIGHT 750
+      generateTable(doc, 1, 740, 20, [
+        { width: 100 },
+        { width: 82 },
+        { width: 100 },
+        { width: 82 },
+        { width: 100 },
+        { width: 82 },
+      ]);
+      // doc.rect(25, 760, PAGE_WIDTH - 50, 20).stroke(BORDER_COLOR);
+      // doc.rect(25.5, 760.5, 80, 19).fill(BACKGROUND_COLOR);
+      // doc.rect(225, 760.5, 80, 19).fill(BACKGROUND_COLOR);
+      // doc.rect(425, 760.5, 80, 19).fill(BACKGROUND_COLOR);
+
+      //-- SIGNATURE ROW
+      //* CURRENT HEIGHT 780
+
+      doc
+        .rect(25, 780, (PAGE_WIDTH - 50) / 2 - 40, 20)
+        .fillAndStroke(BACKGROUND_COLOR, BORDER_COLOR);
+
+      doc
+        .rect((PAGE_WIDTH - 50) / 2 + 40, 780, 257, 20)
+        .fillAndStroke(BACKGROUND_COLOR, BORDER_COLOR);
+
+      //* CURRENT HEIGHT 795
+      // finalize the PDF and end the stream
+      doc.end();
+
+      // doc.pipe(res);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Notification created',
+        data: response,
       });
     } catch (e) {
       next(e);

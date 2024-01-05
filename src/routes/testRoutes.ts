@@ -8,6 +8,7 @@ let contr = new TestController();
 let upload = multer();
 
 router.route('/test').get(contr.test.bind(contr));
+router.route('/pdf').get(contr.createDummyPDF.bind(contr));
 router.route('/testmail').get(contr.testMailFunction.bind(contr));
 router
   .route('/upload')
