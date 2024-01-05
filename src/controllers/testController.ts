@@ -301,12 +301,13 @@ export class TestController {
         difference: number,
         columns: {
           width?: number;
+          dataKey?: string;
         }[] = [],
-        data: Array<string> = []
+        data: any = []
       ) => {
         let currentY = start;
 
-        for (let i = 1; i <= rowCount; i++) {
+        for (let i = 0; i < rowCount; i++) {
           var currentX = 25;
           for (let j = 0; j < columns.length; j++) {
             let column = columns[j];
@@ -316,14 +317,19 @@ export class TestController {
               .rect(currentX, currentY, column.width, difference)
               .stroke(BORDER_COLOR);
 
-            if (data) {
-              doc.fontSize(10);
-              doc.text(`2/3/2023`, currentX, currentY + difference / 2, {
-                height: difference,
-                width: column.width,
-                align: 'center',
-                baseline: 'hanging',
-              });
+            if (data?.milestone && column.dataKey) {
+              doc.fontSize(8);
+              doc.text(
+                data.milestone.entries[i][column.dataKey] ?? '-',
+                currentX,
+                currentY + difference / 2,
+                {
+                  height: difference,
+                  width: column.width,
+                  align: 'center',
+                  baseline: 'hanging',
+                }
+              );
             }
 
             currentX += column.width;
@@ -485,12 +491,12 @@ export class TestController {
       doc.fontSize(25);
       doc.text(`Timesheet`, 25, 30);
 
-      doc.image(
-        'C:/Users/Shahzaib/Desktop/TimesheetPdf/z-cp-logo.png',
-        PAGE_WIDTH - 180,
-        25,
-        { width: 150 }
-      );
+      // doc.image(
+      //   'C:/Users/Shahzaib/Desktop/TimesheetPdf/z-cp-logo.png',
+      //   PAGE_WIDTH - 180,
+      //   25,
+      //   { width: 150 }
+      // );
 
       //-- TOP SECTION
       //* CURRENT HEIGHT 0
@@ -525,6 +531,9 @@ export class TestController {
       doc.rect(230, 180, 35, 50).stroke(BORDER_COLOR);
       doc.rect(265, 180, 305, 50).stroke(BORDER_COLOR);
 
+      doc.fontSize(10);
+      doc.text(`Date`, 30, 150);
+
       //* CURRENT HEIGHT 150
       generateTable(
         doc,
@@ -532,13 +541,13 @@ export class TestController {
         230,
         16,
         [
-          { width: 50 },
-          { width: 50 },
-          { width: 35 },
-          { width: 35 },
-          { width: 35 },
-          { width: 35 },
-          { width: 305 },
+          { width: 50, dataKey: 'date' },
+          { width: 50, dataKey: 'day' },
+          { width: 35, dataKey: 'startTime' },
+          { width: 35, dataKey: 'endTime' },
+          { width: 35, dataKey: 'breakMinutes' },
+          { width: 35, dataKey: 'actualHours' },
+          { width: 305, dataKey: 'notes' },
         ],
         response[0]
       );
