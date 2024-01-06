@@ -282,6 +282,8 @@ export class TestController {
       const WHITE_COLOR = '#ffffff';
       const PAGE_WIDTH = 595.28;
       const PAGE_HEIGHT = 841.89;
+      const WARNING_COLOR = '#ff4d4f';
+      const TEXT_COLOR = '#000000';
       const manager = getManager();
 
       const doc = new PDFDocument({
@@ -293,6 +295,18 @@ export class TestController {
           left: LEFT_MARGIN,
         },
       });
+
+      const textConfig = (
+        width: number,
+        height: number
+      ): PDFKit.Mixins.TextOptions => {
+        return {
+          width,
+          height,
+          align: 'center',
+          baseline: 'hanging',
+        };
+      };
 
       const generateTable = (
         doc: PDFKit.PDFDocument,
@@ -510,13 +524,19 @@ export class TestController {
       //* CURRENT HEIGHT 45
       generateTable(doc, 3, 95, 20);
 
-      doc.fontSize(12);
-      doc.text(`Company`, 30, 80);
-      doc.text(`Employee`, 285, 80);
-      doc.text(`Client`, 30, 100);
-      doc.text(`Project`, 30, 120);
-      doc.text(`Client Contact`, 30, 140);
-      doc.text(`Timesheet Period`, 285, 140);
+      doc.fontSize(11);
+      doc.text(`Company:`, 30, 80);
+      doc.text(response[0].company, 130, 80);
+      doc.text(`Employee:`, 300, 80);
+      doc.text(response[0].employee, 380, 80);
+      doc.text(`Client:`, 30, 100);
+      doc.text(response[0].milestone.client, 130, 100);
+      doc.text(`Project:`, 30, 120);
+      doc.text(response[0].project, 130, 120);
+      doc.text(`Client Contact:`, 30, 140);
+      doc.text(response[0].milestone.contact, 130, 140);
+      doc.text(`Timesheet Period:`, 300, 140);
+      doc.text(response[0].period, 410, 140);
 
       //-- CENTER TABLE
       //* CURRENT HEIGHT 125
@@ -532,7 +552,18 @@ export class TestController {
       doc.rect(265, 180, 305, 50).stroke(BORDER_COLOR);
 
       doc.fontSize(10);
-      doc.text(`Date`, 30, 150);
+      doc.text(`Date`, 25, 205, { width: 50, align: 'center' });
+      doc.text(`Day`, 75, 205, { width: 50, align: 'center' });
+      doc.text(`Hours`, 120, 195, { width: 70, align: 'center' });
+      doc.text(`Start`, 125, 215, { width: 35, align: 'center' });
+      doc.text(`Finish`, 160, 215, { width: 35, align: 'center' });
+      doc.text(`Break`, 195, 205, { width: 35, align: 'center' });
+      doc.text(`Daily Total`, 230, 195, { width: 35, align: 'center' });
+      doc.text(`Comments`, 265, 205, { width: 305, align: 'center' });
+
+      doc.fontSize(6);
+      doc.text(`(mins)`, 195, 215, { width: 35, align: 'center' });
+      doc.text(`(hrs)`, 230, 215, { width: 35, align: 'center' });
 
       //* CURRENT HEIGHT 150
       generateTable(
@@ -554,7 +585,7 @@ export class TestController {
 
       //-- SUM ROW
       //* CURRENT HEIGHT 750
-      generateTable(doc, 1, 740, 20, [
+      generateTable(doc, 1, 720, 20, [
         { width: 100 },
         { width: 82 },
         { width: 100 },
@@ -562,6 +593,24 @@ export class TestController {
         { width: 100 },
         { width: 82 },
       ]);
+
+      doc.fontSize(11);
+
+      doc.text(`Hours in Day`, 25, 730, { width: 100, align: 'center' });
+      doc.text(response[0].milestone.hoursPerDay, 125, 730, {
+        width: 82,
+        align: 'center',
+      });
+      doc.text(`Total Hours`, 207, 730, { width: 100, align: 'center' });
+      doc.text(response[0].milestone.totalHours, 307, 730, {
+        width: 82,
+        align: 'center',
+      });
+      doc.text(`Invoiced Days`, 389, 730, { width: 100, align: 'center' });
+      doc.text(response[0].milestone.invoicedDays, 489, 730, {
+        width: 82,
+        align: 'center',
+      });
       // doc.rect(25, 760, PAGE_WIDTH - 50, 20).stroke(BORDER_COLOR);
       // doc.rect(25.5, 760.5, 80, 19).fill(BACKGROUND_COLOR);
       // doc.rect(225, 760.5, 80, 19).fill(BACKGROUND_COLOR);
@@ -571,12 +620,34 @@ export class TestController {
       //* CURRENT HEIGHT 780
 
       doc
+        .fillColor(WARNING_COLOR)
+        .fontSize(9)
+        .text(
+          `I certify that the entries are a true record of attendance.`,
+          25,
+          750,
+          { oblique: true, underline: true }
+        );
+
+      doc.fontSize(10).fillColor(TEXT_COLOR);
+
+      doc.text(`Employee Declaration:`, 25, 765);
+      doc.text(`Manager Approval:`, (PAGE_WIDTH - 50) / 2 + 40, 765);
+      doc
         .rect(25, 780, (PAGE_WIDTH - 50) / 2 - 40, 20)
         .fillAndStroke(BACKGROUND_COLOR, BORDER_COLOR);
 
       doc
         .rect((PAGE_WIDTH - 50) / 2 + 40, 780, 257, 20)
         .fillAndStroke(BACKGROUND_COLOR, BORDER_COLOR);
+
+      doc.fontSize(11);
+      doc.fillColor(TEXT_COLOR);
+
+      doc.text(`Signature:`, 25, 805);
+      doc.text(`Date:`, 165, 805);
+      doc.text(`Signature:`, (PAGE_WIDTH - 50) / 2 + 40, 805);
+      doc.text(`Date:`, (PAGE_WIDTH - 50) / 2 + 180, 805);
 
       //* CURRENT HEIGHT 795
       // finalize the PDF and end the stream
