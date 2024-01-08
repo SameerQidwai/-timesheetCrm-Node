@@ -34,6 +34,10 @@ import { Milestone } from '../entities/milestone';
 import { LeaveRequest } from '../entities/leaveRequest';
 import { OpportunityResource } from '../entities/opportunityResource';
 import { NotificationManager } from '../utilities/notifier';
+import PDFDocument from 'pdfkit';
+import fs from 'fs';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 @EntityRepository(Timesheet)
 export class TimesheetRepository extends Repository<Timesheet> {
@@ -2433,8 +2437,77 @@ export class TimesheetRepository extends Repository<Timesheet> {
   async getTimesheetPDF(
     milestoneEntryPrintDTO: MilestoneEntriesPrintDTO
   ): Promise<any | undefined> {
-    // console.log(cStartDate, cEndDate);
-    console.log('MILESTONEENTRYID', milestoneEntryPrintDTO.milestoneEntryIds);
+    const TOP_MARGIN = 20;
+    const RIGHT_MARGIN = 10;
+    const BOTTOM_MARGIN = 20;
+    const LEFT_MARGIN = 10;
+    const BORDER_COLOR = '#f0f0f0';
+    const BACKGROUND_COLOR = '#fafafa';
+    const WHITE_COLOR = '#ffffff';
+    const PAGE_WIDTH = 595.28;
+    const PAGE_HEIGHT = 841.89;
+    const WARNING_COLOR = '#ff4d4f';
+    const TEXT_COLOR = '#000000';
+
+    const doc = new PDFDocument({
+      size: 'A4',
+      margins: {
+        top: TOP_MARGIN,
+        right: RIGHT_MARGIN,
+        bottom: BOTTOM_MARGIN,
+        left: LEFT_MARGIN,
+      },
+    });
+
+    const generateTable = (
+      doc: PDFKit.PDFDocument,
+      rowCount: number,
+      start: number,
+      difference: number,
+      columns: {
+        width?: number;
+        dataKey?: string;
+      }[] = [],
+      data: any = []
+    ) => {
+      let currentY = start;
+
+      for (let i = 0; i < rowCount; i++) {
+        var currentX = 25;
+        for (let j = 0; j < columns.length; j++) {
+          let column = columns[j];
+          if (!column.width) continue;
+
+          doc
+            .rect(currentX, currentY, column.width, difference)
+            .stroke(BORDER_COLOR);
+
+          if (data?.milestone && column.dataKey) {
+            doc.fontSize(8);
+            doc.text(
+              data.milestone.entries[i][column.dataKey] ?? '-',
+              currentX,
+              currentY + difference / 2,
+              {
+                height: difference,
+                width: column.width,
+                align: 'center',
+                baseline: 'hanging',
+              }
+            );
+          }
+
+          currentX += column.width;
+        }
+
+        doc
+          .polygon([25, currentY], [PAGE_WIDTH - 25, currentY])
+          .stroke(BORDER_COLOR);
+
+        currentY += difference;
+      }
+    };
+
     let milestoneEntries = await this.manager.find(TimesheetMilestoneEntry, {
       where: { id: In(milestoneEntryPrintDTO.milestoneEntryIds) },
       relations: [
@@ -2461,7 +2534,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
       [key: string]: any;
     }
 
-    let response: Any = [];
+    let response: Any[] = [];
 
     milestoneEntries.forEach((milestoneEntry) => {
       let startDate = moment(milestoneEntry.timesheet.startDate, 'DD-MM-YYYY');
@@ -2566,9 +2639,180 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
       response.push(entry);
     });
-    return response;
 
-    //-- END OF MODIFIED RESPONSE FOR FRONTEND
+    let uniqueName = uuidv4();
+    doc.pipe(
+      fs.createWriteStream(
+        path.join(__dirname, `../../public/downloads/${uniqueName}.pdf`)
+      )
+    );
+
+    for (let sheet = 0; sheet < response.length; sheet++) {
+      if (sheet > 0) doc.addPage();
+
+      let currentSheet = response[sheet];
+
+      // write to PDF
+      // doc.pipe(res); // HTTP response
+
+      doc.fontSize(25);
+      doc.text(`Timesheet`, 25, 30);
+
+      // doc.image(
+      //   'C:/Users/Shahzaib/Desktop/TimesheetPdf/z-cp-logo.png',
+      //   PAGE_WIDTH - 180,
+      //   25,
+      //   { width: 150 }
+      // );
+
+      //-- TOP SECTION
+      //* CURRENT HEIGHT 0
+
+      doc.rect(25, 75, PAGE_WIDTH - 50, 80).stroke(BORDER_COLOR);
+      // doc.rect(25.5, 75.5, 120, 19).fill(BACKGROUND_COLOR);
+      // doc.rect(280, 75.5, 120, 19).fill(BACKGROUND_COLOR);
+      // doc.rect(25.5, 135, 120, 19).fill(BACKGROUND_COLOR);
+      // doc.rect(280, 135, 120, 19).fill(BACKGROUND_COLOR);
+
+      //* CURRENT HEIGHT 45
+      generateTable(doc, 3, 95, 20);
+
+      doc.fontSize(11);
+      doc.text(`Company:`, 30, 80, { underline: true });
+      doc.text(currentSheet.company, 130, 80);
+      doc.text(`Employee:`, 300, 80, { underline: true });
+      doc.text(currentSheet.employee, 380, 80);
+      doc.text(`Client:`, 30, 100, { underline: true });
+      doc.text(currentSheet.milestone.client, 130, 100);
+      doc.text(`Project:`, 30, 120, { underline: true });
+      doc.text(currentSheet.project, 130, 120);
+      doc.text(`Client Contact:`, 30, 140, { underline: true });
+      doc.text(currentSheet.milestone.contact, 130, 140);
+      doc.text(`Timesheet Period:`, 300, 140, { underline: true });
+      doc.text(currentSheet.period, 410, 140);
+
+      //-- CENTER TABLE
+      //* CURRENT HEIGHT 125
+      doc.rect(25, 180, PAGE_WIDTH - 50, 530).stroke(BORDER_COLOR);
+
+      doc.rect(25, 180, 50, 50).stroke(BORDER_COLOR);
+      doc.rect(75, 180, 50, 50).stroke(BORDER_COLOR);
+      doc.rect(125, 180, 70, 50).stroke(BORDER_COLOR);
+      doc.rect(125, 205, 35, 25).stroke(BORDER_COLOR);
+      doc.rect(160, 205, 35, 25).stroke(BORDER_COLOR);
+      doc.rect(195, 180, 35, 50).stroke(BORDER_COLOR);
+      doc.rect(230, 180, 35, 50).stroke(BORDER_COLOR);
+      doc.rect(265, 180, 305, 50).stroke(BORDER_COLOR);
+
+      doc.fontSize(10);
+      doc.text(`Date`, 25, 205, { width: 50, align: 'center' });
+      doc.text(`Day`, 75, 205, { width: 50, align: 'center' });
+      doc.text(`Hours`, 120, 195, { width: 70, align: 'center' });
+      doc.text(`Start`, 125, 215, { width: 35, align: 'center' });
+      doc.text(`Finish`, 160, 215, { width: 35, align: 'center' });
+      doc.text(`Break`, 195, 205, { width: 35, align: 'center' });
+      doc.text(`Daily Total`, 230, 195, { width: 35, align: 'center' });
+      doc.text(`Comments`, 265, 205, { width: 305, align: 'center' });
+
+      doc.fontSize(6);
+      doc.text(`(mins)`, 195, 215, { width: 35, align: 'center' });
+      doc.text(`(hrs)`, 230, 215, { width: 35, align: 'center' });
+
+      //* CURRENT HEIGHT 150
+      generateTable(
+        doc,
+        currentSheet.milestone.entries.length,
+        230,
+        16,
+        [
+          { width: 50, dataKey: 'date' },
+          { width: 50, dataKey: 'day' },
+          { width: 35, dataKey: 'startTime' },
+          { width: 35, dataKey: 'endTime' },
+          { width: 35, dataKey: 'breakMinutes' },
+          { width: 35, dataKey: 'actualHours' },
+          { width: 305, dataKey: 'notes' },
+        ],
+        currentSheet
+      );
+
+      //-- SUM ROW
+      //* CURRENT HEIGHT 750
+      generateTable(doc, 1, 720, 20, [
+        { width: 100 },
+        { width: 82 },
+        { width: 100 },
+        { width: 82 },
+        { width: 100 },
+        { width: 82 },
+      ]);
+
+      doc.fontSize(11);
+
+      doc.text(`Hours in Day`, 25, 730, { width: 100, align: 'center' });
+      doc.text(currentSheet.milestone.hoursPerDay, 125, 730, {
+        width: 82,
+        align: 'center',
+      });
+      doc.text(`Total Hours`, 207, 730, { width: 100, align: 'center' });
+      doc.text(currentSheet.milestone.totalHours, 307, 730, {
+        width: 82,
+        align: 'center',
+      });
+      doc.text(`Invoiced Days`, 389, 730, { width: 100, align: 'center' });
+      doc.text(currentSheet.milestone.invoicedDays, 489, 730, {
+        width: 82,
+        align: 'center',
+      });
+      // doc.rect(25, 760, PAGE_WIDTH - 50, 20).stroke(BORDER_COLOR);
+      // doc.rect(25.5, 760.5, 80, 19).fill(BACKGROUND_COLOR);
+      // doc.rect(225, 760.5, 80, 19).fill(BACKGROUND_COLOR);
+      // doc.rect(425, 760.5, 80, 19).fill(BACKGROUND_COLOR);
+
+      //-- SIGNATURE ROW
+      //* CURRENT HEIGHT 780
+
+      doc
+        .fillColor(WARNING_COLOR)
+        .fontSize(9)
+        .text(
+          `I certify that the entries are a true record of attendance.`,
+          25,
+          750,
+          { oblique: true, underline: true }
+        );
+
+      doc.fontSize(10).fillColor(TEXT_COLOR);
+
+      doc.text(`Employee Declaration:`, 25, 765);
+      doc.text(`Manager Approval:`, (PAGE_WIDTH - 50) / 2 + 40, 765);
+      doc
+        .rect(25, 780, (PAGE_WIDTH - 50) / 2 - 40, 20)
+        .fillAndStroke(BACKGROUND_COLOR, BORDER_COLOR);
+
+      doc
+        .rect((PAGE_WIDTH - 50) / 2 + 40, 780, 257, 20)
+        .fillAndStroke(BACKGROUND_COLOR, BORDER_COLOR);
+
+      doc.fontSize(11);
+      doc.fillColor(TEXT_COLOR);
+
+      doc.text(`Signature:`, 25, 805);
+      doc.text(`Date:`, 165, 805);
+      doc.text(`Signature:`, (PAGE_WIDTH - 50) / 2 + 40, 805);
+      doc.text(`Date:`, (PAGE_WIDTH - 50) / 2 + 180, 805);
+
+      //* CURRENT HEIGHT 795
+      // finalize the PDF and end the stream
+    }
+
+    doc.end();
+    // doc.pipe(res);
+
+    return {
+      files: `/api/v1/files/downloads/${uniqueName}.pdf`,
+      timesheets: response,
+    };
   }
 
   async _getMilestoneResources(

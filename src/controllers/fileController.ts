@@ -39,4 +39,22 @@ export class FileController {
       next(e);
     }
   }
+
+  async showDownloadable(req: Request, res: Response, next: NextFunction) {
+    try {
+      const repository = getCustomRepository(FileRepository);
+      let name = req.params.name;
+      // let response: string = await repository.show(name);
+      res.sendFile(path.join(__dirname, '../../public/downloads/' + name));
+      // if no timesheet found
+      // return res.status(200).json({
+      //   success: true,
+      //   // message: `Win Opportunity ${req.params.id}`,
+      //   message: 'Files Uploaded Succesfully',
+      //   data: response,
+      // });
+    } catch (e) {
+      next(e);
+    }
+  }
 }
