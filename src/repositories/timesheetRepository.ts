@@ -34,7 +34,7 @@ import { Milestone } from '../entities/milestone';
 import { LeaveRequest } from '../entities/leaveRequest';
 import { OpportunityResource } from '../entities/opportunityResource';
 import { NotificationManager } from '../utilities/notifier';
-import PDFDocument from 'pdfkit';
+import PDFDocument, { font } from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -2680,49 +2680,55 @@ export class TimesheetRepository extends Repository<Timesheet> {
       doc.fontSize(11);
       doc.font('Helvetica-Bold').text(`Company:`, 30, 80, { underline: true });
       doc.font('Helvetica').text(currentSheet.company, 130, 80);
-      doc.font('Helvetica-Bold').text(`Employee:`, 300, 80, { underline: true });
+      doc
+        .font('Helvetica-Bold')
+        .text(`Employee:`, 300, 80, { underline: true });
       doc.font('Helvetica').text(currentSheet.employee, 380, 80);
       doc.font('Helvetica-Bold').text(`Client:`, 30, 100, { underline: true });
       doc.font('Helvetica').text(currentSheet.milestone.client, 130, 100);
       doc.font('Helvetica-Bold').text(`Project:`, 30, 120, { underline: true });
       doc.font('Helvetica').text(currentSheet.project, 130, 120);
-      doc.font('Helvetica-Bold').text(`Client Contact:`, 30, 140, { underline: true });
+      doc
+        .font('Helvetica-Bold')
+        .text(`Client Contact:`, 30, 140, { underline: true });
       doc.font('Helvetica').text(currentSheet.milestone.contact, 130, 140);
-      doc.font('Helvetica-Bold').text(`Timesheet Period:`, 300, 140, { underline: true });
+      doc
+        .font('Helvetica-Bold')
+        .text(`Timesheet Period:`, 300, 140, { underline: true });
       doc.font('Helvetica').text(currentSheet.period, 410, 140);
 
       //-- CENTER TABLE
       //* CURRENT HEIGHT 125
-      doc.rect(25, 180, PAGE_WIDTH - 50, 530).stroke(BORDER_COLOR);
+      doc.rect(25, 160, PAGE_WIDTH - 50, 530).stroke(BORDER_COLOR);
 
-      doc.rect(25, 180, 50, 50).stroke(BORDER_COLOR);
-      doc.rect(75, 180, 50, 50).stroke(BORDER_COLOR);
-      doc.rect(125, 180, 70, 50).stroke(BORDER_COLOR);
-      doc.rect(125, 205, 35, 25).stroke(BORDER_COLOR);
-      doc.rect(160, 205, 35, 25).stroke(BORDER_COLOR);
-      doc.rect(195, 180, 35, 50).stroke(BORDER_COLOR);
-      doc.rect(230, 180, 35, 50).stroke(BORDER_COLOR);
-      doc.rect(265, 180, 305, 50).stroke(BORDER_COLOR);
+      doc.rect(25, 160, 50, 50).stroke(BORDER_COLOR);
+      doc.rect(75, 160, 50, 50).stroke(BORDER_COLOR);
+      doc.rect(125, 160, 70, 50).stroke(BORDER_COLOR);
+      doc.rect(125, 185, 35, 25).stroke(BORDER_COLOR);
+      doc.rect(160, 185, 35, 25).stroke(BORDER_COLOR);
+      doc.rect(195, 160, 35, 50).stroke(BORDER_COLOR);
+      doc.rect(230, 160, 35, 50).stroke(BORDER_COLOR);
+      doc.rect(265, 160, 305, 50).stroke(BORDER_COLOR);
 
-      doc.fontSize(10);
-      doc.text(`Date`, 25, 205, { width: 50, align: 'center' });
-      doc.text(`Day`, 75, 205, { width: 50, align: 'center' });
-      doc.text(`Hours`, 120, 195, { width: 70, align: 'center' });
-      doc.text(`Start`, 125, 215, { width: 35, align: 'center' });
-      doc.text(`Finish`, 160, 215, { width: 35, align: 'center' });
-      doc.text(`Break`, 195, 205, { width: 35, align: 'center' });
-      doc.text(`Daily Total`, 230, 195, { width: 35, align: 'center' });
-      doc.text(`Comments`, 265, 205, { width: 305, align: 'center' });
+      doc.fontSize(10).font('Helvetica-Bold');
+      doc.text(`Date`, 25, 185, { width: 50, align: 'center' });
+      doc.text(`Day`, 75, 185, { width: 50, align: 'center' });
+      doc.text(`Hours`, 120, 175, { width: 70, align: 'center' });
+      doc.text(`Start`, 125, 195, { width: 35, align: 'center' });
+      doc.text(`Finish`, 160, 195, { width: 35, align: 'center' });
+      doc.text(`Break`, 195, 185, { width: 35, align: 'center' });
+      doc.text(`Daily Total`, 230, 175, { width: 35, align: 'center' });
+      doc.text(`Comments`, 265, 185, { width: 305, align: 'center' });
 
-      doc.fontSize(6);
-      doc.text(`(mins)`, 195, 215, { width: 35, align: 'center' });
-      doc.text(`(hrs)`, 230, 215, { width: 35, align: 'center' });
+      doc.fontSize(6).font('Helvetica');
+      doc.text(`(mins)`, 195, 195, { width: 35, align: 'center' });
+      doc.text(`(hrs)`, 230, 198, { width: 35, align: 'center' });
 
       //* CURRENT HEIGHT 150
       generateTable(
         doc,
         currentSheet.milestone.entries.length,
-        230,
+        210,
         16,
         [
           { width: 50, dataKey: 'date' },
@@ -2747,20 +2753,23 @@ export class TimesheetRepository extends Repository<Timesheet> {
         { width: 82 },
       ]);
 
-      doc.fontSize(11);
+      doc.fontSize(11).font('Helvetica-Bold');
 
-      doc.text(`Hours in Day`, 25, 730, { width: 100, align: 'center' });
-      doc.text(currentSheet.milestone.hoursPerDay, 125, 730, {
+      doc.text(`Hours in Day`, 25, 728, { width: 100, align: 'center' });
+      doc.text(`Total Hours`, 207, 728, { width: 100, align: 'center' });
+      doc.text(`Invoiced Days`, 389, 728, { width: 100, align: 'center' });
+
+      doc.font('Helvetica');
+
+      doc.text(currentSheet.milestone.hoursPerDay, 125, 728, {
         width: 82,
         align: 'center',
       });
-      doc.text(`Total Hours`, 207, 730, { width: 100, align: 'center' });
-      doc.text(currentSheet.milestone.totalHours, 307, 730, {
+      doc.text(currentSheet.milestone.totalHours, 307, 728, {
         width: 82,
         align: 'center',
       });
-      doc.text(`Invoiced Days`, 389, 730, { width: 100, align: 'center' });
-      doc.text(currentSheet.milestone.invoicedDays, 489, 730, {
+      doc.text(currentSheet.milestone.invoicedDays, 489, 728, {
         width: 82,
         align: 'center',
       });
