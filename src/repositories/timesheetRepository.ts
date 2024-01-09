@@ -2694,13 +2694,13 @@ export class TimesheetRepository extends Repository<Timesheet> {
       });
       doc.font('Helvetica-Bold').text(`Client:`, 30, 100, { underline: true });
       doc.font('Helvetica').text(currentSheet.milestone.client, 130, 100, {
-        width: 420,
+        width: 350,
         height: 10,
         ellipsis: true,
       });
       doc.font('Helvetica-Bold').text(`Project:`, 30, 120, { underline: true });
       doc.font('Helvetica').text(currentSheet.project, 130, 120, {
-        width: 420,
+        width: 350,
         height: 10,
         ellipsis: true,
       });
