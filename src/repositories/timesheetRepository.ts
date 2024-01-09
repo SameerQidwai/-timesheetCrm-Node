@@ -2679,23 +2679,47 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
       doc.fontSize(11);
       doc.font('Helvetica-Bold').text(`Company:`, 30, 80, { underline: true });
-      doc.font('Helvetica').text(currentSheet.company, 130, 80);
+      doc.font('Helvetica').text(currentSheet.company, 130, 80, {
+        width: 150,
+        height: 10,
+        ellipsis: true,
+      });
       doc
         .font('Helvetica-Bold')
         .text(`Employee:`, 300, 80, { underline: true });
-      doc.font('Helvetica').text(currentSheet.employee, 380, 80);
+      doc.font('Helvetica').text(currentSheet.employee, 380, 80, {
+        width: 150,
+        height: 10,
+        ellipsis: true,
+      });
       doc.font('Helvetica-Bold').text(`Client:`, 30, 100, { underline: true });
-      doc.font('Helvetica').text(currentSheet.milestone.client, 130, 100);
+      doc.font('Helvetica').text(currentSheet.milestone.client, 130, 100, {
+        width: 420,
+        height: 10,
+        ellipsis: true,
+      });
       doc.font('Helvetica-Bold').text(`Project:`, 30, 120, { underline: true });
-      doc.font('Helvetica').text(currentSheet.project, 130, 120);
+      doc.font('Helvetica').text(currentSheet.project, 130, 120, {
+        width: 420,
+        height: 10,
+        ellipsis: true,
+      });
       doc
         .font('Helvetica-Bold')
         .text(`Client Contact:`, 30, 140, { underline: true });
-      doc.font('Helvetica').text(currentSheet.milestone.contact, 130, 140);
+      doc.font('Helvetica').text(currentSheet.milestone.contact, 130, 140, {
+        width: 150,
+        height: 10,
+        ellipsis: true,
+      });
       doc
         .font('Helvetica-Bold')
         .text(`Timesheet Period:`, 300, 140, { underline: true });
-      doc.font('Helvetica').text(currentSheet.period, 410, 140);
+      doc.font('Helvetica').text(currentSheet.period, 410, 140, {
+        width: 150,
+        height: 10,
+        ellipsis: true,
+      });
 
       //-- CENTER TABLE
       //* CURRENT HEIGHT 125
