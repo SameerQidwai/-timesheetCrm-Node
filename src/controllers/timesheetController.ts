@@ -77,17 +77,23 @@ export class TimesheetController {
       let endDate = req.params.endDate as string;
       let userId = parseInt(req.params.userId) as number;
 
-      const { user } = res.locals;
+      const { user, grantLevel } = res.locals;
 
-      if (user.id != userId) {
-        throw new Error('Not Allowed');
-      }
+      // if (grantLevel.includes('ANY')) {
+      // } else if (grantLevel.includes('MANAGE')) {
+      // } else {
+      //   if (user.id != userId) {
+      //     throw new Error('Not Allowed');
+      //   }
+      // }
       let record = await repository.addTimesheetEntry(
         startDate,
         endDate,
         userId,
+        user.id,
         req.body
       );
+
       console.log('record: ', record);
       res.status(200).json({
         success: true,
@@ -132,8 +138,13 @@ export class TimesheetController {
     try {
       const repository = getCustomRepository(TimesheetRepository);
       let entryId = parseInt(req.params.id);
+      const { user } = res.locals;
 
-      let record = await repository.editTimesheetEntry(entryId, req.body);
+      let record = await repository.editTimesheetEntry(
+        entryId,
+        user.id,
+        req.body
+      );
       console.log('record: ', record);
       res.status(200).json({
         success: true,

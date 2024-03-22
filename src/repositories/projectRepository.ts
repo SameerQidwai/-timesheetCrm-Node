@@ -2762,9 +2762,14 @@ export class ProjectRepository extends Repository<Opportunity> {
       // AND (o_r.end_date IS NULL ||  STR_TO_DATE(DATE_FORMAT(o_r.end_date,'%e-%m-%Y'),'%e-%m-%Y') <= STR_TO_DATE('${fiscalYear.actual}' ,'%e-%m-%Y'))
     );
 
-    let calendar = await this.manager.find(Calendar, {
+    let calendar = await this.manager.findOne(Calendar, {
       relations: ['calendarHolidays', 'calendarHolidays.holidayType'],
+      where: { isDefault: true },
     });
+
+    if (!calendar) {
+      throw new Error('No Calendar found');
+    }
 
     let holidays: any = {};
 
@@ -2786,8 +2791,8 @@ export class ProjectRepository extends Repository<Opportunity> {
       }
     }
 
-    if (calendar[0]) {
-      calendar[0].calendarHolidays.forEach((holiday) => {
+    if (calendar) {
+      calendar.calendarHolidays.forEach((holiday) => {
         holidays[moment(holiday.date).format('M/D/YYYY').toString()] =
           holiday.holidayType.label;
       });

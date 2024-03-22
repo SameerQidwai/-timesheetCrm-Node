@@ -1558,7 +1558,7 @@ export class EmployeeRepository extends Repository<Employee> {
       throw new Error('Employee not found!');
     }
 
-    let employees = await this.find({
+    let managingEmployees = await this.find({
       relations: [
         'contactPersonOrganization',
         'contactPersonOrganization.contactPerson',
@@ -1567,10 +1567,40 @@ export class EmployeeRepository extends Repository<Employee> {
     });
 
     let response: any = [];
+    let pushedIds: Array<number> = [];
 
-    employees.forEach((employee) => {
+    managingEmployees.forEach((employee) => {
+      pushedIds.push(employee.id);
       response.push({ label: employee.getFullName, value: employee.id });
     });
+
+    let projects = await this.manager.find(Opportunity, {
+      where: [
+        { status: 'P', projectManagerId: authId },
+        { status: 'C', projectManagerId: authId },
+      ],
+      relations: [
+        'opportunityResources',
+        'opportunityResources.opportunityResourceAllocations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson',
+        'opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations.employee',
+      ],
+    });
+
+    for (let project of projects) {
+      for (let resource of project.opportunityResources) {
+        for (let allocation of resource.opportunityResourceAllocations) {
+          if (allocation.contactPerson?.getEmployee) {
+            let employee = allocation.contactPerson?.getEmployee;
+            if (pushedIds.includes(employee.id)) continue;
+
+            pushedIds.push(allocation.contactPerson.getEmployee.id);
+            response.push({ label: employee.getFullName, value: employee.id });
+          }
+        }
+      }
+    }
 
     return response;
   }

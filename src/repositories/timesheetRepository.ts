@@ -684,6 +684,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string,
     endDate: string,
     userId: number,
+    authId: number,
     timesheetDTO: TimesheetDTO
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
@@ -877,6 +878,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
         entry.endTime = moment(timesheetDTO.endTime, 'HH:mm').format('HH:mm');
         entry.breakHours = timesheetDTO.breakHours;
         entry.hours = actualHours;
+        entry.createdBy = authId;
+        entry.updatedBy = authId;
 
         entry.milestoneEntryId = milestoneEntry.id;
         entry.notes = timesheetDTO.notes;
@@ -1241,6 +1244,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
   async editTimesheetEntry(
     entryId: number,
+    authId: number,
     timesheetDTO: TimesheetDTO
   ): Promise<any | undefined> {
     // console.log(timesheetDTO);
@@ -1341,6 +1345,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         entry.endTime = moment(timesheetDTO.endTime, 'HH:mm').format('HH:mm');
         entry.breakHours = timesheetDTO.breakHours;
         entry.hours = actualHours;
+        entry.updatedBy = authId;
 
         entry.milestoneEntryId = timesheetDTO.milestoneEntryId;
         entry.notes = timesheetDTO.notes;
