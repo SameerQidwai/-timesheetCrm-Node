@@ -335,6 +335,7 @@ export class EmployeeRepository extends Repository<Employee> {
         'employmentContracts.file',
         'superannuationFile',
         'tfnFile',
+        'role',
       ],
     });
 

@@ -202,6 +202,7 @@ export class SubContractorRepository extends Repository<Employee> {
         'contactPersonOrganization.organization',
         'employmentContracts',
         'employmentContracts.file',
+        'role'
       ],
     });
     return result.filter(
