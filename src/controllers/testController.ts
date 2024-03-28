@@ -17,6 +17,11 @@ import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { PanelSkill } from '../entities/panelSkill';
+import { Panel } from '../entities/panel';
+import { StandardSkill } from '../entities/standardSkill';
+import { StandardSkillStandardLevel } from '../entities/standardSkillStandardLevel';
+import { PanelSkillStandardLevel } from '../entities/panelSkillStandardLevel';
 
 export class TestController {
   async test(req: Request, res: Response, next: NextFunction) {
@@ -657,6 +662,90 @@ export class TestController {
           files: `/api/v1/files/downloads/${uniqueName}.pdf`,
           timesheets: response,
         },
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async importPanelSkillMappings(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      let workbook = xlsx.readFile(path.join(__dirname, '../../skills.xlsx'), {
+        cellDates: true,
+      });
+
+      let jsonData: any[] = xlsx.utils.sheet_to_json(
+        workbook.Sheets[workbook.SheetNames[0]],
+        { raw: false, dateNF: 'dd/mm/yyyy' }
+      );
+
+      const manager = getManager();
+
+      let newPanelSkills: Array<PanelSkill> = [];
+
+      const panel = await manager.findOne(Panel, 2);
+
+      if (!panel) {
+        throw new Error('No Panel');
+      }
+
+      for (let row of jsonData) {
+        let panelSkill: PanelSkill | undefined = undefined;
+        let standardSkill: StandardSkill | undefined = undefined;
+
+        standardSkill = await manager.findOne(StandardSkill, {
+          where: { label: row['Standard Skill'] },
+        });
+
+        if (!standardSkill) {
+          standardSkill = new StandardSkill();
+          standardSkill.label = row['Standard Skill'];
+          standardSkill.standardSkillStandardLevels = [];
+
+          for (let i = 1; i <= 4; i++) {
+            let sLevel = new StandardSkillStandardLevel();
+            sLevel.priority = i;
+            sLevel.standardLevelId = i;
+            sLevel.standardSkillId = standardSkill.id;
+            standardSkill.standardSkillStandardLevels.push(sLevel);
+          }
+
+          await manager.save(standardSkill);
+        }
+
+        panelSkill = new PanelSkill();
+        panelSkill.label = row['Panel Skill'];
+        panelSkill.standardSkillId = standardSkill.id;
+        panelSkill.panelId = panel.id;
+        panelSkill.panelSkillStandardLevels = [];
+
+        for (let i = 1; i <= 4; i++) {
+          let STNumericValue = parseFloat(row[`ST${i}`].substring(1));
+          let LTNumericValue = parseFloat(row[`LT${i}`].substring(1));
+
+          if (STNumericValue > 0) {
+            let pLevel = new PanelSkillStandardLevel();
+            pLevel.panelSkillId = panelSkill.id;
+            pLevel.standardLevelId = i;
+            pLevel.shortTermCeil = STNumericValue;
+            pLevel.longTermCeil = LTNumericValue;
+            pLevel.levelLabel = `Level ${i}`;
+            panelSkill.panelSkillStandardLevels.push(pLevel);
+          }
+        }
+
+        await manager.save(panelSkill);
+        newPanelSkills.push(panelSkill);
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: 'Import Uploaded Successfully',
+        data: [newPanelSkills],
       });
     } catch (e) {
       next(e);

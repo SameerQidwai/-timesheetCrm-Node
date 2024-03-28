@@ -47,6 +47,7 @@ import {
 import moment from 'moment-timezone';
 import { WelcomeMail } from '../mails/welcomeMail';
 import { NotificationManager } from '../utilities/notifier';
+import { Calendar } from '../entities/calendar';
 
 @EntityRepository(Employee)
 export class EmployeeRepository extends Repository<Employee> {
@@ -234,6 +235,7 @@ export class EmployeeRepository extends Repository<Employee> {
         bohPercent,
         type,
         noOfHours,
+        calendarId,
         noOfDays,
         remunerationAmount,
         remunerationAmountPer,
@@ -251,6 +253,22 @@ export class EmployeeRepository extends Repository<Employee> {
       employmentContract.bohPercent = bohPercent;
       employmentContract.type = type;
       employmentContract.noOfHours = noOfHours;
+
+      if (calendarId) {
+        let calendar = await this.manager.findOne(Calendar, calendarId);
+
+        if (!calendar)
+          calendar = await this.manager.findOne(Calendar, {
+            where: { isDefault: true },
+          });
+
+        if (!calendar) {
+          throw new Error('Default Calendar not found');
+        }
+
+        employmentContract.calendarId = calendar.id;
+      }
+
       employmentContract.noOfDays = noOfDays;
       employmentContract.remunerationAmount = remunerationAmount;
       employmentContract.remunerationAmountPer = remunerationAmountPer;
@@ -536,6 +554,7 @@ export class EmployeeRepository extends Repository<Employee> {
         bohPercent,
         type,
         noOfHours,
+        calendarId,
         noOfDays,
         remunerationAmount,
         remunerationAmountPer,
@@ -660,6 +679,20 @@ export class EmployeeRepository extends Repository<Employee> {
       employmentContract.bohPercent = bohPercent;
       employmentContract.type = type;
       employmentContract.noOfHours = noOfHours;
+      if (calendarId) {
+        let calendar = await this.manager.findOne(Calendar, calendarId);
+
+        if (!calendar)
+          calendar = await this.manager.findOne(Calendar, {
+            where: { isDefault: true },
+          });
+
+        if (!calendar) {
+          throw new Error('Default Calendar not found');
+        }
+
+        employmentContract.calendarId = calendar.id;
+      }
       employmentContract.noOfDays = noOfDays;
       employmentContract.remunerationAmount = remunerationAmount;
       employmentContract.remunerationAmountPer = remunerationAmountPer;

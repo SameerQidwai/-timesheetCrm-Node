@@ -221,6 +221,7 @@ export interface EmploymentContractDTO extends Base {
   type: EmploymentType;
   noOfHours: number;
   noOfDays: number;
+  calendarId: number;
   remunerationAmount: number;
   remunerationAmountPer: Frequency;
   leaveRequestPolicyId: number;
@@ -276,6 +277,7 @@ export interface ContractDTO extends Base {
   startDate: Date;
   endDate: Date | null;
   noOfHours: number;
+  calendarId: number;
   noOfDays: number;
   remunerationAmount: number;
   remunerationAmountPer: Frequency;

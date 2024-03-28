@@ -114,13 +114,11 @@ export class TimesheetController {
 
       const { user } = res.locals;
 
-      if (user.id != userId) {
-        throw new Error('Not Allowed');
-      }
       let record = await repository.addBulkTimesheetEntry(
         startDate,
         endDate,
         userId,
+        user.id,
         req.body
       );
       // console.log('record: ', record);
@@ -170,10 +168,6 @@ export class TimesheetController {
       // console.log(req.body);
       const { user } = res.locals;
 
-      if (user.id != userId) {
-        throw new Error('Not Allowed');
-      }
-
       let requestEntries = req.body.milestoneEntries;
 
       if (!requestEntries || requestEntries.length == 0) {
@@ -184,6 +178,7 @@ export class TimesheetController {
         startDate,
         endDate,
         userId,
+        user.id,
         requestEntries
       );
       console.log('record: ', record);

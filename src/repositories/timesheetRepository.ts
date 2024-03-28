@@ -899,6 +899,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string,
     endDate: string,
     userId: number,
+    authId: number,
     bulkTimesheetDTO: BulkTimesheetDTO
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
@@ -1212,6 +1213,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
           entry.endTime = moment(loopedEntry.endTime, 'HH:mm').format('HH:mm');
           entry.breakHours = loopedEntry.breakHours;
           entry.hours = actualHours;
+          entry.createdBy = authId;
+          entry.updatedBy = authId;
 
           returnEntries.push(entry);
         }
@@ -1363,6 +1366,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
+    authId: number,
     requestEntries: Array<number>
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
@@ -1406,6 +1410,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
           }
 
           milestoneEntry.entries.map((entry) => {
+            entry.submittedBy = authId;
             entry.submittedAt = moment().toDate();
             entry.approvedAt = null;
             entry.rejectedAt = null;

@@ -11,6 +11,7 @@ import { LeaveRequestBalance } from '../entities/leaveRequestBalance';
 import moment from 'moment-timezone';
 import { NotificationManager } from '../utilities/notifier';
 import { NotificationEventType } from '../constants/constants';
+import { Calendar } from '../entities/calendar';
 
 @EntityRepository(EmploymentContract)
 export class EmploymentContractRepository extends Repository<EmploymentContract> {
@@ -106,6 +107,25 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
         obj.bohPercent = employmentContractDTO.bohPercent;
         obj.type = employmentContractDTO.type;
         obj.noOfHours = employmentContractDTO.noOfHours;
+
+        if (employmentContractDTO.calendarId) {
+          let calendar = await this.manager.findOne(
+            Calendar,
+            employmentContractDTO.calendarId
+          );
+
+          if (!calendar)
+            calendar = await this.manager.findOne(Calendar, {
+              where: { isDefault: true },
+            });
+
+          if (!calendar) {
+            throw new Error('Default Calendar not found');
+          }
+
+          obj.calendarId = calendar.id;
+        }
+
         obj.noOfDays = employmentContractDTO.noOfDays;
         obj.remunerationAmount = employmentContractDTO.remunerationAmount;
         obj.remunerationAmountPer = employmentContractDTO.remunerationAmountPer;
@@ -295,6 +315,25 @@ export class EmploymentContractRepository extends Repository<EmploymentContract>
         employmentContractObj.bohPercent = employmentContractDTO.bohPercent;
         employmentContractObj.type = employmentContractDTO.type;
         employmentContractObj.noOfHours = employmentContractDTO.noOfHours;
+
+        if (employmentContractDTO.calendarId) {
+          let calendar = await this.manager.findOne(
+            Calendar,
+            employmentContractDTO.calendarId
+          );
+
+          if (!calendar)
+            calendar = await this.manager.findOne(Calendar, {
+              where: { isDefault: true },
+            });
+
+          if (!calendar) {
+            throw new Error('Default Calendar not found');
+          }
+
+          employmentContractObj.calendarId = calendar.id;
+        }
+
         employmentContractObj.noOfDays = employmentContractDTO.noOfDays;
         employmentContractObj.remunerationAmount =
           employmentContractDTO.remunerationAmount;
