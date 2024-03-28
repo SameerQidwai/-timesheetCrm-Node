@@ -82,7 +82,7 @@ export class EmploymentContract extends Base {
   @Column({ name: 'calendar_id', nullable: true })
   calendarId: number;
 
-  @OneToOne(() => Calendar)
+  @ManyToOne(() => Calendar)
   @JoinColumn({ name: 'calendar_id' })
   calendar: Calendar;
 
