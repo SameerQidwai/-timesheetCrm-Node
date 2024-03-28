@@ -8,18 +8,24 @@ import { ViewEntity, ViewColumn } from "typeorm"
         year,
         weekday,
         is_weekday,
-        actual_date calendar_date,
-        calendar_holidays.date calendar_holidays,
+        actual_date AS calendar_date,
+        holidays_date AS calendar_holidays,
         calendar_id,
-        (calendar_holidays.date IS NOT NULL ) is_holidays
+        (holidays_date IS NOT NULL ) AS is_holidays
 
         From calendar_days
-            LEFT JOIN calendar_holidays
-                ON DATE_FORMAT(calendar_holidays.date, '%Y-%m-%d') = DATE_FORMAT(calendar_days.actual_date, '%Y-%m-%d')
-                AND calendar_holidays.deleted_at IS NULL
-            LEFT JOIN calendars 
-                ON calendars.id = calendar_holidays.calendar_id
-                
+        LEFT JOIN (
+            SELECT 
+                calendar_id,
+                calendar_holidays.date AS holidays_date
+
+            FROM calendars 
+                LEFT JOIN calendar_holidays
+                    ON calendar_holidays.calendar_id = calendars.id
+            WHERE 
+                calendars.is_default = 1 AND calendar_holidays.deleted_at IS NULL
+        ) AS holidays
+            ON DATE_FORMAT(holidays.holidays_date, '%Y-%m-%d') = DATE_FORMAT(calendar_days.actual_date, '%Y-%m-%d')
      `,
 })
 
@@ -85,3 +91,22 @@ export class CalendarView {
     @ViewColumn()
     project_organization_name: String
   }
+
+// OLD VEW
+//   Select 
+//         day,
+//         month,
+//         year,
+//         weekday,
+//         is_weekday,
+//         actual_date calendar_date,
+//         calendar_holidays.date calendar_holidays,
+//         calendar_id,
+//         (calendar_holidays.date IS NOT NULL ) is_holidays
+
+//         From calendar_days
+//             LEFT JOIN calendar_holidays
+//                 ON DATE_FORMAT(calendar_holidays.date, '%Y-%m-%d') = DATE_FORMAT(calendar_days.actual_date, '%Y-%m-%d')
+//                 AND calendar_holidays.deleted_at IS NULL
+//             LEFT JOIN calendars 
+//                 ON calendars.id = calendar_holidays.calendar_id
