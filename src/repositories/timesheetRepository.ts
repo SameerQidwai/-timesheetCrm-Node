@@ -14,6 +14,7 @@ import {
   IsNull,
   MoreThanOrEqual,
   LessThanOrEqual,
+  FindConditions,
 } from 'typeorm';
 import { Timesheet } from '../entities/timesheet';
 import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
@@ -2306,27 +2307,15 @@ export class TimesheetRepository extends Repository<Timesheet> {
     let projects = await this.manager.find(Opportunity, {
       where: [
         {
-          status: 'P',
+          status: In(['P', 'C']),
           accountDirectorId: userId,
         },
         {
-          status: 'P',
+          status: In(['P', 'C']),
           accountManagerId: userId,
         },
         {
-          status: 'P',
-          projectManagerId: userId,
-        },
-        {
-          status: 'C',
-          accountDirectorId: userId,
-        },
-        {
-          status: 'C',
-          accountManagerId: userId,
-        },
-        {
-          status: 'C',
+          status: In(['P', 'C']),
           projectManagerId: userId,
         },
       ],
@@ -3128,14 +3117,32 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return milestones;
   }
 
-  async _getUserAnyMilestones(type = 'value') {
+  async _getUserAnyMilestones(type = 'value', phase: string | null = null) {
     let milestones: any = [];
 
-    let projects = await this.manager.find(Opportunity, {
-      where: [
+    let whereCondition: FindConditions<Opportunity>[] = [];
+
+    if (phase) {
+      if (phase === 'true') {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: true },
+          { status: OpportunityStatus.COMPLETED, phase: true }
+        );
+      } else {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: false },
+          { status: OpportunityStatus.COMPLETED, phase: false }
+        );
+      }
+    } else {
+      whereCondition.push(
         { status: OpportunityStatus.WON },
-        { status: OpportunityStatus.COMPLETED },
-      ],
+        { status: OpportunityStatus.COMPLETED }
+      );
+    }
+
+    let projects = await this.manager.find(Opportunity, {
+      where: whereCondition,
       relations: ['milestones'],
     });
 
@@ -3156,14 +3163,36 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return milestones;
   }
 
-  async _getUserManageMilestones(userId: number, type = 'value') {
+  async _getUserManageMilestones(
+    userId: number,
+    type = 'value',
+    phase: string | null = null
+  ) {
     let milestones: any = [];
 
-    let projects = await this.manager.find(Opportunity, {
-      where: [
+    let whereCondition: FindConditions<Opportunity>[] = [];
+
+    if (phase) {
+      if (phase === 'true') {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: true },
+          { status: OpportunityStatus.COMPLETED, phase: true }
+        );
+      } else {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: false },
+          { status: OpportunityStatus.COMPLETED, phase: false }
+        );
+      }
+    } else {
+      whereCondition.push(
         { status: OpportunityStatus.WON },
-        { status: OpportunityStatus.COMPLETED },
-      ],
+        { status: OpportunityStatus.COMPLETED }
+      );
+    }
+
+    let projects = await this.manager.find(Opportunity, {
+      where: whereCondition,
       relations: ['milestones'],
     });
 
@@ -3186,14 +3215,36 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return milestones;
   }
 
-  async _getUserManageAndOwnMilestones(userId: number, type = 'value') {
+  async _getUserManageAndOwnMilestones(
+    userId: number,
+    type = 'value',
+    phase: string | null = null
+  ) {
     let milestones: any = [];
 
-    let projects = await this.manager.find(Opportunity, {
-      where: [
+    let whereCondition: FindConditions<Opportunity>[] = [];
+
+    if (phase) {
+      if (phase === 'true') {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: true },
+          { status: OpportunityStatus.COMPLETED, phase: true }
+        );
+      } else {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: false },
+          { status: OpportunityStatus.COMPLETED, phase: false }
+        );
+      }
+    } else {
+      whereCondition.push(
         { status: OpportunityStatus.WON },
-        { status: OpportunityStatus.COMPLETED },
-      ],
+        { status: OpportunityStatus.COMPLETED }
+      );
+    }
+
+    let projects = await this.manager.find(Opportunity, {
+      where: whereCondition,
       relations: [
         'milestones',
         'organization',
@@ -3264,14 +3315,36 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return milestones;
   }
 
-  async _getUserOwnMilestones(userId: number, type = 'value') {
+  async _getUserOwnMilestones(
+    userId: number,
+    type = 'value',
+    phase: string | null = null
+  ) {
     let milestones: any = [];
 
-    let projects = await this.manager.find(Opportunity, {
-      where: [
+    let whereCondition: FindConditions<Opportunity>[] = [];
+
+    if (phase) {
+      if (phase === 'true') {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: true },
+          { status: OpportunityStatus.COMPLETED, phase: true }
+        );
+      } else {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: false },
+          { status: OpportunityStatus.COMPLETED, phase: false }
+        );
+      }
+    } else {
+      whereCondition.push(
         { status: OpportunityStatus.WON },
-        { status: OpportunityStatus.COMPLETED },
-      ],
+        { status: OpportunityStatus.COMPLETED }
+      );
+    }
+
+    let projects = await this.manager.find(Opportunity, {
+      where: whereCondition,
       relations: [
         'milestones',
         'organization',

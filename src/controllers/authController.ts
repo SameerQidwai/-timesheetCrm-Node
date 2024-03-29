@@ -367,10 +367,19 @@ export class AuthController {
 
       let authId = parseInt(user.id);
 
+      let isActive = req.query.isActive?.toString() ?? null;
+
       if (grantLevel.includes('ANY')) {
-        records = await repository.authGetUserAnyUsers();
+        records = await repository.authGetUserAnyUsers(isActive);
+      } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
+        records = await repository.authGetUserManageAndOwnUsers(
+          authId,
+          isActive
+        );
       } else if (grantLevel.includes('MANAGE')) {
-        records = await repository.authGetUserManageUsers(authId);
+        records = await repository.authGetUserManageUsers(authId, isActive);
+      } else if (grantLevel.includes('OWN')) {
+        records = await repository.authGetUserOwnUsers(authId);
       }
 
       res.status(200).json({
@@ -391,14 +400,16 @@ export class AuthController {
 
       let authId = parseInt(user.id);
 
+      let phase = req.query.phase?.toString() ?? null;
+
       let records: any = [];
 
       if (grantLevel.includes('ANY')) {
-        records = await repository.authAnyGetUserProjects();
+        records = await repository.authAnyGetUserProjects(phase);
       } else if (grantLevel.includes('MANAGE')) {
-        records = await repository.authManageGetUserProjects(authId);
+        records = await repository.authManageGetUserProjects(authId, phase);
       } else if (grantLevel.includes('OWN')) {
-        records = await repository.authOwnGetUserProjects(authId);
+        records = await repository.authOwnGetUserProjects(authId, phase);
       }
 
       res.status(200).json({

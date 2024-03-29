@@ -552,14 +552,30 @@ export class TimesheetController {
       const { grantLevel } = res.locals;
       const { user } = res.locals;
 
+      let authId = parseInt(user.id);
+
+      let phase = req.query.phase?.toString() ?? null;
+
       if (grantLevel.includes('ANY')) {
-        records = await repository._getUserAnyMilestones();
+        records = await repository._getUserAnyMilestones(undefined, phase);
       } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
-        records = await repository._getUserManageAndOwnMilestones(user.id);
+        records = await repository._getUserManageAndOwnMilestones(
+          authId,
+          undefined,
+          phase
+        );
       } else if (grantLevel.includes('MANAGE')) {
-        records = await repository._getUserManageMilestones(user.id);
+        records = await repository._getUserManageMilestones(
+          authId,
+          undefined,
+          phase
+        );
       } else if (grantLevel.includes('OWN')) {
-        records = await repository._getUserOwnMilestones(user.id);
+        records = await repository._getUserOwnMilestones(
+          authId,
+          undefined,
+          phase
+        );
       }
 
       console.log('records: ', records);

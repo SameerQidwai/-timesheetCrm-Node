@@ -11,7 +11,9 @@ import {
 } from '../dto';
 import {
   EntityRepository,
+  FindConditions,
   getRepository,
+  In,
   IsNull,
   MoreThanOrEqual,
   Not,
@@ -1570,12 +1572,23 @@ export class EmployeeRepository extends Repository<Employee> {
     return employee;
   }
 
-  async authGetUserAnyUsers() {
+  async authGetUserAnyUsers(isActive: string | null) {
+    let whereCondition: FindConditions<Employee> = {};
+
+    if (isActive) {
+      if (isActive === 'true') {
+        whereCondition['active'] = true;
+      } else {
+        whereCondition['active'] = false;
+      }
+    }
+
     let employees = await this.find({
       relations: [
         'contactPersonOrganization',
         'contactPersonOrganization.contactPerson',
       ],
+      where: whereCondition,
     });
 
     let response: any = [];
@@ -1587,9 +1600,20 @@ export class EmployeeRepository extends Repository<Employee> {
     return response;
   }
 
-  async authGetUserManageUsers(authId: number) {
+  async authGetUserManageUsers(authId: number, isActive: string | null) {
     if (!authId) {
       throw new Error('Employee not found!');
+    }
+
+    let whereCondition: FindConditions<Employee> = {};
+    whereCondition['lineManagerId'] = authId;
+
+    if (isActive) {
+      if (isActive === 'true') {
+        whereCondition['active'] = true;
+      } else {
+        whereCondition['active'] = false;
+      }
     }
 
     let managingEmployees = await this.find({
@@ -1597,7 +1621,7 @@ export class EmployeeRepository extends Repository<Employee> {
         'contactPersonOrganization',
         'contactPersonOrganization.contactPerson',
       ],
-      where: { lineManagerId: authId },
+      where: whereCondition,
     });
 
     let response: any = [];
@@ -1610,8 +1634,18 @@ export class EmployeeRepository extends Repository<Employee> {
 
     let projects = await this.manager.find(Opportunity, {
       where: [
-        { status: 'P', projectManagerId: authId },
-        { status: 'C', projectManagerId: authId },
+        {
+          status: In(['P', 'C']),
+          accountDirectorId: authId,
+        },
+        {
+          status: In(['P', 'C']),
+          accountManagerId: authId,
+        },
+        {
+          status: In(['P', 'C']),
+          projectManagerId: authId,
+        },
       ],
       relations: [
         'opportunityResources',
@@ -1627,6 +1661,15 @@ export class EmployeeRepository extends Repository<Employee> {
         for (let allocation of resource.opportunityResourceAllocations) {
           if (allocation.contactPerson?.getEmployee) {
             let employee = allocation.contactPerson?.getEmployee;
+
+            if (isActive) {
+              if (isActive === 'true') {
+                if (!employee.active) continue;
+              } else {
+                if (employee.active) continue;
+              }
+            }
+
             if (pushedIds.includes(employee.id)) continue;
 
             pushedIds.push(allocation.contactPerson.getEmployee.id);
@@ -1635,6 +1678,130 @@ export class EmployeeRepository extends Repository<Employee> {
         }
       }
     }
+
+    return response;
+  }
+
+  async authGetUserManageAndOwnUsers(authId: number, isActive: string | null) {
+    if (!authId) {
+      throw new Error('Employee not found!');
+    }
+
+    let response: any = [];
+    let pushedIds: Array<number> = [];
+
+    let self = await this.findOne(authId, {
+      relations: [
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+      ],
+    });
+
+    if (!self) {
+      throw new Error('Employee not found');
+    }
+
+    response.push({ label: self.getFullName, value: self.id });
+    pushedIds.push(self.id);
+
+    let whereCondition: FindConditions<Employee> = {};
+    whereCondition['lineManagerId'] = authId;
+
+    if (isActive) {
+      if (isActive === 'true') {
+        whereCondition['active'] = true;
+      } else {
+        whereCondition['active'] = false;
+      }
+    }
+
+    let managingEmployees = await this.find({
+      relations: [
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+      ],
+      where: whereCondition,
+    });
+
+    managingEmployees.forEach((employee) => {
+      pushedIds.push(employee.id);
+      response.push({ label: employee.getFullName, value: employee.id });
+    });
+
+    let projects = await this.manager.find(Opportunity, {
+      where: [
+        {
+          status: In(['P', 'C']),
+          accountDirectorId: authId,
+        },
+        {
+          status: In(['P', 'C']),
+          accountManagerId: authId,
+        },
+        {
+          status: In(['P', 'C']),
+          projectManagerId: authId,
+        },
+      ],
+      relations: [
+        'opportunityResources',
+        'opportunityResources.opportunityResourceAllocations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson',
+        'opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations',
+        'opportunityResources.opportunityResourceAllocations.contactPerson.contactPersonOrganizations.employee',
+      ],
+    });
+
+    for (let project of projects) {
+      for (let resource of project.opportunityResources) {
+        for (let allocation of resource.opportunityResourceAllocations) {
+          if (allocation.contactPerson?.getEmployee) {
+            let employee = allocation.contactPerson?.getEmployee;
+
+            if (isActive) {
+              if (isActive === 'true') {
+                if (!employee.active) continue;
+              } else {
+                if (employee.active) continue;
+              }
+            }
+
+            if (pushedIds.includes(employee.id)) continue;
+
+            pushedIds.push(allocation.contactPerson.getEmployee.id);
+            response.push({
+              label: `${allocation.contactPerson.firstName} ${allocation.contactPerson.lastName}`,
+              value: employee.id,
+            });
+          }
+        }
+      }
+    }
+
+    return response;
+  }
+
+  async authGetUserOwnUsers(authId: number) {
+    if (!authId) {
+      throw new Error('Employee not found!');
+    }
+
+    let response: any = [];
+    let pushedIds: Array<number> = [];
+
+    let self = await this.findOne(authId, {
+      relations: [
+        'contactPersonOrganization',
+        'contactPersonOrganization.contactPerson',
+      ],
+    });
+
+    if (!self) {
+      throw new Error('Employee not found');
+    }
+
+    response.push({ label: self.getFullName, value: self.id });
+    pushedIds.push(self.id);
 
     return response;
   }

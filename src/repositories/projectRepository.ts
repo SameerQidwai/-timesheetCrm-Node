@@ -11,6 +11,7 @@ import {
 import {
   Between,
   EntityRepository,
+  FindConditions,
   In,
   IsNull,
   LessThan,
@@ -3605,14 +3606,32 @@ export class ProjectRepository extends Repository<Opportunity> {
     return response;
   }
 
-  async authAnyGetUserProjects() {
+  async authAnyGetUserProjects(phase: string | null) {
     let response: any = [];
 
-    let projects = await this.find({
-      where: [
+    let whereCondition: FindConditions<Opportunity>[] = [];
+
+    if (phase) {
+      if (phase === 'true') {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: true },
+          { status: OpportunityStatus.COMPLETED, phase: true }
+        );
+      } else {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: false },
+          { status: OpportunityStatus.COMPLETED, phase: false }
+        );
+      }
+    } else {
+      whereCondition.push(
         { status: OpportunityStatus.WON },
-        { status: OpportunityStatus.COMPLETED },
-      ],
+        { status: OpportunityStatus.COMPLETED }
+      );
+    }
+
+    let projects = await this.find({
+      where: whereCondition,
     });
 
     projects.forEach((project) => {
@@ -3622,14 +3641,32 @@ export class ProjectRepository extends Repository<Opportunity> {
     return response;
   }
 
-  async authManageGetUserProjects(authId: number) {
+  async authManageGetUserProjects(authId: number, phase: string | null) {
     let response: any = [];
 
-    let projects = await this.find({
-      where: [
+    let whereCondition: FindConditions<Opportunity>[] = [];
+
+    if (phase) {
+      if (phase === 'true') {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: true },
+          { status: OpportunityStatus.COMPLETED, phase: true }
+        );
+      } else {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: false },
+          { status: OpportunityStatus.COMPLETED, phase: false }
+        );
+      }
+    } else {
+      whereCondition.push(
         { status: OpportunityStatus.WON },
-        { status: OpportunityStatus.COMPLETED },
-      ],
+        { status: OpportunityStatus.COMPLETED }
+      );
+    }
+
+    let projects = await this.find({
+      where: whereCondition,
     });
 
     // console.log('result', result);
@@ -3645,14 +3682,32 @@ export class ProjectRepository extends Repository<Opportunity> {
     return response;
   }
 
-  async authOwnGetUserProjects(authId: number) {
+  async authOwnGetUserProjects(authId: number, phase: string | null) {
     let response: any = [];
 
-    let projects = await this.find({
-      where: [
+    let whereCondition: FindConditions<Opportunity>[] = [];
+
+    if (phase) {
+      if (phase === 'true') {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: true },
+          { status: OpportunityStatus.COMPLETED, phase: true }
+        );
+      } else {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: false },
+          { status: OpportunityStatus.COMPLETED, phase: false }
+        );
+      }
+    } else {
+      whereCondition.push(
         { status: OpportunityStatus.WON },
-        { status: OpportunityStatus.COMPLETED },
-      ],
+        { status: OpportunityStatus.COMPLETED }
+      );
+    }
+
+    let projects = await this.find({
+      where: whereCondition,
       relations: [
         'organization',
         'opportunityResources',
