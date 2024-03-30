@@ -2,6 +2,7 @@ export enum LeaveRequestTriggerFrequency {
   NEVER = 'N',
   MONTH = 'M',
   YEAR = 'Y',
+  FORTNIGHTLY = "F",
   EMPLOYEE_MONTH = 'EM',
   EMPLOYEE_YEAR = 'EY',
 }
