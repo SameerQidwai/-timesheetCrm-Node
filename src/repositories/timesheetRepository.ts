@@ -35,7 +35,7 @@ import { Milestone } from '../entities/milestone';
 import { LeaveRequest } from '../entities/leaveRequest';
 import { OpportunityResource } from '../entities/opportunityResource';
 import { NotificationManager } from '../utilities/notifier';
-import PDFDocument, { font } from 'pdfkit';
+import PDFDocument, { end, font } from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -2942,11 +2942,12 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return users;
   }
 
-  async getAnyTimesheetByMilestone(
+  async getAnyTimesheetByMilestoneOrUser(
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
+    authId: number,
     milestoneIds: Array<number>,
-    authId: number
+    userId: number
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
       'YYYY-MM-DD HH:mm:ss.SSS'
@@ -2958,6 +2959,22 @@ export class TimesheetRepository extends Repository<Timesheet> {
     console.log(cStartDate, cEndDate);
 
     let users = await this._getMilestoneResources(milestoneIds, 'Allocations');
+
+    if (userId && !isNaN(userId)) {
+      let filterUser = await this.manager.findOne(Employee, userId, {
+        relations: [
+          'contactPersonOrganization',
+          'contactPersonOrganization.contactPerson',
+        ],
+      });
+
+      if (filterUser && !users.ids.includes(filterUser?.id)) {
+        // users.ids.push(filterUser.id);
+        // users.details[filterUser.id] = filterUser.getFullName;
+        users.ids = [filterUser.id];
+        users.details[filterUser.id] = filterUser.getFullName;
+      }
+    }
 
     let timesheets = await this.find({
       where: {
@@ -2975,6 +2992,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
         'milestoneEntries.entries',
       ],
     });
+
+    console.log(startDate, endDate, timesheets);
 
     if (!timesheets) {
       throw new Error('Timesheet not found');

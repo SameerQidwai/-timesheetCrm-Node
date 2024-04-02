@@ -13,9 +13,13 @@ export class TimesheetController {
   async getTimesheet(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(TimesheetRepository);
-      let startDate = req.params.startDate as string;
-      let endDate = req.params.endDate as string;
-      let userId = parseInt(req.params.userId) as number;
+      let startDate = req.query.startDate as string;
+      let endDate = req.query.endDate as string;
+      let userId = parseInt(req.query.userId as string);
+
+      if (!userId || isNaN(userId)) {
+        throw new Error('Invalid user id');
+      }
 
       let record: any = [];
       const { grantLevel } = res.locals;
@@ -482,19 +486,27 @@ export class TimesheetController {
     }
   }
 
-  async getTimesheetByMilestone(
+  async getTimesheetByMilestoneOrUser(
     req: Request,
     res: Response,
     next: NextFunction
   ) {
     try {
       const repository = getCustomRepository(TimesheetRepository);
-      let startDate = req.params.startDate as string;
-      let endDate = req.params.endDate as string;
-      let milestoneId = parseInt(req.params.milestoneId) as number;
+      let startDate = req.query.startDate as string;
+      let endDate = req.query.endDate as string;
+      let milestoneId = parseInt(req.query.milestoneId as string);
+      let userId = parseInt(req.query.userId as string);
+
+      console.log(milestoneId);
+
+      if (!milestoneId || isNaN(milestoneId)) {
+        milestoneId = 0;
+      }
 
       const { grantLevel } = res.locals;
       const { user } = res.locals;
+      let authId = user.id;
       let records: any = [];
 
       if (grantLevel.includes('ANY')) {
@@ -504,15 +516,16 @@ export class TimesheetController {
           throw new Error('Milestone not found');
         }
 
-        records = await repository.getAnyTimesheetByMilestone(
+        records = await repository.getAnyTimesheetByMilestoneOrUser(
           startDate,
           endDate,
+          authId,
           milestoneId == 0 ? milestoneIds : [milestoneId],
-          user.id
+          userId
         );
       } else if (grantLevel.includes('MANAGE')) {
         let milestoneIds = await repository._getUserManageMilestones(
-          user.id,
+          authId,
           'array'
         );
 
@@ -520,11 +533,12 @@ export class TimesheetController {
           throw new Error('Milestone not found');
         }
 
-        records = await repository.getAnyTimesheetByMilestone(
+        records = await repository.getAnyTimesheetByMilestoneOrUser(
           startDate,
           endDate,
+          authId,
           milestoneId == 0 ? milestoneIds : [milestoneId],
-          user.id
+          userId
         );
       } else {
         records = [];
