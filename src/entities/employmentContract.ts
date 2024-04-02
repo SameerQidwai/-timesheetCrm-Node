@@ -5,6 +5,7 @@ import { Employee } from './employee';
 import { File } from './file';
 import { LeaveRequestPolicy } from './leaveRequestPolicy';
 import moment from 'moment-timezone';
+import { Calendar } from './calendar';
 
 @Entity('employment_contracts')
 export class EmploymentContract extends Base {
@@ -77,6 +78,13 @@ export class EmploymentContract extends Base {
   @ManyToOne(() => LeaveRequestPolicy)
   @JoinColumn({ name: 'leave_request_policy_id' })
   leaveRequestPolicy: LeaveRequestPolicy;
+
+  @Column({ name: 'calendar_id', nullable: true })
+  calendarId: number;
+
+  @ManyToOne(() => Calendar)
+  @JoinColumn({ name: 'calendar_id' })
+  calendar: Calendar;
 
   @Column({ name: 'file_id', nullable: true })
   fileId: number;

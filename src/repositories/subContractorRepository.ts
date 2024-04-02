@@ -27,6 +27,7 @@ import { CalendarHoliday } from '../entities/calendarHoliday';
 import moment from 'moment-timezone';
 import { WelcomeMail } from '../mails/welcomeMail';
 import { NotificationManager } from '../utilities/notifier';
+import { Calendar } from '../entities/calendar';
 
 @EntityRepository(Employee)
 export class SubContractorRepository extends Repository<Employee> {
@@ -148,6 +149,7 @@ export class SubContractorRepository extends Repository<Employee> {
         remunerationAmountPer,
         comments,
         noOfHours,
+        calendarId,
         noOfDays,
         fileId,
       } = subContractor.latestContract;
@@ -158,6 +160,20 @@ export class SubContractorRepository extends Repository<Employee> {
       }
       employmentContract.comments = comments;
       employmentContract.noOfHours = noOfHours;
+      if (calendarId) {
+        let calendar = await this.manager.findOne(Calendar, calendarId);
+
+        if (!calendar)
+          calendar = await this.manager.findOne(Calendar, {
+            where: { isDefault: true },
+          });
+
+        if (!calendar) {
+          throw new Error('Default Calendar not found');
+        }
+
+        employmentContract.calendarId = calendar.id;
+      }
       employmentContract.noOfDays = noOfDays;
       employmentContract.remunerationAmount = remunerationAmount;
       employmentContract.remunerationAmountPer = remunerationAmountPer;
@@ -202,6 +218,7 @@ export class SubContractorRepository extends Repository<Employee> {
         'contactPersonOrganization.organization',
         'employmentContracts',
         'employmentContracts.file',
+        'role'
       ],
     });
     return result.filter(
@@ -353,6 +370,7 @@ export class SubContractorRepository extends Repository<Employee> {
         remunerationAmountPer,
         comments,
         noOfHours,
+        calendarId,
         noOfDays,
         fileId,
       } = subContractor.latestContract;
@@ -472,6 +490,20 @@ export class SubContractorRepository extends Repository<Employee> {
       }
       subContractorContract.comments = comments;
       subContractorContract.noOfHours = noOfHours;
+      if (calendarId) {
+        let calendar = await this.manager.findOne(Calendar, calendarId);
+
+        if (!calendar)
+          calendar = await this.manager.findOne(Calendar, {
+            where: { isDefault: true },
+          });
+
+        if (!calendar) {
+          throw new Error('Default Calendar not found');
+        }
+
+        subContractorContract.calendarId = calendar.id;
+      }
       subContractorContract.noOfDays = noOfDays;
 
       subContractorContract.remunerationAmount = remunerationAmount;

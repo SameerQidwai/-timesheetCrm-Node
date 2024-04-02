@@ -42,6 +42,20 @@ export class TimesheetEntry extends Base {
   @Column({ type: 'date', name: 'rejected_at', nullable: true })
   rejectedAt: Date | null;
 
+  @Column({ name: 'created_by', nullable: true })
+  createdBy: number;
+
+  @ManyToOne(() => Employee)
+  @JoinColumn({ name: 'created_by' })
+  creator: Employee;
+
+  @Column({ name: 'updated_by', nullable: true })
+  updatedBy: number;
+
+  @ManyToOne(() => Employee)
+  @JoinColumn({ name: 'updated_by' })
+  updater: Employee;
+
   @Column({ name: 'submitted_by', nullable: true })
   submittedBy: number;
 

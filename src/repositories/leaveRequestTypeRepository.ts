@@ -69,14 +69,27 @@ export class LeaveRequestTypeRepository extends Repository<LeaveRequestType> {
       throw new Error('No active contract');
     }
 
-    let calendar = await this.manager.find(Calendar, {
-      relations: ['calendarHolidays', 'calendarHolidays.holidayType'],
-    });
+    let calendar: Calendar | undefined;
+
+    if (employee.getActiveContract.calendar) {
+      calendar = employee.getActiveContract.calendar;
+    }
+
+    if (!calendar) {
+      calendar = await this.manager.findOne(Calendar, {
+        relations: ['calendarHolidays', 'calendarHolidays.holidayType'],
+        where: { isDefault: true },
+      });
+    }
+
+    if (!calendar) {
+      throw new Error('No Calendar found');
+    }
 
     let holidays: any = {};
 
-    if (calendar[0]) {
-      calendar[0].calendarHolidays.forEach((holiday) => {
+    if (calendar) {
+      calendar.calendarHolidays.forEach((holiday) => {
         holidays[moment(holiday.date).format('M/D/YYYY').toString()] =
           holiday.holidayType.label;
       });

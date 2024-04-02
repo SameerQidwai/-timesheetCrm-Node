@@ -410,14 +410,27 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
       relations: ['file'],
     });
 
-    let calendar = await this.manager.find(Calendar, {
+    let calendar: Calendar | undefined;
+
+    if (leaveRequest.employee.getActiveContract) {
+      if (leaveRequest.employee.getActiveContract.calendar) {
+        calendar = leaveRequest.employee.getActiveContract.calendar;
+      }
+    }
+
+    calendar = await this.manager.findOne(Calendar, {
       relations: ['calendarHolidays', 'calendarHolidays.holidayType'],
+      where: { isDefault: true },
     });
+
+    if (!calendar) {
+      throw new Error('No Calendar found');
+    }
 
     let holidays: any = {};
 
-    if (calendar[0]) {
-      calendar[0].calendarHolidays.forEach((holiday) => {
+    if (calendar) {
+      calendar.calendarHolidays.forEach((holiday) => {
         holidays[moment(holiday.date).format('M/D/YYYY').toString()] =
           holiday.holidayType.label;
       });
@@ -480,14 +493,27 @@ export class LeaveRequestRepository extends Repository<LeaveRequest> {
       relations: ['file'],
     });
 
-    let calendar = await this.manager.find(Calendar, {
+    let calendar: Calendar | undefined;
+
+    if (leaveRequest.employee.getActiveContract) {
+      if (leaveRequest.employee.getActiveContract.calendar) {
+        calendar = leaveRequest.employee.getActiveContract.calendar;
+      }
+    }
+
+    calendar = await this.manager.findOne(Calendar, {
       relations: ['calendarHolidays', 'calendarHolidays.holidayType'],
+      where: { isDefault: true },
     });
+
+    if (!calendar) {
+      throw new Error('No Calendar found');
+    }
 
     let holidays: any = {};
 
-    if (calendar[0]) {
-      calendar[0].calendarHolidays.forEach((holiday) => {
+    if (calendar) {
+      calendar.calendarHolidays.forEach((holiday) => {
         holidays[moment(holiday.date).format('M/D/YYYY').toString()] =
           holiday.holidayType.label;
       });

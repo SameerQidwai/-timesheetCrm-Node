@@ -13,9 +13,13 @@ export class TimesheetController {
   async getTimesheet(req: Request, res: Response, next: NextFunction) {
     try {
       const repository = getCustomRepository(TimesheetRepository);
-      let startDate = req.params.startDate as string;
-      let endDate = req.params.endDate as string;
-      let userId = parseInt(req.params.userId) as number;
+      let startDate = req.query.startDate as string;
+      let endDate = req.query.endDate as string;
+      let userId = parseInt(req.query.userId as string);
+
+      if (!userId || isNaN(userId)) {
+        throw new Error('Invalid user id');
+      }
 
       let record: any = [];
       const { grantLevel } = res.locals;
@@ -77,17 +81,23 @@ export class TimesheetController {
       let endDate = req.params.endDate as string;
       let userId = parseInt(req.params.userId) as number;
 
-      const { user } = res.locals;
+      const { user, grantLevel } = res.locals;
 
-      if (user.id != userId) {
-        throw new Error('Not Allowed');
-      }
+      // if (grantLevel.includes('ANY')) {
+      // } else if (grantLevel.includes('MANAGE')) {
+      // } else {
+      //   if (user.id != userId) {
+      //     throw new Error('Not Allowed');
+      //   }
+      // }
       let record = await repository.addTimesheetEntry(
         startDate,
         endDate,
         userId,
+        user.id,
         req.body
       );
+
       console.log('record: ', record);
       res.status(200).json({
         success: true,
@@ -108,13 +118,11 @@ export class TimesheetController {
 
       const { user } = res.locals;
 
-      if (user.id != userId) {
-        throw new Error('Not Allowed');
-      }
       let record = await repository.addBulkTimesheetEntry(
         startDate,
         endDate,
         userId,
+        user.id,
         req.body
       );
       // console.log('record: ', record);
@@ -132,8 +140,13 @@ export class TimesheetController {
     try {
       const repository = getCustomRepository(TimesheetRepository);
       let entryId = parseInt(req.params.id);
+      const { user } = res.locals;
 
-      let record = await repository.editTimesheetEntry(entryId, req.body);
+      let record = await repository.editTimesheetEntry(
+        entryId,
+        user.id,
+        req.body
+      );
       console.log('record: ', record);
       res.status(200).json({
         success: true,
@@ -159,10 +172,6 @@ export class TimesheetController {
       // console.log(req.body);
       const { user } = res.locals;
 
-      if (user.id != userId) {
-        throw new Error('Not Allowed');
-      }
-
       let requestEntries = req.body.milestoneEntries;
 
       if (!requestEntries || requestEntries.length == 0) {
@@ -173,6 +182,7 @@ export class TimesheetController {
         startDate,
         endDate,
         userId,
+        user.id,
         requestEntries
       );
       console.log('record: ', record);
@@ -476,19 +486,27 @@ export class TimesheetController {
     }
   }
 
-  async getTimesheetByMilestone(
+  async getTimesheetByMilestoneOrUser(
     req: Request,
     res: Response,
     next: NextFunction
   ) {
     try {
       const repository = getCustomRepository(TimesheetRepository);
-      let startDate = req.params.startDate as string;
-      let endDate = req.params.endDate as string;
-      let milestoneId = parseInt(req.params.milestoneId) as number;
+      let startDate = req.query.startDate as string;
+      let endDate = req.query.endDate as string;
+      let milestoneId = parseInt(req.query.milestoneId as string);
+      let userId = parseInt(req.query.userId as string);
+
+      console.log(milestoneId);
+
+      if (!milestoneId || isNaN(milestoneId)) {
+        milestoneId = 0;
+      }
 
       const { grantLevel } = res.locals;
       const { user } = res.locals;
+      let authId = user.id;
       let records: any = [];
 
       if (grantLevel.includes('ANY')) {
@@ -498,15 +516,16 @@ export class TimesheetController {
           throw new Error('Milestone not found');
         }
 
-        records = await repository.getAnyTimesheetByMilestone(
+        records = await repository.getAnyTimesheetByMilestoneOrUser(
           startDate,
           endDate,
+          authId,
           milestoneId == 0 ? milestoneIds : [milestoneId],
-          user.id
+          userId
         );
       } else if (grantLevel.includes('MANAGE')) {
         let milestoneIds = await repository._getUserManageMilestones(
-          user.id,
+          authId,
           'array'
         );
 
@@ -514,11 +533,12 @@ export class TimesheetController {
           throw new Error('Milestone not found');
         }
 
-        records = await repository.getAnyTimesheetByMilestone(
+        records = await repository.getAnyTimesheetByMilestoneOrUser(
           startDate,
           endDate,
+          authId,
           milestoneId == 0 ? milestoneIds : [milestoneId],
-          user.id
+          userId
         );
       } else {
         records = [];
@@ -546,14 +566,30 @@ export class TimesheetController {
       const { grantLevel } = res.locals;
       const { user } = res.locals;
 
+      let authId = parseInt(user.id);
+
+      let phase = req.query.phase?.toString() ?? null;
+
       if (grantLevel.includes('ANY')) {
-        records = await repository._getUserAnyMilestones();
+        records = await repository._getUserAnyMilestones(undefined, phase);
       } else if (grantLevel.includes('MANAGE') && grantLevel.includes('OWN')) {
-        records = await repository._getUserManageAndOwnMilestones(user.id);
+        records = await repository._getUserManageAndOwnMilestones(
+          authId,
+          undefined,
+          phase
+        );
       } else if (grantLevel.includes('MANAGE')) {
-        records = await repository._getUserManageMilestones(user.id);
+        records = await repository._getUserManageMilestones(
+          authId,
+          undefined,
+          phase
+        );
       } else if (grantLevel.includes('OWN')) {
-        records = await repository._getUserOwnMilestones(user.id);
+        records = await repository._getUserOwnMilestones(
+          authId,
+          undefined,
+          phase
+        );
       }
 
       console.log('records: ', records);

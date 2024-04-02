@@ -14,6 +14,7 @@ import {
   IsNull,
   MoreThanOrEqual,
   LessThanOrEqual,
+  FindConditions,
 } from 'typeorm';
 import { Timesheet } from '../entities/timesheet';
 import { TimesheetMilestoneEntry } from '../entities/timesheetMilestoneEntry';
@@ -34,7 +35,7 @@ import { Milestone } from '../entities/milestone';
 import { LeaveRequest } from '../entities/leaveRequest';
 import { OpportunityResource } from '../entities/opportunityResource';
 import { NotificationManager } from '../utilities/notifier';
-import PDFDocument, { font } from 'pdfkit';
+import PDFDocument, { end, font } from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -684,6 +685,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string,
     endDate: string,
     userId: number,
+    authId: number,
     timesheetDTO: TimesheetDTO
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
@@ -877,6 +879,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
         entry.endTime = moment(timesheetDTO.endTime, 'HH:mm').format('HH:mm');
         entry.breakHours = timesheetDTO.breakHours;
         entry.hours = actualHours;
+        entry.createdBy = authId;
+        entry.updatedBy = authId;
 
         entry.milestoneEntryId = milestoneEntry.id;
         entry.notes = timesheetDTO.notes;
@@ -896,6 +900,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string,
     endDate: string,
     userId: number,
+    authId: number,
     bulkTimesheetDTO: BulkTimesheetDTO
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
@@ -1209,6 +1214,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
           entry.endTime = moment(loopedEntry.endTime, 'HH:mm').format('HH:mm');
           entry.breakHours = loopedEntry.breakHours;
           entry.hours = actualHours;
+          entry.createdBy = authId;
+          entry.updatedBy = authId;
 
           returnEntries.push(entry);
         }
@@ -1241,6 +1248,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
 
   async editTimesheetEntry(
     entryId: number,
+    authId: number,
     timesheetDTO: TimesheetDTO
   ): Promise<any | undefined> {
     // console.log(timesheetDTO);
@@ -1341,6 +1349,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
         entry.endTime = moment(timesheetDTO.endTime, 'HH:mm').format('HH:mm');
         entry.breakHours = timesheetDTO.breakHours;
         entry.hours = actualHours;
+        entry.updatedBy = authId;
 
         entry.milestoneEntryId = timesheetDTO.milestoneEntryId;
         entry.notes = timesheetDTO.notes;
@@ -1358,6 +1367,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
     userId: number,
+    authId: number,
     requestEntries: Array<number>
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
@@ -1401,6 +1411,7 @@ export class TimesheetRepository extends Repository<Timesheet> {
           }
 
           milestoneEntry.entries.map((entry) => {
+            entry.submittedBy = authId;
             entry.submittedAt = moment().toDate();
             entry.approvedAt = null;
             entry.rejectedAt = null;
@@ -2296,27 +2307,15 @@ export class TimesheetRepository extends Repository<Timesheet> {
     let projects = await this.manager.find(Opportunity, {
       where: [
         {
-          status: 'P',
+          status: In(['P', 'C']),
           accountDirectorId: userId,
         },
         {
-          status: 'P',
+          status: In(['P', 'C']),
           accountManagerId: userId,
         },
         {
-          status: 'P',
-          projectManagerId: userId,
-        },
-        {
-          status: 'C',
-          accountDirectorId: userId,
-        },
-        {
-          status: 'C',
-          accountManagerId: userId,
-        },
-        {
-          status: 'C',
+          status: In(['P', 'C']),
           projectManagerId: userId,
         },
       ],
@@ -2943,11 +2942,12 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return users;
   }
 
-  async getAnyTimesheetByMilestone(
+  async getAnyTimesheetByMilestoneOrUser(
     startDate: string = moment().startOf('month').format('DD-MM-YYYY'),
     endDate: string = moment().endOf('month').format('DD-MM-YYYY'),
+    authId: number,
     milestoneIds: Array<number>,
-    authId: number
+    userId: number
   ): Promise<any | undefined> {
     let cStartDate = moment(startDate, 'DD-MM-YYYY').format(
       'YYYY-MM-DD HH:mm:ss.SSS'
@@ -2959,6 +2959,22 @@ export class TimesheetRepository extends Repository<Timesheet> {
     console.log(cStartDate, cEndDate);
 
     let users = await this._getMilestoneResources(milestoneIds, 'Allocations');
+
+    if (userId && !isNaN(userId)) {
+      let filterUser = await this.manager.findOne(Employee, userId, {
+        relations: [
+          'contactPersonOrganization',
+          'contactPersonOrganization.contactPerson',
+        ],
+      });
+
+      if (filterUser && !users.ids.includes(filterUser?.id)) {
+        // users.ids.push(filterUser.id);
+        // users.details[filterUser.id] = filterUser.getFullName;
+        users.ids = [filterUser.id];
+        users.details[filterUser.id] = filterUser.getFullName;
+      }
+    }
 
     let timesheets = await this.find({
       where: {
@@ -2976,6 +2992,8 @@ export class TimesheetRepository extends Repository<Timesheet> {
         'milestoneEntries.entries',
       ],
     });
+
+    console.log(startDate, endDate, timesheets);
 
     if (!timesheets) {
       throw new Error('Timesheet not found');
@@ -3118,14 +3136,32 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return milestones;
   }
 
-  async _getUserAnyMilestones(type = 'value') {
+  async _getUserAnyMilestones(type = 'value', phase: string | null = null) {
     let milestones: any = [];
 
-    let projects = await this.manager.find(Opportunity, {
-      where: [
+    let whereCondition: FindConditions<Opportunity>[] = [];
+
+    if (phase) {
+      if (phase === 'true') {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: true },
+          { status: OpportunityStatus.COMPLETED, phase: true }
+        );
+      } else {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: false },
+          { status: OpportunityStatus.COMPLETED, phase: false }
+        );
+      }
+    } else {
+      whereCondition.push(
         { status: OpportunityStatus.WON },
-        { status: OpportunityStatus.COMPLETED },
-      ],
+        { status: OpportunityStatus.COMPLETED }
+      );
+    }
+
+    let projects = await this.manager.find(Opportunity, {
+      where: whereCondition,
       relations: ['milestones'],
     });
 
@@ -3146,14 +3182,36 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return milestones;
   }
 
-  async _getUserManageMilestones(userId: number, type = 'value') {
+  async _getUserManageMilestones(
+    userId: number,
+    type = 'value',
+    phase: string | null = null
+  ) {
     let milestones: any = [];
 
-    let projects = await this.manager.find(Opportunity, {
-      where: [
+    let whereCondition: FindConditions<Opportunity>[] = [];
+
+    if (phase) {
+      if (phase === 'true') {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: true },
+          { status: OpportunityStatus.COMPLETED, phase: true }
+        );
+      } else {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: false },
+          { status: OpportunityStatus.COMPLETED, phase: false }
+        );
+      }
+    } else {
+      whereCondition.push(
         { status: OpportunityStatus.WON },
-        { status: OpportunityStatus.COMPLETED },
-      ],
+        { status: OpportunityStatus.COMPLETED }
+      );
+    }
+
+    let projects = await this.manager.find(Opportunity, {
+      where: whereCondition,
       relations: ['milestones'],
     });
 
@@ -3176,14 +3234,36 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return milestones;
   }
 
-  async _getUserManageAndOwnMilestones(userId: number, type = 'value') {
+  async _getUserManageAndOwnMilestones(
+    userId: number,
+    type = 'value',
+    phase: string | null = null
+  ) {
     let milestones: any = [];
 
-    let projects = await this.manager.find(Opportunity, {
-      where: [
+    let whereCondition: FindConditions<Opportunity>[] = [];
+
+    if (phase) {
+      if (phase === 'true') {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: true },
+          { status: OpportunityStatus.COMPLETED, phase: true }
+        );
+      } else {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: false },
+          { status: OpportunityStatus.COMPLETED, phase: false }
+        );
+      }
+    } else {
+      whereCondition.push(
         { status: OpportunityStatus.WON },
-        { status: OpportunityStatus.COMPLETED },
-      ],
+        { status: OpportunityStatus.COMPLETED }
+      );
+    }
+
+    let projects = await this.manager.find(Opportunity, {
+      where: whereCondition,
       relations: [
         'milestones',
         'organization',
@@ -3254,14 +3334,36 @@ export class TimesheetRepository extends Repository<Timesheet> {
     return milestones;
   }
 
-  async _getUserOwnMilestones(userId: number, type = 'value') {
+  async _getUserOwnMilestones(
+    userId: number,
+    type = 'value',
+    phase: string | null = null
+  ) {
     let milestones: any = [];
 
-    let projects = await this.manager.find(Opportunity, {
-      where: [
+    let whereCondition: FindConditions<Opportunity>[] = [];
+
+    if (phase) {
+      if (phase === 'true') {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: true },
+          { status: OpportunityStatus.COMPLETED, phase: true }
+        );
+      } else {
+        whereCondition.push(
+          { status: OpportunityStatus.WON, phase: false },
+          { status: OpportunityStatus.COMPLETED, phase: false }
+        );
+      }
+    } else {
+      whereCondition.push(
         { status: OpportunityStatus.WON },
-        { status: OpportunityStatus.COMPLETED },
-      ],
+        { status: OpportunityStatus.COMPLETED }
+      );
+    }
+
+    let projects = await this.manager.find(Opportunity, {
+      where: whereCondition,
       relations: [
         'milestones',
         'organization',

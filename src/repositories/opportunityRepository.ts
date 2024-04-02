@@ -2145,9 +2145,14 @@ export class OpportunityRepository extends Repository<Opportunity> {
 
   // fiscalYear: { start: string; end: string; actual: string }
   async getHolidays(projectId: number): Promise<any | undefined> {
-    let calendar = await this.manager.find(Calendar, {
+    let calendar = await this.manager.findOne(Calendar, {
       relations: ['calendarHolidays', 'calendarHolidays.holidayType'],
+      where: { isDefault: true },
     });
+
+    if (!calendar) {
+      throw new Error('No Calendar found');
+    }
 
     let holidays: string[] = [];
 
@@ -2169,8 +2174,8 @@ export class OpportunityRepository extends Repository<Opportunity> {
       }
     }
 
-    if (calendar[0]) {
-      calendar[0].calendarHolidays.forEach((holiday) => {
+    if (calendar) {
+      calendar.calendarHolidays.forEach((holiday) => {
         holidays.push(moment(holiday.date).format('M D YYYY'));
       });
     }

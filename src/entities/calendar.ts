@@ -1,18 +1,24 @@
-import { Entity, Column, OneToMany } from 'typeorm'; 
+import { Entity, Column, OneToMany } from 'typeorm';
 import { CalendarHoliday } from './calendarHoliday';
 import { Base } from './common/base';
 
-@Entity("calendars") 
+@Entity('calendars')
 export class Calendar extends Base {
+  @Column({ name: 'label' })
+  label: string;
 
-   @Column({ name: "label" })
-   label: string;
+  @Column({ name: 'is_default', default: true })
+  isDefault: boolean;
 
-   @Column({ name: "is_active" })
-   isActive: boolean;
+  @Column({ name: 'is_active' })
+  isActive: boolean;
 
-   @OneToMany(() => CalendarHoliday, calendarHoliday => calendarHoliday.calendar, { 
-      cascade: true 
-    })
-    calendarHolidays: CalendarHoliday[];
+  @OneToMany(
+    () => CalendarHoliday,
+    (calendarHoliday) => calendarHoliday.calendar,
+    {
+      cascade: true,
+    }
+  )
+  calendarHolidays: CalendarHoliday[];
 }

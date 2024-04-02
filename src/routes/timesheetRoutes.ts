@@ -26,14 +26,14 @@ router
   .patch([isLoggedIn], contr.updateTimesheetMilestoneEntryNote.bind(contr));
 
 router
-  .route('/milestone/:startDate&:endDate&:milestoneId')
+  .route('/approvals')
   .get(
     [isLoggedIn, can(Action.APPROVAL, Resource.TIMESHEETS)],
-    contr.getTimesheetByMilestone.bind(contr)
+    contr.getTimesheetByMilestoneOrUser.bind(contr)
   );
 
 router
-  .route('/:startDate&:endDate&:userId')
+  .route('/')
   .get(
     [isLoggedIn, can(Action.READ, Resource.TIMESHEETS)],
     contr.getTimesheet.bind(contr)

@@ -1,10 +1,13 @@
-import { Request, Response, NextFunction, query } from 'express';
+import e, { Request, Response, NextFunction, query } from 'express';
 import { Employee } from '../entities/employee';
 import { Opportunity } from '../entities/opportunity';
 import { getManager } from 'typeorm';
 import { Action, Grant, Resource } from '../constants/authorization';
 
-export const canCustom = (action: Action) => {
+export const canCustom = (
+  action: Action,
+  defaultResource: Resource | null = null
+) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     let user: Employee = res.locals.user;
 
@@ -13,7 +16,8 @@ export const canCustom = (action: Action) => {
     if (req.query.resource) (query as any) = req.query.resource ?? null;
 
     if (query == null) {
-      next(new Error('Unknown Resource!'));
+      if (defaultResource) query = defaultResource;
+      else next(new Error('Unknown Resource!'));
     }
 
     if (query != null) resource = Resource[query];
