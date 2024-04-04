@@ -37,7 +37,10 @@ router
   .get(
     [isLoggedIn, can(Action.READ, Resource.TIMESHEETS)],
     contr.getTimesheet.bind(contr)
-  )
+  );
+
+router
+  .route('/:startDate&:endDate&:userId')
   .post(
     [isLoggedIn, can(Action.ADD, Resource.TIMESHEETS)],
     contr.addTimesheetEntry.bind(contr)
