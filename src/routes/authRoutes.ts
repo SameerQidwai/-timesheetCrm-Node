@@ -37,7 +37,7 @@ router
 router
   .route('/auth/users')
   .get(
-    [isLoggedIn, canCustom(Action.APPROVAL, Resource.LEAVE_REQUESTS)],
+    [isLoggedIn, canCustom(Action.READ, Resource.LEAVE_REQUESTS)],
     contr.getUserUsers.bind(contr)
   );
 
