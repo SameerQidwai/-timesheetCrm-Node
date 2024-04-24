@@ -1901,6 +1901,8 @@ export class EmployeeRepository extends Repository<Employee> {
     let currentContract: any;
     let momentStartDate = moment(startDate, 'YYYY-MM-DD');
 
+    
+
     if (momentStartDate.isValid()) {
       currentContract = await this.manager.findOne(EmploymentContract, {
         where: {
@@ -1929,46 +1931,32 @@ export class EmployeeRepository extends Repository<Employee> {
     /** doing neccesary calculation */
     currentContract.dailyHours =
       currentContract?.noOfHours / currentContract?.noOfDays;
+
     currentContract.hourlyBaseRate =
       currentContract?.type === 1
         ? currentContract?.remunerationAmount
         : currentContract?.remunerationAmount / 52 / currentContract?.noOfHours;
 
-    let buyRate: any = 0;
-    let setGolobalVariables: any = [];
-    // if coontract is found
-    if (currentContract?.hourlyBaseRate) {
+        
+    let buyRate: any = currentContract?.hourlyBaseRate;
+    // if contract is found
+    let variables: any = []; 
+
+    if (currentContract?.hourlyBaseRate >= 0) {
       let stateName: string | null =
         employee?.contactPersonOrganization.contactPerson?.state?.label;
 
       stateName = stateName ?? 'No State';
-      // let variables: any = [
-      //   { name: 'Superannuation' },
-      //   { name: stateName },
-      //   { name: 'WorkCover' },
-      // ];
 
-      // if (currentContract?.type !== 1) {
-      //   variables.push({ name: 'Public Holidays' });
-      // }
-
-      // employee?.leaveRequestBalances.forEach((el) => {
-      //   variables.push({ name: el.type.leaveRequestType.label });
-      // });
-
-      // let golobalVariables: any = await this.manager.find(GlobalVariableLabel, {
-      //   where: variables,
-      //   relations: ['values'],
-      // });
-
-      let variables: any = ['Superannuation', stateName, 'WorkCover'];
+      variables = ['Superannuation', stateName, 'WorkCover'];
 
       if (currentContract?.type !== 1) {
-        variables.push('Public Holidays');
-
+        
         employee?.leaveRequestBalances.forEach((el) => {
           variables.push(el.type.label);
         });
+
+        variables.push('Public Holidays');
       }
 
       let golobalVariables: any = await this.manager
@@ -1982,110 +1970,62 @@ export class EmployeeRepository extends Repository<Employee> {
         .andWhere('values.end_date >= :endDate', {
           endDate: moment().endOf('day').toDate(),
         })
+        .orderBy( `FIELD(variable.name, ${'"' + variables.join('", "') + '"'})` 
+        )
         .getMany();
 
-      let sortIndex: any = {
-        Superannuation: 0,
-        [stateName]: 1,
-        WorkCover: 2,
-        'Public Holidays': golobalVariables.length - 1,
-      };
+      // To check what variable are not returned from database
+      let variableIndex: {[key: string]: any}= {}; 
 
-      /**Sorting Data As our Need */
-      golobalVariables.forEach((variable: any, index: number) => {
+      golobalVariables.forEach((variable: any, index: number)=>{
         let value: any = variable.values?.[0];
-        let manipulateVariable: any = {
+        variableIndex[variable.name] = {
           name: variable.name,
-          variableId: variable.id ?? 0,
-          valueId: value.id ?? 0,
-          value: value.value ?? 0,
+          variableId: variable.id,
+          valueId: value.id,
+          value: value.value,
+          apply: 'Yes'
         };
-        /** Checking if element is from a sort variables */
-        if (sortIndex[variable.name] >= 0) {
-          /** if index and sortIndex has same index means this is where sort element belong */
-          if (index === sortIndex[variable.name]) {
-            setGolobalVariables.push(manipulateVariable);
-          } else {
-            /**checking if index has pass sort variable index means the element is already been manipulated */
-            if (index > sortIndex[variable.name]) {
-              /** Saving element to be sawp as temp variable */
-              let swapElement = setGolobalVariables[sortIndex[variable.name]];
-              /** change index with sorted element */
-
-              setGolobalVariables[sortIndex[variable.name]] =
-                manipulateVariable;
-              /** returning the already manipulated element to this index */
-              if (swapElement) {
-                if (index === sortIndex['Public Holidays']) {
-                  setGolobalVariables[index - 1] = swapElement;
-                } else {
-                  setGolobalVariables.push(swapElement);
-                }
-              }
-              /**checking if index has not yet passed sort variable index means the element will later get sort and just swap it */
-            } else if (index < sortIndex[variable.name]) {
-              /** returning the not manipulated element to sort variable index */
-
-              setGolobalVariables[sortIndex[variable.name]] =
-                manipulateVariable;
-              /** returning the manipulated element to this index */
-            }
-          }
-        } else {
-          setGolobalVariables.push(manipulateVariable);
-        }
       });
+    
+      // let setGolobalVariables: any = [];
+      /**Sorting Data As our Need */
+      let baseAmount = 0;
+      variables = variables.map((variable: any, index: number) => {
+        if (variableIndex[variable]){ 
+          let databaseObj: any = variableIndex[variable]
+          // if data was returned from database return database value
+          // database value
+          if (variable === 'Superannuation'){
 
-      // set state if state is not assigned to employee
-      if (stateName === 'No State') {
-        console.log('here');
-        setGolobalVariables[1] = {
-          name: stateName,
-          variableId: 0,
-          valueId: 0,
-          value: 0,
-        };
-      }
+            databaseObj.amount = (currentContract?.hourlyBaseRate * databaseObj?.value) / 100;
+            baseAmount = databaseObj.amount;
+          }else{
 
-      //** Calculation to get cost Rate for the employee **//
-      buyRate = currentContract?.hourlyBaseRate;
-      // console.log(setGolobalVariables);
-
-      // console.log(setGolobalVariables)
-      setGolobalVariables = setGolobalVariables.map(
-        (el: any, index: number) => {
-          if (index === 0) {
-            el.amount = (currentContract?.hourlyBaseRate * el?.value) / 100;
-          } else {
-            // console.log(el.name, el.value);
-
-            el.amount =
-              ((currentContract?.hourlyBaseRate +
-                setGolobalVariables?.[0].amount) *
-                el.value) /
-              100;
+            databaseObj.amount = ((currentContract?.hourlyBaseRate + baseAmount) * databaseObj.value) / 100;
           }
-          el.apply = 'Yes';
 
-          buyRate += el.amount;
-          return el;
-        }
-      );
+          buyRate += databaseObj?.amount;
+          return databaseObj;
 
-      console.log(setGolobalVariables);
-      /**let calendar = await this.manager.find(CalendarHoliday);
+        }else{
+          // if data was Not from database return database value return this
+          return {
+            name: variable,
+            variableId: variable + 'id',
+            valueId: variable + 'valueId',
+            value: 0,
+            amount: 0,
+            apply: 'No'
+          };
 
-      let holidays: any = [];
+        };
+      });
+    };
 
-      if (calendar[0]) {
-        calendar.forEach((holiday) => {
-          holidays.push(moment(holiday.date).format('M D YYYY'));
-        });
-      }**/
-    }
     return {
       contract: currentContract,
-      golobalVariables: setGolobalVariables,
+      golobalVariables: variables,
       employeeBuyRate: buyRate,
     };
   }

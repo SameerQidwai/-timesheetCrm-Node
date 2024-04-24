@@ -63,7 +63,7 @@ export class EmployeeController extends BaseController<
       if (!record) throw new Error('not found');
       res.status(200).json({
         success: true,
-        message: `Get ${req.params.id}`,
+        message: `Get ${employeeId} Cost Calculator`,
         data: record,
       });
     } catch (e) {

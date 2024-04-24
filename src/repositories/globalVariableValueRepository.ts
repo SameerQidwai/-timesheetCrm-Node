@@ -159,19 +159,19 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
     let variables: any = [];
 
     if (reportType === 1) {
-      variables = ['Superannuation', 'WorkCover', 'Public Holidays'];
+      variables = ['Superannuation', 'WorkCover'];
 
       let leaveTypes = await this.manager.find(LeaveRequestType);
       leaveTypes.forEach((el) => {
         variables.push(el.label);
       });
+      variables.push('Public Holidays');
     } else if (reportType === 2) {
       variables = ['Superannuation', 'WorkCover'];
     } else if (reportType === 3) {
       variables = [];
     }
 
-    let setGolobalVariables: any = [];
     if (variables.length) {
       let golobalVariables: any = await this.manager
         .getRepository(GlobalVariableLabel)
@@ -184,59 +184,90 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
         .andWhere('values.end_date >= :endDate', {
           endDate: moment().endOf('day').toDate(),
         })
+        .orderBy( `FIELD(variable.name, ${'"' + variables.join('", "') + '"'})` 
+        )
         .getMany();
 
-      let sortIndex: any = {
-        Superannuation: 0,
-        WorkCover: 1,
-        'Public Holidays': golobalVariables.length - 1,
-      };
+        // To check what variable are not returned from database
+        let variableIndex: {[key: string]: any}= {}; 
 
+        golobalVariables.forEach((variable: any, index: number)=>{
+          let value: any = variable.values?.[0];
+          variableIndex[variable.name] = {
+            name: variable.name,
+            variableId: variable.id,
+            valueId: value.id,
+            value: value.value,
+            apply: 'Yes',
+          }
+        })
+      
+      // let setGolobalVariables: any = [];
       /**Sorting Data As our Need */
-      golobalVariables.forEach((variable: any, index: number) => {
-        let value: any = variable.values?.[0];
-        let manipulateVariable: any = {
-          name: variable.name,
-          variableId: variable.id,
-          valueId: value.id,
-          value: value.value,
-          apply: 'Yes',
+      variables = variables.map((variable: any, index: number) => {
+        if (variableIndex[variable]){ 
+          // if data was returned from database return database value
+          //database value
+          return variableIndex[variable];
+        }else{
+          // if data was Not from database return database value return this
+          return {
+            name: variable,
+            variableId: variable + 'id',
+            valueId: variable + 'valueId',
+            value: 0,
+            apply: 'No',
+          };
+
         };
 
-        /** Checking if element is from a sort variables */
-        if (sortIndex[variable.name] >= 0) {
-          /** if index and sortIndex has same index means this is where sort element belong */
-          if (index === sortIndex[variable.name]) {
-            setGolobalVariables.push(manipulateVariable);
-          } else {
-            /**checking if index has pass sort variable index means the element is already been manipulated */
-            if (index > sortIndex[variable.name]) {
-              /** Saving element to be sawp as temp variable */
-              let swapElement = setGolobalVariables[sortIndex[variable.name]];
-              /** change index with sorted element */
+        /** Below is How I was sorting data before and now I am using orderBy in query so all the data will be sorted
+         *  Hence No need for below code but keeping it just for safe case. 
+         */
+          // let value: any = variable.values?.[0];
+          // console.log(variable.name)
+          // let manipulateVariable: any = {
+          //   name: variable.name,
+          //   variableId: variable.id,
+          //   valueId: value.id,
+          //   value: value.value,
+          //   apply: 'Yes',
+          // };
+          
+          // /** Checking if element is from a sort variables */
+          // if (sortIndex[variable.name] >= 0) {
+          //   /** if index and sortIndex has same index means this is where sort element belong */
+          //   if (index === sortIndex[variable.name]) {
+          //     setGolobalVariables.push(manipulateVariable);
+          //   } else {
+          //     /**checking if index has pass sort variable index means the element is already been manipulated */
+          //     if (index > sortIndex[variable.name]) {
+          //       /** Saving element to be sawp as temp variable */
+          //       let swapElement = setGolobalVariables[sortIndex[variable.name]];
+          //       /** change index with sorted element */
 
-              setGolobalVariables[sortIndex[variable.name]] =
-                manipulateVariable;
-              /** returning the already manipulated element to this index */
-              if (swapElement) {
-                if (index === sortIndex['Public Holidays']) {
-                  setGolobalVariables[index - 1] = swapElement;
-                } else {
-                  setGolobalVariables.push(swapElement);
-                }
-              }
-              /**checking if index has not yet passed sort variable index means the element will later get sort and just swap it */
-            } else if (index < sortIndex[variable.name]) {
-              /** returning the not manipulated element to sort variable index */
+          //       setGolobalVariables[sortIndex[variable.name]] =
+          //         manipulateVariable;
+          //       /** returning the already manipulated element to this index */
+          //       if (swapElement) {
+          //         if (index === sortIndex['Public Holidays']) {
+          //           setGolobalVariables[index - 1] = swapElement;
+          //         } else {
+          //           setGolobalVariables.push(swapElement);
+          //         }
+          //       }
+          //       /**checking if index has not yet passed sort variable index means the element will later get sort and just swap it */
+          //     } else if (index < sortIndex[variable.name]) {
+          //       /** returning the not manipulated element to sort variable index */
 
-              setGolobalVariables[sortIndex[variable.name]] =
-                manipulateVariable;
-              /** returning the manipulated element to this index */
-            }
-          }
-        } else {
-          setGolobalVariables.push(manipulateVariable);
-        }
+          //       setGolobalVariables[sortIndex[variable.name]] =
+          //         manipulateVariable;
+          //       /** returning the manipulated element to this index */
+          //     }
+          //   }
+          // } else {
+              //setGolobalVariables.push(manipulateVariable);
+          // }
       });
     }
 
@@ -273,7 +304,7 @@ export class GlobalVariableValueRepository extends Repository<GlobalVariableValu
     return {
       gst,
       stateTax,
-      golobalVariables: setGolobalVariables,
+      golobalVariables: variables,
     };
   }
 
