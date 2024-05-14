@@ -2968,11 +2968,14 @@ export class TimesheetRepository extends Repository<Timesheet> {
         ],
       });
 
-      if (filterUser && !users.ids.includes(filterUser?.id)) {
+      if (filterUser && users.ids.includes(filterUser?.id)) {
         // users.ids.push(filterUser.id);
         // users.details[filterUser.id] = filterUser.getFullName;
         users.ids = [filterUser.id];
         users.details[filterUser.id] = filterUser.getFullName;
+      }else{
+        users.ids = [];
+        // users.details[filterUser.id] = filterUser.getFullName;
       }
     }
 
